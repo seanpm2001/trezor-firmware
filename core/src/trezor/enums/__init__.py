@@ -261,6 +261,8 @@ if TYPE_CHECKING:
         SolanaAddress = 903
         SolanaSignTx = 904
         SolanaTxSignature = 905
+        HelloWorldRequest = 1000
+        HelloWorldResponse = 1001
 
     class FailureType(IntEnum):
         UnexpectedMessage = 1

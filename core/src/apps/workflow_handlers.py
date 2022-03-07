@@ -93,6 +93,8 @@ def _find_message_handler_module(msg_type: int) -> str:
         return "apps.misc.get_firmware_hash"
     if msg_type == MessageType.CosiCommit:
         return "apps.misc.cosi_commit"
+    if msg_type == MessageType.HelloWorldRequest:
+        return "apps.misc.hello_world"
 
     if not utils.BITCOIN_ONLY:
         if msg_type == MessageType.SetU2FCounter:

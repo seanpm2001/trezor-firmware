@@ -243,3 +243,5 @@ if not utils.BITCOIN_ONLY:
     SolanaAddress = 903
     SolanaSignTx = 904
     SolanaTxSignature = 905
+    HelloWorldRequest = 1000
+    HelloWorldResponse = 1001

@@ -269,6 +269,8 @@ class MessageType(IntEnum):
     SolanaAddress = 903
     SolanaSignTx = 904
     SolanaTxSignature = 905
+    HelloWorldRequest = 1000
+    HelloWorldResponse = 1001
 
 
 class FailureType(IntEnum):
@@ -5209,6 +5211,40 @@ class EthereumAccessList(protobuf.MessageType):
     ) -> None:
         self.storage_keys: Sequence["bytes"] = storage_keys if storage_keys is not None else []
         self.address = address
+
+
+class HelloWorldRequest(protobuf.MessageType):
+    MESSAGE_WIRE_TYPE = 1000
+    FIELDS = {
+        1: protobuf.Field("name", "string", repeated=False, required=True),
+        2: protobuf.Field("amount", "uint32", repeated=False, required=False, default=1),
+        3: protobuf.Field("show_display", "bool", repeated=False, required=False, default=None),
+    }
+
+    def __init__(
+        self,
+        *,
+        name: "str",
+        amount: Optional["int"] = 1,
+        show_display: Optional["bool"] = None,
+    ) -> None:
+        self.name = name
+        self.amount = amount
+        self.show_display = show_display
+
+
+class HelloWorldResponse(protobuf.MessageType):
+    MESSAGE_WIRE_TYPE = 1001
+    FIELDS = {
+        1: protobuf.Field("text", "string", repeated=False, required=True),
+    }
+
+    def __init__(
+        self,
+        *,
+        text: "str",
+    ) -> None:
+        self.text = text
 
 
 class MoneroTransactionSourceEntry(protobuf.MessageType):

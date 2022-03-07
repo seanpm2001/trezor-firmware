@@ -372,4 +372,8 @@ enum MessageType {
     MessageType_SolanaAddress = 903 [(wire_out) = true];
     MessageType_SolanaSignTx = 904 [(wire_in) = true];
     MessageType_SolanaTxSignature = 905 [(wire_out) = true];
+
+    // Hello world
+    MessageType_HelloWorldRequest = 1000 [(wire_in) = true];
+    MessageType_HelloWorldResponse = 1001 [(wire_out) = true];
 }
