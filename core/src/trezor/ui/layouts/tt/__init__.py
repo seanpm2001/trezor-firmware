@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
-import trezorui2
-from trezor import TR, io, loop, ui, utils
+from trezor import TR, io, loop, ui, utils, utils
 from trezor.enums import ButtonRequestType
 from trezor.wire import ActionCancelled
 from trezor.wire.context import wait as ctx_wait
@@ -63,13 +62,17 @@ class RustLayout(LayoutParentType[T]):
     if __debug__:
 
         def create_tasks(self) -> tuple[loop.AwaitableTask, ...]:
-            return (
+            tasks = (
                 self.handle_timers(),
-                self.handle_input_and_rendering(),
                 self.handle_swipe(),
                 self.handle_click_signal(),
                 self.handle_result_signal(),
             )
+            if utils.USE_TOUCH:
+                tasks = tasks + (self.handle_touch(),)
+            if utils.USE_BUTTON:
+                tasks = tasks + (self.handle_button(),)
+            return tasks
 
         async def handle_result_signal(self) -> None:
             """Enables sending arbitrary input - ui.Result.
@@ -165,7 +168,12 @@ class RustLayout(LayoutParentType[T]):
     else:
 
         def create_tasks(self) -> tuple[loop.AwaitableTask, ...]:
-            return self.handle_timers(), self.handle_input_and_rendering()
+            tasks = (self.handle_timers(),)
+            if utils.USE_BUTTON:
+                tasks = tasks + (self.handle_button(),)
+            if utils.USE_TOUCH:
+                tasks = tasks + (self.handle_touch(),)
+            return tasks
 
     def _first_paint(self) -> None:
         ui.backlight_fade(ui.style.BACKLIGHT_NONE)
@@ -193,7 +201,7 @@ class RustLayout(LayoutParentType[T]):
         # Turn the brightness on again.
         ui.backlight_fade(self.BACKLIGHT_LEVEL)
 
-    def handle_input_and_rendering(self) -> loop.Task:  # type: ignore [awaitable-is-generator]
+    def handle_touch(self) -> loop.Task:  # type: ignore [awaitable-is-generator]
         from trezor import workflow
 
         touch = loop.wait(io.TOUCH)
@@ -205,6 +213,22 @@ class RustLayout(LayoutParentType[T]):
             msg = None
             if event in (io.TOUCH_START, io.TOUCH_MOVE, io.TOUCH_END):
                 msg = self.layout.touch_event(event, x, y)
+            if msg is not None:
+                raise ui.Result(msg)
+            self._paint()
+
+    def handle_button(self) -> loop.Task:  # type: ignore [awaitable-is-generator]
+        from trezor import workflow
+
+        button = loop.wait(io.BUTTON)
+        self._first_paint()
+        while True:
+            # Using `yield` instead of `await` to avoid allocations.
+            event, button_num = yield button
+            workflow.idle_timer.touch()
+            msg = None
+            if event in (io.BUTTON_PRESSED, io.BUTTON_RELEASED):
+                msg = self.layout.button_event(event, button_num)
             if msg is not None:
                 raise ui.Result(msg)
             self._paint()
