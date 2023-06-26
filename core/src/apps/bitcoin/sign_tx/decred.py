@@ -90,10 +90,12 @@ class DecredApprover(BasicApprover):
     async def add_decred_sstx_submission(
         self, txo: TxOutput, script_pubkey: bytes
     ) -> None:
+        from .layout import confirm_decred_sstx_submission
+
         # NOTE: The following calls Approver.add_external_output(), not BasicApprover.add_external_output().
         # This is needed to skip calling helpers.confirm_output(), which is what BasicApprover would do.
         await super(BasicApprover, self).add_external_output(txo, script_pubkey, None)
-        await helpers.confirm_decred_sstx_submission(txo, self.coin, self.amount_unit)
+        await confirm_decred_sstx_submission(txo, self.coin, self.amount_unit)
 
 
 class DecredSigHasher:
@@ -292,8 +294,6 @@ class Decred(Bitcoin):
     async def step7_finish(self) -> None:
         if __debug__:
             progress.assert_finished()
-
-        await helpers.request_tx_finish(self.tx_req)
 
     def check_prevtx_output(self, txo_bin: PrevOutput) -> None:
         if txo_bin.decred_script_version != 0:

@@ -140,8 +140,6 @@ class ZcashV4(Bitcoinlike):
     async def step7_finish(self) -> None:
         from apps.common.writers import write_compact_size
 
-        from . import helpers
-
         serialized_tx = self.serialized_tx  # local_cache_attribute
 
         if self.serialize:
@@ -151,8 +149,6 @@ class ZcashV4(Bitcoinlike):
             write_compact_size(serialized_tx, 0)  # nShieldedSpend
             write_compact_size(serialized_tx, 0)  # nShieldedOutput
             write_compact_size(serialized_tx, 0)  # nJoinSplit
-
-        await helpers.request_tx_finish(self.tx_req)
 
     async def sign_nonsegwit_input(self, i_sign: int) -> None:
         await self.sign_nonsegwit_bip143_input(i_sign)

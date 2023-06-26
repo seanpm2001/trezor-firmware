@@ -11,7 +11,7 @@ from apps.common import safety_checks
 from .. import writers
 from ..common import input_is_external_unverified
 from ..keychain import SLIP44_TESTNET, validate_path_against_script_type
-from . import helpers, tx_weight
+from . import layout, tx_weight
 from .sig_hasher import BitcoinSigHasher
 from .tx_info import OriginalTxInfo
 
@@ -147,8 +147,10 @@ class BasicApprover(Approver):
         self.chunkify = bool(tx.chunkify)
 
     async def add_internal_input(self, txi: TxInput, node: bip32.HDNode) -> None:
+        from apps.common.paths import show_path_warning
+
         if not validate_path_against_script_type(self.coin, txi):
-            await helpers.confirm_foreign_address(txi.address_n)
+            await show_path_warning(txi.address_n)
             self.foreign_address_confirmed = True
 
         await super().add_internal_input(txi, node)
@@ -165,6 +167,8 @@ class BasicApprover(Approver):
             raise ProcessError("Transaction has changed during signing")
 
     async def _add_output(self, txo: TxOutput, script_pubkey: bytes) -> None:
+        from apps.common.paths import show_path_warning
+
         from ..common import CHANGE_OUTPUT_TO_INPUT_SCRIPT_TYPES
 
         if txo.address_n and not validate_path_against_script_type(
@@ -173,7 +177,7 @@ class BasicApprover(Approver):
             script_type=CHANGE_OUTPUT_TO_INPUT_SCRIPT_TYPES[txo.script_type],
             multisig=bool(txo.multisig),
         ):
-            await helpers.confirm_foreign_address(txo.address_n)
+            await show_path_warning(txo.address_n)
 
         await super()._add_output(txo, script_pubkey)
 
@@ -202,7 +206,7 @@ class BasicApprover(Approver):
                     raise ProcessError(
                         "Reducing original output amounts is not supported."
                     )
-                await helpers.confirm_modify_output(
+                await layout.confirm_modify_output(
                     txo, orig_txo, self.coin, self.amount_unit
                 )
             elif txo.amount > orig_txo.amount:
@@ -224,7 +228,7 @@ class BasicApprover(Approver):
         elif txo.payment_req_index is None or self.show_payment_req_details:
             # Ask user to confirm output, unless it is part of a payment
             # request, which gets confirmed separately.
-            await helpers.confirm_output(
+            await layout.confirm_output(
                 txo,
                 self.coin,
                 self.amount_unit,
@@ -240,7 +244,7 @@ class BasicApprover(Approver):
         if msg.amount is None:
             raise DataError("Missing payment request amount.")
 
-        result = await helpers.confirm_payment_request(msg, self.coin, self.amount_unit)
+        result = await layout.confirm_payment_request(msg, self.coin, self.amount_unit)
         # When user wants to see more info, the result will be False.
         self.show_payment_req_details = result is False
 
@@ -252,7 +256,7 @@ class BasicApprover(Approver):
 
         title = self._replacement_title(tx_info, orig_txs)
         for orig in orig_txs:
-            await helpers.confirm_replacement(title, orig.orig_hash)
+            await layout.confirm_replacement(title, orig.orig_hash)
 
     def _replacement_title(
         self, tx_info: TxInfo, orig_txs: list[OriginalTxInfo]
@@ -277,10 +281,10 @@ class BasicApprover(Approver):
         await super().approve_tx(tx_info, orig_txs)
 
         if self.has_unverified_external_input:
-            await helpers.confirm_unverified_external_input()
+            await layout.confirm_unverified_external_input()
 
         if tx_info.wallet_path.get_path() is None:
-            await helpers.confirm_multiple_accounts()
+            await layout.confirm_multiple_accounts()
 
         fee = self.total_in - self.total_out
 
@@ -299,10 +303,10 @@ class BasicApprover(Approver):
         if fee > fee_threshold:
             if fee > 10 * fee_threshold and safety_checks.is_strict():
                 raise DataError("The fee is unexpectedly large")
-            await helpers.confirm_feeoverthreshold(fee, coin, amount_unit)
+            await layout.confirm_feeoverthreshold(fee, coin, amount_unit)
 
         if self.change_count > self.MAX_SILENT_CHANGE_COUNT:
-            await helpers.confirm_change_count_over_threshold(self.change_count)
+            await layout.confirm_change_count_over_threshold(self.change_count)
 
         if orig_txs:
             # Replacement transaction.
@@ -338,7 +342,7 @@ class BasicApprover(Approver):
                 # Not a PayJoin: Show the actual fee difference, since any difference in the fee is
                 # coming entirely from the user's own funds and from decreases of external outputs.
                 # We consider the decreases as belonging to the user.
-                await helpers.confirm_modify_fee(
+                await layout.confirm_modify_fee(
                     title, fee - orig_fee, fee, fee_rate, coin, amount_unit
                 )
             elif spending > orig_spending:
@@ -346,7 +350,7 @@ class BasicApprover(Approver):
                 # PayJoin and user is spending more: Show the increase in the user's contribution
                 # to the fee, ignoring any contribution from external inputs. Decreasing of
                 # external outputs is not allowed in PayJoin, so there is no need to handle those.
-                await helpers.confirm_modify_fee(
+                await layout.confirm_modify_fee(
                     title, spending - orig_spending, fee, fee_rate, coin, amount_unit
                 )
             else:
@@ -357,12 +361,12 @@ class BasicApprover(Approver):
         else:
             # Standard transaction.
             if tx_info.tx.lock_time > 0:
-                await helpers.confirm_nondefault_locktime(
+                await layout.confirm_nondefault_locktime(
                     tx_info.tx.lock_time, tx_info.lock_time_disabled()
                 )
 
             if not self.external_in:
-                await helpers.confirm_total(
+                await layout.confirm_total(
                     total,
                     fee,
                     fee_rate,
@@ -371,7 +375,7 @@ class BasicApprover(Approver):
                     tx_info.wallet_path.get_path(),
                 )
             else:
-                await helpers.confirm_joint_total(spending, total, coin, amount_unit)
+                await layout.confirm_joint_total(spending, total, coin, amount_unit)
 
 
 class CoinJoinApprover(Approver):

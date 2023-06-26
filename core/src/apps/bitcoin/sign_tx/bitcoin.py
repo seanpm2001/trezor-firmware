@@ -23,7 +23,15 @@ if TYPE_CHECKING:
     from typing import Sequence
 
     from trezor.crypto import bip32
-    from trezor.messages import PrevInput, PrevOutput, PrevTx, SignTx, TxInput, TxOutput
+    from trezor.messages import (
+        PrevInput,
+        PrevOutput,
+        PrevTx,
+        SignTx,
+        TxInput,
+        TxOutput,
+        TxRequest,
+    )
 
     from apps.common.coininfo import CoinInfo
     from apps.common.keychain import Keychain
@@ -40,7 +48,7 @@ _SERIALIZED_TX_BUFFER = empty_bytearray(_MAX_SERIALIZED_CHUNK_SIZE)
 
 
 class Bitcoin:
-    async def signer(self) -> None:
+    async def signer(self) -> TxRequest:
         progress.init(
             self.tx_info.tx, is_coinjoin=isinstance(self.approver, CoinJoinApprover)
         )
@@ -87,8 +95,11 @@ class Bitcoin:
         # Sign segwit inputs and serialize witness data.
         await self.step6_sign_segwit_inputs()
 
-        # Write footer and send remaining data.
+        # Write footer and remaining data.
         await self.step7_finish()
+
+        # Return the finishing message.
+        return helpers.finished_request(self.tx_req)
 
     def __init__(
         self,
@@ -333,7 +344,6 @@ class Bitcoin:
             self.write_tx_footer(self.serialized_tx, self.tx_info.tx)
         if __debug__:
             progress.assert_finished()
-        await helpers.request_tx_finish(self.tx_req)
 
     async def process_internal_input(self, txi: TxInput, node: bip32.HDNode) -> None:
         if txi.script_type not in common.INTERNAL_INPUT_SCRIPT_TYPES:

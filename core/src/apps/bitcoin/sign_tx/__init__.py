@@ -43,7 +43,7 @@ if TYPE_CHECKING:
         ) -> None:
             ...
 
-        async def signer(self) -> None:
+        async def signer(self) -> TxRequest:
             ...
 
 
@@ -54,12 +54,8 @@ async def sign_tx(
     coin: CoinInfo,
     authorization: CoinJoinAuthorization | None = None,
 ) -> TxRequest:
-    from trezor.enums import RequestType
-    from trezor.messages import TxRequest
-    from trezor.wire.context import call
-
     from ..common import BITCOIN_NAMES
-    from . import approvers, bitcoin, helpers, progress
+    from . import approvers, bitcoin
 
     approver: approvers.Approver | None = None
     if authorization:
@@ -86,19 +82,4 @@ async def sign_tx(
 
             signer_class = bitcoinlike.Bitcoinlike
 
-    signer = signer_class(msg, keychain, coin, approver).signer()
-
-    res: TxAckType | bool | None = None
-    while True:
-        req = signer.send(res)
-        if isinstance(req, tuple):
-            request_class, req = req
-            assert TxRequest.is_type_of(req)
-            if req.request_type == RequestType.TXFINISHED:
-                return req
-            res = await call(req, request_class)
-        elif isinstance(req, helpers.UiConfirm):
-            res = await req.confirm_dialog()
-            progress.progress.report_init()
-        else:
-            raise TypeError("Invalid signing instruction")
+    return await signer_class(msg, keychain, coin, approver).signer()
