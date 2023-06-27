@@ -365,6 +365,56 @@ def show_lockscreen(
 # rust/src/ui/model_tr/layout.rs
 def draw_welcome_screen() -> None:
     """Show logo icon with the model name at the bottom and return."""
+from trezor import utils
+T = TypeVar("T")
+
+
+# rust/src/ui/model_tt/layout.rs
+class LayoutObj(Generic[T]):
+    """Representation of a Rust-based layout object.
+    see `trezor::ui::layout::obj::LayoutObj`.
+    """
+    def attach_timer_fn(self, fn: Callable[[int, int], None]) -> None:
+        """Attach a timer setter function.
+        The layout object can call the timer setter with two arguments,
+        `token` and `deadline`. When `deadline` is reached, the layout object
+        expects a callback to `self.timer(token)`.
+        """
+    if utils.USE_TOUCH:
+        def touch_event(self, event: int, x: int, y: int) -> T | None:
+            """Receive a touch event `event` at coordinates `x`, `y`."""
+    if utils.USE_BUTTON:
+        def button_event(self, event: int, button: int) -> T | None:
+            """Receive a button event `event` for button `button`."""
+    def progress_event(self, value: int, description: str) -> T | None:
+        """Receive a progress event."""
+    def usb_event(self, connected: bool) -> T | None:
+        """Receive a USB connect/disconnect event."""
+    def timer(self, token: int) -> T | None:
+        """Callback for the timer set by `attach_timer_fn`.
+        This function should be called by the executor after the corresponding
+        deadline is reached.
+        """
+    def paint(self) -> bool:
+        """Paint the layout object on screen.
+        Will only paint updated parts of the layout as required.
+        Returns True if any painting actually happened.
+        """
+    def request_complete_repaint(self) -> None:
+        """Request a complete repaint of the screen.
+        Does not repaint the screen, a subsequent call to `paint()` is required.
+        """
+    if __debug__:
+        def trace(self, tracer: Callable[[str], None]) -> None:
+            """Generate a JSON trace of the layout object.
+            The JSON can be emitted as a sequence of calls to `tracer`, each of
+            which is not necessarily a valid JSON chunk. The caller must
+            reassemble the chunks to get a sensible result.
+            """
+        def bounds(self) -> None:
+            """Paint bounds of individual components on screen."""
+    def page_count(self) -> int:
+        """Return the number of pages in the layout object."""
 CONFIRMED: object
 CANCELLED: object
 INFO: object
@@ -396,7 +446,7 @@ def confirm_action(
     hold: bool = False,
     hold_danger: bool = False,
     reverse: bool = False,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm action."""
 
 
@@ -406,7 +456,7 @@ def confirm_emphasized(
     title: str,
     items: Iterable[str | tuple[bool, str]],
     verb: str | None = None,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm formatted text that has been pre-split in python. For tuples
     the first component is a bool indicating whether this part is emphasized."""
 
@@ -416,7 +466,7 @@ def confirm_homescreen(
     *,
     title: str,
     image: bytes,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm homescreen."""
 
 
@@ -430,7 +480,7 @@ def confirm_blob(
     verb: str | None = None,
     verb_cancel: str | None = None,
     hold: bool = False,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm byte sequence data."""
 
 
@@ -441,7 +491,7 @@ def confirm_address(
     data: str | bytes,
     description: str | None,
     extra: str | None,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm address. Similar to `confirm_blob` but has corner info button
     and allows left swipe which does the same thing as the button."""
 
@@ -452,7 +502,7 @@ def confirm_properties(
     title: str,
     items: list[tuple[str | None, str | bytes | None, bool]],
     hold: bool = False,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm list of key-value pairs. The third component in the tuple should be True if
     the value is to be rendered as binary with monospace font, False otherwise."""
 
@@ -462,7 +512,7 @@ def confirm_reset_device(
     *,
     title: str,
     button: str,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm TOS before device setup."""
 
 
@@ -474,7 +524,7 @@ def show_address_details(
     account: str | None,
     path: str | None,
     xpubs: list[tuple[str, str]],
-) -> object:
+) -> LayoutObj[object]:
     """Show address details - QR code, account, path, cosigner xpubs."""
 
 
@@ -485,7 +535,7 @@ def show_spending_details(
     account: str | None,
     fee_rate: str | None,
     fee_rate_title: str = "Fee rate:",
-) -> object:
+) -> LayoutObj[object]:
     """Show metadata when for outgoing transaction."""
 
 
@@ -500,7 +550,7 @@ def confirm_value(
     verb_cancel: str | None = None,
     info_button: bool = False,
     hold: bool = False,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm value. Merge of confirm_total and confirm_output."""
 
 
@@ -510,7 +560,7 @@ def confirm_total(
     title: str,
     items: list[tuple[str, str]],
     info_button: bool = False,
-) -> object:
+) -> LayoutObj[object]:
     """Transaction summary. Always hold to confirm."""
 
 
@@ -521,7 +571,7 @@ def confirm_modify_output(
     sign: int,
     amount_change: str,
     amount_new: str,
-) -> object:
+) -> LayoutObj[object]:
     """Decrease or increase amount for given address."""
 
 
@@ -533,7 +583,7 @@ def confirm_modify_fee(
     user_fee_change: str,
     total_fee_new: str,
     fee_rate_amount: str | None,  # ignored
-) -> object:
+) -> LayoutObj[object]:
     """Decrease or increase transaction fee."""
 
 
@@ -544,7 +594,7 @@ def confirm_fido(
     app_name: str,
     icon_name: str | None,
     accounts: list[str | None],
-) -> int | object:
+) -> LayoutObj[int | object]:
     """FIDO confirmation.
     Returns page index in case of confirmation and CANCELLED otherwise.
     """
@@ -558,7 +608,7 @@ def show_error(
     description: str = "",
     allow_cancel: bool = False,
     time_ms: int = 0,
-) -> object:
+) -> LayoutObj[object]:
     """Error modal. No buttons shown when `button` is empty string."""
 
 
@@ -570,7 +620,7 @@ def show_warning(
     description: str = "",
     allow_cancel: bool = False,
     time_ms: int = 0,
-) -> object:
+) -> LayoutObj[object]:
     """Warning modal. No buttons shown when `button` is empty string."""
 
 
@@ -582,7 +632,7 @@ def show_success(
     description: str = "",
     allow_cancel: bool = False,
     time_ms: int = 0,
-) -> object:
+) -> LayoutObj[object]:
     """Success modal. No buttons shown when `button` is empty string."""
 
 
@@ -594,12 +644,12 @@ def show_info(
     description: str = "",
     allow_cancel: bool = False,
     time_ms: int = 0,
-) -> object:
+) -> LayoutObj[object]:
     """Info modal. No buttons shown when `button` is empty string."""
 
 
 # rust/src/ui/model_tt/layout.rs
-def show_mismatch() -> object:
+def show_mismatch() -> LayoutObj[object]:
     """Warning modal, receiving address mismatch."""
 
 
@@ -609,7 +659,7 @@ def show_simple(
     title: str | None,
     description: str = "",
     button: str = "",
-) -> object:
+) -> LayoutObj[object]:
     """Simple dialog with text and one button."""
 
 
@@ -620,7 +670,7 @@ def confirm_with_info(
     button: str,
     info_button: str,
     items: Iterable[tuple[int, str]],
-) -> object:
+) -> LayoutObj[object]:
     """Confirm given items but with third button. Always single page
     without scrolling."""
 
@@ -631,7 +681,7 @@ def confirm_more(
     title: str,
     button: str,
     items: Iterable[tuple[int, str]],
-) -> object:
+) -> LayoutObj[object]:
     """Confirm long content with the possibility to go back from any page.
     Meant to be used with confirm_with_info."""
 
@@ -641,7 +691,7 @@ def confirm_coinjoin(
     *,
     max_rounds: str,
     max_feerate: str,
-) -> object:
+) -> LayoutObj[object]:
     """Confirm coinjoin authorization."""
 
 
@@ -652,7 +702,7 @@ def request_pin(
     subprompt: str,
     allow_cancel: bool = True,
     wrong_pin: bool = False,
-) -> str | object:
+) -> LayoutObj[str | object]:
     """Request pin on device."""
 
 
@@ -661,7 +711,7 @@ def request_passphrase(
     *,
     prompt: str,
     max_len: int,
-) -> str | object:
+) -> LayoutObj[str | object]:
     """Passphrase input keyboard."""
 
 
@@ -669,7 +719,7 @@ def request_passphrase(
 def request_bip39(
     *,
     prompt: str,
-) -> str:
+) -> LayoutObj[str]:
     """BIP39 word input keyboard."""
 
 
@@ -677,7 +727,7 @@ def request_bip39(
 def request_slip39(
     *,
     prompt: str,
-) -> str:
+) -> LayoutObj[str]:
     """SLIP39 word input keyboard."""
 
 
@@ -687,7 +737,7 @@ def select_word(
     title: str,
     description: str,
     words: Iterable[str],
-) -> int:
+) -> LayoutObj[int]:
     """Select mnemonic word from three possibilities - seed check after backup. The
    iterable must be of exact size. Returns index in range `0..3`."""
 
@@ -697,7 +747,7 @@ def show_share_words(
     *,
     title: str,
     pages: Iterable[str],
-) -> object:
+) -> LayoutObj[object]:
     """Show mnemonic for backup. Expects the words pre-divided into individual pages."""
 
 
@@ -709,7 +759,7 @@ def request_number(
     min_count: int,
     max_count: int,
     description: Callable[[int], str] | None = None,
-) -> object:
+) -> LayoutObj[object]:
     """Number input with + and - buttons, description, and info button."""
 
 
@@ -720,7 +770,7 @@ def show_checklist(
     items: Iterable[str],
     active: int,
     button: str,
-) -> object:
+) -> LayoutObj[object]:
     """Checklist of backup steps. Active index is highlighted, previous items have check
    mark next to them."""
 
@@ -733,7 +783,7 @@ def confirm_recovery(
     button: str,
     dry_run: bool,
     info_button: bool = False,
-) -> object:
+) -> LayoutObj[object]:
     """Device recovery homescreen."""
 
 
@@ -741,7 +791,7 @@ def confirm_recovery(
 def select_word_count(
     *,
     dry_run: bool,
-) -> int | str:  # TT returns int
+) -> LayoutObj[int | str]:  # TT returns int
     """Select mnemonic word count from (12, 18, 20, 24, 33)."""
 
 
@@ -749,7 +799,7 @@ def select_word_count(
 def show_group_share_success(
     *,
     lines: Iterable[str]
-) -> int:
+) -> LayoutObj[int]:
     """Shown after successfully finishing a group."""
 
 
@@ -757,7 +807,7 @@ def show_group_share_success(
 def show_remaining_shares(
     *,
     pages: Iterable[tuple[str, str]],
-) -> int:
+) -> LayoutObj[int]:
     """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
 
 
@@ -767,7 +817,7 @@ def show_progress(
     title: str,
     indeterminate: bool = False,
     description: str = "",
-) -> object:
+) -> LayoutObj[object]:
     """Show progress loader. Please note that the number of lines reserved on screen for
    description is determined at construction time. If you want multiline descriptions
    make sure the initial description has at least that amount of lines."""
@@ -780,7 +830,7 @@ def show_progress_coinjoin(
     indeterminate: bool = False,
     time_ms: int = 0,
     skip_first_paint: bool = False,
-) -> object:
+) -> LayoutObj[object]:
     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
    time_ms timeout is passed."""
 
@@ -793,7 +843,7 @@ def show_homescreen(
     notification: str | None,
     notification_level: int = 0,
     skip_first_paint: bool,
-) -> CANCELLED:
+) -> LayoutObj[object]:
     """Idle homescreen."""
 
 
@@ -803,10 +853,10 @@ def show_lockscreen(
     label: str | None,
     bootscreen: bool,
     skip_first_paint: bool,
-) -> CANCELLED:
+) -> LayoutObj[object]:
     """Homescreen for locked device."""
 
 
 # rust/src/ui/model_tt/layout.rs
-def draw_welcome_screen() -> None:
+def draw_welcome_screen() -> LayoutObj[None]:
     """Show logo icon with the model name at the bottom and return."""
