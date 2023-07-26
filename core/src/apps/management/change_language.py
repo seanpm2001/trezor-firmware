@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from typing import Callable
 
     from trezor.messages import ChangeLanguage, Success
-    from trezor.ui.layouts.common import ProgressLayout
+    from trezor.ui import ProgressLayout
 
 _CHUNK_SIZE = const(1024)
 
@@ -24,7 +24,7 @@ async def change_language(msg: ChangeLanguage) -> Success:
         nonlocal loader
         if loader is None:
             workflow.close_others()
-            loader = progress("", TR.language__progress)
+            loader = progress(description=TR.language__progress)
         loader.report(value)
 
     if msg.data_length == 0:
