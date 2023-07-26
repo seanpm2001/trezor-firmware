@@ -34,7 +34,7 @@ async def bootscreen() -> None:
     while True:
         try:
             if can_lock_device():
-                await lockscreen
+                await lockscreen.get_result()
             await verify_user_pin()
             storage.init_unlocked()
             allow_all_loader_messages()

@@ -117,14 +117,10 @@ class Progress:
 
         progress_layout = coinjoin_progress if self.is_coinjoin else bitcoin_progress
         workflow.close_others()
-        text = "Signing transaction..." if self.signing else "Loading transaction..."
+        text = "Signing transaction" if self.signing else "Loading transaction"
         self.progress_layout = progress_layout(text)
 
     def report(self) -> None:
-        from trezor import utils
-
-        if utils.DISABLE_ANIMATION:
-            return
         p = int(1000 * self.progress / self.steps)
         self.progress_layout.report(p)
 

@@ -2,14 +2,11 @@ from typing import TYPE_CHECKING
 
 import trezorui2
 from trezor.enums import ButtonRequestType
-from trezor.wire import ActionCancelled
-from trezor.wire.context import wait as ctx_wait
 
 from ..common import interact
-from . import RustLayout, raise_if_not_confirmed
 
 if TYPE_CHECKING:
-    from typing import Callable, Sequence
+    from typing import Awaitable, Callable, Sequence
 
     from trezor.enums import BackupType
 
@@ -55,18 +52,14 @@ async def show_share_words(
 
     pages = _split_share_into_pages(share_words)
 
-    result = await interact(
-        RustLayout(
-            trezorui2.show_share_words(
-                title=title,
-                pages=pages,
-            ),
+    await interact(
+        trezorui2.show_share_words(
+            title=title,
+            pages=pages,
         ),
         "backup_words",
         ButtonRequestType.ResetDevice,
     )
-    if result != CONFIRMED:
-        raise ActionCancelled
 
 
 async def select_word(
@@ -90,14 +83,13 @@ async def select_word(
     while len(words) < 3:
         words.append(words[-1])
 
-    result = await ctx_wait(
-        RustLayout(
-            trezorui2.select_word(
-                title=title,
-                description=f"Select word {checked_index + 1} of {count}:",
-                words=(words[0], words[1], words[2]),
-            )
-        )
+    result = await interact(
+        trezorui2.select_word(
+            title=title,
+            description=f"Select word {checked_index + 1} of {count}:",
+            words=(words[0], words[1], words[2]),
+        ),
+        None,
     )
     if __debug__ and isinstance(result, str):
         return result
@@ -124,20 +116,16 @@ async def slip39_show_checklist(step: int, backup_type: BackupType) -> None:
         )
     )
 
-    result = await interact(
-        RustLayout(
-            trezorui2.show_checklist(
-                title="BACKUP CHECKLIST",
-                button="CONTINUE",
-                active=step,
-                items=items,
-            )
+    await interact(
+        trezorui2.show_checklist(
+            title="BACKUP CHECKLIST",
+            button="CONTINUE",
+            active=step,
+            items=items,
         ),
         "slip39_checklist",
         ButtonRequestType.ResetDevice,
     )
-    if result != CONFIRMED:
-        raise ActionCancelled
 
 
 async def _prompt_number(
@@ -149,14 +137,12 @@ async def _prompt_number(
     max_count: int,
     br_name: str,
 ) -> int:
-    num_input = RustLayout(
-        trezorui2.request_number(
-            title=title.upper(),
-            description=description,
-            count=count,
-            min_count=min_count,
-            max_count=max_count,
-        )
+    num_input = trezorui2.request_number(
+        title=title.upper(),
+        description=description,
+        count=count,
+        min_count=min_count,
+        max_count=max_count,
     )
 
     while True:
@@ -164,26 +150,26 @@ async def _prompt_number(
             num_input,
             br_name,
             ButtonRequestType.ResetDevice,
+            raise_on_cancel=None,
         )
         if __debug__:
             if not isinstance(result, tuple):
                 # DebugLink currently can't send number of shares and it doesn't
                 # change the counter either so just use the initial value.
-                result = (result, count)
+                result = result, count
         status, value = result
 
         if status == CONFIRMED:
             assert isinstance(value, int)
             return value
 
-        await ctx_wait(
-            RustLayout(
-                trezorui2.show_simple(
-                    title=None, description=info(value), button="OK, I UNDERSTAND"
-                )
-            )
+        await interact(
+            trezorui2.show_simple(
+                title=None, description=info(value), button="OK, I UNDERSTAND"
+            ),
+            None,
+            raise_on_cancel=None,
         )
-        num_input.request_complete_repaint()
 
 
 async def slip39_prompt_threshold(
@@ -306,7 +292,7 @@ async def slip39_advanced_prompt_group_threshold(num_of_groups: int) -> int:
     )
 
 
-async def show_warning_backup(slip39: bool) -> None:
+def show_warning_backup(slip39: bool) -> Awaitable[trezorui2.UiResult]:
     if slip39:
         description = (
             "Never make a digital copy of your shares and never upload them online."
@@ -315,46 +301,38 @@ async def show_warning_backup(slip39: bool) -> None:
         description = (
             "Never make a digital copy of your seed and never upload it online."
         )
-    result = await interact(
-        RustLayout(
-            trezorui2.show_info(
-                title=description,
-                button="OK, I UNDERSTAND",
-                allow_cancel=False,
-            )
+    return interact(
+        trezorui2.show_info(
+            title=description,
+            button="OK, I UNDERSTAND",
+            allow_cancel=False,
         ),
         "backup_warning",
         ButtonRequestType.ResetDevice,
     )
-    if result != CONFIRMED:
-        raise ActionCancelled
 
 
-async def show_success_backup() -> None:
+def show_success_backup() -> Awaitable[trezorui2.UiResult]:
     from . import show_success
 
     text = "Use your backup when you need to recover your wallet."
-    await show_success("success_backup", text, "Your backup is done.")
+    return show_success("success_backup", text, "Your backup is done.")
 
 
-async def show_reset_warning(
+def show_reset_warning(
     br_type: str,
     content: str,
     subheader: str | None = None,
     button: str = "TRY AGAIN",
     br_code: ButtonRequestType = ButtonRequestType.Warning,
-) -> None:
-    await raise_if_not_confirmed(
-        interact(
-            RustLayout(
-                trezorui2.show_warning(
-                    title=subheader or "",
-                    description=content,
-                    button=button.upper(),
-                    allow_cancel=False,
-                )
-            ),
-            br_type,
-            br_code,
-        )
+) -> Awaitable[trezorui2.UiResult]:
+    return interact(
+        trezorui2.show_warning(
+            title=subheader or "",
+            description=content,
+            button=button.upper(),
+            allow_cancel=False,
+        ),
+        br_type,
+        br_code,
     )

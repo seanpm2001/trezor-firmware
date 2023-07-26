@@ -41,18 +41,20 @@ async def _confirm_abort(dry_run: bool = False) -> None:
 async def request_mnemonic(
     word_count: int, backup_type: BackupType | None
 ) -> str | None:
-    from trezor.ui.layouts.common import button_request
     from trezor.ui.layouts.recovery import request_word
 
     from . import word_validity
 
-    await button_request("mnemonic", code=ButtonRequestType.MnemonicInput)
-
     words: list[str] = []
+    send_button_request = True
     for i in range(word_count):
         word = await request_word(
-            i, word_count, is_slip39=backup_types.is_slip39_word_count(word_count)
+            i,
+            word_count,
+            backup_types.is_slip39_word_count(word_count),
+            send_button_request,
         )
+        send_button_request = False
         words.append(word)
 
         try:

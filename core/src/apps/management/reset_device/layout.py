@@ -128,7 +128,7 @@ async def _show_confirmation_success(
             subheader = f"Group {group_index + 1} - Share {share_index + 1} checked successfully."
             text = "Continue with the next share."
 
-    return await show_success("success_recovery", text, subheader)
+    await show_success("success_recovery", text, subheader)
 
 
 async def _show_confirmation_failure() -> None:

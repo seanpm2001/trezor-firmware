@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from trezor.messages import FirmwareHash, GetFirmwareHash
-    from trezor.ui.layouts.common import ProgressLayout
+    from trezor.ui import ProgressLayout
 
 _progress_obj: ProgressLayout | None = None
 
@@ -15,7 +15,7 @@ async def get_firmware_hash(msg: GetFirmwareHash) -> FirmwareHash:
 
     workflow.close_others()
     global _progress_obj
-    _progress_obj = progress()
+    _progress_obj = progress("PLEASE WAIT", "")
 
     try:
         hash = firmware_hash(msg.challenge, _render_progress)
