@@ -38,6 +38,8 @@ if TYPE_CHECKING:
 
     LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
 
+    T = TypeVar("T")
+
 
 class UnexpectedMessage(Exception):
     """A message was received that is not part of the current workflow.
@@ -159,7 +161,7 @@ class Context:
 CURRENT_CONTEXT: Context | None = None
 
 
-def wait(*tasks: Awaitable) -> Any:
+def wait(task: Awaitable[T]) -> Awaitable[T]:
     """
     Wait until one of the passed tasks finishes, and return the result, while servicing
     the wire context.
@@ -169,9 +171,9 @@ def wait(*tasks: Awaitable) -> Any:
     raises an `UnexpectedMessage` exception, returning control to the session handler.
     """
     if CURRENT_CONTEXT is None:
-        return loop.race(*tasks)
+        return task
     else:
-        return loop.race(CURRENT_CONTEXT.read(()), *tasks)
+        return loop.race(CURRENT_CONTEXT.read(()), task)
 
 
 async def call(
