@@ -28,7 +28,7 @@ if __debug__:
 
 def draw_simple(layout: trezorui2.LayoutObj[Any]) -> None:
     # Simple drawing not supported for layouts that set timers.
-    def dummy_set_timer(token: int, deadline: int) -> None:
+    def dummy_set_timer(token: int, duration: int) -> None:
         raise RuntimeError
 
     layout.attach_timer_fn(dummy_set_timer)
