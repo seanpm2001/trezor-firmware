@@ -283,7 +283,7 @@ class Layout(Generic[T]):
         # Turn the brightness on.
         backlight_fade(self.BACKLIGHT_LEVEL)
 
-    def _set_timer(self, token: int, deadline: int) -> None:
+    def _set_timer(self, token: int, duration: int) -> None:
         """Timer callback for Rust layouts."""
 
         async def timer_task() -> None:
@@ -300,7 +300,8 @@ class Layout(Generic[T]):
         assert token not in self.timers
         task = timer_task()
         self.timers[token] = task
-        loop.schedule(task, token, deadline)
+        deadline = utime.ticks_add(utime.ticks_ms(), duration)
+        loop.schedule(task, deadline=deadline)
 
     def _emit_message(self, msg: Any) -> None:
         """Process a message coming out of the Rust layout. Set is as a result and shut
