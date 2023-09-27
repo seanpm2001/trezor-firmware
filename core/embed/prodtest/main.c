@@ -70,25 +70,20 @@ static char vcp_getchar(void) {
 }
 
 static void vcp_readline(char *buf, size_t len) {
-  for (;;) {
+  if (len == 0) return;
+  while (len > 1) {
     char c = vcp_getchar();
     if (c == '\r') {
-      vcp_puts("\r\n", 2);
       break;
     }
     if (c < 32 || c > 126) {  // not printable
       continue;
     }
-    if (len > 1) {  // leave space for \0
-      *buf = c;
-      buf++;
-      len--;
-      vcp_puts(&c, 1);
-    }
+    *buf = c;
+    buf++;
+    len--;
   }
-  if (len > 0) {
-    *buf = '\0';
-  }
+  *buf = '\0';
 }
 
 static void usb_init_all(void) {
