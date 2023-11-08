@@ -87,6 +87,9 @@ impl Component for Progress {
                     }
                 });
             }
+        } else {
+            self.title.event(ctx, event);
+            self.description.event(ctx, event);
         }
         None
     }
