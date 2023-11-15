@@ -9,6 +9,7 @@ async def wipe_device(msg: WipeDevice) -> Success:
     from trezor.enums import ButtonRequestType
     from trezor.messages import Success
     from trezor.ui.layouts import confirm_action
+    from trezor.ui.layouts.progress import progress
 
     from apps.base import reload_settings_from_storage
 
@@ -23,6 +24,9 @@ async def wipe_device(msg: WipeDevice) -> Success:
         hold_danger=True,
         br_code=ButtonRequestType.WipeDevice,
     )
+
+    # start an empty progress screen so that the screen is not blank while waiting
+    progress("PROCESSING", "").start()
 
     storage.wipe()
     reload_settings_from_storage()
