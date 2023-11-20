@@ -105,7 +105,7 @@ async def continue_recovery(
     subtext: str | None,
     info_func: InfoFunc | None,
     recovery_type: RecoveryType,
-    show_info: bool = False,
+    show_instructions: bool = False,
 ) -> bool:
     # TODO: implement info_func?
     # There is very limited space on the screen
@@ -115,7 +115,7 @@ async def continue_recovery(
 
     # Never showing info for dry-run, user already saw it and it is disturbing
     if recovery_type in (RecoveryType.DryRun, RecoveryType.UnlockRepeatedBackup):
-        show_info = False
+        show_instructions = False
 
     if subtext:
         text += f"\n\n{subtext}"
@@ -126,7 +126,7 @@ async def continue_recovery(
         button=button_label.upper(),
         recovery_type=recovery_type,
         info_button=False,
-        show_info=show_info,  # type: ignore [No parameter named "show_info"]
+        show_instructions=show_instructions,
     )
     result = await interact(
         homepage,

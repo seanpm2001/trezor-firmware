@@ -132,9 +132,9 @@ async def continue_recovery(
     subtext: str | None,
     info_func: InfoFunc | None,
     recovery_type: RecoveryType,
-    show_info: bool = False,
+    show_instructions: bool = False,
 ) -> bool:
-    if show_info:
+    if show_instructions:
         # Show this just one-time
         description = TR.recovery__enter_each_word
     else:
