@@ -106,9 +106,9 @@ async def continue_recovery(
     subtext: str | None,
     info_func: Callable | None,
     dry_run: bool,
-    show_info: bool = False,  # unused on TT
+    show_instructions: bool = False,
 ) -> bool:
-    if show_info:
+    if show_instructions:
         # Show this just one-time
         description = "You'll only have to select the first 2-4 letters of each word."
     else:

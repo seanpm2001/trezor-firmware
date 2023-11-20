@@ -188,12 +188,7 @@ async def _request_share_first_screen(word_count: int) -> None:
         if remaining:
             await _request_share_next_screen()
         else:
-            await layout.homescreen_dialog(
-                "Enter share",
-                "Enter any share",
-                f"({word_count} words)",
-                show_info=True,
-            )
+            await layout.enter_share(word_count=word_count)
     else:  # BIP-39
         await layout.homescreen_dialog(
             "Continue",
@@ -204,8 +199,6 @@ async def _request_share_first_screen(word_count: int) -> None:
 
 
 async def _request_share_next_screen() -> None:
-    from trezor import strings
-
     remaining = storage_recovery.fetch_slip39_remaining_shares()
     group_count = storage_recovery.get_slip39_group_count()
     if not remaining:
@@ -213,22 +206,10 @@ async def _request_share_next_screen() -> None:
         raise RuntimeError
 
     if group_count > 1:
-        await layout.homescreen_dialog(
-            "Enter",
-            "More shares needed",
-            info_func=_show_remaining_groups_and_shares,
-        )
+        await layout.enter_share(info_func=_show_remaining_groups_and_shares)
     else:
-        still_needed_shares = remaining[0]
-        already_entered_shares = len(storage_recovery_shares.fetch_group(0))
-        overall_needed = still_needed_shares + already_entered_shares
-        entered = (
-            f"{already_entered_shares} of {overall_needed} shares entered successfully."
-        )
-        needed = strings.format_plural(
-            "{count} more {plural} needed.", still_needed_shares, "share"
-        )
-        await layout.homescreen_dialog("Enter share", entered, needed)
+        entered = len(storage_recovery_shares.fetch_group(0))
+        await layout.enter_share(entered_remaining=(entered, remaining[0]))
 
 
 async def _show_remaining_groups_and_shares() -> None:

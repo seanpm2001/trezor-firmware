@@ -371,7 +371,7 @@ def confirm_recovery(
     button: str,
     dry_run: bool,
     info_button: bool,  # unused on TR
-    show_info: bool,
+    show_instructions: bool,
 ) -> LayoutObj[UiResult]:
    """Device recovery homescreen."""
 
@@ -883,6 +883,7 @@ def confirm_recovery(
     button: str,
     dry_run: bool,
     info_button: bool = False,
+    show_instructions: bool = False,  # unused on TT
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
 

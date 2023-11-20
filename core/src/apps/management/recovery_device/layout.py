@@ -12,7 +12,7 @@ from trezor.ui.layouts.recovery import (  # noqa: F401
 from .. import backup_types
 
 if TYPE_CHECKING:
-    from typing import Callable
+    from typing import Awaitable, Callable
 
     from trezor.enums import BackupType
 
@@ -118,6 +118,45 @@ async def show_invalid_mnemonic(word_count: int) -> None:
             "Invalid recovery seed entered.",
             "Please try again",
         )
+
+
+def enter_share(
+    word_count: int | None = None,
+    entered_remaining: tuple[int, int] | None = None,
+    info_func: Callable | None = None,
+) -> Awaitable[None]:
+    from trezor import strings
+
+    show_instructions = False
+
+    if word_count is not None:
+        # First-time entry. Show instructions and word count.
+        text = "Enter any share"
+        subtext = f"({word_count} words)"
+        show_instructions = True
+
+    elif entered_remaining is not None:
+        # Basic Shamir. There is only one group, we report entered/remaining count.
+        entered, remaining = entered_remaining
+        total = entered + remaining
+        text = f"{entered} of {total} shares entered successfully."
+        subtext = strings.format_plural(
+            "{count} more {plural} needed.", remaining, "share"
+        )
+
+    else:
+        # SuperShamir. We cannot easily show entered/remaining across groups,
+        # the caller provided an info_func that has the details.
+        text = "More shares needed."
+        subtext = None
+
+    return homescreen_dialog(
+        "Enter share",
+        text,
+        subtext,
+        info_func,
+        show_instructions,
+    )
 
 
 async def homescreen_dialog(
