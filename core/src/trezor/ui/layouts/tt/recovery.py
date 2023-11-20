@@ -106,9 +106,9 @@ async def continue_recovery(
     subtext: str | None,
     info_func: InfoFunc | None,
     dry_run: bool,
-    show_info: bool = False,  # unused on TT
+    show_instructions: bool = False,
 ) -> bool:
-    if show_info:
+    if show_instructions:
         # Show this just one-time
         description = TR.recovery__only_first_n_letters
     else:
