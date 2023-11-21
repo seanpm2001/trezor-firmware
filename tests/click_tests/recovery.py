@@ -15,7 +15,7 @@ def enter_word(
         for coords in buttons.type_word(typed_word, is_slip39=is_slip39):
             debug.click(coords)
 
-        return debug.click(buttons.CONFIRM_WORD, wait=True)
+        return debug.click(buttons.CONFIRM_WORD)
     elif debug.model == "Safe 3":
         letter_index = 0
         layout = debug.read_layout()
@@ -24,36 +24,32 @@ def enter_word(
         while layout.find_values_by_key("letter_choices"):
             letter = word[letter_index]
             while not layout.get_middle_choice() == letter:
-                layout = debug.press_right(wait=True)
+                layout = debug.press_right()
 
-            layout = debug.press_middle(wait=True)
+            layout = debug.press_middle()
             letter_index += 1
 
         # Word choices
         while not layout.get_middle_choice() == word:
-            layout = debug.press_right(wait=True)
+            layout = debug.press_right()
 
-        return debug.press_middle(wait=True)
+        return debug.press_middle()
     else:
         raise ValueError("Unknown model")
 
 
 def confirm_recovery(debug: "DebugLink") -> None:
-    layout = debug.wait_layout()
+    layout = debug.read_layout()
     if debug.model == "T":
         assert layout.title().startswith(("RECOVER WALLET", "BACKUP CHECK"))
-        debug.click(buttons.OK, wait=True)
+        debug.click(buttons.OK)
     elif debug.model == "Safe 3":
         assert layout.title() == "RECOVER WALLET"
-        debug.press_right(wait=True)
+        debug.press_right()
         debug.press_right()
 
 
-def select_number_of_words(
-    debug: "DebugLink", num_of_words: int = 20, wait: bool = True
-) -> None:
-    if wait:
-        debug.wait_layout()
+def select_number_of_words(debug: "DebugLink", num_of_words: int = 20) -> None:
     if debug.model == "T":
         assert "number of words" in debug.read_layout().text_content()
         assert debug.read_layout().title() in (
@@ -68,10 +64,10 @@ def select_number_of_words(
             num_of_words
         )  # raises if num of words is invalid
         coords = buttons.grid34(index % 3, index // 3)
-        layout = debug.click(coords, wait=True)
+        layout = debug.click(coords)
     elif debug.model == "Safe 3":
         assert "number of words" in debug.read_layout().text_content()
-        layout = debug.press_right(wait=True)
+        layout = debug.press_right()
 
         assert layout.title() == "NUMBER OF WORDS"
 
@@ -79,8 +75,8 @@ def select_number_of_words(
         word_options = (12, 18, 20, 24, 33)
         index = word_options.index(num_of_words)
         for _ in range(index):
-            debug.press_right(wait=True)
-        layout = debug.press_middle(wait=True)
+            debug.press_right()
+        layout = debug.press_middle()
     else:
         raise ValueError("Unknown model")
 
@@ -94,7 +90,7 @@ def enter_share(
     debug: "DebugLink", share: str, is_first: bool = True
 ) -> "LayoutContent":
     if debug.model == "T":
-        layout = debug.click(buttons.OK, wait=True)
+        layout = debug.click(buttons.OK)
 
         assert layout.main_component() == "MnemonicKeyboard"
         for word in share.split(" "):
@@ -102,12 +98,12 @@ def enter_share(
 
         return layout
     elif debug.model == "Safe 3":
-        assert "RECOVER WALLET" in debug.wait_layout().title()
-        layout = debug.press_right(wait=True)
+        assert "RECOVER WALLET" in debug.read_layout().title()
+        layout = debug.press_right()
         if is_first:
             # Word entering info
             debug.press_right()
-            layout = debug.press_right(wait=True)
+            layout = debug.press_right()
         assert "MnemonicKeyboard" in layout.all_components()
 
         for word in share.split(" "):
@@ -132,14 +128,14 @@ def enter_shares(debug: "DebugLink", shares: list[str]) -> None:
 def enter_seed(debug: "DebugLink", seed_words: list[str]) -> None:
     assert "Enter" in debug.read_layout().text_content()
     if debug.model == "T":
-        layout = debug.click(buttons.OK, wait=True)
+        layout = debug.click(buttons.OK)
         assert layout.main_component() == "MnemonicKeyboard"
     elif debug.model == "Safe 3":
-        layout = debug.press_right(wait=True)
+        layout = debug.press_right()
         assert "RECOVER WALLET" in layout.title()
         debug.press_right()
 
-        layout = debug.press_right(wait=True)
+        layout = debug.press_right()
         assert "MnemonicKeyboard" in layout.all_components()
 
     for word in seed_words:
@@ -149,6 +145,6 @@ def enter_seed(debug: "DebugLink", seed_words: list[str]) -> None:
 
 
 def finalize(debug: "DebugLink") -> None:
-    layout = go_next(debug, wait=True)
+    layout = go_next(debug)
     assert layout is not None
     assert layout.main_component() == "Homescreen"

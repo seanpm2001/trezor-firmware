@@ -31,7 +31,7 @@ pytestmark = [
 
 def show_details_input_flow(client: Client):
     yield
-    client.debug.wait_layout()
+    client.debug.read_layout()
     # Clicking for model T, pressing right for model R
     if client.features.model == "T":
         SHOW_ALL_BUTTON_POSITION = (143, 167)

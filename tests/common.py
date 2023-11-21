@@ -188,10 +188,8 @@ def read_and_confirm_mnemonic_tt(
     br = yield
     assert br.pages is not None
 
-    debug.wait_layout()
-
     for i in range(br.pages):
-        words = debug.wait_layout().seed_words()
+        words = debug.read_layout().seed_words()
         mnemonic.extend(words)
         # Not swiping on the last page
         if i < br.pages - 1:
@@ -201,7 +199,9 @@ def read_and_confirm_mnemonic_tt(
 
     # check share
     for _ in range(3):
-        word_pos = int(debug.wait_layout().text_content().split()[2])
+        text_content = debug.read_layout().text_content()
+        assert text_content.startswith("Select word ")
+        word_pos = int(text_content.split()[2])
         index = word_pos - 1
         if choose_wrong:
             debug.input(mnemonic[(index + 1) % len(mnemonic)])
@@ -221,7 +221,7 @@ def read_and_confirm_mnemonic_tr(
     br = yield
     assert br.pages is not None
     for _ in range(br.pages - 1):
-        layout = debug.wait_layout()
+        layout = debug.read_layout()
         words = layout.seed_words()
         mnemonic.extend(words)
         debug.press_right()
@@ -232,7 +232,7 @@ def read_and_confirm_mnemonic_tr(
 
     # check share
     for _ in range(3):
-        word_pos_match = re.search(r"\d+", debug.wait_layout().title())
+        word_pos_match = re.search(r"\d+", debug.read_layout().title())
         assert word_pos_match is not None
         word_pos = int(word_pos_match.group(0))
         index = word_pos - 1
@@ -248,8 +248,8 @@ def read_and_confirm_mnemonic_tr(
 def click_info_button_tt(debug: "DebugLink"):
     """Click Shamir backup info button and return back."""
     debug.press_info()
-    yield  # Info screen with text
     debug.press_yes()
+    yield
 
 
 def check_pin_backoff_time(attempts: int, start: float) -> None:

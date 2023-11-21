@@ -37,17 +37,17 @@ def test_hold_to_lock(device_handler: "BackgroundDeviceHandler"):
 
     def hold(duration: int, wait: bool = True) -> None:
         if debug.model == "Safe 3":
-            debug.press_right_htc(hold_ms=duration)
+            debug.press_right(hold_ms=duration)
         else:
-            debug.input(x=13, y=37, hold_ms=duration, wait=wait)
+            debug.click((13, 37), hold_ms=duration, wait=wait)
 
     assert device_handler.features().unlocked is False
 
     # unlock with message
     device_handler.run(common.get_test_address)
 
-    assert "PinKeyboard" in debug.wait_layout().all_components()
-    debug.input("1234", wait=True)
+    assert "PinKeyboard" in debug.read_layout().all_components()
+    debug.input("1234")
     assert device_handler.result()
 
     assert device_handler.features().unlocked is True
@@ -65,12 +65,11 @@ def test_hold_to_lock(device_handler: "BackgroundDeviceHandler"):
     # unlock by touching
     if debug.model == "Safe 3":
         # Doing a short HTC to simulate a click
-        debug.press_right_htc(hold_ms=100)
-        layout = debug.wait_layout()
+        layout = debug.press_right(hold_ms=100)
     else:
-        layout = debug.click(buttons.INFO, wait=True)
+        layout = debug.click(buttons.INFO)
     assert "PinKeyboard" in layout.all_components()
-    debug.input("1234", wait=True)
+    debug.input("1234")
 
     assert device_handler.features().unlocked is True
 

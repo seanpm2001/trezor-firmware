@@ -46,6 +46,8 @@ HERE = Path(__file__).resolve().parent
 
 # So that we see details of failed asserts from this module
 pytest.register_assert_rewrite("tests.common")
+pytest.register_assert_rewrite("tests.input_flows")
+pytest.register_assert_rewrite("tests.input_flows_helpers")
 
 
 def _emulator_wrapper_main_args() -> list[str]:

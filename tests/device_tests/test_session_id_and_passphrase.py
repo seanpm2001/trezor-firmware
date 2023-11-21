@@ -395,7 +395,7 @@ def test_hide_passphrase_from_host(client: Client):
 
         def input_flow():
             yield
-            layout = client.debug.wait_layout()
+            layout = client.debug.read_layout()
             if client.debug.model == "T":
                 assert (
                     "Passphrase provided by host will be used but will not be displayed due to the device settings."
@@ -403,7 +403,7 @@ def test_hide_passphrase_from_host(client: Client):
                 )
                 client.debug.press_yes()
             elif client.debug.model == "Safe 3":
-                layout = client.debug.wait_layout()
+                layout = client.debug.read_layout()
                 assert "will not be displayed" in layout.text_content()
                 client.debug.press_right()
                 client.debug.press_right()
@@ -433,12 +433,12 @@ def test_hide_passphrase_from_host(client: Client):
 
         def input_flow():
             yield
-            layout = client.debug.wait_layout()
+            layout = client.debug.read_layout()
             assert "Next screen will show the passphrase" in layout.text_content()
             client.debug.press_yes()
 
             yield
-            layout = client.debug.wait_layout()
+            layout = client.debug.read_layout()
             assert "confirm passphrase" in layout.title().lower()
 
             assert passphrase in layout.text_content()

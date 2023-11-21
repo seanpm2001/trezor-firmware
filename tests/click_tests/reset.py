@@ -11,13 +11,13 @@ if TYPE_CHECKING:
 
 
 def confirm_new_wallet(debug: "DebugLink") -> None:
-    layout = debug.wait_layout()
+    layout = debug.read_layout()
     assert layout.title().startswith("CREATE WALLET")
     if debug.model == "T":
-        debug.click(buttons.OK, wait=True)
+        debug.click(buttons.OK)
     elif debug.model == "Safe 3":
-        debug.press_right(wait=True)
-        debug.press_right(wait=True)
+        debug.press_right()
+        debug.press_right()
 
 
 def confirm_read(debug: "DebugLink", title: str, middle_r: bool = False) -> None:
@@ -42,14 +42,14 @@ def confirm_read(debug: "DebugLink", title: str, middle_r: bool = False) -> None
         assert title.upper() in layout.title()
 
     if debug.model == "T":
-        debug.click(buttons.OK, wait=True)
+        debug.click(buttons.OK)
     elif debug.model == "Safe 3":
         if layout.page_count() > 1:
-            debug.press_right(wait=True)
+            debug.press_right()
         if middle_r:
-            debug.press_middle(wait=True)
+            debug.press_middle()
         else:
-            debug.press_right(wait=True)
+            debug.press_right()
 
 
 def set_selection(debug: "DebugLink", button: tuple[int, int], diff: int) -> None:
@@ -57,20 +57,20 @@ def set_selection(debug: "DebugLink", button: tuple[int, int], diff: int) -> Non
         assert "NumberInputDialog" in debug.read_layout().all_components()
         for _ in range(diff):
             debug.click(button)
-        debug.click(buttons.OK, wait=True)
+        debug.click(buttons.OK)
     elif debug.model == "Safe 3":
         layout = debug.read_layout()
         if layout.title() in ("NUMBER OF SHARES", "THRESHOLD"):
             # Special info screens
-            layout = debug.press_right(wait=True)
+            layout = debug.press_right()
         assert "NumberInput" in layout.all_components()
         if button == buttons.RESET_MINUS:
             for _ in range(diff):
-                debug.press_left(wait=True)
+                debug.press_left()
         else:
             for _ in range(diff):
-                debug.press_right(wait=True)
-        debug.press_middle(wait=True)
+                debug.press_right()
+        debug.press_middle()
 
 
 def read_words(
@@ -95,12 +95,12 @@ def read_words(
             assert layout.title() == "STANDARD BACKUP"
 
         assert "Write down" in layout.text_content()
-        layout = debug.press_right(wait=True)
+        layout = debug.press_right()
 
     # Swiping through all the pages and loading the words
     for _ in range(layout.page_count() - 1):
         words.extend(layout.seed_words())
-        layout = debug.swipe_up(wait=True)
+        layout = debug.swipe_up()
         assert layout is not None
     if debug.model == "T":
         words.extend(layout.seed_words())
@@ -108,9 +108,9 @@ def read_words(
     # There is hold-to-confirm button
     if do_htc:
         if debug.model == "T":
-            debug.click_hold(buttons.OK, hold_ms=1500)
+            debug.click(buttons.OK, hold_ms=1500)
         elif debug.model == "Safe 3":
-            debug.press_right_htc(1200)
+            debug.press_right(hold_ms=1200)
     else:
         # It would take a very long time to test 16-of-16 with doing 1500 ms HTC after
         # each word set
@@ -120,7 +120,7 @@ def read_words(
 
 
 def confirm_words(debug: "DebugLink", words: list[str]) -> None:
-    layout = debug.wait_layout()
+    layout = debug.read_layout()
     if debug.model == "T":
         assert "Select word" in layout.text_content()
         for _ in range(3):
@@ -133,10 +133,10 @@ def confirm_words(debug: "DebugLink", words: list[str]) -> None:
             ]
             wanted_word = words[word_pos - 1].lower()
             button_pos = btn_texts.index(wanted_word)
-            layout = debug.click(buttons.RESET_WORD_CHECK[button_pos], wait=True)
+            layout = debug.click(buttons.RESET_WORD_CHECK[button_pos])
     elif debug.model == "Safe 3":
         assert "Select the correct word" in layout.text_content()
-        layout = debug.press_right(wait=True)
+        layout = debug.press_right()
         for _ in range(3):
             # "SELECT 2ND WORD"
             #         ^
@@ -144,9 +144,9 @@ def confirm_words(debug: "DebugLink", words: list[str]) -> None:
             wanted_word = words[word_pos - 1].lower()
 
             while not layout.get_middle_choice() == wanted_word:
-                layout = debug.press_right(wait=True)
+                layout = debug.press_right()
 
-            layout = debug.press_middle(wait=True)
+            layout = debug.press_middle()
 
 
 def validate_mnemonics(mnemonics: list[str], expected_ems: bytes) -> None:
