@@ -1,3 +1,5 @@
+import typing as t
+
 from trezorlib import messages, models
 from trezorlib.debuglink import TrezorClientDebugLink as Client
 
@@ -56,14 +58,14 @@ class RecoveryFlow:
         return layout.title() + " " + layout.text_content()
 
     def confirm_recovery(self) -> BRGeneratorType:
-        yield
+        assert (yield).name == "recover_device"
         TR.assert_in(self._text_content(), "reset__by_continuing")
         if self.client.model is models.T2B1:
             self.debug.press_right()
         self.debug.press_yes()
 
     def confirm_dry_run(self) -> BRGeneratorType:
-        yield
+        assert (yield).name == "confirm_seedcheck"
         TR.assert_in(self._text_content(), "recovery__check_dry_run")
         self.debug.press_yes()
 
@@ -91,7 +93,7 @@ class RecoveryFlow:
         self.debug.press_yes()
 
     def enter_your_backup(self) -> BRGeneratorType:
-        yield
+        assert (yield).name == "recovery"
         if self.debug.model is models.T3T1:
             TR.assert_in(self._text_content(), "recovery__enter_each_word")
         else:
@@ -107,7 +109,7 @@ class RecoveryFlow:
         self.debug.press_yes()
 
     def enter_any_share(self) -> BRGeneratorType:
-        yield
+        assert (yield).name == "recovery"
         TR.assert_in_multiple(
             self._text_content(),
             ["recovery__enter_any_share", "recovery__enter_each_word"],
@@ -186,6 +188,7 @@ class RecoveryFlow:
     def input_number_of_words(self, num_words: int) -> BRGeneratorType:
         br = yield
         assert br.code == B.MnemonicWordCount
+        assert br.name == "word_count"
         if self.client.model is models.T2B1:
             TR.assert_in(self.debug.read_layout().title(), "word_count__title")
         else:
@@ -225,7 +228,7 @@ class RecoveryFlow:
         self.debug.press_yes()
 
     def success_share_group_entered(self) -> BRGeneratorType:
-        yield
+        assert (yield).name == "share_success"
         TR.assert_in(self._text_content(), "recovery__you_have_entered")
         self.debug.press_yes()
 
@@ -275,6 +278,7 @@ class RecoveryFlow:
         self, count_needed: int | None = None
     ) -> BRGeneratorType:
         br = yield
+        assert br.name == "recovery"
         text = get_text_possible_pagination(self.debug, br)
         if count_needed is not None:
             assert str(count_needed) in text
@@ -283,6 +287,7 @@ class RecoveryFlow:
     def input_mnemonic(self, mnemonic: list[str]) -> BRGeneratorType:
         br = yield
         assert br.code == B.MnemonicInput
+        assert br.name == "mnemonic"
         assert "MnemonicKeyboard" in self.debug.read_layout().all_components()
         for _, word in enumerate(mnemonic):
             self.debug.input(word)
@@ -301,19 +306,21 @@ class RecoveryFlow:
                 if has_groups:
                     yield from self.success_share_group_entered()
                 if click_info:
+                    assert (yield).name == "recovery"
                     if self.client.model is models.T2T1:
                         yield from self.tt_click_info()
                     elif self.client.model is models.T3T1:
                         self.mercury_click_info()
-                yield from self.success_more_shares_needed()
+                    self.debug.press_yes()
+                else:
+                    yield from self.success_more_shares_needed()
 
-    def tt_click_info(
-        self,
-    ) -> BRGeneratorType:
-        # Moving through the INFO button
-        yield
+    def tt_click_info(self) -> t.Generator[t.Any, t.Any, None]:
         self.debug.press_info()
-        self.debug.swipe_up()
+        br = yield
+        assert br.name == "show_shares"
+        for _ in range(br.pages):
+            self.debug.swipe_up()
         self.debug.press_yes()
 
     def mercury_click_info(self):

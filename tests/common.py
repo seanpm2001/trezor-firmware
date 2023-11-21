@@ -20,7 +20,7 @@ import json
 import re
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Generator, Optional
+from typing import TYPE_CHECKING, Any, Generator, Optional
 from unittest import mock
 
 import pytest
@@ -308,11 +308,11 @@ def check_share(
     return True
 
 
-def click_info_button_tt(debug: "DebugLink"):
+def click_info_button_tt(debug: "DebugLink") -> Generator[Any, Any, ButtonRequest]:
     """Click Shamir backup info button and return back."""
     debug.press_info()
     debug.press_yes()
-    yield
+    return (yield)
 
 
 def click_info_button_mercury(debug: "DebugLink"):
