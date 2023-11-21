@@ -398,7 +398,7 @@ def test_hide_passphrase_from_host(client: Client):
         def input_flow():
             yield
             TR.assert_in(
-                client.debug.wait_layout().text_content(),
+                client.debug.read_layout().text_content(),
                 "passphrase__access_hidden_wallet",
             )
             if client.debug.model == "T":
@@ -433,17 +433,17 @@ def test_hide_passphrase_from_host(client: Client):
         def input_flow():
             yield
             TR.assert_in(
-                client.debug.wait_layout().text_content(),
+                client.debug.read_layout().text_content(),
                 "passphrase__next_screen_will_show_passphrase",
             )
             client.debug.press_yes()
 
             yield
             TR.assert_equals(
-                client.debug.wait_layout().title(),
+                client.debug.read_layout().title(),
                 "passphrase__title_confirm",
             )
-            assert passphrase in client.debug.wait_layout().text_content()
+            assert passphrase in client.debug.read_layout().text_content()
             client.debug.press_yes()
 
         client.watch_layout()

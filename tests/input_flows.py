@@ -69,16 +69,16 @@ class InputFlowBase:
         raise NotImplementedError
 
     def text_content(self) -> str:
-        return self.debug.wait_layout().text_content()
+        return self.debug.read_layout().text_content()
 
     def main_component(self) -> str:
-        return self.debug.wait_layout().main_component()
+        return self.debug.read_layout().main_component()
 
     def all_components(self) -> list[str]:
-        return self.debug.wait_layout().all_components()
+        return self.debug.read_layout().all_components()
 
     def title(self) -> str:
-        return self.debug.wait_layout().title()
+        return self.debug.read_layout().title()
 
 
 class InputFlowSetupDevicePINWIpeCode(InputFlowBase):
@@ -209,13 +209,13 @@ class InputFlowSignMessagePagination(InputFlowBase):
         layouts: list[LayoutContent] = []
 
         br = yield  # confirm address
-        self.debug.wait_layout()
+        self.debug.read_layout()
         self.debug.press_yes()
 
         br = yield
         assert br.pages is not None
         for i in range(br.pages):
-            layout = self.debug.wait_layout()
+            layout = self.debug.read_layout()
             layouts.append(layout)
 
             if i < br.pages - 1:
@@ -255,9 +255,9 @@ class InputFlowSignMessageInfo(InputFlowBase):
     def input_flow_tt(self) -> BRGeneratorType:
         yield
         # show address/message info
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
-        self.debug.press_no(wait=True)
+        self.debug.click(buttons.CORNER_BUTTON)
+        self.debug.click(buttons.CORNER_BUTTON)
+        self.debug.press_no()
         self.debug.synchronize_at("IconDialog")
         # address mismatch?
         self.debug.press_no()
@@ -266,8 +266,8 @@ class InputFlowSignMessageInfo(InputFlowBase):
         yield
         self.debug.press_no()
         yield
-        self.debug.press_no(wait=True)
-        self.debug.press_yes(wait=True)
+        self.debug.press_no()
+        self.debug.press_yes()
 
 
 class InputFlowShowAddressQRCode(InputFlowBase):
@@ -276,16 +276,16 @@ class InputFlowShowAddressQRCode(InputFlowBase):
 
     def input_flow_tt(self) -> BRGeneratorType:
         yield
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
+        self.debug.click(buttons.CORNER_BUTTON)
         # synchronize; TODO get rid of this once we have single-global-layout
         self.debug.synchronize_at("SimplePage")
 
-        self.debug.swipe_left(wait=True)
-        self.debug.swipe_right(wait=True)
-        self.debug.swipe_left(wait=True)
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
-        self.debug.press_no(wait=True)
-        self.debug.press_no(wait=True)
+        self.debug.swipe_left()
+        self.debug.swipe_right()
+        self.debug.swipe_left()
+        self.debug.click(buttons.CORNER_BUTTON)
+        self.debug.press_no()
+        self.debug.press_no()
         self.debug.press_yes()
 
     def input_flow_tr(self) -> BRGeneratorType:
@@ -316,13 +316,13 @@ class InputFlowShowAddressQRCodeCancel(InputFlowBase):
 
     def input_flow_tt(self) -> BRGeneratorType:
         yield
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
+        self.debug.click(buttons.CORNER_BUTTON)
         # synchronize; TODO get rid of this once we have single-global-layout
         self.debug.synchronize_at("SimplePage")
 
-        self.debug.swipe_left(wait=True)
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
-        self.debug.press_no(wait=True)
+        self.debug.swipe_left()
+        self.debug.click(buttons.CORNER_BUTTON)
+        self.debug.press_no()
         self.debug.press_yes()
 
     def input_flow_tr(self) -> BRGeneratorType:
@@ -334,7 +334,7 @@ class InputFlowShowAddressQRCodeCancel(InputFlowBase):
         self.debug.press_left()
         self.debug.press_left()
         # Cancel
-        self.debug.press_left(wait=True)
+        self.debug.press_left()
         # Confirm address mismatch
         # Clicking right twice, as some languages can have two pages
         self.debug.press_right()
@@ -353,7 +353,7 @@ class InputFlowShowMultisigXPUBs(InputFlowBase):
         self.debug.press_yes()
 
         yield  # show address
-        layout = self.debug.wait_layout()
+        layout = self.debug.read_layout()
         TR.assert_in(layout.title(), "address__title_receive_address")
         assert "(MULTISIG)" in layout.title()
         assert layout.text_content().replace(" ", "") == self.address
@@ -361,24 +361,26 @@ class InputFlowShowMultisigXPUBs(InputFlowBase):
         self.debug.click(buttons.CORNER_BUTTON)
         assert "Qr" in self.all_components()
 
-        layout = self.debug.swipe_left(wait=True)
+        layout = self.debug.swipe_left()
         # address details
         assert "Multisig 2 of 3" in layout.screen_content()
         TR.assert_in(layout.screen_content(), "address_details__derivation_path")
 
         # Three xpub pages with the same testing logic
         for xpub_num in range(3):
-            expected_title = f"MULTISIG XPUB #{xpub_num + 1}"
-            layout = self.debug.swipe_left(wait=True)
-            assert expected_title in layout.title()
+            expected_title = f"MULTISIG XPUB #{xpub_num + 1}\n" + (
+                "(YOURS)" if self.index == xpub_num else "(COSIGNER)"
+            )
+            layout = self.debug.swipe_left()
+            assert expected_title == layout.title()
             content = layout.text_content().replace(" ", "")
             assert self.xpubs[xpub_num] in content
 
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
+        self.debug.click(buttons.CORNER_BUTTON)
         # show address
-        self.debug.press_no(wait=True)
+        self.debug.press_no()
         # address mismatch
-        self.debug.press_no(wait=True)
+        self.debug.press_no()
         # show address
         self.debug.press_yes()
 
@@ -387,7 +389,7 @@ class InputFlowShowMultisigXPUBs(InputFlowBase):
         self.debug.press_middle()
 
         yield  # show address
-        layout = self.debug.wait_layout()
+        layout = self.debug.read_layout()
         TR.assert_in(layout.title(), "address__title_receive_address")
         assert "(MULTISIG)" in layout.title()
         assert layout.text_content().replace(" ", "") == self.address
@@ -395,22 +397,24 @@ class InputFlowShowMultisigXPUBs(InputFlowBase):
         self.debug.press_right()
         assert "Qr" in self.all_components()
 
-        layout = self.debug.press_right(wait=True)
+        layout = self.debug.press_right()
         # address details
         # TODO: locate it more precisely
         assert "Multisig 2 of 3" in layout.json_str
 
         # Three xpub pages with the same testing logic
         for xpub_num in range(3):
-            expected_title = f"MULTISIG XPUB #{xpub_num + 1}"
-            layout = self.debug.press_right(wait=True)
+            expected_title = f"MULTISIG XPUB #{xpub_num + 1} " + (
+                "(YOURS)" if self.index == xpub_num else "(COSIGNER)"
+            )
+            layout = self.debug.press_right()
             assert expected_title in layout.title()
             xpub_part_1 = layout.text_content().replace(" ", "")
             # Press "SHOW MORE"
-            layout = self.debug.press_middle(wait=True)
+            layout = self.debug.press_middle()
             xpub_part_2 = layout.text_content().replace(" ", "")
             # Go back
-            self.debug.press_left(wait=True)
+            self.debug.press_left()
             assert self.xpubs[xpub_num] == xpub_part_1 + xpub_part_2
 
         for _ in range(5):
@@ -436,23 +440,23 @@ class InputFlowShowXpubQRCode(InputFlowBase):
             self.debug.press_yes()
 
         br = yield
-        layout = self.debug.wait_layout()
+        layout = self.debug.read_layout()
         if "coinjoin" in layout.title().lower() or br.code == B.UnknownDerivationPath:
             self.debug.press_yes()
             br = yield
 
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
+        self.debug.click(buttons.CORNER_BUTTON)
         # synchronize; TODO get rid of this once we have single-global-layout
         self.debug.synchronize_at("SimplePage")
 
-        self.debug.swipe_left(wait=True)
-        self.debug.swipe_right(wait=True)
-        self.debug.swipe_left(wait=True)
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
-        self.debug.press_no(wait=True)
-        self.debug.press_no(wait=True)
+        self.debug.swipe_left()
+        self.debug.swipe_right()
+        self.debug.swipe_left()
+        self.debug.click(buttons.CORNER_BUTTON)
+        self.debug.press_no()
+        self.debug.press_no()
         for _ in range(br.pages - 1):
-            self.debug.swipe_up(wait=True)
+            self.debug.swipe_up()
         self.debug.press_yes()
 
     def input_flow_tr(self) -> BRGeneratorType:
@@ -463,19 +467,19 @@ class InputFlowShowXpubQRCode(InputFlowBase):
             self.debug.press_right()
 
         br = yield
-        layout = self.debug.wait_layout()
+        layout = self.debug.read_layout()
         if "coinjoin" in layout.title().lower() or br.code == B.UnknownDerivationPath:
             self.debug.press_yes()
             br = yield
 
         # Go into details
-        self.debug.press_right(wait=True)
+        self.debug.press_right()
         # Go through details and back
-        self.debug.press_right(wait=True)
-        self.debug.press_right(wait=True)
-        self.debug.press_right(wait=True)
-        self.debug.press_left(wait=True)
-        self.debug.press_left(wait=True)
+        self.debug.press_right()
+        self.debug.press_right()
+        self.debug.press_right()
+        self.debug.press_left()
+        self.debug.press_left()
         assert br.pages is not None
         for _ in range(br.pages - 1):
             self.debug.press_right()
@@ -490,21 +494,21 @@ class InputFlowPaymentRequestDetails(InputFlowBase):
 
     def input_flow_tt(self) -> BRGeneratorType:
         yield  # request to see details
-        self.debug.wait_layout()
+        self.debug.read_layout()
         self.debug.press_info()
 
         yield  # confirm first output
         assert self.outputs[0].address[:16] in self.text_content()  # type: ignore
         self.debug.press_yes()
         yield  # confirm first output
-        self.debug.wait_layout()
+        self.debug.read_layout()
         self.debug.press_yes()
 
         yield  # confirm second output
         assert self.outputs[1].address[:16] in self.text_content()  # type: ignore
         self.debug.press_yes()
         yield  # confirm second output
-        self.debug.wait_layout()
+        self.debug.read_layout()
         self.debug.press_yes()
 
         yield  # confirm transaction
@@ -538,20 +542,20 @@ class InputFlowSignTxHighFee(InputFlowBase):
 
 def sign_tx_go_to_info(client: Client) -> Generator[None, None, str]:
     yield  # confirm output
-    client.debug.wait_layout()
+    client.debug.read_layout()
     client.debug.press_yes()
     yield  # confirm output
-    client.debug.wait_layout()
+    client.debug.read_layout()
     client.debug.press_yes()
 
     yield  # confirm transaction
-    client.debug.wait_layout()
+    client.debug.read_layout()
     client.debug.press_info()
 
-    layout = client.debug.wait_layout()
+    layout = client.debug.read_layout()
     content = layout.text_content()
 
-    client.debug.click(buttons.CORNER_BUTTON, wait=True)
+    client.debug.click(buttons.CORNER_BUTTON)
 
     return content
 
@@ -560,24 +564,24 @@ def sign_tx_go_to_info_tr(
     client: Client,
 ) -> Generator[None, None, str]:
     yield  # confirm address
-    client.debug.wait_layout()
+    client.debug.read_layout()
     client.debug.press_yes()  # CONTINUE
     yield  # confirm amount
-    client.debug.wait_layout()
+    client.debug.read_layout()
     client.debug.press_yes()  # CONFIRM
 
     screen_texts: list[str] = []
 
     yield  # confirm total
-    layout = client.debug.wait_layout()
+    layout = client.debug.read_layout()
     if "multiple accounts" in layout.text_content().lower():
         client.debug.press_middle()
         yield
 
-    layout = client.debug.press_right(wait=True)
+    layout = client.debug.press_right()
     screen_texts.append(layout.text_content())
 
-    layout = client.debug.press_right(wait=True)
+    layout = client.debug.press_right()
     screen_texts.append(layout.text_content())
 
     client.debug.press_left()
@@ -660,15 +664,16 @@ class InputFlowSignTxInformationReplacement(InputFlowBase):
         yield  # confirm address
         self.debug.press_yes()
         # go back to address
+        yield
         self.debug.press_no()
         # confirm address
         self.debug.press_yes()
-        yield  # confirm amount
+        # confirm amount
         self.debug.press_yes()
 
         yield  # transaction summary, press info
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
-        self.debug.click(buttons.CORNER_BUTTON, wait=True)
+        self.debug.click(buttons.CORNER_BUTTON)
+        self.debug.click(buttons.CORNER_BUTTON)
         self.debug.press_yes()
 
     def input_flow_tr(self) -> BRGeneratorType:
@@ -692,10 +697,10 @@ def lock_time_input_flow_tt(
     double_confirm: bool = False,
 ) -> BRGeneratorType:
     yield  # confirm output
-    debug.wait_layout()
+    debug.read_layout()
     debug.press_yes()
     yield  # confirm output
-    debug.wait_layout()
+    debug.read_layout()
     debug.press_yes()
 
     br = yield  # confirm locktime
@@ -714,10 +719,10 @@ def lock_time_input_flow_tr(
     layout_assert_func: Callable[[DebugLink, messages.ButtonRequest], None],
 ) -> BRGeneratorType:
     yield  # confirm address
-    debug.wait_layout()
+    debug.read_layout()
     debug.press_yes()
     yield  # confirm amount
-    debug.wait_layout()
+    debug.read_layout()
     debug.press_yes()
 
     br = yield  # confirm locktime
@@ -784,7 +789,7 @@ class InputFlowEIP712ShowMore(InputFlowBase):
         self.debug.press_yes()
 
         yield  # confirm domain
-        self.debug.wait_layout()
+        self.debug.read_layout()
         self._confirm_show_more()
 
         # confirm domain properties
@@ -793,11 +798,11 @@ class InputFlowEIP712ShowMore(InputFlowBase):
             self.debug.press_yes()
 
         yield  # confirm message
-        self.debug.wait_layout()
+        self.debug.read_layout()
         self._confirm_show_more()
 
         yield  # confirm message.from
-        self.debug.wait_layout()
+        self.debug.read_layout()
         self._confirm_show_more()
 
         # confirm message.from properties
@@ -806,7 +811,7 @@ class InputFlowEIP712ShowMore(InputFlowBase):
             self.debug.press_yes()
 
         yield  # confirm message.to
-        self.debug.wait_layout()
+        self.debug.read_layout()
         self._confirm_show_more()
 
         # confirm message.to properties
@@ -1040,15 +1045,15 @@ class InputFlowSlip39BasicBackup(InputFlowBase):
     def input_flow_tt(self) -> BRGeneratorType:
         yield  # 1. Checklist
         self.debug.press_yes()
+        yield  # 2. Number of shares (5)
         if self.click_info:
             yield from click_info_button_tt(self.debug)
-        yield  # 2. Number of shares (5)
         self.debug.press_yes()
         yield  # 3. Checklist
         self.debug.press_yes()
+        yield  # 4. Threshold (3)
         if self.click_info:
             yield from click_info_button_tt(self.debug)
-        yield  # 4. Threshold (3)
         self.debug.press_yes()
         yield  # 5. Checklist
         self.debug.press_yes()
@@ -1168,26 +1173,26 @@ class InputFlowSlip39AdvancedBackup(InputFlowBase):
     def input_flow_tt(self) -> BRGeneratorType:
         yield  # 1. Checklist
         self.debug.press_yes()
+        yield  # 2. Set and confirm group count
         if self.click_info:
             yield from click_info_button_tt(self.debug)
-        yield  # 2. Set and confirm group count
         self.debug.press_yes()
         yield  # 3. Checklist
         self.debug.press_yes()
+        yield  # 4. Set and confirm group threshold
         if self.click_info:
             yield from click_info_button_tt(self.debug)
-        yield  # 4. Set and confirm group threshold
         self.debug.press_yes()
         yield  # 5. Checklist
         self.debug.press_yes()
         for _ in range(5):  # for each of 5 groups
-            if self.click_info:
-                yield from click_info_button_tt(self.debug)
             yield  # Set & Confirm number of shares
-            self.debug.press_yes()
             if self.click_info:
                 yield from click_info_button_tt(self.debug)
+            self.debug.press_yes()
             yield  # Set & confirm share threshold value
+            if self.click_info:
+                yield from click_info_button_tt(self.debug)
             self.debug.press_yes()
         yield  # Confirm show seeds
         self.debug.press_yes()
