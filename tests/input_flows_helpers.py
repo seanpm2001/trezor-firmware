@@ -17,16 +17,16 @@ class PinFlow:
         self, pin: str, second_different_pin: str | None = None
     ) -> BRGeneratorType:
         yield  # Enter PIN
-        assert "PinKeyboard" in self.debug.wait_layout().all_components()
+        assert "PinKeyboard" in self.debug.read_layout().all_components()
         self.debug.input(pin)
         if self.client.model is models.T2B1:
             yield  # Reenter PIN
             TR.assert_in(
-                self.debug.wait_layout().text_content(), "pin__reenter_to_confirm"
+                self.debug.read_layout().text_content(), "pin__reenter_to_confirm"
             )
             self.debug.press_yes()
         yield  # Enter PIN again
-        assert "PinKeyboard" in self.debug.wait_layout().all_components()
+        assert "PinKeyboard" in self.debug.read_layout().all_components()
         if second_different_pin is not None:
             self.debug.input(second_different_pin)
         else:
@@ -40,7 +40,7 @@ class BackupFlow:
 
     def confirm_new_wallet(self) -> BRGeneratorType:
         yield
-        TR.assert_in(self.debug.wait_layout().text_content(), "reset__by_continuing")
+        TR.assert_in(self.debug.read_layout().text_content(), "reset__by_continuing")
         if self.client.model is models.T2B1:
             self.debug.press_right()
         self.debug.press_yes()
@@ -52,7 +52,7 @@ class RecoveryFlow:
         self.debug = self.client.debug
 
     def _text_content(self) -> str:
-        layout = self.debug.wait_layout()
+        layout = self.debug.read_layout()
         return layout.title() + " " + layout.text_content()
 
     def confirm_recovery(self) -> BRGeneratorType:
@@ -97,13 +97,13 @@ class RecoveryFlow:
         else:
             TR.assert_in(self._text_content(), "recovery__enter_backup")
         is_dry_run = any(
-            title in self.debug.wait_layout().title().lower()
+            title in self.debug.read_layout().title().lower()
             for title in TR.translate("recovery__title_dry_run", lower=True)
         )
         if self.client.model is models.T2B1 and not is_dry_run:
             # Normal recovery has extra info (not dry run)
-            self.debug.press_right(wait=True)
-            self.debug.press_right(wait=True)
+            self.debug.press_right()
+            self.debug.press_right()
         self.debug.press_yes()
 
     def enter_any_share(self) -> BRGeneratorType:
@@ -113,13 +113,13 @@ class RecoveryFlow:
             ["recovery__enter_any_share", "recovery__enter_each_word"],
         )
         is_dry_run = any(
-            title in self.debug.wait_layout().title().lower()
+            title in self.debug.read_layout().title().lower()
             for title in TR.translate("recovery__title_dry_run", lower=True)
         )
         if self.client.model is models.T2B1 and not is_dry_run:
             # Normal recovery has extra info (not dry run)
-            self.debug.press_right(wait=True)
-            self.debug.press_right(wait=True)
+            self.debug.press_right()
+            self.debug.press_right()
         self.debug.press_yes()
 
     def abort_recovery(self, confirm: bool) -> BRGeneratorType:
@@ -187,7 +187,7 @@ class RecoveryFlow:
         br = yield
         assert br.code == B.MnemonicWordCount
         if self.client.model is models.T2B1:
-            TR.assert_in(self.debug.wait_layout().title(), "word_count__title")
+            TR.assert_in(self.debug.read_layout().title(), "word_count__title")
         else:
             TR.assert_in(self._text_content(), "recovery__num_of_words")
         self.debug.input(str(num_words))
@@ -283,7 +283,7 @@ class RecoveryFlow:
     def input_mnemonic(self, mnemonic: list[str]) -> BRGeneratorType:
         br = yield
         assert br.code == B.MnemonicInput
-        assert "MnemonicKeyboard" in self.debug.wait_layout().all_components()
+        assert "MnemonicKeyboard" in self.debug.read_layout().all_components()
         for _, word in enumerate(mnemonic):
             self.debug.input(word)
 
@@ -311,8 +311,8 @@ class RecoveryFlow:
         self,
     ) -> BRGeneratorType:
         # Moving through the INFO button
-        self.debug.press_info()
         yield
+        self.debug.press_info()
         self.debug.swipe_up()
         self.debug.press_yes()
 
@@ -334,7 +334,7 @@ class EthereumFlow:
     def confirm_data(self, info: bool = False, cancel: bool = False) -> BRGeneratorType:
         yield
         TR.assert_equals(
-            self.debug.wait_layout().title(), "ethereum__title_confirm_data"
+            self.debug.read_layout().title(), "ethereum__title_confirm_data"
         )
         if info:
             self.debug.press_info()
@@ -346,11 +346,11 @@ class EthereumFlow:
     def paginate_data(self) -> BRGeneratorType:
         br = yield
         TR.assert_equals(
-            self.debug.wait_layout().title(), "ethereum__title_confirm_data"
+            self.debug.read_layout().title(), "ethereum__title_confirm_data"
         )
         assert br.pages is not None
         for i in range(br.pages):
-            self.debug.wait_layout()
+            self.debug.read_layout()
             if i < br.pages - 1:
                 self.debug.swipe_up()
         self.debug.press_yes()
@@ -358,13 +358,13 @@ class EthereumFlow:
     def paginate_data_go_back(self) -> BRGeneratorType:
         br = yield
         TR.assert_equals(
-            self.debug.wait_layout().title(), "ethereum__title_confirm_data"
+            self.debug.read_layout().title(), "ethereum__title_confirm_data"
         )
         assert br.pages is not None
         assert br.pages > 2
         if self.client.model in (models.T2T1, models.T3T1):
-            self.debug.swipe_up(wait=True)
-            self.debug.swipe_up(wait=True)
+            self.debug.swipe_up()
+            self.debug.swipe_up()
             self.debug.click(self.GO_BACK)
         else:
             self.debug.press_right()
@@ -380,7 +380,7 @@ class EthereumFlow:
         go_back_from_summary: bool = False,
     ) -> BRGeneratorType:
         yield
-        TR.assert_equals(self.debug.wait_layout().title(), "words__recipient")
+        TR.assert_equals(self.debug.read_layout().title(), "words__recipient")
 
         if self.client.model in (models.T2T1, models.T3T1):
             if cancel:
@@ -389,10 +389,10 @@ class EthereumFlow:
                 self.debug.press_yes()
                 yield
                 TR.assert_equals(
-                    self.debug.wait_layout().title(), "words__title_summary"
+                    self.debug.read_layout().title(), "words__title_summary"
                 )
                 TR.assert_in(
-                    self.debug.wait_layout().text_content(), "send__maximum_fee"
+                    self.debug.read_layout().text_content(), "send__maximum_fee"
                 )
                 if go_back_from_summary:
                     self.debug.press_no()
@@ -400,14 +400,14 @@ class EthereumFlow:
                     self.debug.press_yes()
                     yield
                 if info:
-                    self.debug.press_info(wait=True)
+                    self.debug.press_info()
                     TR.assert_in(
-                        self.debug.wait_layout().text_content(), "ethereum__gas_limit"
+                        self.debug.read_layout().text_content(), "ethereum__gas_limit"
                     )
                     TR.assert_in(
-                        self.debug.wait_layout().text_content(), "ethereum__gas_price"
+                        self.debug.read_layout().text_content(), "ethereum__gas_price"
                     )
-                    self.debug.press_no(wait=True)
+                    self.debug.press_no()
                 self.debug.press_yes()
         else:
             if cancel:
@@ -416,7 +416,7 @@ class EthereumFlow:
                 self.debug.press_right()
                 yield
                 TR.assert_in(
-                    self.debug.wait_layout().text_content(), "send__maximum_fee"
+                    self.debug.read_layout().text_content(), "send__maximum_fee"
                 )
                 if go_back_from_summary:
                     self.debug.press_left()
@@ -424,16 +424,16 @@ class EthereumFlow:
                     self.debug.press_right()
                     yield
                 if info:
-                    self.debug.press_right(wait=True)
+                    self.debug.press_right()
                     TR.assert_in(
-                        self.debug.wait_layout().text_content(), "ethereum__gas_limit"
+                        self.debug.read_layout().text_content(), "ethereum__gas_limit"
                     )
-                    self.debug.press_right(wait=True)
+                    self.debug.press_right()
                     TR.assert_in(
-                        self.debug.wait_layout().text_content(), "ethereum__gas_price"
+                        self.debug.read_layout().text_content(), "ethereum__gas_price"
                     )
-                    self.debug.press_left(wait=True)
-                    self.debug.press_left(wait=True)
+                    self.debug.press_left()
+                    self.debug.press_left()
                 self.debug.press_middle()
 
     def confirm_tx_staking(
@@ -442,7 +442,7 @@ class EthereumFlow:
     ) -> BRGeneratorType:
         yield
         TR.assert_equals_multiple(
-            self.debug.wait_layout().title(),
+            self.debug.read_layout().title(),
             [
                 "ethereum__staking_stake",
                 "ethereum__staking_unstake",
@@ -450,7 +450,7 @@ class EthereumFlow:
             ],
         )
         TR.assert_equals_multiple(
-            self.debug.wait_layout().text_content(),
+            self.debug.read_layout().text_content(),
             [
                 "ethereum__staking_stake_intro",
                 "ethereum__staking_unstake_intro",
@@ -460,56 +460,56 @@ class EthereumFlow:
         if self.client.model in (models.T2T1, models.T3T1):
             # confirm intro
             if info:
-                self.debug.click(buttons.CORNER_BUTTON, wait=True)
+                self.debug.click(buttons.CORNER_BUTTON, )
                 TR.assert_equals_multiple(
-                    self.debug.wait_layout().title(),
+                    self.debug.read_layout().title(),
                     [
                         "ethereum__staking_stake_address",
                         "ethereum__staking_claim_address",
                     ],
                 )
-                self.debug.press_no(wait=True)
+                self.debug.press_no()
             self.debug.press_yes()
             yield
 
             # confirm summary
             if info and self.client.model != models.T3T1:
-                self.debug.press_info(wait=True)
+                self.debug.press_info()
                 TR.assert_in(
-                    self.debug.wait_layout().text_content(), "ethereum__gas_limit"
+                    self.debug.read_layout().text_content(), "ethereum__gas_limit"
                 )
                 TR.assert_in(
-                    self.debug.wait_layout().text_content(), "ethereum__gas_price"
+                    self.debug.read_layout().text_content(), "ethereum__gas_price"
                 )
-                self.debug.press_no(wait=True)
+                self.debug.press_no()
             self.debug.press_yes()
             yield
         else:
             # confirm intro
             if info:
-                self.debug.press_right(wait=True)
+                self.debug.press_right()
                 TR.assert_equals_multiple(
-                    self.debug.wait_layout().title(),
+                    self.debug.read_layout().title(),
                     [
                         "ethereum__staking_stake_address",
                         "ethereum__staking_claim_address",
                     ],
                 )
-                self.debug.press_left(wait=True)
+                self.debug.press_left()
             self.debug.press_middle()
             yield
 
             # confirm summary
             if info:
-                self.debug.press_right(wait=True)
+                self.debug.press_right()
                 TR.assert_in(
-                    self.debug.wait_layout().text_content(), "ethereum__gas_limit"
+                    self.debug.read_layout().text_content(), "ethereum__gas_limit"
                 )
-                self.debug.press_right(wait=True)
+                self.debug.press_right()
                 TR.assert_in(
-                    self.debug.wait_layout().text_content(), "ethereum__gas_price"
+                    self.debug.read_layout().text_content(), "ethereum__gas_price"
                 )
-                self.debug.press_left(wait=True)
-                self.debug.press_left(wait=True)
+                self.debug.press_left()
+                self.debug.press_left()
             self.debug.press_middle()
             yield

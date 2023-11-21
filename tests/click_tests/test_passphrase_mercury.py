@@ -98,6 +98,7 @@ def prepare_passphrase_dialogue(
 ) -> Generator["DebugLink", None, None]:
     debug = device_handler.debuglink()
     device_handler.run(get_test_address)  # type: ignore
+    # TODO
     assert debug.wait_layout().main_component() == "PassphraseKeyboard"
 
     # Resetting the category as it could have been changed by previous tests
@@ -212,7 +213,7 @@ def test_passphrase_delete(device_handler: "BackgroundDeviceHandler"):
 
         for _ in range(4):
             delete_char(debug)
-        debug.wait_layout()
+        debug.read_layout()
 
         input_passphrase(debug, CommonPass.SHORT[8 - 4 :])
         enter_passphrase(debug)
@@ -242,7 +243,7 @@ def test_passphrase_loop_all_characters(device_handler: "BackgroundDeviceHandler
             PassphraseCategory.SPECIAL,
         ):
             go_to_category(debug, category)
-        debug.wait_layout()
+        debug.read_layout()
 
         enter_passphrase(debug)
         coords = buttons.pin_passphrase_grid(11)

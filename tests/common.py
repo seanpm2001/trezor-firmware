@@ -14,6 +14,8 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
+from __future__ import annotations
+
 import json
 import re
 import time
@@ -219,10 +221,8 @@ def read_mnemonic_from_screen_tt(
     br = yield
     assert br.pages is not None
 
-    debug.wait_layout()
-
     for i in range(br.pages):
-        words = debug.wait_layout().seed_words()
+        words = debug.read_layout().seed_words()
         mnemonic.extend(words)
         # Not swiping on the last page
         if i < br.pages - 1:
@@ -241,7 +241,7 @@ def read_mnemonic_from_screen_tr(
     br = yield
     assert br.pages is not None
     for _ in range(br.pages - 1):
-        layout = debug.wait_layout()
+        layout = debug.read_layout()
         words = layout.seed_words()
         mnemonic.extend(words)
         debug.press_right()
@@ -259,15 +259,15 @@ def read_mnemonic_from_screen_mercury(
     br = yield
     assert br.pages is not None
 
-    debug.wait_layout()
+    debug.read_layout()
     debug.swipe_up()
 
     for _ in range(br.pages - 2):
-        words = debug.wait_layout().seed_words()
+        words = debug.read_layout().seed_words()
         mnemonic.extend(words)
         debug.swipe_up()
 
-    debug.wait_layout()
+    debug.read_layout()
     debug.press_yes()
 
     return mnemonic
@@ -285,13 +285,13 @@ def check_share(
         if debug.model is models.T2T1:
             # T2T1 has position as the first number in the text
             word_pos_match = re.search(
-                re_num_of_word, debug.wait_layout().text_content()
+                re_num_of_word, debug.read_layout().text_content()
             )
         elif debug.model is models.T2B1:
             # other models have the instruction in the title/subtitle
-            word_pos_match = re.search(re_num_of_word, debug.wait_layout().title())
+            word_pos_match = re.search(re_num_of_word, debug.read_layout().title())
         elif debug.model is models.T3T1:
-            word_pos_match = re.search(re_num_of_word, debug.wait_layout().subtitle())
+            word_pos_match = re.search(re_num_of_word, debug.read_layout().subtitle())
         else:
             word_pos_match = None
 
@@ -311,8 +311,8 @@ def check_share(
 def click_info_button_tt(debug: "DebugLink"):
     """Click Shamir backup info button and return back."""
     debug.press_info()
-    yield  # Info screen with text
     debug.press_yes()
+    yield
 
 
 def click_info_button_mercury(debug: "DebugLink"):
@@ -349,12 +349,12 @@ def compact_size(n: int) -> bytes:
 
 
 def get_text_possible_pagination(debug: "DebugLink", br: messages.ButtonRequest) -> str:
-    text = debug.wait_layout().text_content()
+    text = debug.read_layout().text_content()
     if br.pages is not None:
         for _ in range(br.pages - 1):
             debug.swipe_up()
             text += " "
-            text += debug.wait_layout().text_content()
+            text += debug.read_layout().text_content()
     return text
 
 

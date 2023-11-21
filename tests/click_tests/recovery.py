@@ -24,8 +24,8 @@ def enter_word(
             debug.click(coords)
         if debug.model is models.T3T1 and not is_slip39 and len(word) > 4:
             # T3T1 (mercury) BIP39 keyboard allows to "confirm" only if the word is fully written, you need to click the word to auto-complete
-            debug.click(buttons.CONFIRM_WORD, wait=True)
-        return debug.click(buttons.CONFIRM_WORD, wait=True)
+            debug.click(buttons.CONFIRM_WORD)
+        return debug.click(buttons.CONFIRM_WORD)
     elif debug.model in (models.T2B1,):
         letter_index = 0
         layout = debug.read_layout()
@@ -34,39 +34,36 @@ def enter_word(
         while layout.find_values_by_key("letter_choices"):
             letter = word[letter_index]
             while not layout.get_middle_choice() == letter:
-                layout = debug.press_right(wait=True)
+                layout = debug.press_right()
 
-            layout = debug.press_middle(wait=True)
+            layout = debug.press_middle()
             letter_index += 1
 
         # Word choices
         while not layout.get_middle_choice() == word:
-            layout = debug.press_right(wait=True)
+            layout = debug.press_right()
 
-        return debug.press_middle(wait=True)
+        return debug.press_middle()
     else:
         raise ValueError("Unknown model")
 
 
 def confirm_recovery(debug: "DebugLink", title: str = "recovery__title") -> None:
-    layout = debug.wait_layout()
+    layout = debug.read_layout()
     TR.assert_equals(layout.title(), title)
     if debug.model in (models.T2T1,):
-        debug.click(buttons.OK, wait=True)
+        debug.click(buttons.OK)
     elif debug.model in (models.T3T1,):
-        debug.swipe_up(wait=True)
+        debug.swipe_up()
     elif debug.model in (models.T2B1,):
-        debug.press_right(wait=True)
+        debug.press_right()
 
 
 def select_number_of_words(
     debug: "DebugLink",
     num_of_words: int = 20,
-    wait: bool = True,
     unlock_repeated_backup=False,
 ) -> None:
-    if wait:
-        debug.wait_layout()
     if debug.model in (models.T2T1,):
         TR.assert_equals(debug.read_layout().text_content(), "recovery__num_of_words")
         # click the number
@@ -76,17 +73,17 @@ def select_number_of_words(
             num_of_words
         )  # raises if num of words is invalid
         coords = buttons.grid34(index % 3, index // 3)
-        layout = debug.click(coords, wait=True)
+        layout = debug.click(coords)
     elif debug.model in (models.T2B1,):
-        layout = debug.press_right(wait=True)
+        layout = debug.press_right()
         TR.assert_equals(layout.title(), "word_count__title")
 
         # navigate to the number and confirm it
         word_options = (12, 18, 20, 24, 33)
         index = word_options.index(num_of_words)
         for _ in range(index):
-            debug.press_right(wait=True)
-        layout = debug.press_middle(wait=True)
+            debug.press_right()
+        layout = debug.press_middle()
     elif debug.model in (models.T3T1,):
         if num_of_words == 12:
             coords = buttons.grid34(0, 1)
@@ -100,7 +97,7 @@ def select_number_of_words(
             coords = buttons.grid34(1, 3)
         else:
             raise ValueError("Invalid num_of_words")
-        layout = debug.click(coords, wait=True)
+        layout = debug.click(coords)
     else:
         raise ValueError("Unknown model")
 
@@ -141,14 +138,14 @@ def enter_share(
 ) -> "LayoutContent":
     if debug.model in (models.T2B1,):
         TR.assert_in(debug.read_layout().title(), before_title)
-        layout = debug.wait_layout()
+        layout = debug.read_layout()
         for _ in range(layout.page_count()):
-            layout = debug.press_right(wait=True)
+            layout = debug.press_right()
     elif debug.model in (models.T3T1,):
-        layout = debug.swipe_up(wait=True)
+        layout = debug.swipe_up()
     else:
         TR.assert_in(debug.read_layout().title(), before_title)
-        layout = debug.click(buttons.OK, wait=True)
+        layout = debug.click(buttons.OK)
 
     assert "MnemonicKeyboard" in layout.all_components()
 
@@ -223,20 +220,20 @@ def enter_seed_previous_correct(
         if go_back:
             go_back = False
             if debug.model in (models.T2T1, models.T3T1):
-                debug.swipe_right(wait=True)
+                debug.swipe_right()
                 for _ in range(len(bad_word)):
-                    debug.click(buttons.RECOVERY_DELETE, wait=True)
+                    debug.click(buttons.RECOVERY_DELETE)
             elif debug.model in (models.T2B1,):
                 layout = debug.read_layout()
 
                 while layout.get_middle_choice() not in DELETE_BTN_TEXTS:
-                    layout = debug.press_right(wait=True)
-                layout = debug.press_middle(wait=True)
+                    layout = debug.press_right()
+                layout = debug.press_middle()
 
                 for _ in range(len(bad_word)):
                     while layout.get_middle_choice() not in DELETE_BTN_TEXTS:
-                        layout = debug.press_left(wait=True)
-                    layout = debug.press_middle(wait=True)
+                        layout = debug.press_left()
+                    layout = debug.press_middle()
             continue
 
         if i in bad_indexes:
@@ -264,18 +261,18 @@ def prepare_enter_seed(
         ],
     )
     if debug.model in (models.T2T1,):
-        debug.click(buttons.OK, wait=True)
+        debug.click(buttons.OK)
     elif debug.model in (models.T3T1,):
-        debug.swipe_up(wait=True)
-        debug.swipe_up(wait=True)
+        debug.swipe_up()
+        debug.swipe_up()
     elif debug.model in (models.T2B1,):
-        debug.press_right(wait=True)
         debug.press_right()
-        layout = debug.press_right(wait=True)
+        debug.press_right()
+        layout = debug.press_right()
         assert "MnemonicKeyboard" in layout.all_components()
 
 
 def finalize(debug: "DebugLink") -> None:
-    layout = go_next(debug, wait=True)
+    layout = go_next(debug)
     assert layout is not None
     assert layout.main_component() == "Homescreen"
