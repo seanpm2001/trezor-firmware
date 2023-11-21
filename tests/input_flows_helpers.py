@@ -236,6 +236,7 @@ class RecoveryFlow:
                 if has_groups:
                     yield from self.success_share_group_entered()
                 if self.debug.model == "T" and click_info:
+                    yield
                     yield from self.tt_click_info()
                 yield from self.success_more_shares_needed()
 
@@ -243,8 +244,8 @@ class RecoveryFlow:
         self,
     ) -> BRGeneratorType:
         # Moving through the INFO button
-        yield
         self.debug.press_info()
+        yield
         self.debug.swipe_up()
         self.debug.press_yes()
 
