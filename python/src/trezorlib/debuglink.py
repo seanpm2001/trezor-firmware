@@ -149,6 +149,9 @@ class LayoutContent(UnstructuredJSONReader):
         json_str = "".join(json_tokens)
         super().__init__(json_str)
 
+    def __bool__(self) -> bool:
+        return bool(self.json_str)
+
     def main_component(self) -> str:
         """Getting the main component of the layout."""
         return self.top_level_value("component") or "no main component"
@@ -411,13 +414,13 @@ class DebugLink:
         # For T1 screenshotting functionality in DebugUI
         self.t1_screenshot_directory: Optional[Path] = None
         self.t1_screenshot_counter = 0
+        self._t1_previous_layout = b""
 
         # Optional file for saving text representation of the screen
         self.screen_text_file: Optional[Path] = None
         self.last_screen_content = ""
 
         self.waiting_for_layout_change = False
-        self.layout_dirty = True
 
         self.input_wait_type = DebugWaitType.IMMEDIATE
 
@@ -499,7 +502,6 @@ class DebugLink:
         obj = self._call(
             messages.DebugLinkGetState(wait_layout=DebugWaitType.NEXT_LAYOUT)
         )
-        self.layout_dirty = True
         if isinstance(obj, messages.Failure):
             raise TrezorFailure(obj)
         return LayoutContent(obj.tokens)
@@ -600,14 +602,13 @@ class DebugLink:
             decision.hold_ms += 200
 
         self._write(decision)
-        self.layout_dirty = True
         if wait is True:
             wait_type = DebugWaitType.CURRENT_LAYOUT
         elif wait is False:
             wait_type = DebugWaitType.IMMEDIATE
         else:
             wait_type = self.input_wait_type
-        return self.snapshot(wait_type)
+        return self.snapshot(after_decision=True, wait_type=wait_type)
 
     press_yes = _make_input_func(button=messages.DebugButton.YES)
     """Confirm current layout. See `_decision` for more details."""
@@ -651,21 +652,26 @@ class DebugLink:
         )
 
     def snapshot(
-        self, wait_type: DebugWaitType = DebugWaitType.IMMEDIATE
+        self,
+        after_decision: bool = False,
+        wait_type: DebugWaitType = DebugWaitType.IMMEDIATE,
     ) -> LayoutContent:
         """Save text and image content of the screen to relevant directories."""
+        if self.model == "1" and after_decision:
+            # T1 has problems when we spam DebugLinkGetState at the wrong places,
+            # and it is not recognizing wait types anyway so the results would get
+            # messed up
+            return LayoutContent([])
+
         # take the snapshot
         state = self.state(wait_type)
         layout = LayoutContent(state.tokens)
-
-        if state.tokens and self.layout_dirty:
-            # save it, unless we already did or unless it's empty
+        if layout:
+            # save it, unless it is empty
             self.save_debug_screen(layout.visible_screen())
-            if state.layout is not None:
-                self.save_screenshot(state.layout)
-            self.layout_dirty = False
+        if state.layout:
+            self.save_screenshot(state.layout)
 
-        # return the layout
         return layout
 
     def save_debug_screen(self, screen_content: str) -> None:
@@ -705,7 +711,6 @@ class DebugLink:
         else:
             self.t1_screenshot_directory = Path(directory)
             self.t1_screenshot_counter = 0
-            self.t1_take_screenshots = True
 
     def stop_recording(self) -> None:
         self.screenshot_recording_dir = None
@@ -713,7 +718,7 @@ class DebugLink:
         if self.model in ("T", "Safe 3"):
             self._call(messages.DebugLinkRecordScreen(target_directory=None))
         else:
-            self.t1_take_screenshots = False
+            self.t1_screenshot_directory = None
 
     @expect(messages.DebugLinkMemory, field="memory", ret_type=bytes)
     def memory_read(self, address: int, length: int) -> protobuf.MessageType:

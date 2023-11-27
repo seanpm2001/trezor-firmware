@@ -20,6 +20,7 @@ import pytest
 
 from trezorlib import btc, device
 from trezorlib.debuglink import TrezorClientDebugLink as Client
+from trezorlib.models import TREZOR_ONE
 from trezorlib.tools import parse_path
 
 PIN = "1234"
@@ -72,6 +73,10 @@ def test_busy_expiry(client: Client):
     # Show the busy dialog.
     device.set_busy(client, expiry_ms=WAIT_TIME_MS)
     _assert_busy(client, True)
+
+    if client.model is TREZOR_ONE:
+        # wait_layout does not work on T1
+        time.sleep(WAIT_TIME_MS / 1000 + 0.1)
 
     # Wait until the layout changes
     client.debug.wait_layout()
