@@ -1,0 +1,230 @@
+/** Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions: The above copyright
+ * notice and this permission notice shall be included in all copies or
+ * substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+ * OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ */
+#include <assert.h>
+#include <stdbool.h>
+
+#include "ed25519-donna/ed25519-donna.h"
+#include "memzero.h"
+
+#include "elligator2.h"
+
+// Returns 1 if a is equal to b, 0 otherwise.
+static int curve25519_isequal(bignum25519 a, const bignum25519 b) {
+  bignum25519 difference;
+  curve25519_sub(difference, a, b);
+  int result = 1 - curve25519_isnonzero(difference);
+  memzero(difference, sizeof(difference));
+  return result;
+}
+
+// Sets out to a if c is 1, or b if c is 0.
+static void curve25519_cmov(bignum25519 out, const bignum25519 a,
+                            const bignum25519 b, uint32_t c) {
+  assert((int)(c == 1) | (int)(c == 0));
+
+  bignum25519 a_copy = {0}, b_copy = {0};
+  curve25519_copy(a_copy, a);
+  curve25519_copy(b_copy, b);
+  curve25519_swap_conditional(a_copy, b_copy, c);
+  memzero(b_copy, sizeof(b_copy));
+  curve25519_copy(out, a_copy);
+  memzero(a_copy, sizeof(a_copy));
+}
+
+bool map_to_curve_elligator2_curve25519(const bignum25519 input,
+                                        curve25519_key output) {
+  // https://www.rfc-editor.org/rfc/rfc9380.html#map-to-curve25519
+
+  // c3 = sqrt(-1)
+  bignum25519 c3 = {0};
+  curve25519_set_sqrtneg1(c3);
+
+  // c2 = 2^c1 = 2^((q + 3) / 8) = c3 + 1
+  bignum25519 one = {0};
+  bignum25519 c2 = {0};
+  curve25519_set(one, 1);
+  curve25519_add_reduce(c2, c3, one);
+
+  // J = 486662
+  bignum25519 j = {0};
+  curve25519_set(j, 486662);
+
+  // tv1 = u^2
+  bignum25519 tv1 = {0};
+  curve25519_square(tv1, input);
+
+  // tv1 = 2 * tv1
+  curve25519_add_reduce(tv1, tv1, tv1);
+
+  // xd = tv1 + 1
+  bignum25519 xd = {0};
+  curve25519_add_reduce(xd, tv1, one);
+  memzero(one, sizeof(one));
+
+  // x1n = -J
+  bignum25519 x1n = {0};
+  curve25519_neg(x1n, j);
+
+  // tv2 = xd^2
+  bignum25519 tv2 = {0};
+  curve25519_square(tv2, xd);
+
+  // gxd = tv2 * xd
+  bignum25519 gxd = {0};
+  curve25519_mul(gxd, tv2, xd);
+
+  // gx1 = J * tv1
+  bignum25519 gx1 = {0};
+  curve25519_mul(gx1, j, tv1);
+  memzero(j, sizeof(j));
+
+  // gx1 = gx1 * x1n
+  curve25519_mul(gx1, gx1, x1n);
+
+  // gx1 = gx1 + tv2
+  curve25519_add_reduce(gx1, gx1, tv2);
+
+  // gx1 = gx1 * x1n
+  curve25519_mul(gx1, gx1, x1n);
+
+  // tv3 = gxd^2
+  bignum25519 tv3 = {0};
+  curve25519_square(tv3, gxd);
+
+  // tv2 = tv3^2
+  curve25519_square(tv2, tv3);
+
+  // tv3 = tv3 * gxd
+  curve25519_mul(tv3, tv3, gxd);
+
+  // tv3 = tv3 * gx1
+  curve25519_mul(tv3, tv3, gx1);
+
+  // tv2 = tv2 * tv3
+  curve25519_mul(tv2, tv2, tv3);
+
+  // y11 = tv2^c4
+  bignum25519 y11 = {0};
+  curve25519_pow_two252m3(y11, tv2);
+
+  // y11 = y11 * tv3
+  curve25519_mul(y11, y11, tv3);
+  memzero(tv3, sizeof(tv3));
+
+  // y12 = y11 * c3
+  bignum25519 y12 = {0};
+  curve25519_mul(y12, y11, c3);
+
+  // tv2 = y11^2
+  curve25519_square(tv2, y11);
+
+  // tv2 = tv2 * gxd
+  curve25519_mul(tv2, tv2, gxd);
+
+  // e1 = tv2 == gx1
+  int e1 = curve25519_isequal(tv2, gx1);
+
+  // y1 = CMOV(y12, y11, e1)
+  bignum25519 y1 = {0};
+  curve25519_cmov(y1, y12, y11, e1);
+  memzero(y12, sizeof(y12));
+
+  // x2n = x1n * tv1
+  bignum25519 x2n = {0};
+  curve25519_mul(x2n, x1n, tv1);
+
+  // y21 = y11 * u
+  bignum25519 y21 = {0};
+  curve25519_mul(y21, y11, input);
+  memzero(y11, sizeof(y11));
+
+  // y21 = y21 * c2
+  curve25519_mul(y21, y21, c2);
+
+  // y22 = y21 * c3
+  bignum25519 y22 = {0};
+  curve25519_mul(y22, y21, c3);
+  memzero(c3, sizeof(c3));
+
+  // gx2 = gx1 * tv1
+  bignum25519 gx2 = {0};
+  curve25519_mul(gx2, gx1, tv1);
+  memzero(tv1, sizeof(tv1));
+
+  // tv2 = y21^2
+  curve25519_square(tv2, y21);
+
+  // tv2 = tv2 * gxd
+  curve25519_mul(tv2, tv2, gxd);
+
+  // e2 = tv2 == gx2
+  // int e2 = curve25519_isequal(tv2, gx2);
+  memzero(gx2, sizeof(gx2));
+
+  // y2 = CMOV(y22, y21, e2)
+  // bignum25519 y2 = {0};
+  // curve25519_cmov(y2, y22, y21, e2);
+  memzero(y21, sizeof(y21));
+  memzero(y22, sizeof(y22));
+
+  // tv2 = y1^2
+  curve25519_square(tv2, y1);
+
+  // tv2 = tv2 * gxd
+  curve25519_mul(tv2, tv2, gxd);
+  memzero(gxd, sizeof(gxd));
+
+  // e3 = tv2 == gx1
+  int e3 = curve25519_isequal(tv2, gx1);
+  memzero(tv2, sizeof(tv2));
+  memzero(gx1, sizeof(gx1));
+
+  // xn = CMOV(x2n, x1n, e3)
+  bignum25519 xn = {0};
+  curve25519_cmov(xn, x2n, x1n, e3);
+  memzero(x1n, sizeof(x1n));
+  memzero(x2n, sizeof(x2n));
+
+  // y = CMOV(y2, y1, e3)
+  // bignum25519 y = {0};
+  // curve25519_cmov(y, y2, y1, e3);
+  memzero(y1, sizeof(y1));
+  // memzero(y2, sizeof(y2));
+
+  // e4 = sgn0(y) == 1
+  // int e4 = curve25519_isnegative(y);
+
+  // y = CMOV(y, -y, e3 XOR e4)
+  // bignum25519 minus_y = {0};
+  // curve25519_neg(minus_y, y);
+  // curve25519_cmov(y, minus_y, y, e3 ^ e4);
+  // memzero(minus_y, sizeof(minus_y));
+
+  // x = xn / xd
+  bignum25519 x = {0};
+  curve25519_recip(x, xd);
+  memzero(xd, sizeof(xd));
+  curve25519_mul(x, xn, x);
+  memzero(xn, sizeof(xn));
+
+  // output = x
+  curve25519_contract(output, x);
+  memzero(x, sizeof(x));
+
+  return true;
+}
