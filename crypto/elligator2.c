@@ -161,30 +161,24 @@ bool map_to_curve_elligator2_curve25519(const bignum25519 input,
   bignum25519 y22 = {0};
   curve25519_mul(y22, y21, c3);
   memzero(c3, sizeof(c3));
+  memzero(y22, sizeof(y22));
 
   // gx2 = gx1 * tv1
   bignum25519 gx2 = {0};
   curve25519_mul(gx2, gx1, tv1);
+  memzero(gx2, sizeof(gx2));
   memzero(tv1, sizeof(tv1));
 
   // tv2 = y21^2
   curve25519_square(tv2, y21);
+  memzero(y21, sizeof(y21));
 
   // tv2 = tv2 * gxd
   curve25519_mul(tv2, tv2, gxd);
 
-  // e2 = tv2 == gx2
-  // int e2 = curve25519_isequal(tv2, gx2);
-  memzero(gx2, sizeof(gx2));
-
-  // y2 = CMOV(y22, y21, e2)
-  // bignum25519 y2 = {0};
-  // curve25519_cmov(y2, y22, y21, e2);
-  memzero(y21, sizeof(y21));
-  memzero(y22, sizeof(y22));
-
   // tv2 = y1^2
   curve25519_square(tv2, y1);
+  memzero(y1, sizeof(y1));
 
   // tv2 = tv2 * gxd
   curve25519_mul(tv2, tv2, gxd);
@@ -200,21 +194,6 @@ bool map_to_curve_elligator2_curve25519(const bignum25519 input,
   curve25519_cmov(xn, x2n, x1n, e3);
   memzero(x1n, sizeof(x1n));
   memzero(x2n, sizeof(x2n));
-
-  // y = CMOV(y2, y1, e3)
-  // bignum25519 y = {0};
-  // curve25519_cmov(y, y2, y1, e3);
-  memzero(y1, sizeof(y1));
-  // memzero(y2, sizeof(y2));
-
-  // e4 = sgn0(y) == 1
-  // int e4 = curve25519_isnegative(y);
-
-  // y = CMOV(y, -y, e3 XOR e4)
-  // bignum25519 minus_y = {0};
-  // curve25519_neg(minus_y, y);
-  // curve25519_cmov(y, minus_y, y, e3 ^ e4);
-  // memzero(minus_y, sizeof(minus_y));
 
   // x = xn / xd
   bignum25519 x = {0};
