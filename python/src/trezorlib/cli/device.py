@@ -16,7 +16,7 @@
 
 import secrets
 import sys
-from typing import TYPE_CHECKING, Optional, Sequence
+from typing import TYPE_CHECKING, BinaryIO, Optional, Sequence
 
 import click
 
@@ -334,17 +334,161 @@ def set_busy(
     return device.set_busy(client, expiry * 1000)
 
 
+ROOT_PUBKEY_TS3 = bytes.fromhex(
+    "04ca97480ac0d7b1e6efafe518cd433cec2bf8ab9822d76eafd34363b55d63e60"
+    "380bff20acc75cde03cffcb50ab6f8ce70c878e37ebc58ff7cca0a83b16b15fa5"
+)
+
+TS3_CA_WHITELIST = [
+    bytes.fromhex(x)
+    for x in (
+        "04b12efa295ad825a534b7c0bf276e93ad116434426763fa87bfa8a2f12e726906dcf566813f62eba8f8795f94dba0391c53682809cbbd7e4ba01d960b4f1c68f1",
+        "04cb87d4c5d0fd5854e829f4c1b666e49a86c25c88a904c0feb66f1338faed0d7760010d7ea1a6474cbcfe1143bd4b5397a4e8b7fe86899113caecf42a984b0c0f",
+        "0450c45878b2c6403a5a16e97a8957dc3ea36919bce9321b357f6e7ebe6257ee54102a2c2fa5cefed1dabc498fc76dc0bcf3c3a8a415eac7cc32e7c18185f25b0d",
+    )
+]
+
+DEV_ROOT_PUBKEY_TS3 = bytes.fromhex(
+    "047f77368dea2d4d61e989f474a56723c3212dacf8a808d8795595ef38441427c"
+    "4389bc454f02089d7f08b873005e4c28d432468997871c0bf286fd3861e21e96a"
+)
+
+
 @cli.command()
 @click.argument("hex_challenge", required=False)
+@click.option("-R", "--root", type=click.File("rb"), help="Custom root certificate.")
+@click.option(
+    "-r", "--raw", is_flag=True, help="Print raw cryptographic data and exit."
+)
+@click.option(
+    "-n",
+    "--offline",
+    is_flag=True,
+    help="Do not download the public key whitelist from Trezor servers.",
+)
 @with_client
-def authenticate(client: "TrezorClient", hex_challenge: Optional[str]) -> None:
-    """Get information to verify the authenticity of the device."""
+def authenticate(
+    client: "TrezorClient",
+    hex_challenge: Optional[str],
+    root: Optional[BinaryIO],
+    raw: Optional[bool],
+    offline: Optional[bool],
+) -> None:
+    """Verify the authenticity of the device.
+
+    Use the --raw option to get the raw challenge, signature, and certificate data.
+
+    Otherwise, trezorctl will attempt to import the 'cryptography' library, decode
+    the signatures and check their authenticity. By default, it will try to download
+    the public key whitelist from Trezor servers. It is strongly recommended to do this
+    step, however, you can skip it by passing the --offline option.
+
+    When not using --raw, 'cryptography' library is required. You can install it via:
+
+      pip3 install cryptography
+    """
     if hex_challenge is None:
         hex_challenge = secrets.token_hex(32)
-    click.echo(f"Challenge: {hex_challenge}")
+
     challenge = bytes.fromhex(hex_challenge)
     msg = device.authenticate(client, challenge)
-    click.echo(f"Signature of challenge: {msg.signature.hex()}")
-    click.echo(f"Device certificate: {msg.certificates[0].hex()}")
-    for cert in msg.certificates[1:]:
-        click.echo(f"CA certificate: {cert.hex()}")
+
+    if raw:
+        click.echo(f"Challenge: {hex_challenge}")
+        click.echo(f"Signature of challenge: {msg.signature.hex()}")
+        click.echo(f"Device certificate: {msg.certificates[0].hex()}")
+        for cert in msg.certificates[1:]:
+            click.echo(f"CA certificate: {cert.hex()}")
+        return
+
+    try:
+        import cryptography
+        
+        version = [int(x) for x in cryptography.__version__.split(".")]
+        if version[0] < 40:
+            click.echo(
+                "You need to upgrade the 'cryptography' library to verify the signature."
+            )
+            click.echo("You can do so by running:")
+            click.echo("  pip3 install --upgrade cryptography")
+            sys.exit(1)
+
+    except ImportError:
+        click.echo(
+            "You need to install the 'cryptography' library to verify the signature."
+        )
+        click.echo("You can do so by running:")
+        click.echo("  pip3 install cryptography")
+        sys.exit(1)
+
+    from cryptography import x509
+    from cryptography.hazmat.primitives import hashes, serialization
+    from cryptography.hazmat.primitives.asymmetric import ec
+
+    CHALLENGE_HEADER = b"AuthenticateDevice:"
+    challenge_bytes = (
+        len(CHALLENGE_HEADER).to_bytes(1, "big")
+        + CHALLENGE_HEADER
+        + len(challenge).to_bytes(1, "big")
+        + challenge
+    )
+
+    first_cert = x509.load_der_x509_certificate(msg.certificates[0])
+    first_cert.public_key().verify(
+        msg.signature, challenge_bytes, ec.ECDSA(hashes.SHA256())
+    )
+    click.echo("Challenge verified successfully.")
+
+    for issuer in msg.certificates[1:]:
+        cert = x509.load_der_x509_certificate(issuer)
+        if not offline:
+            issuer_pk = cert.public_key().public_bytes(
+                serialization.Encoding.X962,
+                serialization.PublicFormat.UncompressedPoint,
+            )
+            if issuer_pk not in TS3_CA_WHITELIST:
+                click.echo(
+                    f"Certificate {cert.subject.rfc4514_string()} was issued by an unknown CA."
+                )
+                raise click.ClickException("Failed to verify certificate chain!")
+
+        cert.public_key().verify(
+            first_cert.signature,
+            first_cert.tbs_certificate_bytes,
+            first_cert.signature_algorithm_parameters,
+        )
+        click.echo(
+            f"Certificate {first_cert.subject.rfc4514_string()} verified successfully."
+        )
+        first_cert = cert
+
+    if root is not None:
+        root_cert = x509.load_der_x509_certificate(root.read())
+        roots = [("the specified root certificate", root_cert.public_key())]
+    else:
+        prod_root = ec.EllipticCurvePublicKey.from_encoded_point(
+            ec.SECP256R1(), ROOT_PUBKEY_TS3
+        )
+        dev_root = ec.EllipticCurvePublicKey.from_encoded_point(
+            ec.SECP256R1(), DEV_ROOT_PUBKEY_TS3
+        )
+        roots = [
+            ("Trezor Company", prod_root),
+            ("TESTING ENVIRONMENT. DO NOT USE THIS DEVICE", dev_root),
+        ]
+
+    for issuer, pubkey in roots:
+        try:
+            pubkey.verify(
+                first_cert.signature,
+                first_cert.tbs_certificate_bytes,
+                first_cert.signature_algorithm_parameters,
+            )
+            click.echo(
+                f"Certificate {first_cert.subject.rfc4514_string()} was issued by {issuer}."
+            )
+            return
+        except Exception:
+            continue
+
+    raise click.ClickException("Failed to verify certificate chain!")
