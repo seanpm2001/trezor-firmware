@@ -552,68 +552,56 @@ static const uint8_t ECDSA_WITH_SHA256[] = {
 };
 // clang-format on
 
-static bool get_authority_key_digest(DER_ITEM *tbs_cert,
-                                     const uint8_t **authority_key_digest) {
+static bool get_cert_extensions(DER_ITEM *tbs_cert, DER_ITEM *extensions) {
   // Find the certificate extensions in the tbsCertificate.
   DER_ITEM cert_item = {0};
-  bool found = false;
   while (der_read_item(&tbs_cert->buf, &cert_item)) {
     if (cert_item.id == DER_X509_EXTENSIONS) {
-      found = true;
-      break;
+      // Open the extensions sequence.
+      return der_read_item(&cert_item.buf, extensions) &&
+             extensions->id == DER_SEQUENCE;
     }
   }
+  return false;
+}
 
-  if (!found) {
+static bool get_extension_value(const uint8_t *extension_oid,
+                                size_t extension_oid_size, DER_ITEM *extensions,
+                                DER_ITEM *extension_value) {
+  // Find the extension with the given OID.
+  DER_ITEM extension = {0};
+  while (der_read_item(&extensions->buf, &extension)) {
+    DER_ITEM extension_id = {0};
+    if (der_read_item(&extension.buf, &extension_id) &&
+        extension_id.buf.size == extension_oid_size &&
+        memcmp(extension_id.buf.data, extension_oid, extension_oid_size) == 0) {
+      // Find the extension's extnValue, skipping the optional critical flag.
+      while (der_read_item(&extension.buf, extension_value)) {
+        if (extension_value->id == DER_OCTET_STRING) {
+          return true;
+        }
+      }
+      return false;
+    }
+  }
+  return false;
+}
+
+static bool get_authority_key_digest(DER_ITEM *tbs_cert,
+                                     const uint8_t **authority_key_digest) {
+  DER_ITEM extensions = {0};
+  if (!get_cert_extensions(tbs_cert, &extensions)) {
     vcp_println("ERROR get_authority_key_digest, extensions not found.");
     return false;
   }
 
-  // Open the extensions sequence.
-  DER_ITEM extensions = {0};
-  if (!der_read_item(&cert_item.buf, &extensions) ||
-      extensions.id != DER_SEQUENCE) {
-    vcp_println("ERROR get_authority_key_digest, der_read_item extensions.");
-    return false;
-  }
-
-  // Find the authority key identifier extension.
-  DER_ITEM extension = {0};
-  found = false;
-  while (der_read_item(&extensions.buf, &extension)) {
-    DER_ITEM extension_id = {0};
-    if (der_read_item(&extension.buf, &extension_id) &&
-        extension_id.buf.size == sizeof(OID_AUTHORITY_KEY_IDENTIFIER) &&
-        memcmp(extension_id.buf.data, OID_AUTHORITY_KEY_IDENTIFIER,
-               sizeof(OID_AUTHORITY_KEY_IDENTIFIER)) == 0) {
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) {
+  // Find the authority key identifier extension's extnValue.
+  DER_ITEM extension_value = {0};
+  if (!get_extension_value(OID_AUTHORITY_KEY_IDENTIFIER,
+                           sizeof(OID_AUTHORITY_KEY_IDENTIFIER), &extensions,
+                           &extension_value)) {
     vcp_println(
         "ERROR get_authority_key_digest, authority key identifier extension "
-        "not found.");
-    return false;
-  }
-
-  // Find the authority key identifier extension's extnValue.
-  // Conforming CAs must mark this extension as non-critical, so there shouldn't
-  // be anything between the extension ID and value, but we search for the octet
-  // string to be on the safe side.
-  DER_ITEM extension_value = {0};
-  found = false;
-  while (der_read_item(&extension.buf, &extension_value)) {
-    if (extension_value.id == DER_OCTET_STRING) {
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) {
-    vcp_println(
-        "ERROR get_authority_key_digest, authority key identifier extnValue "
         "not found.");
     return false;
   }
