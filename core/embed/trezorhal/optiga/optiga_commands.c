@@ -849,7 +849,8 @@ optiga_result optiga_set_priv_key(uint16_t oid, const uint8_t priv_key[32]) {
     if (metadata.version.len != 2) {
       return OPTIGA_ERR_UNEXPECTED;
     }
-    payload_version = (metadata.version.ptr[0] << 8) + metadata.version.ptr[1];
+    payload_version =
+        ((metadata.version.ptr[0] & 0x7f) << 8) + metadata.version.ptr[1];
   }
   payload_version += 1;
 

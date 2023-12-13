@@ -509,8 +509,10 @@ void keyfido_write(char *data) {
   // Set change access condition for the FIDO key to Int(0xE0E8), so that we
   // can write the FIDO key using the trust anchor in OID 0xE0E8.
   memzero(&metadata, sizeof(metadata));
-  metadata.change.ptr = (const uint8_t *)"\x21\xe0\xe8";
-  metadata.change.len = 3;
+  metadata.change =
+      (const optiga_metadata_item){(const uint8_t[]){0x21, 0xe0, 0xe8}, 3};
+  metadata.version =
+      (const optiga_metadata_item){(const uint8_t[]){0x00, 0x00}, 2};
   if (!set_metadata(OID_KEY_FIDO, &metadata)) {
     return;
   }
