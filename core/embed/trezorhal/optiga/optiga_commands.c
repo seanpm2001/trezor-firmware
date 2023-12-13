@@ -37,8 +37,15 @@
 static uint8_t tx_buffer[OPTIGA_MAX_APDU_SIZE] = {0};
 static size_t tx_size = 0;
 
+// Only lock LCSO in production.
+#if PRODUCTION
+#define LCSO_LOCK_BYTE "\x07"
+#else
+#define LCSO_LOCK_BYTE "\x01"
+#endif
+
 const optiga_metadata_item OPTIGA_META_LCS_OPERATIONAL = {
-    (const uint8_t *)"\x07", 1};
+    (const uint8_t *)LCSO_LOCK_BYTE, 1};
 const optiga_metadata_item OPTIGA_META_ACCESS_ALWAYS = {
     (const uint8_t[]){OPTIGA_ACCESS_COND_ALW}, 1};
 const optiga_metadata_item OPTIGA_META_ACCESS_NEVER = {
