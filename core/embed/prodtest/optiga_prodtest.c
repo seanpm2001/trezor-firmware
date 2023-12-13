@@ -630,15 +630,8 @@ static bool get_authority_key_digest(DER_ITEM *tbs_cert,
 
   // Find the keyIdentifier field.
   DER_ITEM key_id = {0};
-  found = false;
-  while (der_read_item(&auth_key_id.buf, &key_id)) {
-    if (key_id.id == DER_X509_KEY_IDENTIFIER) {
-      found = true;
-      break;
-    }
-  }
-
-  if (!found) {
+  if (!der_read_item(&auth_key_id.buf, &key_id) ||
+      key_id.id != DER_X509_KEY_IDENTIFIER) {
     vcp_println(
         "ERROR get_authority_key_digest, failed to find keyIdentifier field.");
     return false;
