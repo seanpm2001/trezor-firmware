@@ -28,13 +28,16 @@ let
     sha256 = "02s3qkb6kz3ndyx7rfndjbvp4vlwiqc42fxypn3g6jnc0v5jyz95";
   }) { };
   moneroTests = nixpkgs.fetchurl {
-    url = "https://github.com/ph4r05/monero/releases/download/v0.18.1.1-dev-tests-u18.04-02/trezor_tests";
-    sha256 = "81424cfc3965abdc24de573274bf631337b52fd25cefc895513214c613fe05c9";
+    url = "https://github.com/ph4r05/monero/releases/download/v0.18.3.1-dev-tests-u20.04-02/trezor_tests";
+    sha256 = "f10d0d7c9da072a3779b94eee866b92e1c458e79ce078b1df6b42ee7101c3227";
   };
   moneroTestsPatched = nixpkgs.runCommandCC "monero_trezor_tests" {} ''
     cp ${moneroTests} $out
     chmod +wx $out
-    ${nixpkgs.patchelf}/bin/patchelf --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" "$out"
+    ${nixpkgs.patchelf}/bin/patchelf \
+      --set-interpreter "$(cat $NIX_CC/nix-support/dynamic-linker)" \
+      --add-rpath "${nixpkgs.udev}/lib" \
+      "$out"
     chmod -w $out
   '';
   # do not expose rust's gcc: https://github.com/oxalica/rust-overlay/issues/70
