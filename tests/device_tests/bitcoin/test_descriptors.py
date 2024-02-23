@@ -16,7 +16,7 @@
 
 import pytest
 
-from trezorlib import btc, messages
+from trezorlib import btc, messages, models
 from trezorlib.cli import btc as btc_cli
 from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.tools import H_
@@ -161,22 +161,15 @@ def _address_n(purpose, coin, account, script_type):
     return res
 
 
+@pytest.mark.skip_t1
 @pytest.mark.parametrize(
     "coin, account, purpose, script_type, descriptors", VECTORS_DESCRIPTORS
 )
 def test_descriptors(client: Client, coin, account, purpose, script_type, descriptors):
     with client:
-        if client.features.model != "1":
-            IF = InputFlowShowXpubQRCode(client)
-            client.set_input_flow(IF.get())
-        res = btc_cli._get_descriptor(
-            client, coin, account, purpose, script_type, show_display=True
-        )
-        assert res == descriptors
+        IF = InputFlowShowXpubQRCode(client)
+        client.set_input_flow(IF.get())
 
-        if client.features.model != "1":
-            IF = InputFlowShowXpubQRCode(client)
-            client.set_input_flow(IF.get())
         address_n = _address_n(purpose, coin, account, script_type)
         res = btc.get_public_node(
             client,
@@ -188,3 +181,17 @@ def test_descriptors(client: Client, coin, account, purpose, script_type, descri
             unlock_path=btc_cli.get_unlock_path(address_n),
         )
         assert res.descriptor == descriptors
+
+
+@pytest.mark.parametrize(
+    "coin, account, purpose, script_type, descriptors", VECTORS_DESCRIPTORS
+)
+def test_descriptors_trezorlib(client: Client, coin, account, purpose, script_type, descriptors):
+    with client:
+        if client.model != models.T1B1:
+            IF = InputFlowShowXpubQRCode(client)
+            client.set_input_flow(IF.get())
+        res = btc_cli._get_descriptor(
+            client, coin, account, purpose, script_type, show_display=True
+        )
+        assert res == descriptors
