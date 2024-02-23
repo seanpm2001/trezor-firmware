@@ -186,7 +186,9 @@ def test_descriptors(client: Client, coin, account, purpose, script_type, descri
 @pytest.mark.parametrize(
     "coin, account, purpose, script_type, descriptors", VECTORS_DESCRIPTORS
 )
-def test_descriptors_trezorlib(client: Client, coin, account, purpose, script_type, descriptors):
+def test_descriptors_trezorlib(
+    client: Client, coin, account, purpose, script_type, descriptors
+):
     with client:
         if client.model != models.T1B1:
             IF = InputFlowShowXpubQRCode(client)
