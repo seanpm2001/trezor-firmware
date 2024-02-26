@@ -81,6 +81,56 @@ void fsm_msgGetPublicKey(const GetPublicKey *msg) {
     resp->node.public_key.bytes[0] = 0;
   }
 
+  bool descriptor = true;
+  size_t descriptor_len = 0;
+
+  if (script_type == InputScriptType_SPENDADDRESS) {
+    strlcpy(resp->descriptor, "pkh([", sizeof(resp->descriptor));
+    descriptor_len += 5;
+  } else if (script_type == InputScriptType_SPENDP2SHWITNESS) {
+    strlcpy(resp->descriptor, "sh(wpkh([", sizeof(resp->descriptor));
+    descriptor_len += 9;
+  } else if (script_type == InputScriptType_SPENDWITNESS) {
+    strlcpy(resp->descriptor, "wpkh([", sizeof(resp->descriptor));
+    descriptor_len += 6;
+  } else if (script_type == InputScriptType_SPENDTAPROOT) {
+    strlcpy(resp->descriptor, "tr([", sizeof(resp->descriptor));
+    descriptor_len += 4;
+  } else {
+    descriptor = false;
+  }
+  if (descriptor) {
+    // FIXME this needs to be lowercase
+    uint32hex(root_fingerprint, resp->descriptor + descriptor_len);
+    descriptor_len += 8;
+
+    for (size_t i = 0; i < msg->address_n_count; i++) {
+      strlcpy(resp->descriptor + descriptor_len, "/",
+              sizeof(resp->descriptor) - descriptor_len);
+      descriptor_len++;
+
+      uint32_t unhardened = msg->address_n[i] & PATH_UNHARDEN_MASK;
+
+      if (descriptor_len + 17 > sizeof(resp->descriptor)) {
+        descriptor = false;
+        break;
+      }
+
+      char *result = itoa(unhardened, resp->descriptor + descriptor_len, 10);
+      descriptor_len += result - (resp->descriptor + descriptor_len);
+
+      if (msg->address_n[i] & PATH_HARDENED) {
+        strlcpy(resp->descriptor + descriptor_len, "'",
+                sizeof(resp->descriptor) - descriptor_len);
+        descriptor_len++;
+      }
+    }
+
+    strlcpy(resp->descriptor + descriptor_len, "]",
+            sizeof(resp->descriptor) - descriptor_len);
+    descriptor_len++;
+  }
+
   if (coin->xpub_magic && (script_type == InputScriptType_SPENDADDRESS ||
                            script_type == InputScriptType_SPENDMULTISIG)) {
     hdnode_serialize_public(node, fingerprint, coin->xpub_magic, resp->xpub,
@@ -113,9 +163,37 @@ void fsm_msgGetPublicKey(const GetPublicKey *msg) {
     layoutHome();
     return;
   }
+  if (descriptor) {
+    if (coin->xpub_magic) {
+      char tmp[XPUB_MAXLEN] = {0};
+      hdnode_serialize_public(node, fingerprint, coin->xpub_magic, tmp,
+                              sizeof(tmp));
+      strlcpy(resp->descriptor + descriptor_len, tmp,
+              sizeof(resp->descriptor) - descriptor_len);
+      descriptor_len += strlen(tmp);
+
+      strlcpy(resp->descriptor + descriptor_len, "/<0;1>/*)",
+              sizeof(resp->descriptor) - descriptor_len);
+      descriptor_len += 9;
+
+      if (script_type == InputScriptType_SPENDP2SHWITNESS) {
+        strlcpy(resp->descriptor + descriptor_len, ")",
+                sizeof(resp->descriptor) - descriptor_len);
+        descriptor_len++;
+      }
+
+      strlcpy(resp->descriptor + descriptor_len, "#00000000",
+              sizeof(resp->descriptor) - descriptor_len);
+      descriptor_len += 9;
+    } else {
+      descriptor = false;
+    }
+  }
+  resp->has_descriptor = descriptor;
 
   if (msg->has_show_display && msg->show_display) {
     for (int page = 0; page < 2; page++) {
+      // TODO show descriptor
       layoutXPUB(resp->xpub, page);
       if (!protectButton(ButtonRequestType_ButtonRequest_PublicKey, true)) {
         memzero(resp, sizeof(PublicKey));

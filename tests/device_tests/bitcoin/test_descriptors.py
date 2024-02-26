@@ -161,14 +161,14 @@ def _address_n(purpose, coin, account, script_type):
     return res
 
 
-@pytest.mark.skip_t1
 @pytest.mark.parametrize(
     "coin, account, purpose, script_type, descriptors", VECTORS_DESCRIPTORS
 )
 def test_descriptors(client: Client, coin, account, purpose, script_type, descriptors):
     with client:
-        IF = InputFlowShowXpubQRCode(client)
-        client.set_input_flow(IF.get())
+        if client.model != models.T1B1:
+            IF = InputFlowShowXpubQRCode(client)
+            client.set_input_flow(IF.get())
 
         address_n = _address_n(purpose, coin, account, script_type)
         res = btc.get_public_node(
