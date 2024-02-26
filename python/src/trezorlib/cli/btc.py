@@ -302,10 +302,10 @@ def _get_descriptor(
     else:
         raise ValueError("Unsupported coin")
 
-    path = f"m/{purpose}h/{coin_type}h/{account}h"
+    path = f"m/{purpose}'/{coin_type}'/{account}'"
     if purpose == PURPOSE_SLIP25:
         if script_type == messages.InputScriptType.SPENDTAPROOT:
-            path += "/1h"
+            path += "/1'"
         else:
             raise ValueError("Unsupported SLIP25 script type")
 
