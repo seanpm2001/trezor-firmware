@@ -5,7 +5,7 @@ Handles on-the-wire communication with a host computer. The communication is:
 
 - Request / response.
 - Protobuf-encoded, see `protobuf.py`.
-- Wrapped in a simple envelope format, see `trezor/wire/codec_v1.py`.
+- Wrapped in a simple envelope format, see `trezor/wire/codec_v1.py` or `trezor/wire/thp_v1.py`.
 - Transferred over USB interface, or UDP in case of Unix emulation.
 
 This module:
@@ -26,11 +26,11 @@ reads the message's header. When the message type is known the first handler is 
 from micropython import const
 from typing import TYPE_CHECKING
 
-from storage.cache import InvalidSessionError
+from storage.cache_common import InvalidSessionError
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
 from trezor.messages import Failure
-from trezor.wire import codec_v1, context
+from trezor.wire import codec_v1, context, protocol_common
 from trezor.wire.errors import ActionCancelled, DataError, Error
 
 # Import all errors into namespace, so that `wire.Error` is available from
@@ -45,7 +45,6 @@ if TYPE_CHECKING:
     Msg = TypeVar("Msg", bound=protobuf.MessageType)
     HandlerTask = Coroutine[Any, Any, protobuf.MessageType]
     Handler = Callable[[Msg], HandlerTask]
-
     LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
 
 
@@ -55,7 +54,9 @@ EXPERIMENTAL_ENABLED = False
 
 def setup(iface: WireInterface, is_debug_session: bool = False) -> None:
     """Initialize the wire stack on passed USB interface."""
-    loop.schedule(handle_session(iface, codec_v1.SESSION_ID, is_debug_session))
+    loop.schedule(
+        handle_session(iface, codec_v1.SESSION_ID.to_bytes(4, "big"), is_debug_session)
+    )
 
 
 def wrap_protobuf_load(
@@ -88,8 +89,8 @@ if __debug__:
 
 
 async def _handle_single_message(
-    ctx: context.Context, msg: codec_v1.Message, use_workflow: bool
-) -> codec_v1.Message | None:
+    ctx: context.Context, msg: protocol_common.Message, use_workflow: bool
+) -> protocol_common.Message | None:
     """Handle a message that was loaded from USB by the caller.
 
     Find the appropriate handler, run it and write its result on the wire. In case
@@ -109,11 +110,15 @@ async def _handle_single_message(
             msg_type = protobuf.type_for_wire(msg.type).MESSAGE_NAME
         except Exception:
             msg_type = f"{msg.type} - unknown message type"
+        if ctx.session_id is not None:
+            sid = int.from_bytes(ctx.session_id, "big")
+        else:
+            sid = -1
         log.debug(
             __name__,
             "%s:%x receive: <%s>",
             ctx.iface.iface_num(),
-            ctx.sid,
+            sid,
             msg_type,
         )
 
@@ -193,15 +198,15 @@ async def _handle_single_message(
 
 
 async def handle_session(
-    iface: WireInterface, session_id: int, is_debug_session: bool = False
+    iface: WireInterface, session_id: bytes, is_debug_session: bool = False
 ) -> None:
     if __debug__ and is_debug_session:
         ctx_buffer = WIRE_BUFFER_DEBUG
     else:
         ctx_buffer = WIRE_BUFFER
 
-    ctx = context.Context(iface, session_id, ctx_buffer)
-    next_msg: codec_v1.Message | None = None
+    ctx = context.Context(iface, ctx_buffer, session_id)
+    next_msg: protocol_common.Message | None = None
 
     if __debug__ and is_debug_session:
         import apps.debug
@@ -218,7 +223,7 @@ async def handle_session(
                 # wait for a new one coming from the wire.
                 try:
                     msg = await ctx.read_from_wire()
-                except codec_v1.CodecError as exc:
+                except protocol_common.WireError as exc:
                     if __debug__:
                         log.exception(__name__, exc)
                     await ctx.write(failure(exc))
@@ -228,6 +233,9 @@ async def handle_session(
                 # Process the message from previous run.
                 msg = next_msg
                 next_msg = None
+
+            # Set ctx.session_id to the value msg.session_id
+            ctx.session_id = msg.session_id
 
             try:
                 next_msg = await _handle_single_message(
