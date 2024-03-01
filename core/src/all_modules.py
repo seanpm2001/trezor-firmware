@@ -47,6 +47,12 @@ storage
 import storage
 storage.cache
 import storage.cache
+storage.cache_codec
+import storage.cache_codec
+storage.cache_common
+import storage.cache_common
+storage.cache_thp
+import storage.cache_thp
 storage.common
 import storage.common
 storage.debug
@@ -195,6 +201,14 @@ trezor.wire.context
 import trezor.wire.context
 trezor.wire.errors
 import trezor.wire.errors
+trezor.wire.protocol
+import trezor.wire.protocol
+trezor.wire.protocol_common
+import trezor.wire.protocol_common
+trezor.wire.thp_session
+import trezor.wire.thp_session
+trezor.wire.thp_v1
+import trezor.wire.thp_v1
 trezor.workflow
 import trezor.workflow
 apps

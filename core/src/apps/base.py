@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 import storage.cache as storage_cache
+import storage.cache_thp as storage_thp_cache
 import storage.device as storage_device
 from trezor import TR, config, utils, wire, workflow
 from trezor.enums import HomescreenFormat, MessageType
@@ -174,10 +175,21 @@ def get_features() -> Features:
     return f
 
 
-async def handle_Initialize(msg: Initialize) -> Features:
-    session_id = storage_cache.start_session(msg.session_id)
+# handle_Initialize should not be used with THP to start a new session
+async def handle_Initialize(
+    msg: Initialize, message_session_id: bytearray | None = None
+) -> Features:
+    if message_session_id is None and utils.USE_THP:
+        raise ValueError("With THP enabled, a session id must be provided in args")
+
+    if utils.USE_THP:
+        session_id = storage_thp_cache.start_existing_session(msg.session_id)
+    else:
+        session_id = storage_cache.start_session(msg.session_id)
 
     if not utils.BITCOIN_ONLY:
+        # TODO this block should be changed in THP
+
         derive_cardano = storage_cache.get(storage_cache.APP_COMMON_DERIVE_CARDANO)
         have_seed = storage_cache.is_set(storage_cache.APP_COMMON_SEED)
 
@@ -189,7 +201,7 @@ async def handle_Initialize(msg: Initialize) -> Features:
             # seed is already derived, and host wants to change derive_cardano setting
             # => create a new session
             storage_cache.end_current_session()
-            session_id = storage_cache.start_session()
+            session_id = storage_cache.start_session()  # This should not be used in THP
             have_seed = False
 
         if not have_seed:
@@ -199,7 +211,7 @@ async def handle_Initialize(msg: Initialize) -> Features:
             )
 
     features = get_features()
-    features.session_id = session_id
+    features.session_id = session_id  # not important in THP
     return features
 
 

@@ -5,7 +5,7 @@ Handles on-the-wire communication with a host computer. The communication is:
 
 - Request / response.
 - Protobuf-encoded, see `protobuf.py`.
-- Wrapped in a simple envelope format, see `trezor/wire/codec_v1.py`.
+- Wrapped in a simple envelope format, see `trezor/wire/codec_v1.py` or `trezor/wire/thp_v1.py`.
 - Transferred over USB interface, or UDP in case of Unix emulation.
 
 This module:
@@ -23,15 +23,17 @@ reads the message's header. When the message type is known the first handler is 
 
 """
 
+from apps import workflow_handlers
 from micropython import const
 from typing import TYPE_CHECKING
 
-from storage.cache import InvalidSessionError
+from storage.cache_codec import InvalidSessionError
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
 from trezor.messages import Failure
-from trezor.wire import codec_v1, context
+from trezor.wire import codec_v1, context, protocol_common
 from trezor.wire.errors import ActionCancelled, DataError, Error
+import trezor.enums.MessageType as MT
 
 # Import all errors into namespace, so that `wire.Error` is available from
 # other packages.
@@ -88,8 +90,8 @@ if __debug__:
 
 
 async def _handle_single_message(
-    ctx: context.Context, msg: codec_v1.Message, use_workflow: bool
-) -> codec_v1.Message | None:
+    ctx: context.Context, msg: protocol_common.Message, use_workflow: bool
+) -> protocol_common.Message | None:
     """Handle a message that was loaded from USB by the caller.
 
     Find the appropriate handler, run it and write its result on the wire. In case
@@ -113,7 +115,7 @@ async def _handle_single_message(
             __name__,
             "%s:%x receive: <%s>",
             ctx.iface.iface_num(),
-            ctx.sid,
+            ctx.session_id,
             msg_type,
         )
 
@@ -143,7 +145,11 @@ async def _handle_single_message(
         req_msg = wrap_protobuf_load(msg.data, req_type)
 
         # Create the handler task.
-        task = handler(req_msg)
+        if msg.type is MT.Initialize:
+            # Special case for handle_initialize to have access to the verified session_id
+            task = handler(req_msg, ctx.session_id)
+        else:
+            task = handler(req_msg)
 
         # Run the workflow task.  Workflow can do more on-the-wire
         # communication inside, but it should eventually return a
@@ -201,7 +207,7 @@ async def handle_session(
         ctx_buffer = WIRE_BUFFER
 
     ctx = context.Context(iface, session_id, ctx_buffer)
-    next_msg: codec_v1.Message | None = None
+    next_msg: protocol_common.Message | None = None
 
     if __debug__ and is_debug_session:
         import apps.debug
@@ -218,7 +224,7 @@ async def handle_session(
                 # wait for a new one coming from the wire.
                 try:
                     msg = await ctx.read_from_wire()
-                except codec_v1.CodecError as exc:
+                except protocol_common.WireError as exc:
                     if __debug__:
                         log.exception(__name__, exc)
                     await ctx.write(failure(exc))
@@ -228,6 +234,9 @@ async def handle_session(
                 # Process the message from previous run.
                 msg = next_msg
                 next_msg = None
+
+                # Set ctx.session_id to the value msg.session_id
+                ctx.session_id = msg.session_id
 
             try:
                 next_msg = await _handle_single_message(

@@ -252,16 +252,16 @@ def run_class(c, test_result):
                         raise RuntimeError(f"{name} should not return a result.")
                 finally:
                     tear_down()
-                print(" ok")
+                print("\033[32mok\033[0m")
             except SkipTest as e:
                 print(" skipped:", e.args[0])
                 test_result.skippedNum += 1
             except AssertionError as e:
-                print(" failed")
+                print("\033[31mfailed\033[0m")
                 sys.print_exception(e)
                 test_result.failuresNum += 1
             except BaseException as e:
-                print(" errored:", e)
+                print("\033[31merrored:\033[0m", e)
                 sys.print_exception(e)
                 test_result.errorsNum += 1
 
