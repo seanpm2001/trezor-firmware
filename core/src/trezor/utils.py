@@ -33,6 +33,8 @@ MODEL_IS_T2B1: bool = INTERNAL_MODEL == "T2B1"
 
 DISABLE_ANIMATION = 0
 
+USE_THP = True  # TODO move elsewhere, probably to core/embed/trezorhal/...
+
 if __debug__:
     if EMULATOR:
         import uos

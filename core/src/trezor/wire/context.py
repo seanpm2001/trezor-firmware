@@ -17,7 +17,8 @@ from typing import TYPE_CHECKING
 
 from trezor import log, loop, protobuf
 
-from . import codec_v1
+from .protocol import WireProtocol
+from .protocol_common import Message
 
 if TYPE_CHECKING:
     from trezorio import WireInterface
@@ -48,7 +49,7 @@ class UnexpectedMessage(Exception):
     should be aborted and a new one started as if `msg` was the first message.
     """
 
-    def __init__(self, msg: codec_v1.Message) -> None:
+    def __init__(self, msg: Message) -> None:
         super().__init__()
         self.msg = msg
 
@@ -60,14 +61,14 @@ class Context:
     (i.e., wire, debug, single BT connection, etc.)
     """
 
-    def __init__(self, iface: WireInterface, sid: int, buffer: bytearray) -> None:
+    def __init__(self, iface: WireInterface, buffer: bytearray) -> None:
         self.iface = iface
-        self.sid = sid
         self.buffer = buffer
+        self.session_id: bytearray | None = None
 
-    def read_from_wire(self) -> Awaitable[codec_v1.Message]:
+    def read_from_wire(self) -> Awaitable[Message]:
         """Read a whole message from the wire without parsing it."""
-        return codec_v1.read_message(self.iface, self.buffer)
+        return WireProtocol.read_message(self.iface, self.buffer)
 
     if TYPE_CHECKING:
 
@@ -97,7 +98,7 @@ class Context:
                 __name__,
                 "%s:%x expect: %s",
                 self.iface.iface_num(),
-                self.sid,
+                self.session_id,
                 expected_type.MESSAGE_NAME if expected_type else expected_types,
             )
 
@@ -109,6 +110,9 @@ class Context:
         if msg.type not in expected_types:
             raise UnexpectedMessage(msg)
 
+        # TODO check that the message has the expected session_id. If not, raise UnexpectedMessageError
+        # (and maybe update ctx.session_id - depends on expected behaviour)
+
         if expected_type is None:
             expected_type = protobuf.type_for_wire(msg.type)
 
@@ -117,7 +121,7 @@ class Context:
                 __name__,
                 "%s:%x read: %s",
                 self.iface.iface_num(),
-                self.sid,
+                self.session_id,
                 expected_type.MESSAGE_NAME,
             )
 
@@ -133,7 +137,7 @@ class Context:
                 __name__,
                 "%s:%x write: %s",
                 self.iface.iface_num(),
-                self.sid,
+                self.session_id,
                 msg.MESSAGE_NAME,
             )
 
@@ -151,10 +155,13 @@ class Context:
 
         msg_size = protobuf.encode(buffer, msg)
 
-        await codec_v1.write_message(
+        await WireProtocol.write_message(
             self.iface,
-            msg.MESSAGE_WIRE_TYPE,
-            memoryview(buffer)[:msg_size],
+            Message(
+                message_type=msg.MESSAGE_WIRE_TYPE,
+                message_data=memoryview(buffer)[:msg_size],
+                session_id=self.session_id,
+            ),
         )
 
 
