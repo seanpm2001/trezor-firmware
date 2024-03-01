@@ -175,7 +175,11 @@ def get_features() -> Features:
     return f
 
 
+# handle_Initialize should not be used with THP to start a new session
 async def handle_Initialize(msg: Initialize) -> Features:
+    if utils.USE_THP:
+        raise ValueError("With THP enabled, a session id must be provided in args")
+
     session_id = storage_cache.start_session(msg.session_id)
 
     if not utils.BITCOIN_ONLY:
@@ -190,7 +194,7 @@ async def handle_Initialize(msg: Initialize) -> Features:
             # seed is already derived, and host wants to change derive_cardano setting
             # => create a new session
             storage_cache.end_current_session()
-            session_id = storage_cache.start_session()
+            session_id = storage_cache.start_session()  # This should not be used in THP
             have_seed = False
 
         if not have_seed:

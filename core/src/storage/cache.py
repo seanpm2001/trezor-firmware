@@ -3,17 +3,15 @@ import gc
 from micropython import const
 from typing import TYPE_CHECKING
 
+from storage.cache_common import InvalidSessionError, SessionlessCache
 from trezor import utils
 
+SESSIONLESS_FLAG = const(128)
+
 if TYPE_CHECKING:
-    from typing import Sequence, TypeVar, overload
+    from typing import TypeVar, overload
 
     T = TypeVar("T")
-
-
-_MAX_SESSIONS_COUNT = const(10)
-_SESSIONLESS_FLAG = const(128)
-_SESSION_ID_LENGTH = const(32)
 
 # Traditional cache keys
 APP_COMMON_SEED = const(0)
@@ -27,14 +25,13 @@ if not utils.BITCOIN_ONLY:
     APP_MONERO_LIVE_REFRESH = const(7)
 
 # Keys that are valid across sessions
-APP_COMMON_SEED_WITHOUT_PASSPHRASE = const(0 | _SESSIONLESS_FLAG)
-APP_COMMON_SAFETY_CHECKS_TEMPORARY = const(1 | _SESSIONLESS_FLAG)
-STORAGE_DEVICE_EXPERIMENTAL_FEATURES = const(2 | _SESSIONLESS_FLAG)
-APP_COMMON_REQUEST_PIN_LAST_UNLOCK = const(3 | _SESSIONLESS_FLAG)
-APP_COMMON_BUSY_DEADLINE_MS = const(4 | _SESSIONLESS_FLAG)
-APP_MISC_COSI_NONCE = const(5 | _SESSIONLESS_FLAG)
-APP_MISC_COSI_COMMITMENT = const(6 | _SESSIONLESS_FLAG)
-
+APP_COMMON_SEED_WITHOUT_PASSPHRASE = const(0 | SESSIONLESS_FLAG)
+APP_COMMON_SAFETY_CHECKS_TEMPORARY = const(1 | SESSIONLESS_FLAG)
+STORAGE_DEVICE_EXPERIMENTAL_FEATURES = const(2 | SESSIONLESS_FLAG)
+APP_COMMON_REQUEST_PIN_LAST_UNLOCK = const(3 | SESSIONLESS_FLAG)
+APP_COMMON_BUSY_DEADLINE_MS = const(4 | SESSIONLESS_FLAG)
+APP_MISC_COSI_NONCE = const(5 | SESSIONLESS_FLAG)
+APP_MISC_COSI_COMMITMENT = const(6 | SESSIONLESS_FLAG)
 
 # === Homescreen storage ===
 # This does not logically belong to the "cache" functionality, but the cache module is
@@ -52,103 +49,6 @@ homescreen_shown: object | None = None
 autolock_last_touch: int | None = None
 
 
-class InvalidSessionError(Exception):
-    pass
-
-
-class DataCache:
-    fields: Sequence[int]
-
-    def __init__(self) -> None:
-        self.data = [bytearray(f + 1) for f in self.fields]
-
-    def set(self, key: int, value: bytes) -> None:
-        utils.ensure(key < len(self.fields))
-        utils.ensure(len(value) <= self.fields[key])
-        self.data[key][0] = 1
-        self.data[key][1:] = value
-
-    if TYPE_CHECKING:
-
-        @overload
-        def get(self, key: int) -> bytes | None: ...
-
-        @overload
-        def get(self, key: int, default: T) -> bytes | T:  # noqa: F811
-            ...
-
-    def get(self, key: int, default: T | None = None) -> bytes | T | None:  # noqa: F811
-        utils.ensure(key < len(self.fields))
-        if self.data[key][0] != 1:
-            return default
-        return bytes(self.data[key][1:])
-
-    def is_set(self, key: int) -> bool:
-        utils.ensure(key < len(self.fields))
-        return self.data[key][0] == 1
-
-    def delete(self, key: int) -> None:
-        utils.ensure(key < len(self.fields))
-        self.data[key][:] = b"\x00"
-
-    def clear(self) -> None:
-        for i in range(len(self.fields)):
-            self.delete(i)
-
-
-class SessionCache(DataCache):
-    def __init__(self) -> None:
-        self.session_id = bytearray(_SESSION_ID_LENGTH)
-        if utils.BITCOIN_ONLY:
-            self.fields = (
-                64,  # APP_COMMON_SEED
-                2,  # APP_COMMON_AUTHORIZATION_TYPE
-                128,  # APP_COMMON_AUTHORIZATION_DATA
-                32,  # APP_COMMON_NONCE
-            )
-        else:
-            self.fields = (
-                64,  # APP_COMMON_SEED
-                2,  # APP_COMMON_AUTHORIZATION_TYPE
-                128,  # APP_COMMON_AUTHORIZATION_DATA
-                32,  # APP_COMMON_NONCE
-                1,  # APP_COMMON_DERIVE_CARDANO
-                96,  # APP_CARDANO_ICARUS_SECRET
-                96,  # APP_CARDANO_ICARUS_TREZOR_SECRET
-                1,  # APP_MONERO_LIVE_REFRESH
-            )
-        self.last_usage = 0
-        super().__init__()
-
-    def export_session_id(self) -> bytes:
-        from trezorcrypto import random  # avoid pulling in trezor.crypto
-
-        # generate a new session id if we don't have it yet
-        if not self.session_id:
-            self.session_id[:] = random.bytes(_SESSION_ID_LENGTH)
-        # export it as immutable bytes
-        return bytes(self.session_id)
-
-    def clear(self) -> None:
-        super().clear()
-        self.last_usage = 0
-        self.session_id[:] = b""
-
-
-class SessionlessCache(DataCache):
-    def __init__(self) -> None:
-        self.fields = (
-            64,  # APP_COMMON_SEED_WITHOUT_PASSPHRASE
-            1,  # APP_COMMON_SAFETY_CHECKS_TEMPORARY
-            1,  # STORAGE_DEVICE_EXPERIMENTAL_FEATURES
-            8,  # APP_COMMON_REQUEST_PIN_LAST_UNLOCK
-            8,  # APP_COMMON_BUSY_DEADLINE_MS
-            32,  # APP_MISC_COSI_NONCE
-            32,  # APP_MISC_COSI_COMMITMENT
-        )
-        super().__init__()
-
-
 # XXX
 # Allocation notes:
 # Instantiation of a DataCache subclass should make as little garbage as possible, so
@@ -157,97 +57,46 @@ class SessionlessCache(DataCache):
 # bytearrays, then later call `clear()` on all the existing objects, which resets them
 # to zero length. This is producing some trash - `b[:]` allocates a slice.
 
-_SESSIONS: list[SessionCache] = []
-for _ in range(_MAX_SESSIONS_COUNT):
-    _SESSIONS.append(SessionCache())
-
 _SESSIONLESS_CACHE = SessionlessCache()
 
-for session in _SESSIONS:
-    session.clear()
+
+if utils.USE_THP:
+    from storage import cache_thp
+
+    _PROTOCOL_CACHE = cache_thp
+else:
+    from storage import cache_codec
+
+    _PROTOCOL_CACHE = cache_codec
+
+_PROTOCOL_CACHE.initialize()
 _SESSIONLESS_CACHE.clear()
 
 gc.collect()
 
 
-_active_session_idx: int | None = None
-_session_usage_counter = 0
+def clear_all() -> None:
+    global autolock_last_touch
+    autolock_last_touch = None
+    _SESSIONLESS_CACHE.clear()
+    _PROTOCOL_CACHE.clear_all()
 
 
 def start_session(received_session_id: bytes | None = None) -> bytes:
-    global _active_session_idx
-    global _session_usage_counter
-
-    if (
-        received_session_id is not None
-        and len(received_session_id) != _SESSION_ID_LENGTH
-    ):
-        # Prevent the caller from setting received_session_id=b"" and finding a cleared
-        # session. More generally, short-circuit the session id search, because we know
-        # that wrong-length session ids should not be in cache.
-        # Reduce to "session id not provided" case because that's what we do when
-        # caller supplies an id that is not found.
-        received_session_id = None
-
-    _session_usage_counter += 1
-
-    # attempt to find specified session id
-    if received_session_id:
-        for i in range(_MAX_SESSIONS_COUNT):
-            if _SESSIONS[i].session_id == received_session_id:
-                _active_session_idx = i
-                _SESSIONS[i].last_usage = _session_usage_counter
-                return received_session_id
-
-    # allocate least recently used session
-    lru_counter = _session_usage_counter
-    lru_session_idx = 0
-    for i in range(_MAX_SESSIONS_COUNT):
-        if _SESSIONS[i].last_usage < lru_counter:
-            lru_counter = _SESSIONS[i].last_usage
-            lru_session_idx = i
-
-    _active_session_idx = lru_session_idx
-    selected_session = _SESSIONS[lru_session_idx]
-    selected_session.clear()
-    selected_session.last_usage = _session_usage_counter
-    return selected_session.export_session_id()
+    return _PROTOCOL_CACHE.start_session(received_session_id)
 
 
 def end_current_session() -> None:
-    global _active_session_idx
-
-    if _active_session_idx is None:
-        return
-
-    _SESSIONS[_active_session_idx].clear()
-    _active_session_idx = None
+    _PROTOCOL_CACHE.end_current_session()
 
 
-def set(key: int, value: bytes) -> None:
-    if key & _SESSIONLESS_FLAG:
-        _SESSIONLESS_CACHE.set(key ^ _SESSIONLESS_FLAG, value)
-        return
-    if _active_session_idx is None:
+def delete(key: int) -> None:
+    if key & SESSIONLESS_FLAG:
+        return _SESSIONLESS_CACHE.delete(key ^ SESSIONLESS_FLAG)
+    active_session = _PROTOCOL_CACHE.get_active_session()
+    if active_session is None:
         raise InvalidSessionError
-    _SESSIONS[_active_session_idx].set(key, value)
-
-
-def set_int(key: int, value: int) -> None:
-    if key & _SESSIONLESS_FLAG:
-        length = _SESSIONLESS_CACHE.fields[key ^ _SESSIONLESS_FLAG]
-    elif _active_session_idx is None:
-        raise InvalidSessionError
-    else:
-        length = _SESSIONS[_active_session_idx].fields[key]
-
-    encoded = value.to_bytes(length, "big")
-
-    # Ensure that the value fits within the length. Micropython's int.to_bytes()
-    # doesn't raise OverflowError.
-    assert int.from_bytes(encoded, "big") == value
-
-    set(key, encoded)
+    return active_session.delete(key)
 
 
 if TYPE_CHECKING:
@@ -261,11 +110,12 @@ if TYPE_CHECKING:
 
 
 def get(key: int, default: T | None = None) -> bytes | T | None:  # noqa: F811
-    if key & _SESSIONLESS_FLAG:
-        return _SESSIONLESS_CACHE.get(key ^ _SESSIONLESS_FLAG, default)
-    if _active_session_idx is None:
+    if key & SESSIONLESS_FLAG:
+        return _SESSIONLESS_CACHE.get(key ^ SESSIONLESS_FLAG, default)
+    active_session = _PROTOCOL_CACHE.get_active_session()
+    if active_session is None:
         raise InvalidSessionError
-    return _SESSIONS[_active_session_idx].get(key, default)
+    return active_session.get(key, default)
 
 
 def get_int(key: int, default: T | None = None) -> int | T | None:  # noqa: F811
@@ -277,29 +127,51 @@ def get_int(key: int, default: T | None = None) -> int | T | None:  # noqa: F811
 
 
 def get_int_all_sessions(key: int) -> builtins.set[int]:
-    sessions = [_SESSIONLESS_CACHE] if key & _SESSIONLESS_FLAG else _SESSIONS
-    values = builtins.set()
-    for session in sessions:
-        encoded = session.get(key)
+    if key & SESSIONLESS_FLAG:
+        values = builtins.set()
+        encoded = _SESSIONLESS_CACHE.get(key)
         if encoded is not None:
             values.add(int.from_bytes(encoded, "big"))
-    return values
+        return values
+    return _PROTOCOL_CACHE.get_int_all_sessions(key)
 
 
 def is_set(key: int) -> bool:
-    if key & _SESSIONLESS_FLAG:
-        return _SESSIONLESS_CACHE.is_set(key ^ _SESSIONLESS_FLAG)
-    if _active_session_idx is None:
+    if key & SESSIONLESS_FLAG:
+        return _SESSIONLESS_CACHE.is_set(key ^ SESSIONLESS_FLAG)
+    active_session = _PROTOCOL_CACHE.get_active_session()
+    if active_session is None:
         raise InvalidSessionError
-    return _SESSIONS[_active_session_idx].is_set(key)
+    return active_session.is_set(key)
 
 
-def delete(key: int) -> None:
-    if key & _SESSIONLESS_FLAG:
-        return _SESSIONLESS_CACHE.delete(key ^ _SESSIONLESS_FLAG)
-    if _active_session_idx is None:
+def set(key: int, value: bytes) -> None:
+    if key & SESSIONLESS_FLAG:
+        _SESSIONLESS_CACHE.set(key ^ SESSIONLESS_FLAG, value)
+        return
+    active_session = _PROTOCOL_CACHE.get_active_session()
+    if active_session is None:
         raise InvalidSessionError
-    return _SESSIONS[_active_session_idx].delete(key)
+    active_session.set(key, value)
+
+
+def set_int(key: int, value: int) -> None:
+    active_session = _PROTOCOL_CACHE.get_active_session()
+
+    if key & SESSIONLESS_FLAG:
+        length = _SESSIONLESS_CACHE.fields[key ^ SESSIONLESS_FLAG]
+    elif active_session is None:
+        raise InvalidSessionError
+    else:
+        length = active_session.fields[key]
+
+    encoded = value.to_bytes(length, "big")
+
+    # Ensure that the value fits within the length. Micropython's int.to_bytes()
+    # doesn't raise OverflowError.
+    assert int.from_bytes(encoded, "big") == value
+
+    set(key, encoded)
 
 
 if TYPE_CHECKING:
@@ -336,15 +208,3 @@ def stored_async(key: int) -> Callable[[AsyncByteFunc[P]], AsyncByteFunc[P]]:
         return wrapper
 
     return decorator
-
-
-def clear_all() -> None:
-    global _active_session_idx
-    global autolock_last_touch
-
-    _active_session_idx = None
-    _SESSIONLESS_CACHE.clear()
-    for session in _SESSIONS:
-        session.clear()
-
-    autolock_last_touch = None
