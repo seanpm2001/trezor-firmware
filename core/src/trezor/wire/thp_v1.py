@@ -27,7 +27,7 @@ _HANDSHAKE_INIT = 0x00
 _PLAINTEXT = 0x01
 ENCRYPTED_TRANSPORT = 0x02
 _ENCODED_PROTOBUF_DEVICE_PROPERTIES = (
-    b"\x0A\x04\x54\x33\x57\x31\x10\x05\x18\x00\x20\x01\x28\x01\x28\x02"
+    b"\x0a\x04\x54\x33\x57\x31\x10\x05\x18\x00\x20\x01\x28\x01\x28\x02"
 )
 _UNALLOCATED_SESSION_ERROR = (
     b"\x55\x4e\x41\x4c\x4c\x4f\x43\x41\x54\x45\x44\x5f\x53\x45\x53\x53\x49\x4f\x4e"
@@ -83,18 +83,18 @@ async def read_message(iface: WireInterface, buffer: utils.BufferType) -> Messag
 async def read_message_or_init_packet(
     iface: WireInterface, buffer: utils.BufferType, firstReport=None
 ) -> Message | InterruptingInitPacket:
+    report = firstReport
     while True:
         # Wait for an initial report
         if firstReport is None:
             report = await _get_loop_wait_read(iface)
-        else:
-            report = firstReport
 
         # Channel multiplexing
         ctrl_byte, cid = ustruct.unpack(">BH", report)
 
         if cid == BROADCAST_CHANNEL_ID:
             _handle_broadcast(iface, ctrl_byte, report)
+            report = None
             continue
 
         # We allow for only one message to be read simultaneously. We do not
@@ -102,6 +102,7 @@ async def read_message_or_init_packet(
         # the sole exception of cid_request which can be handled independently.
         if _is_ctrl_byte_continuation(ctrl_byte):
             # continuation packet is not expected - ignore
+            report = None
             continue
 
         payload_length = ustruct.unpack(">H", report[3:])[0]
@@ -116,6 +117,7 @@ async def read_message_or_init_packet(
         # Check CRC
         if not _is_checksum_valid(payload[-4:], header.to_bytes() + payload[:-4]):
             # checksum is not valid -> ignore message
+            report = None
             continue
 
         session = THP.get_session(iface, cid)
@@ -127,15 +129,18 @@ async def read_message_or_init_packet(
             # unallocated should not return regular message, TODO, but it might change
             if message is not None:
                 return message
+            report = None
             continue
 
         # Note: In the Host, the UNALLOCATED_CHANNEL error should be handled here
 
         # Synchronization process
         sync_bit = (ctrl_byte & 0x10) >> 4
+
         # 1: Handle ACKs
         if _is_ctrl_byte_ack(ctrl_byte):
             _handle_received_ACK(session, sync_bit)
+            report = None
             continue
 
         # 2: Handle message with unexpected synchronization bit
@@ -145,6 +150,7 @@ async def read_message_or_init_packet(
             # but it might change with the cancelation message
             if message is not None:
                 return message
+            report = None
             continue
 
         # 3: Send ACK in response
