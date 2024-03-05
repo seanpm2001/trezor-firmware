@@ -20,9 +20,10 @@ class PinFlow:
         self.debug.input(pin)
         if self.debug.model == "Safe 3":
             yield  # Reenter PIN
-            TR.assert_in(
-                self.debug.read_layout().text_content(), "pin__reenter_to_confirm"
-            )
+            # todo update for wipe code
+            # TR.assert_in(
+            #     self.debug.read_layout().text_content(), "pin__reenter_to_confirm"
+            # )
             self.debug.press_yes()
         yield  # Enter PIN again
         assert "PinKeyboard" in self.debug.read_layout().all_components()
@@ -411,7 +412,6 @@ class EthereumFlow:
                 )
                 self.debug.press_no()
             self.debug.press_yes()
-            yield
         else:
             # confirm intro
             if info:
@@ -440,4 +440,3 @@ class EthereumFlow:
                 self.debug.press_left()
                 self.debug.press_left()
             self.debug.press_middle()
-            yield

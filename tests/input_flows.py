@@ -92,8 +92,10 @@ class InputFlowSetupDevicePINWIpeCode(InputFlowBase):
         self.debug.press_yes()
 
         if self.debug.model == "Safe 3":
-            yield from swipe_if_necessary(self.debug)  # wipe code info
-            self.debug.press_yes()
+            layout = self.debug.read_layout()
+            if not "PinKeyboard" in layout.all_components():
+                yield from swipe_if_necessary(self.debug)  # wipe code info
+                self.debug.press_yes()
 
         yield  # enter current pin
         self.debug.input(self.pin)
@@ -121,8 +123,10 @@ class InputFlowNewCodeMismatch(InputFlowBase):
         self.debug.press_yes()
 
         if self.debug.model == "Safe 3":
-            yield from swipe_if_necessary(self.debug)  # code info
-            self.debug.press_yes()
+            layout = self.debug.read_layout()
+            if not "PinKeyboard" in layout.all_components():
+                yield from swipe_if_necessary(self.debug)  # code info
+                self.debug.press_yes()
 
         def input_two_different_pins() -> BRGeneratorType:
             yield from self.PIN.setup_new_pin(self.first_code, self.second_code)

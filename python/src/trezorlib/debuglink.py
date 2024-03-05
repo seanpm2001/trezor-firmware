@@ -1090,6 +1090,14 @@ class TrezorClientDebugLink(TrezorClient):
             # If no other exception was raised, evaluate missed responses
             # (raises AssertionError on mismatch)
             self._verify_responses(expected_responses, actual_responses)
+            if isinstance(input_flow, Generator):
+                # Ensure that the input flow is exhausted
+                try:
+                    input_flow.throw(
+                        AssertionError("input flow continues past end of test")
+                    )
+                except StopIteration:
+                    pass
 
         elif isinstance(input_flow, Generator):
             # Propagate the exception through the input flow, so that we see in

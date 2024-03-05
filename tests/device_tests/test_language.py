@@ -300,9 +300,10 @@ def test_silent_update(client: Client):
         return input_flow
 
     def input_flow_silent():
-        yield
-        # It will never reach this - there is just loader on the screen
-        assert False
+        # XXX ugly hack that ties the behavior of this inputflow to the specific
+        # method through which debuglink checks if the generator is finished
+        with pytest.raises(AssertionError):
+            yield
 
     # Device is loaded with seed, language change is shown on the screen
     with client:
