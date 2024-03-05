@@ -99,8 +99,10 @@ class InputFlowSetupDevicePINWIpeCode(InputFlowBase):
         self.debug.press_yes()
 
         if self.model() is models.T2B1:
-            yield from swipe_if_necessary(self.debug)  # wipe code info
-            self.debug.press_yes()
+            layout = self.debug.read_layout()
+            if not "PinKeyboard" in layout.all_components():
+                yield from swipe_if_necessary(self.debug)  # wipe code info
+                self.debug.press_yes()
 
         yield  # enter current pin
         self.debug.input(self.pin)
@@ -128,8 +130,10 @@ class InputFlowNewCodeMismatch(InputFlowBase):
         self.debug.press_yes()
 
         if self.model() is models.T2B1:
-            yield from swipe_if_necessary(self.debug)  # code info
-            self.debug.press_yes()
+            layout = self.debug.read_layout()
+            if not "PinKeyboard" in layout.all_components():
+                yield from swipe_if_necessary(self.debug)  # code info
+                self.debug.press_yes()
 
         def input_two_different_pins() -> BRGeneratorType:
             yield from self.PIN.setup_new_pin(self.first_code, self.second_code)
@@ -711,8 +715,6 @@ class InputFlowPaymentRequestDetails(InputFlowBase):
 
         yield  # confirm transaction
         self.debug.press_yes()
-        yield  # confirm transaction
-        self.debug.press_yes()
 
     def input_flow_t3t1(self) -> BRGeneratorType:
         yield  # request to see details
@@ -1065,9 +1067,6 @@ def lock_time_input_flow_tt(
 
     yield  # confirm transaction
     debug.press_yes()
-    if double_confirm:
-        yield  # confirm transaction
-        debug.press_yes()
 
 
 def lock_time_input_flow_tr(
@@ -1124,17 +1123,13 @@ class InputFlowLockTimeBlockHeight(InputFlowBase):
         assert self.block_height in layout_text
 
     def input_flow_tt(self) -> BRGeneratorType:
-        yield from lock_time_input_flow_tt(
-            self.debug, self.assert_func, double_confirm=True
-        )
+        yield from lock_time_input_flow_tt(self.debug, self.assert_func)
 
     def input_flow_tr(self) -> BRGeneratorType:
         yield from lock_time_input_flow_tr(self.debug, self.assert_func)
 
     def input_flow_t3t1(self) -> BRGeneratorType:
-        yield from lock_time_input_flow_t3t1(
-            self.debug, self.assert_func, double_confirm=True
-        )
+        yield from lock_time_input_flow_t3t1(self.debug, self.assert_func)
 
 
 class InputFlowLockTimeDatetime(InputFlowBase):
