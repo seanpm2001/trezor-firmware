@@ -3,24 +3,34 @@ from trezor import TR, ui, utils
 
 
 def progress(
-    message: str | None = None,
-    description: str | None = None,
+    description: str = "",
+    title: str | None = None,
     indeterminate: bool = False,
 ) -> ui.ProgressLayout:
-    if message is None:
-        message = TR.progress__please_wait  # def_arg
+    if not utils.MODEL_IS_T2B1:
+        if title is None:
+            title = TR.progress__please_wait
+        title = title.upper()
+    elif description:
+        description += "..."
 
-    if utils.MODEL_IS_T2B1 and description is None:
-        description = message + "..."
-        title = ""
-    else:
-        title = message.upper()
+    # if message is None:
+    #     if utils.MODEL_IS_T2B1:
+    #         message = ""
+    #     else:
+    #         message = TR.progress__please_wait  # def_arg
+
+    # if utils.MODEL_IS_T2B1 and description is None and message is not None:
+    #     description = message + "..."
+    #     title = ""
+    # else:
+    #     title = message.upper()
 
     return ui.ProgressLayout(
         layout=trezorui2.show_progress(
             title=title,
             indeterminate=indeterminate,
-            description=description or "",
+            description=description,
         )
     )
 
@@ -38,7 +48,7 @@ def coinjoin_progress(message: str) -> ui.ProgressLayout:
 
 
 def pin_progress(message: str, description: str) -> ui.ProgressLayout:
-    return progress(message, description=description)
+    return progress(description, title=message)
 
 if utils.BITCOIN_ONLY:
 
