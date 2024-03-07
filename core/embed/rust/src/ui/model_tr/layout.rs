@@ -21,18 +21,14 @@ use crate::{
     trezorhal::model,
     ui::{
         component::{
-            base::Component,
-            connect::Connect,
-            paginated::{PageMsg, Paginate},
-            text::{
+            base::Component, connect::Connect, paginated::{PageMsg, Paginate}, text::{
                 op::OpTextLayout,
                 paragraphs::{
                     Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
                     Paragraphs, VecExt,
                 },
                 TextStyle,
-            },
-            ComponentExt, FormattedText, Label, LineBreaking, Timeout,
+            }, ComponentExt, FormattedText, Label, LineBreaking, Never, Timeout
         },
         display, geometry,
         layout::{
@@ -66,7 +62,7 @@ impl From<CancelConfirmMsg> for Obj {
 
 impl<T> ComponentMsgObj for ShowMore<T>
 where
-    T: Component,
+    T: Component<Msg = Never>,
 {
     fn msg_try_into_obj(&self, msg: Self::Msg) -> Result<Obj, Error> {
         match msg {
