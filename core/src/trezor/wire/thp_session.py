@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from ubinascii import hexlify
 
 if TYPE_CHECKING:
+    from trezorio import WireInterface
     from enum import IntEnum
 else:
     IntEnum = object
@@ -26,8 +27,8 @@ class SessionState(IntEnum):
 
 
 def create_autenticated_session(unauthenticated_session: SessionThpCache):
-    storage_thp_cache.start_session()  # TODO something like this but for THP
-    raise
+    # storage_thp_cache.start_session()  -  TODO something like this but for THP
+    raise NotImplementedError("Secure channel is not implemented, yet.")
 
 
 def create_new_unauthenticated_session(iface: WireInterface, cid: int):
@@ -107,7 +108,7 @@ def set_session_state(session: SessionThpCache, new_state: SessionState):
     session.state = new_state.to_bytes(1, "big")
 
 
-def _get_id(iface: WireInterface, cid: int) -> bytearray:
+def _get_id(iface: WireInterface, cid: int) -> bytes:
     return ustruct.pack(">HH", iface.iface_num(), cid)
 
 
