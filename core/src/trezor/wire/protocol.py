@@ -10,8 +10,8 @@ if TYPE_CHECKING:
 class WireProtocol:
     async def read_message(iface: WireInterface, buffer: utils.BufferType) -> Message:
         if utils.USE_THP:
-            return thp_v1.read_message(iface, buffer)
-        return codec_v1.read_message(iface, buffer)
+            return await thp_v1.read_message(iface, buffer)
+        return await codec_v1.read_message(iface, buffer)
 
     async def write_message(iface: WireInterface, message: Message) -> None:
         if utils.USE_THP:

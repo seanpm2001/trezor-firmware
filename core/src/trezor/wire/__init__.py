@@ -206,7 +206,7 @@ async def handle_session(
     else:
         ctx_buffer = WIRE_BUFFER
 
-    ctx = context.Context(iface, session_id, ctx_buffer)
+    ctx = context.Context(iface, ctx_buffer, session_id)
     next_msg: protocol_common.Message | None = None
 
     if __debug__ and is_debug_session:
