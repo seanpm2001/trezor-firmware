@@ -73,7 +73,7 @@ class InterruptingInitPacket:
 async def read_message(iface: WireInterface, buffer: utils.BufferType) -> Message:
     msg = await read_message_or_init_packet(iface, buffer)
     while type(msg) is not Message:
-        if msg is InterruptingInitPacket:
+        if isinstance(msg, InterruptingInitPacket):
             msg = await read_message_or_init_packet(iface, buffer, msg.initReport)
         else:
             raise ThpError("Unexpected output of read_message_or_init_packet:")
@@ -103,6 +103,9 @@ async def read_message_or_init_packet(
             # continuation packet is not expected - ignore
             report = None
             continue
+
+        if report is None:
+            raise ThpError("Reading failed unexpectedly, report is None.")
 
         payload_length = ustruct.unpack(">H", report[3:])[0]
         payload = _get_buffer_for_payload(payload_length, buffer)
@@ -352,7 +355,7 @@ def _get_new_channel_id() -> int:
     return THP.get_next_channel_id()
 
 
-def _is_checksum_valid(checksum: bytearray, data: bytearray) -> bool:
+def _is_checksum_valid(checksum: bytes | utils.BufferType, data: bytearray) -> bool:
     data_checksum = _compute_checksum_bytes(data)
     return checksum == data_checksum
 

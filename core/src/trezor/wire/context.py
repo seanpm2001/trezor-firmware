@@ -65,7 +65,7 @@ class Context:
         self,
         iface: WireInterface,
         buffer: bytearray,
-        session_id: bytearray | None = None,
+        session_id: bytes | None = None,
     ) -> None:
         self.iface = iface
         self.buffer = buffer

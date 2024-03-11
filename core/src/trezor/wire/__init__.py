@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     Msg = TypeVar("Msg", bound=protobuf.MessageType)
     HandlerTask = Coroutine[Any, Any, protobuf.MessageType]
     Handler = Callable[[Msg], HandlerTask]
-
+    HandlerWithSessionId = Callable[[Msg, bytes | None], HandlerTask]
     LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
 
 
@@ -199,7 +199,7 @@ async def _handle_single_message(
 
 
 async def handle_session(
-    iface: WireInterface, session_id: int, is_debug_session: bool = False
+    iface: WireInterface, session_id: bytes, is_debug_session: bool = False
 ) -> None:
     if __debug__ and is_debug_session:
         ctx_buffer = WIRE_BUFFER_DEBUG
@@ -268,7 +268,9 @@ async def handle_session(
                 log.exception(__name__, exc)
 
 
-def _find_handler_placeholder(iface: WireInterface, msg_type: int) -> Handler | None:
+def _find_handler_placeholder(
+    iface: WireInterface, msg_type: int
+) -> Handler | HandlerWithSessionId | None:
     """Placeholder handler lookup before a proper one is registered."""
     return None
 
