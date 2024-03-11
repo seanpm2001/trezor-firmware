@@ -85,11 +85,11 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         cid_req_header = make_header(
             ctrl_byte=0x40, cid=BROADCAST_CHANNEL_ID, length=12
         )
-        cid_request_dummy_data = b"\x00\x11\x22\x33\x44\x55\x66\x77\x96\x64\x3C\x6C"
+        cid_request_dummy_data = b"\x00\x11\x22\x33\x44\x55\x66\x77\x96\x64\x3c\x6c"
         cid_req_message = makeCidRequest(cid_req_header, cid_request_dummy_data)
 
         message_header = make_header(ctrl_byte=0x01, cid=COMMON_CID, length=18)
-        cid_request_dummy_data_checksum = b"\x67\x8E\xAC\xE0"
+        cid_request_dummy_data_checksum = b"\x67\x8e\xac\xe0"
         message = makeSimpleMessage(
             message_header,
             MESSAGE_TYPE,
@@ -101,6 +101,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         gen = thp_v1.read_message(self.interface, buffer)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
+
         with self.assertRaises(StopIteration) as e:
             gen.send(cid_req_message)
             gen.send(message)
