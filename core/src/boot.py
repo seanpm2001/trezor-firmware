@@ -46,7 +46,6 @@ async def bootscreen() -> None:
     lockscreen = Lockscreen(label=storage.device.get_label(), bootscreen=True)
     while True:
         try:
-
             if can_lock_device():
                 enforce_welcome_screen_duration()
                 ui.backlight_fade(ui.style.BACKLIGHT_DIM)

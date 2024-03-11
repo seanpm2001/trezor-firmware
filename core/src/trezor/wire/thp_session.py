@@ -76,7 +76,7 @@ def get_session_from_id(session_id) -> SessionThpCache | None:
     return session
 
 
-def get_state(session: SessionThpCache) -> int:
+def get_state(session: SessionThpCache | None) -> int:
     if session is None:
         return SessionState.UNALLOCATED
     return _decode_session_state(session.state)

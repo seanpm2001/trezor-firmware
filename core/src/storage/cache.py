@@ -160,8 +160,7 @@ def set_int(key: int, value: int) -> None:
 
     if key & SESSIONLESS_FLAG:
         length = _SESSIONLESS_CACHE.fields[key ^ SESSIONLESS_FLAG]
-
-    if active_session is None:
+    elif active_session is None:
         raise InvalidSessionError
     else:
         length = active_session.fields[key]

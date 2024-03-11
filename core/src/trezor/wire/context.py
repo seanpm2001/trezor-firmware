@@ -61,10 +61,15 @@ class Context:
     (i.e., wire, debug, single BT connection, etc.)
     """
 
-    def __init__(self, iface: WireInterface, buffer: bytearray) -> None:
+    def __init__(
+        self,
+        iface: WireInterface,
+        buffer: bytearray,
+        session_id: bytearray | None = None,
+    ) -> None:
         self.iface = iface
         self.buffer = buffer
-        self.session_id: bytearray | None = None
+        self.session_id: session_id
 
     def read_from_wire(self) -> Awaitable[Message]:
         """Read a whole message from the wire without parsing it."""
