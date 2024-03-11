@@ -129,7 +129,7 @@ def _get_cid(session: SessionThpCache) -> int:
     return int.from_bytes(session.session_id[2:], "big")
 
 
-def create_new_unauthenticated_session(session_id: bytearray) -> SessionThpCache:
+def create_new_unauthenticated_session(session_id: bytes) -> SessionThpCache:
     if len(session_id) != 4:
         raise ValueError("session_id must be 4 bytes long.")
     global _active_session_idx
@@ -185,7 +185,7 @@ def get_least_recently_used_authetnicated_session_index() -> int:
 
 
 # The function start_session should not be used in production code. It is present only to assure compatibility with old tests.
-def start_session(session_id: bytes) -> bytes:  # TODO incomplete
+def start_session(session_id: bytes | None) -> bytes:  # TODO incomplete
     global _active_session_idx
     global _is_active_session_authenticated
 

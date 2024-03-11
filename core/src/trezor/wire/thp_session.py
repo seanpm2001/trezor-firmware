@@ -16,17 +16,6 @@ class ThpError(WireError):
     pass
 
 
-class WorkflowState(IntEnum):
-    NOT_STARTED = 0
-    PENDING = 1
-    FINISHED = 2
-
-
-class Workflow:
-    id: int
-    workflow_state: WorkflowState
-
-
 class SessionState(IntEnum):
     UNALLOCATED = 0
     INITIALIZED = 1  # do not change, is denoted as constant in storage.cache _THP_SESSION_STATE_INITIALIZED = 1
@@ -36,19 +25,6 @@ class SessionState(IntEnum):
     APP_TRAFFIC = 5
 
 
-def get_workflow() -> Workflow:
-    pass  # TODO
-
-
-def print_all_test_sessions() -> None:
-    for session in storage_thp_cache._UNAUTHENTICATED_SESSIONS:
-        if session is None:
-            print("none")
-        else:
-            print(hexlify(session.session_id).decode("utf-8"), session.state)
-
-
-#
 def create_autenticated_session(unauthenticated_session: SessionThpCache):
     storage_thp_cache.start_session()  # TODO something like this but for THP
     raise
@@ -135,14 +111,14 @@ def _get_id(iface: WireInterface, cid: int) -> bytearray:
     return ustruct.pack(">HH", iface.iface_num(), cid)
 
 
-def _get_authenticated_session_or_none(session_id) -> SessionThpCache:
+def _get_authenticated_session_or_none(session_id) -> SessionThpCache | None:
     for authenticated_session in storage_thp_cache._SESSIONS:
         if authenticated_session.session_id == session_id:
             return authenticated_session
     return None
 
 
-def _get_unauthenticated_session_or_none(session_id) -> SessionThpCache:
+def _get_unauthenticated_session_or_none(session_id) -> SessionThpCache | None:
     for unauthenticated_session in storage_thp_cache._UNAUTHENTICATED_SESSIONS:
         if unauthenticated_session.session_id == session_id:
             return unauthenticated_session
@@ -162,5 +138,5 @@ def _decode_session_state(state: bytearray) -> int:
     return ustruct.unpack("B", state)[0]
 
 
-def _encode_session_state(state: SessionState) -> bytearray:
-    return ustruct.pack("B", state)
+def _encode_session_state(state: SessionState) -> bytes:
+    return SessionState.to_bytes(state, 1, "big")
