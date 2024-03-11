@@ -105,7 +105,7 @@ def is_active_session(session: SessionThpCache):
 
 
 def set_session_state(session: SessionThpCache, new_state: SessionState):
-    session.state = new_state.to_bytes(1, "big")
+    session.state = bytearray(new_state.to_bytes(1, "big"))
 
 
 def _get_id(iface: WireInterface, cid: int) -> bytes:

@@ -56,7 +56,7 @@ class SessionThpCache(DataCache):  # TODO implement, this is just copied Session
 
     def clear(self) -> None:
         super().clear()
-        self.state = 0  # Set state to UNALLOCATED
+        self.state = bytearray(int.to_bytes(0, 1, "big"))  # Set state to UNALLOCATED
         self.last_usage = 0
         self.session_id[:] = b""
 
@@ -175,6 +175,7 @@ def create_new_auth_session(unauth_session: SessionThpCache) -> SessionThpCache:
 
     _session_usage_counter += 1
     _SESSIONS[new_auth_session_index].last_usage = _session_usage_counter
+    return _SESSIONS[new_auth_session_index]
 
 
 def get_least_recently_used_authetnicated_session_index() -> int:
@@ -216,7 +217,7 @@ def start_session(session_id: bytes | None) -> bytes:  # TODO incomplete
     return new_session_id
 
 
-def start_existing_session(session_id: bytearray) -> bytes:
+def start_existing_session(session_id: bytes) -> bytes:
     if session_id is None:
         raise ValueError("session_id cannot be None")
     if get_active_session_id() == session_id:

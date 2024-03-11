@@ -7,17 +7,15 @@ if TYPE_CHECKING:
     from trezorio import WireInterface
 
 
-class WireProtocol:
-    async def read_message(
-        self, iface: WireInterface, buffer: utils.BufferType
-    ) -> Message:
-        if utils.USE_THP:
-            return await thp_v1.read_message(iface, buffer)
-        return await codec_v1.read_message(iface, buffer)
+async def read_message(iface: WireInterface, buffer: utils.BufferType) -> Message:
+    if utils.USE_THP:
+        return await thp_v1.read_message(iface, buffer)
+    return await codec_v1.read_message(iface, buffer)
 
-    async def write_message(self, iface: WireInterface, message: Message) -> None:
-        if utils.USE_THP:
-            await thp_v1.write_to_wire(iface, message)  # TODO incomplete
-            return
-        await codec_v1.write_message(iface, message.type, message.data)
+
+async def write_message(iface: WireInterface, message: Message) -> None:
+    if utils.USE_THP:
+        await thp_v1.write_message(iface, message)
         return
+    await codec_v1.write_message(iface, message.type, message.data)
+    return
