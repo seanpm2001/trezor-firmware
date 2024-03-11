@@ -1,4 +1,3 @@
-from micropython import const
 from typing import TYPE_CHECKING
 
 from trezor import utils
@@ -7,8 +6,6 @@ if TYPE_CHECKING:
     from typing import Sequence, TypeVar, overload
 
     T = TypeVar("T")
-
-SESSIONLESS_FLAG = const(128)
 
 
 class InvalidSessionError(Exception):
@@ -30,8 +27,7 @@ class DataCache:
     if TYPE_CHECKING:
 
         @overload
-        def get(self, key: int) -> bytes | None:
-            ...
+        def get(self, key: int) -> bytes | None: ...
 
         @overload
         def get(self, key: int, default: T) -> bytes | T:  # noqa: F811

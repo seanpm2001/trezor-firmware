@@ -4,7 +4,9 @@ from micropython import const
 from typing import TYPE_CHECKING
 
 from trezor import utils
-from storage.cache_common import SESSIONLESS_FLAG, InvalidSessionError, SessionlessCache
+from storage.cache_common import InvalidSessionError, SessionlessCache
+
+SESSIONLESS_FLAG = const(128)
 
 if TYPE_CHECKING:
     from typing import Sequence, TypeVar, overload
