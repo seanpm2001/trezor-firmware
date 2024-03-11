@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 
 from trezor import log, loop, protobuf
 
-import trezor.wire.protocol
+import trezor.wire.protocol as protocol
 from .protocol_common import Message
 
 if TYPE_CHECKING:
@@ -160,12 +160,15 @@ class Context:
 
         msg_size = protobuf.encode(buffer, msg)
 
+        msg_session_id = None
+        if self.session_id is not None:
+            msg_session_id = bytearray(self.session_id)
         await protocol.write_message(
             self.iface,
             Message(
                 message_type=msg.MESSAGE_WIRE_TYPE,
                 message_data=memoryview(buffer)[:msg_size],
-                session_id=self.session_id,
+                session_id=msg_session_id,
             ),
         )
 
