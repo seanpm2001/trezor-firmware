@@ -47,7 +47,6 @@ if TYPE_CHECKING:
     Msg = TypeVar("Msg", bound=protobuf.MessageType)
     HandlerTask = Coroutine[Any, Any, protobuf.MessageType]
     Handler = Callable[[Msg], HandlerTask]
-    HandlerWithSessionId = Callable[[Msg, bytes | None], HandlerTask]
     LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
 
 
@@ -57,7 +56,9 @@ EXPERIMENTAL_ENABLED = False
 
 def setup(iface: WireInterface, is_debug_session: bool = False) -> None:
     """Initialize the wire stack on passed USB interface."""
-    loop.schedule(handle_session(iface, codec_v1.SESSION_ID, is_debug_session))
+    loop.schedule(
+        handle_session(iface, codec_v1.SESSION_ID.to_bytes(4, "big"), is_debug_session)
+    )
 
 
 def wrap_protobuf_load(
@@ -145,11 +146,7 @@ async def _handle_single_message(
         req_msg = wrap_protobuf_load(msg.data, req_type)
 
         # Create the handler task.
-        if msg.type is MT.Initialize:
-            # Special case for handle_initialize to have access to the verified session_id
-            task = handler(req_msg, ctx.session_id)
-        else:
-            task = handler(req_msg)
+        task = handler(req_msg)
 
         # Run the workflow task.  Workflow can do more on-the-wire
         # communication inside, but it should eventually return a
@@ -268,9 +265,7 @@ async def handle_session(
                 log.exception(__name__, exc)
 
 
-def _find_handler_placeholder(
-    iface: WireInterface, msg_type: int
-) -> Handler | HandlerWithSessionId | None:
+def _find_handler_placeholder(iface: WireInterface, msg_type: int) -> Handler | None:
     """Placeholder handler lookup before a proper one is registered."""
     return None
 

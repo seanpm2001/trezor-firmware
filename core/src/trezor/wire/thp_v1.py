@@ -86,9 +86,8 @@ async def read_message_or_init_packet(
     report = firstReport
     while True:
         # Wait for an initial report
-        if firstReport is None:
+        if report is None:
             report = await _get_loop_wait_read(iface)
-
         if report is None:
             raise ThpError("Reading failed unexpectedly, report is None.")
 
@@ -96,7 +95,7 @@ async def read_message_or_init_packet(
         ctrl_byte, cid = ustruct.unpack(">BH", report)
 
         if cid == BROADCAST_CHANNEL_ID:
-            await _handle_broadcast(iface, ctrl_byte, report)
+            await _handle_broadcast(iface, ctrl_byte, report)  # TODO await
             report = None
             continue
 
@@ -258,7 +257,7 @@ async def write_message(
 async def write_to_wire(
     iface: WireInterface, header: InitHeader, payload: bytes
 ) -> None:
-    write = loop.wait(iface.iface_num() | io.POLL_WRITE)
+    loop_write = loop.wait(iface.iface_num() | io.POLL_WRITE)
 
     payload_length = len(payload)
 
@@ -268,7 +267,7 @@ async def write_to_wire(
 
     # write initial report
     nwritten = utils.memcpy(report, _REPORT_INIT_DATA_OFFSET, payload, 0)
-    await _write_report(write, iface, report)
+    await _write_report(loop_write, iface, report)
 
     # if we have more data to write, use continuation reports for it
     if nwritten < payload_length:
@@ -276,7 +275,7 @@ async def write_to_wire(
 
     while nwritten < payload_length:
         nwritten += utils.memcpy(report, _REPORT_CONT_DATA_OFFSET, payload, nwritten)
-        await _write_report(write, iface, report)
+        await _write_report(loop_write, iface, report)
 
 
 async def _write_report(write, iface: WireInterface, report: bytearray) -> None:
@@ -287,7 +286,7 @@ async def _write_report(write, iface: WireInterface, report: bytearray) -> None:
             return
 
 
-async def _handle_broadcast(iface: WireIntreface, ctrl_byte, report) -> Message | None:
+async def _handle_broadcast(iface: WireInterface, ctrl_byte, report) -> Message | None:
     if ctrl_byte != _CHANNEL_ALLOCATION_REQ:
         raise ThpError("Unexpected ctrl_byte in broadcast channel packet")
     length, nonce, checksum = ustruct.unpack(">H8s4s", report[3:])

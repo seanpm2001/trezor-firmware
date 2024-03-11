@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 
 from trezor import log, loop, protobuf
 
-from .protocol import WireProtocol
+import trezor.wire.protocol
 from .protocol_common import Message
 
 if TYPE_CHECKING:
@@ -69,11 +69,11 @@ class Context:
     ) -> None:
         self.iface = iface
         self.buffer = buffer
-        self.session_id: session_id
+        self.session_id = session_id
 
     def read_from_wire(self) -> Awaitable[Message]:
         """Read a whole message from the wire without parsing it."""
-        return WireProtocol.read_message(self, self.iface, self.buffer)
+        return protocol.read_message(self, self.iface, self.buffer)
 
     if TYPE_CHECKING:
 
@@ -160,7 +160,7 @@ class Context:
 
         msg_size = protobuf.encode(buffer, msg)
 
-        await WireProtocol.write_message(
+        await protocol.write_message(
             self.iface,
             Message(
                 message_type=msg.MESSAGE_WIRE_TYPE,
