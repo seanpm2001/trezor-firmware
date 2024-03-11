@@ -73,7 +73,7 @@ class Context:
 
     def read_from_wire(self) -> Awaitable[Message]:
         """Read a whole message from the wire without parsing it."""
-        return WireProtocol.read_message(self.iface, self.buffer)
+        return WireProtocol.read_message(self, self.iface, self.buffer)
 
     if TYPE_CHECKING:
 
