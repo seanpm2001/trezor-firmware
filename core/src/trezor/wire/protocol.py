@@ -17,5 +17,7 @@ class WireProtocol:
 
     async def write_message(self, iface: WireInterface, message: Message) -> None:
         if utils.USE_THP:
-            return thp_v1.write_to_wire(iface, message)
-        return codec_v1.write_message(iface, message.type, message.data)
+            await thp_v1.write_to_wire(iface, message)  # TODO incomplete
+            return
+        await codec_v1.write_message(iface, message.type, message.data)
+        return

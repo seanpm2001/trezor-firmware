@@ -88,6 +88,10 @@ async def read_message_or_init_packet(
         # Wait for an initial report
         if firstReport is None:
             report = await _get_loop_wait_read(iface)
+
+        if report is None:
+            raise ThpError("Reading failed unexpectedly, report is None.")
+
         # Channel multiplexing
         ctrl_byte, cid = ustruct.unpack(">BH", report)
 
@@ -103,9 +107,6 @@ async def read_message_or_init_packet(
             # continuation packet is not expected - ignore
             report = None
             continue
-
-        if report is None:
-            raise ThpError("Reading failed unexpectedly, report is None.")
 
         payload_length = ustruct.unpack(">H", report[3:])[0]
         payload = _get_buffer_for_payload(payload_length, buffer)
@@ -133,6 +134,9 @@ async def read_message_or_init_packet(
                 return message
             report = None
             continue
+
+        if session is None:
+            raise ThpError("Invalid session!")
 
         # Note: In the Host, the UNALLOCATED_CHANNEL error should be handled here
 
@@ -219,6 +223,9 @@ async def write_message(
     iface: WireInterface, message: Message, is_retransmission: bool = False
 ) -> None:
     session = THP.get_session_from_id(message.session_id)
+    if session is None:
+        raise ThpError("Invalid session")
+
     cid = THP.get_cid(session)
     payload = message.type.to_bytes(2, "big") + message.data
     payload_length = len(payload)
@@ -355,7 +362,7 @@ def _get_new_channel_id() -> int:
     return THP.get_next_channel_id()
 
 
-def _is_checksum_valid(checksum: bytes | utils.BufferType, data: bytearray) -> bool:
+def _is_checksum_valid(checksum: bytes | utils.BufferType, data: bytes) -> bool:
     data_checksum = _compute_checksum_bytes(data)
     return checksum == data_checksum
 
