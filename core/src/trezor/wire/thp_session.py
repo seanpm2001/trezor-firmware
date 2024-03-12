@@ -1,12 +1,13 @@
 import ustruct
+from typing import TYPE_CHECKING
+
 from storage import cache_thp as storage_thp_cache
 from storage.cache_thp import SessionThpCache
 from trezor.wire.protocol_common import WireError
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from trezorio import WireInterface
     from enum import IntEnum
+    from trezorio import WireInterface
 else:
     IntEnum = object
 
