@@ -159,7 +159,7 @@ async def read_message_or_init_packet(
             continue
 
         # 3: Send ACK in response
-        _sendAck(iface, cid, sync_bit)  # TODO await
+        await _sendAck(iface, cid, sync_bit)
         THP.sync_set_receive_expected_bit(session, 1 - sync_bit)
 
         return await _handle_allocated(ctrl_byte, session, payload)
@@ -307,7 +307,7 @@ async def _handle_broadcast(iface: WireInterface, ctrl_byte, report) -> Message 
     )
 
     checksum = _compute_checksum_bytes(response_header.to_bytes() + response_data)
-    write_to_wire(iface, response_header, response_data + checksum)  # TODO await
+    await write_to_wire(iface, response_header, response_data + checksum)
 
 
 async def _handle_allocated(ctrl_byte, session: SessionThpCache, payload) -> Message:

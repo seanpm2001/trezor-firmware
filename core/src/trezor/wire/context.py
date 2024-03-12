@@ -103,7 +103,7 @@ class Context:
                 __name__,
                 "%s:%x expect: %s",
                 self.iface.iface_num(),
-                self.session_id,
+                int.from_bytes(self.session_id, "big"),
                 expected_type.MESSAGE_NAME if expected_type else expected_types,
             )
 
@@ -126,7 +126,7 @@ class Context:
                 __name__,
                 "%s:%x read: %s",
                 self.iface.iface_num(),
-                self.session_id,
+                int.from_bytes(self.session_id, "big"),
                 expected_type.MESSAGE_NAME,
             )
 
@@ -142,7 +142,7 @@ class Context:
                 __name__,
                 "%s:%x write: %s",
                 self.iface.iface_num(),
-                self.session_id,
+                int.from_bytes(self.session_id, "big"),
                 msg.MESSAGE_NAME,
             )
 
