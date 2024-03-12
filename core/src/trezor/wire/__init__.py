@@ -116,7 +116,7 @@ async def _handle_single_message(
             __name__,
             "%s:%x receive: <%s>",
             ctx.iface.iface_num(),
-            ctx.session_id,
+            int.from_bytes(ctx.session_id, "big"),
             msg_type,
         )
 
@@ -232,8 +232,8 @@ async def handle_session(
                 msg = next_msg
                 next_msg = None
 
-                # Set ctx.session_id to the value msg.session_id
-                ctx.session_id = msg.session_id
+            # Set ctx.session_id to the value msg.session_id
+            ctx.session_id = msg.session_id
 
             try:
                 next_msg = await _handle_single_message(
