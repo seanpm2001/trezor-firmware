@@ -7,7 +7,7 @@ from trezor import utils
 
 
 if TYPE_CHECKING:
-    from typing import Sequence, TypeVar, overload
+    from typing import TypeVar
 
     T = TypeVar("T")
 
@@ -218,6 +218,9 @@ def start_session(session_id: bytes | None) -> bytes:  # TODO incomplete
 
 
 def start_existing_session(session_id: bytes) -> bytes:
+    global _active_session_idx
+    global _is_active_session_authenticated
+
     if session_id is None:
         raise ValueError("session_id cannot be None")
     if get_active_session_id() == session_id:

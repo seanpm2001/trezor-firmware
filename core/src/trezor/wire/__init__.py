@@ -23,17 +23,15 @@ reads the message's header. When the message type is known the first handler is 
 
 """
 
-from apps import workflow_handlers
 from micropython import const
 from typing import TYPE_CHECKING
 
-from storage.cache_codec import InvalidSessionError
+from storage.cache_common import InvalidSessionError
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
 from trezor.messages import Failure
 from trezor.wire import codec_v1, context, protocol_common
 from trezor.wire.errors import ActionCancelled, DataError, Error
-import trezor.enums.MessageType as MT
 
 # Import all errors into namespace, so that `wire.Error` is available from
 # other packages.

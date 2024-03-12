@@ -27,7 +27,8 @@ class DataCache:
     if TYPE_CHECKING:
 
         @overload
-        def get(self, key: int) -> bytes | None: ...
+        def get(self, key: int) -> bytes | None:  # noqa: F811
+            ...
 
         @overload
         def get(self, key: int, default: T) -> bytes | T:  # noqa: F811
