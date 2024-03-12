@@ -112,11 +112,15 @@ async def _handle_single_message(
             msg_type = protobuf.type_for_wire(msg.type).MESSAGE_NAME
         except Exception:
             msg_type = f"{msg.type} - unknown message type"
+        if ctx.session_id is not None:
+            sid = int.from_bytes(ctx.session_id, "big")
+        else:
+            sid = -1
         log.debug(
             __name__,
             "%s:%x receive: <%s>",
             ctx.iface.iface_num(),
-            int.from_bytes(ctx.session_id, "big"),
+            sid,
             msg_type,
         )
 

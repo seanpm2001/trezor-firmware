@@ -99,11 +99,15 @@ class Context:
         to save on having to decode the type code into a protobuf class.
         """
         if __debug__:
+            if self.session_id is not None:
+                sid = int.from_bytes(self.session_id, "big")
+            else:
+                sid = -1
             log.debug(
                 __name__,
                 "%s:%x expect: %s",
                 self.iface.iface_num(),
-                int.from_bytes(self.session_id, "big"),
+                sid,
                 expected_type.MESSAGE_NAME if expected_type else expected_types,
             )
 
@@ -122,11 +126,15 @@ class Context:
             expected_type = protobuf.type_for_wire(msg.type)
 
         if __debug__:
+            if self.session_id is not None:
+                sid = int.from_bytes(self.session_id, "big")
+            else:
+                sid = -1
             log.debug(
                 __name__,
                 "%s:%x read: %s",
                 self.iface.iface_num(),
-                int.from_bytes(self.session_id, "big"),
+                sid,
                 expected_type.MESSAGE_NAME,
             )
 
@@ -138,11 +146,15 @@ class Context:
     async def write(self, msg: protobuf.MessageType) -> None:
         """Write a message to the wire."""
         if __debug__:
+            if self.session_id is not None:
+                sid = int.from_bytes(self.session_id, "big")
+            else:
+                sid = -1
             log.debug(
                 __name__,
                 "%s:%x write: %s",
                 self.iface.iface_num(),
-                int.from_bytes(self.session_id, "big"),
+                sid,
                 msg.MESSAGE_NAME,
             )
 
