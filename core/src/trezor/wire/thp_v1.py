@@ -285,7 +285,8 @@ async def _write_report(write, iface: WireInterface, report: bytearray) -> None:
 async def _handle_broadcast(iface: WireInterface, ctrl_byte, report) -> Message | None:
     if ctrl_byte != _CHANNEL_ALLOCATION_REQ:
         raise ThpError("Unexpected ctrl_byte in broadcast channel packet")
-    length, nonce, checksum = ustruct.unpack(">H8s4s", report[3:])
+    nonce, checksum = ustruct.unpack(">8s4s", report[5:])
+    # Note that the length field of the channel allocation request is ignored.
 
     if not _is_checksum_valid(checksum, data=report[:-4]):
         raise ThpError("Checksum is not valid")

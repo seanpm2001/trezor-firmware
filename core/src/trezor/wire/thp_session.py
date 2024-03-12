@@ -85,7 +85,7 @@ def sync_set_can_send_message(session: SessionThpCache, can_send: bool) -> None:
 
 
 def sync_set_receive_expected_bit(session: SessionThpCache, bit: int) -> None:
-    if bit != 0 and bit != 1:
+    if bit not in (0, 1):
         raise ThpError("Unexpected receive sync bit")
 
     # set second bit to "bit" value
@@ -126,7 +126,7 @@ def _get_unauthenticated_session_or_none(session_id) -> SessionThpCache | None:
 
 
 def _sync_set_send_bit(session: SessionThpCache, bit: int) -> None:
-    if bit != 0 and bit != 1:
+    if bit not in (0, 1):
         raise ThpError("Unexpected send sync bit")
 
     # set third bit to "bit" value
