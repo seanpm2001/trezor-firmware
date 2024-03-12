@@ -80,14 +80,12 @@ class Context:
         @overload
         async def read(
             self, expected_types: Container[int]
-        ) -> protobuf.MessageType:
-            ...
+        ) -> protobuf.MessageType: ...
 
         @overload
         async def read(
             self, expected_types: Container[int], expected_type: type[LoadedMessageType]
-        ) -> LoadedMessageType:
-            ...
+        ) -> LoadedMessageType: ...
 
     async def read(
         self,
