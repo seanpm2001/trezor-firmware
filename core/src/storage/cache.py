@@ -9,7 +9,7 @@ from storage.cache_common import InvalidSessionError, SessionlessCache
 SESSIONLESS_FLAG = const(128)
 
 if TYPE_CHECKING:
-    from typing import Sequence, TypeVar, overload
+    from typing import TypeVar, overload
 
     T = TypeVar("T")
 
@@ -102,7 +102,8 @@ def delete(key: int) -> None:
 if TYPE_CHECKING:
 
     @overload
-    def get(key: int) -> bytes | None: ...
+    def get(key: int) -> bytes | None:
+        ...
 
     @overload
     def get(key: int, default: T) -> bytes | T:  # noqa: F811

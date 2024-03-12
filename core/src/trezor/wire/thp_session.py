@@ -1,10 +1,8 @@
 import ustruct
 from storage import cache_thp as storage_thp_cache
-from storage.cache_thp import SessionThpCache, BROADCAST_CHANNEL_ID
-from trezor import io
+from storage.cache_thp import SessionThpCache
 from trezor.wire.protocol_common import WireError
 from typing import TYPE_CHECKING
-from ubinascii import hexlify
 
 if TYPE_CHECKING:
     from trezorio import WireInterface

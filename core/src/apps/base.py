@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 import storage.cache as storage_cache
-import storage.cache_thp as storage_thp_cache
 import storage.device as storage_device
 from trezor import TR, config, utils, wire, workflow
 from trezor.enums import HomescreenFormat, MessageType
