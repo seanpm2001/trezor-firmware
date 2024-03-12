@@ -15,9 +15,9 @@ for ButtonRequests. Of course, `context.wait()` transparently works in such situ
 
 from typing import TYPE_CHECKING
 
+import trezor.wire.protocol as protocol
 from trezor import log, loop, protobuf
 
-import trezor.wire.protocol as protocol
 from .protocol_common import Message
 
 if TYPE_CHECKING:

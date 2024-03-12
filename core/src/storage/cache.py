@@ -3,8 +3,8 @@ import gc
 from micropython import const
 from typing import TYPE_CHECKING
 
-from trezor import utils
 from storage.cache_common import InvalidSessionError, SessionlessCache
+from trezor import utils
 
 SESSIONLESS_FLAG = const(128)
 

@@ -1,15 +1,13 @@
 import ustruct
 from micropython import const
 from typing import TYPE_CHECKING
-from storage.cache_thp import SessionThpCache, BROADCAST_CHANNEL_ID
+
+import trezor.wire.thp_session as THP
+from storage.cache_thp import BROADCAST_CHANNEL_ID, SessionThpCache
 from trezor import io, loop, utils
 from trezor.crypto import crc
 from trezor.wire.protocol_common import Message
-import trezor.wire.thp_session as THP
-from trezor.wire.thp_session import (
-    ThpError,
-    SessionState
-)
+from trezor.wire.thp_session import SessionState, ThpError
 
 if TYPE_CHECKING:
     from trezorio import WireInterface

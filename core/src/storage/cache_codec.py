@@ -1,8 +1,9 @@
 import builtins
 from micropython import const
 from typing import TYPE_CHECKING
-from trezor import utils
+
 from storage.cache_common import DataCache
+from trezor import utils
 
 if TYPE_CHECKING:
     from typing import TypeVar

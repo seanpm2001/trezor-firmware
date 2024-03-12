@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING
 from storage.cache_common import DataCache, InvalidSessionError
 from trezor import utils
 
-
 if TYPE_CHECKING:
     from typing import TypeVar
 
