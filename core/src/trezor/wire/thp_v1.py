@@ -13,7 +13,6 @@ if TYPE_CHECKING:
     from trezorio import WireInterface
 
 _MAX_PAYLOAD_LEN = const(60000)
-_MAX_CID_REQ_PAYLOAD_LENGTH = const(12)  # TODO set to reasonable value
 _CHECKSUM_LENGTH = const(4)
 _CHANNEL_ALLOCATION_REQ = 0x40
 _CHANNEL_ALLOCATION_RES = 0x40
@@ -167,9 +166,9 @@ def _get_loop_wait_read(iface: WireInterface):
 
 
 def _get_buffer_for_payload(
-    payload_length: int, existing_buffer: utils.BufferType, max_length=_MAX_PAYLOAD_LEN
+    payload_length: int, existing_buffer: utils.BufferType
 ) -> utils.BufferType:
-    if payload_length > max_length:
+    if payload_length > _MAX_PAYLOAD_LEN:
         raise ThpError("Message too large")
     if payload_length > len(existing_buffer):
         # allocate a new buffer to fit the message
@@ -286,18 +285,14 @@ async def _write_report(write, iface: WireInterface, report: bytearray) -> None:
 async def _handle_broadcast(iface: WireInterface, ctrl_byte, report) -> Message | None:
     if ctrl_byte != _CHANNEL_ALLOCATION_REQ:
         raise ThpError("Unexpected ctrl_byte in broadcast channel packet")
+    nonce, checksum = ustruct.unpack(">8s4s", report[5:])
+    # Note that the length field of the channel allocation request is ignored.
 
-    length, nonce = ustruct.unpack(">H8s", report[3:])
-    header = InitHeader(ctrl_byte, BROADCAST_CHANNEL_ID, length)
-
-    payload = _get_buffer_for_payload(length, report[5:], _MAX_CID_REQ_PAYLOAD_LENGTH)
-    if not _is_checksum_valid(payload[-4:], header.to_bytes() + payload[:-4]):
+    if not _is_checksum_valid(checksum, data=report[:-4]):
         raise ThpError("Checksum is not valid")
 
     channel_id = _get_new_channel_id()
     THP.create_new_unauthenticated_session(iface, channel_id)
-
-    
     response_data = (
         ustruct.pack(">8sH", nonce, channel_id) + _ENCODED_PROTOBUF_DEVICE_PROPERTIES
     )
@@ -384,5 +379,5 @@ def _add_sync_bit_to_ctrl_byte(ctrl_byte, sync_bit):
     raise ThpError("Unexpected synchronization bit")
 
 
-def _compute_checksum_bytes(data: bytes | utils.BufferType) -> bytes:
+def _compute_checksum_bytes(data: bytes | utils.BufferType):
     return crc.crc32(data).to_bytes(4, "big")
