@@ -399,10 +399,10 @@ class DebugLink:
         self.screen_text_file = file_path
 
     def open(self) -> None:
-        self.transport.begin_connection()
+        self.transport.begin_session()
 
     def close(self) -> None:
-        self.transport.end_connection()
+        self.transport.end_session()
 
     def _call(self, msg: protobuf.MessageType, nowait: bool = False) -> Any:
         LOG.debug(
@@ -1275,8 +1275,8 @@ def prodtest_t1(client: "TrezorClient") -> protobuf.MessageType:
         raise RuntimeError("Device must be in bootloader mode")
 
     return client.call(
-        messages.SelfTest(
-            payload=b"\x00\xff\x55\xaa\x66\x99\x33\xccABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\x00\xff\x55\xaa\x66\x99\x33\xcc"
+        messages.ProdTestT1(
+            payload=b"\x00\xFF\x55\xAA\x66\x99\x33\xCCABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\x00\xFF\x55\xAA\x66\x99\x33\xCC"
         )
     )
 
