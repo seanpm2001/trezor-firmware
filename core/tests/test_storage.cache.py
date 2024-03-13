@@ -230,13 +230,9 @@ class TestStorageCache(unittest.TestCase):
         self.assertEqual(cache.get(KEY), b"hello")
 
     def test_EndSession(self):
-<<<<<<< HEAD
-        self.assertRaises(cache.InvalidSessionError, cache.get, KEY)
-        cache.start_session()
-=======
+
         self.assertRaises(InvalidSessionError, cache.get, KEY)
         session_id = cache.start_session()
->>>>>>> 8681ba167 (Basic THP functinality - not-polished prototype)
         self.assertTrue(is_session_started())
         self.assertIsNone(cache.get(KEY))
         await_result(handle_EndSession(EndSession()))
