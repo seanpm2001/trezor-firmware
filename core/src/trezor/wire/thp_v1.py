@@ -297,7 +297,6 @@ async def _handle_broadcast(iface: WireInterface, ctrl_byte, report) -> Message 
     channel_id = _get_new_channel_id()
     THP.create_new_unauthenticated_session(iface, channel_id)
 
-    
     response_data = (
         ustruct.pack(">8sH", nonce, channel_id) + _ENCODED_PROTOBUF_DEVICE_PROPERTIES
     )
