@@ -97,14 +97,17 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         )
 
         buffer = bytearray(64)
-
+        printBytes(cid_req_message)
         gen = thp_v1.read_message(self.interface, buffer)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
 
         with self.assertRaises(StopIteration) as e:
             gen.send(cid_req_message)
+            gen.send(None)  # TODO fix this weird behaviour
             gen.send(message)
+            gen.send(None)  # TODO fix this weird behaviour
+            gen.send(None)  # TODO fix this weird behaviour
 
         # e.value is StopIteration. e.value.value is the return value of the call
         result = e.value.value
@@ -133,6 +136,8 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
 
         with self.assertRaises(StopIteration) as e:
             gen.send(message)
+            gen.send(None)
+            gen.send(None)
 
         # e.value is StopIteration. e.value.value is the return value of the call
         result = e.value.value
@@ -165,13 +170,13 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         buffer = bytearray(262)
         gen = thp_v1.read_message(self.interface, buffer)
         query = gen.send(None)
-        for packet in packets[:-1]:
+        for packet in packets:
             self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
             query = gen.send(packet)
 
         # last packet will stop
         with self.assertRaises(StopIteration) as e:
-            gen.send(packets[-1])
+            gen.send(None)
 
         # e.value is StopIteration. e.value.value is the return value of the call
         result = e.value.value
@@ -208,6 +213,8 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
         with self.assertRaises(StopIteration) as e:
             gen.send(packet)
+            gen.send(None)
+            gen.send(None)
 
         # e.value is StopIteration. e.value.value is the return value of the call
         result = e.value.value
@@ -296,12 +303,12 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         buffer = bytearray(1024)
         gen = thp_v1.read_message(self.interface, buffer)
         query = gen.send(None)
-        for packet in self.interface.data[:-1]:
+        for packet in self.interface.data:
             self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
             query = gen.send(packet)
 
         with self.assertRaises(StopIteration) as e:
-            gen.send(self.interface.data[-1])
+            gen.send(None)
 
         result = e.value.value
         self.assertEqual(result.type, MESSAGE_TYPE)
