@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 import trezor.wire.protocol as protocol
 from trezor import log, loop, protobuf
 
-from .protocol_common import Message
+from .protocol_common import MessageWithId
 
 if TYPE_CHECKING:
     from trezorio import WireInterface
@@ -49,7 +49,7 @@ class UnexpectedMessage(Exception):
     should be aborted and a new one started as if `msg` was the first message.
     """
 
-    def __init__(self, msg: Message) -> None:
+    def __init__(self, msg: MessageWithId) -> None:
         super().__init__()
         self.msg = msg
 
@@ -71,7 +71,7 @@ class Context:
         self.buffer = buffer
         self.session_id = session_id
 
-    def read_from_wire(self) -> Awaitable[Message]:
+    def read_from_wire(self) -> Awaitable[MessageWithId]:
         """Read a whole message from the wire without parsing it."""
         return protocol.read_message(self.iface, self.buffer)
 
@@ -177,7 +177,7 @@ class Context:
             msg_session_id = bytearray(self.session_id)
         await protocol.write_message(
             self.iface,
-            Message(
+            MessageWithId(
                 message_type=msg.MESSAGE_WIRE_TYPE,
                 message_data=memoryview(buffer)[:msg_size],
                 session_id=msg_session_id,
