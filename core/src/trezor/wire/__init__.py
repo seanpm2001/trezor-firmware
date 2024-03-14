@@ -89,8 +89,8 @@ if __debug__:
 
 
 async def _handle_single_message(
-    ctx: context.Context, msg: protocol_common.Message, use_workflow: bool
-) -> protocol_common.Message | None:
+    ctx: context.Context, msg: protocol_common.MessageWithId, use_workflow: bool
+) -> protocol_common.MessageWithId | None:
     """Handle a message that was loaded from USB by the caller.
 
     Find the appropriate handler, run it and write its result on the wire. In case
@@ -206,7 +206,7 @@ async def handle_session(
         ctx_buffer = WIRE_BUFFER
 
     ctx = context.Context(iface, ctx_buffer, session_id)
-    next_msg: protocol_common.Message | None = None
+    next_msg: protocol_common.MessageWithId | None = None
 
     if __debug__ and is_debug_session:
         import apps.debug
