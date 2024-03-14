@@ -104,10 +104,10 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
 
         with self.assertRaises(StopIteration) as e:
             gen.send(cid_req_message)
-            gen.send(None)  # TODO fix this weird behaviour
+            gen.send(None)
             gen.send(message)
-            gen.send(None)  # TODO fix this weird behaviour
-            gen.send(None)  # TODO fix this weird behaviour
+            gen.send(None)
+            gen.send(None)
 
         # e.value is StopIteration. e.value.value is the return value of the call
         result = e.value.value
