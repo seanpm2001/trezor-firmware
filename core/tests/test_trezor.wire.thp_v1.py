@@ -6,11 +6,11 @@ from trezor import io, utils
 from trezor.loop import wait
 from trezor.utils import chunks
 from trezor.wire import thp_v1
-from trezor.wire.thp_v1 import _CHECKSUM_LENGTH, BROADCAST_CHANNEL_ID
-from trezor.wire.protocol_common import Message
-import trezor.wire.thp_session as THP
-
-from micropython import const
+from trezor.wire.thp_v1 import BROADCAST_CHANNEL_ID
+from trezor.wire.protocol_common import MessageWithId
+import trezor.wire.thp.thp_session as THP
+from trezor.wire.thp import checksum
+from trezor.wire.thp.checksum import CHECKSUM_LENGTH
 
 
 class MockHID:
@@ -123,10 +123,10 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         # zero length message - just a header
         PLAINTEXT = getPlaintext()
         header = make_header(
-            PLAINTEXT, cid=COMMON_CID, length=_MESSAGE_TYPE_LEN + _CHECKSUM_LENGTH
+            PLAINTEXT, cid=COMMON_CID, length=_MESSAGE_TYPE_LEN + CHECKSUM_LENGTH
         )
-        checksum = thp_v1._compute_checksum_bytes(header + MESSAGE_TYPE_BYTES)
-        message = header + MESSAGE_TYPE_BYTES + checksum
+        chksum = checksum.compute(header + MESSAGE_TYPE_BYTES)
+        message = header + MESSAGE_TYPE_BYTES + chksum
 
         buffer = bytearray(64)
         gen = thp_v1.read_message(self.interface, buffer)
@@ -145,16 +145,16 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         self.assertEqual(result.data, b"")
 
         # message should have been read into the buffer
-        self.assertEqual(buffer, MESSAGE_TYPE_BYTES + checksum + b"\x00" * 58)
+        self.assertEqual(buffer, MESSAGE_TYPE_BYTES + chksum + b"\x00" * 58)
 
     def test_read_many_packets(self):
         message = bytes(range(256))
         header = make_header(
             getPlaintext(),
             COMMON_CID,
-            len(message) + _MESSAGE_TYPE_LEN + _CHECKSUM_LENGTH,
+            len(message) + _MESSAGE_TYPE_LEN + CHECKSUM_LENGTH,
         )
-        checksum = thp_v1._compute_checksum_bytes(header + MESSAGE_TYPE_BYTES + message)
+        chksum = checksum.compute(header + MESSAGE_TYPE_BYTES + message)
         # message = MESSAGE_TYPE_BYTES + message + checksum
 
         # first packet is init header + 59 bytes of data
@@ -163,7 +163,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         packets = [header + MESSAGE_TYPE_BYTES + message[:INIT_MESSAGE_DATA_LENGTH]] + [
             cont_header + chunk
             for chunk in chunks(
-                message[INIT_MESSAGE_DATA_LENGTH:] + checksum,
+                message[INIT_MESSAGE_DATA_LENGTH:] + chksum,
                 64 - HEADER_CONT_LENGTH,
             )
         ]
@@ -185,21 +185,21 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         self.assertEqual(result.data, message)
 
         # message should have been read into the buffer )
-        self.assertEqual(buffer, MESSAGE_TYPE_BYTES + message + checksum)
+        self.assertEqual(buffer, MESSAGE_TYPE_BYTES + message + chksum)
 
     def test_read_large_message(self):
         message = b"hello world"
         header = make_header(
             getPlaintext(),
             COMMON_CID,
-            _MESSAGE_TYPE_LEN + len(message) + _CHECKSUM_LENGTH,
+            _MESSAGE_TYPE_LEN + len(message) + CHECKSUM_LENGTH,
         )
 
         packet = (
             header
             + MESSAGE_TYPE_BYTES
             + message
-            + thp_v1._compute_checksum_bytes(header + MESSAGE_TYPE_BYTES + message)
+            + checksum.compute(header + MESSAGE_TYPE_BYTES + message)
         )
 
         # make sure we fit into one packet, to make this easier
@@ -225,7 +225,9 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         self.assertEqual(buffer, b"\x00")
 
     def test_write_one_packet(self):
-        message = Message(MESSAGE_TYPE, b"", THP._get_id(self.interface, COMMON_CID))
+        message = MessageWithId(
+            MESSAGE_TYPE, b"", THP._get_id(self.interface, COMMON_CID)
+        )
         gen = thp_v1.write_message(self.interface, message)
 
         query = gen.send(None)
@@ -234,19 +236,19 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
             gen.send(None)
 
         header = make_header(
-            PLAINTEXT_0, COMMON_CID, _MESSAGE_TYPE_LEN + _CHECKSUM_LENGTH
+            PLAINTEXT_0, COMMON_CID, _MESSAGE_TYPE_LEN + CHECKSUM_LENGTH
         )
         expected_message = (
             header
             + MESSAGE_TYPE_BYTES
-            + thp_v1._compute_checksum_bytes(header + MESSAGE_TYPE_BYTES)
-            + b"\x00" * (INIT_MESSAGE_DATA_LENGTH - _CHECKSUM_LENGTH)
+            + checksum.compute(header + MESSAGE_TYPE_BYTES)
+            + b"\x00" * (INIT_MESSAGE_DATA_LENGTH - CHECKSUM_LENGTH)
         )
         self.assertTrue(self.interface.data == [expected_message])
 
     def test_write_multiple_packets(self):
         message_payload = bytes(range(256))
-        message = Message(
+        message = MessageWithId(
             MESSAGE_TYPE, message_payload, THP._get_id(self.interface, COMMON_CID)
         )
         gen = thp_v1.write_message(self.interface, message)
@@ -254,10 +256,10 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         header = make_header(
             PLAINTEXT_1,
             COMMON_CID,
-            len(message.data) + _MESSAGE_TYPE_LEN + _CHECKSUM_LENGTH,
+            len(message.data) + _MESSAGE_TYPE_LEN + CHECKSUM_LENGTH,
         )
         cont_header = make_cont_header()
-        checksum = thp_v1._compute_checksum_bytes(
+        chksum = checksum.compute(
             header + message.type.to_bytes(2, "big") + message.data
         )
         packets = [
@@ -265,7 +267,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         ] + [
             cont_header + chunk
             for chunk in chunks(
-                message.data[INIT_MESSAGE_DATA_LENGTH:] + checksum,
+                message.data[INIT_MESSAGE_DATA_LENGTH:] + chksum,
                 thp_v1._REPORT_LENGTH - HEADER_CONT_LENGTH,
             )
         ]
@@ -290,7 +292,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
 
     def test_roundtrip(self):
         message_payload = bytes(range(256))
-        message = Message(
+        message = MessageWithId(
             MESSAGE_TYPE, message_payload, THP._get_id(self.interface, COMMON_CID)
         )
         gen = thp_v1.write_message(self.interface, message)
@@ -320,7 +322,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message_size = (PACKET_COUNT - 1) * (
             thp_v1._REPORT_LENGTH
             - HEADER_CONT_LENGTH
-            - _CHECKSUM_LENGTH
+            - CHECKSUM_LENGTH
             - _MESSAGE_TYPE_LEN
         ) + INIT_MESSAGE_DATA_LENGTH
 
