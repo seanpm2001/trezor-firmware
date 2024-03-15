@@ -213,14 +213,20 @@ trezor.wire.context
 import trezor.wire.context
 trezor.wire.errors
 import trezor.wire.errors
+trezor.wire.message_handler
+import trezor.wire.message_handler
 trezor.wire.protocol
 import trezor.wire.protocol
 trezor.wire.protocol_common
 import trezor.wire.protocol_common
 trezor.wire.thp.ack_handler
 import trezor.wire.thp.ack_handler
+trezor.wire.thp.channel_context
+import trezor.wire.thp.channel_context
 trezor.wire.thp.checksum
 import trezor.wire.thp.checksum
+trezor.wire.thp.session_context
+import trezor.wire.thp.session_context
 trezor.wire.thp.thp_messages
 import trezor.wire.thp.thp_messages
 trezor.wire.thp.thp_session

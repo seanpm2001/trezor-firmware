@@ -18,7 +18,7 @@ from typing import TYPE_CHECKING
 import trezor.wire.protocol as protocol
 from trezor import log, loop, protobuf
 
-from .protocol_common import MessageWithId
+from .protocol_common import Context, MessageWithId
 
 if TYPE_CHECKING:
     from trezorio import WireInterface
@@ -54,10 +54,10 @@ class UnexpectedMessage(Exception):
         self.msg = msg
 
 
-class Context:
+class CodecContext(Context):
     """Wire context.
 
-    Represents USB communication inside a particular session on a particular interface
+    Represents USB communication inside a particular session (channel) on a particular interface
     (i.e., wire, debug, single BT connection, etc.)
     """
 
@@ -65,11 +65,12 @@ class Context:
         self,
         iface: WireInterface,
         buffer: bytearray,
-        session_id: bytes | None = None,
+        channel_id: bytes | None = None,
     ) -> None:
         self.iface = iface
         self.buffer = buffer
-        self.session_id = session_id
+        self.channel_id = channel_id
+        super().__init__(iface, channel_id)
 
     def read_from_wire(self) -> Awaitable[MessageWithId]:
         """Read a whole message from the wire without parsing it."""
@@ -99,8 +100,8 @@ class Context:
         to save on having to decode the type code into a protobuf class.
         """
         if __debug__:
-            if self.session_id is not None:
-                sid = int.from_bytes(self.session_id, "big")
+            if self.channel_id is not None:
+                sid = int.from_bytes(self.channel_id, "big")
             else:
                 sid = -1
             log.debug(
@@ -126,8 +127,8 @@ class Context:
             expected_type = protobuf.type_for_wire(msg.type)
 
         if __debug__:
-            if self.session_id is not None:
-                sid = int.from_bytes(self.session_id, "big")
+            if self.channel_id is not None:
+                sid = int.from_bytes(self.channel_id, "big")
             else:
                 sid = -1
             log.debug(
@@ -146,8 +147,8 @@ class Context:
     async def write(self, msg: protobuf.MessageType) -> None:
         """Write a message to the wire."""
         if __debug__:
-            if self.session_id is not None:
-                sid = int.from_bytes(self.session_id, "big")
+            if self.channel_id is not None:
+                sid = int.from_bytes(self.channel_id, "big")
             else:
                 sid = -1
             log.debug(
@@ -173,8 +174,8 @@ class Context:
         msg_size = protobuf.encode(buffer, msg)
 
         msg_session_id = None
-        if self.session_id is not None:
-            msg_session_id = bytearray(self.session_id)
+        if self.channel_id is not None:
+            msg_session_id = bytearray(self.channel_id)
         await protocol.write_message(
             self.iface,
             MessageWithId(
@@ -196,7 +197,7 @@ class Context:
         return await self.read((expected_type.MESSAGE_WIRE_TYPE,), expected_type)
 
 
-CURRENT_CONTEXT: Context | None = None
+CURRENT_CONTEXT: CodecContext | None = None
 
 
 def wait(task: Awaitable[T]) -> Awaitable[T]:
@@ -257,7 +258,7 @@ async def maybe_call(
     await call(msg, expected_type)
 
 
-def get_context() -> Context:
+def get_context() -> CodecContext:
     """Get the current session context.
 
     Can be needed in case the caller needs raw read and raw write capabilities, which
@@ -271,7 +272,7 @@ def get_context() -> Context:
     return CURRENT_CONTEXT
 
 
-def with_context(ctx: Context, workflow: loop.Task) -> Generator:
+def with_context(ctx: CodecContext, workflow: loop.Task) -> Generator:
     """Run a workflow in a particular context.
 
     Stores the context in a closure and installs it into the global variable every time

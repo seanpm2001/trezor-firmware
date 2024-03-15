@@ -8,8 +8,14 @@ from trezor import io, loop, utils
 from .protocol_common import MessageWithId
 from .thp import ack_handler, checksum, thp_messages
 from .thp import thp_session as THP
+from .thp.channel_context import ChannelContext
 from .thp.checksum import CHECKSUM_LENGTH
-from .thp.thp_messages import CONTINUATION_PACKET, InitHeader, InterruptingInitPacket
+from .thp.thp_messages import (
+    CONTINUATION_PACKET,
+    ENCRYPTED_TRANSPORT,
+    InitHeader,
+    InterruptingInitPacket,
+)
 from .thp.thp_session import SessionState, ThpError
 
 if TYPE_CHECKING:
@@ -21,11 +27,13 @@ _CHANNEL_ALLOCATION_REQ = 0x40
 _ACK_MESSAGE = 0x20
 _HANDSHAKE_INIT = 0x00
 _PLAINTEXT = 0x01
-ENCRYPTED_TRANSPORT = 0x02
 
 _REPORT_LENGTH = const(64)
 _REPORT_INIT_DATA_OFFSET = const(5)
 _REPORT_CONT_DATA_OFFSET = const(3)
+
+_BUFFER: bytearray
+_BUFFER_LOCK = None
 
 
 async def read_message(iface: WireInterface, buffer: utils.BufferType) -> MessageWithId:
@@ -36,6 +44,37 @@ async def read_message(iface: WireInterface, buffer: utils.BufferType) -> Messag
         else:
             raise ThpError("Unexpected output of read_message_or_init_packet:")
     return msg
+
+
+def set_buffer(buffer):
+    _BUFFER = buffer
+    print(_BUFFER)  # TODO remove
+
+
+async def thp_main_loop(iface: WireInterface, is_debug_session=False):
+
+    CHANNELS: dict[int, ChannelContext] = {}
+    # TODO load cached channels/sessions
+
+    read = loop.wait(iface.iface_num() | io.POLL_READ)
+
+    while True:
+        packet = await read
+        ctrl_byte, cid = ustruct.unpack(">BH", packet)
+
+        if cid == BROADCAST_CHANNEL_ID:
+            await _handle_broadcast(iface, ctrl_byte, packet)
+            continue
+
+        if cid in CHANNELS:
+            channel = CHANNELS[cid]
+            if channel is None:
+                raise ThpError("Invalid state of a channel")
+            if channel.get_management_session_state != SessionState.UNALLOCATED:
+                await channel.receive_packet(packet)
+                continue
+
+        await _handle_unallocated(iface, cid)
 
 
 async def read_message_or_init_packet(
@@ -50,10 +89,10 @@ async def read_message_or_init_packet(
             raise ThpError("Reading failed unexpectedly, report is None.")
 
         # Channel multiplexing
-        ctrl_byte, cid, payload_length = ustruct.unpack(">BHH", report)
+        ctrl_byte, cid = ustruct.unpack(">BH", report)
 
         if cid == BROADCAST_CHANNEL_ID:
-            await _handle_broadcast(iface, ctrl_byte, report)  # TODO await
+            await _handle_broadcast(iface, ctrl_byte, report)
             report = None
             continue
 
@@ -64,7 +103,7 @@ async def read_message_or_init_packet(
             # continuation packet is not expected - ignore
             report = None
             continue
-
+        payload_length = ustruct.unpack(">H", report[3:])[0]
         payload = _get_buffer_for_payload(payload_length, buffer)
         header = InitHeader(ctrl_byte, cid, payload_length)
 
@@ -255,15 +294,15 @@ async def _write_report(write, iface: WireInterface, report: bytearray) -> None:
 
 
 async def _handle_broadcast(
-    iface: WireInterface, ctrl_byte, report
+    iface: WireInterface, ctrl_byte, packet
 ) -> MessageWithId | None:
     if ctrl_byte != _CHANNEL_ALLOCATION_REQ:
         raise ThpError("Unexpected ctrl_byte in broadcast channel packet")
 
-    length, nonce = ustruct.unpack(">H8s", report[3:])
+    length, nonce = ustruct.unpack(">H8s", packet[3:])
     header = InitHeader(ctrl_byte, BROADCAST_CHANNEL_ID, length)
 
-    payload = _get_buffer_for_payload(length, report[5:], _MAX_CID_REQ_PAYLOAD_LENGTH)
+    payload = _get_buffer_for_payload(length, packet[5:], _MAX_CID_REQ_PAYLOAD_LENGTH)
     if not checksum.is_valid(payload[-4:], header.to_bytes() + payload[:-4]):
         raise ThpError("Checksum is not valid")
 
@@ -274,8 +313,8 @@ async def _handle_broadcast(
     response_header = InitHeader.get_channel_allocation_response_header(
         len(response_data) + CHECKSUM_LENGTH,
     )
-
     chksum = checksum.compute(response_header.to_bytes() + response_data)
+
     await write_to_wire(iface, response_header, response_data + chksum)
 
 
