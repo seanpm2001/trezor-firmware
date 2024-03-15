@@ -1,3 +1,6 @@
+from trezor import protobuf
+
+
 class Message:
     def __init__(
         self,
@@ -24,3 +27,11 @@ class MessageWithId(Message):
 
 class WireError(Exception):
     pass
+
+
+class Context:
+    def __init__(self, iface, channel_id) -> None:
+        self.iface = iface
+        self.channel_id = channel_id
+
+    async def write(self, msg: protobuf.MessageType) -> None: ...

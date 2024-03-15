@@ -43,7 +43,7 @@ if __debug__:
 
     layout_change_chan = loop.chan()
 
-    DEBUG_CONTEXT: context.Context | None = None
+    DEBUG_CONTEXT: context.CodecContext | None = None
 
     LAYOUT_WATCHER_NONE = 0
     LAYOUT_WATCHER_STATE = 1

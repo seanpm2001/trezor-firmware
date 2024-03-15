@@ -5,6 +5,7 @@ from storage.cache_thp import BROADCAST_CHANNEL_ID
 from ..protocol_common import Message
 
 CONTINUATION_PACKET = 0x80
+ENCRYPTED_TRANSPORT = 0x02
 _ERROR = 0x41
 _CHANNEL_ALLOCATION_RES = 0x40
 
