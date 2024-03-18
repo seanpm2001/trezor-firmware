@@ -271,7 +271,7 @@ async def write_message(
     if __debug__ and message.session_id is not None:
         log.debug(
             __name__,
-            "Writing message with type %d  to a session %d",
+            "Writing message with type %d to a session %d",
             message.type,
             int.from_bytes(message.session_id, "big"),
         )
