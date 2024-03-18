@@ -271,9 +271,9 @@ async def write_message(
     if __debug__ and message.session_id is not None:
         log.debug(
             __name__,
-            "Writing message to a session with id: %d, message type: %d, ",
-            int.from_bytes(message.session_id, "big"),
+            "Writing message with type %d to a session %d",
             message.type,
+            int.from_bytes(message.session_id, "big"),
         )
     await write_to_wire(iface, header, payload + chksum)
     # TODO set timeout for retransmission
