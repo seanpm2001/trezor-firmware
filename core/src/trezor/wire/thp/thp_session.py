@@ -90,7 +90,8 @@ def sync_set_receive_expected_bit(session: SessionThpCache, bit: int) -> None:
 
     # set second bit to "bit" value
     session.sync &= 0xBF
-    session.sync |= 0x40
+    if bit:
+        session.sync |= 0x40
 
 
 def sync_set_send_bit_to_opposite(session: SessionThpCache) -> None:
