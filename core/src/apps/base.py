@@ -366,7 +366,7 @@ def set_homescreen() -> None:
 def lock_device(interrupt_workflow: bool = True) -> None:
     if config.has_pin():
         config.lock()
-        wire.find_handler = get_pinlocked_handler
+        wire.message_handler.find_handler = get_pinlocked_handler
         set_homescreen()
         if interrupt_workflow:
             workflow.close_others()
@@ -402,7 +402,7 @@ async def unlock_device() -> None:
 
     _SCREENSAVER_IS_ON = False
     set_homescreen()
-    wire.find_handler = workflow_handlers.find_registered_handler
+    wire.message_handler.find_handler = workflow_handlers.find_registered_handler
 
 
 def get_pinlocked_handler(
@@ -461,6 +461,6 @@ def boot() -> None:
 
     reload_settings_from_storage()
     if config.is_unlocked():
-        wire.find_handler = workflow_handlers.find_registered_handler
+        wire.message_handler.find_handler = workflow_handlers.find_registered_handler
     else:
-        wire.find_handler = get_pinlocked_handler
+        wire.message_handler.find_handler = get_pinlocked_handler
