@@ -207,6 +207,8 @@ trezor.wire.protocol
 import trezor.wire.protocol
 trezor.wire.protocol_common
 import trezor.wire.protocol_common
+trezor.wire.thp
+import trezor.wire.thp
 trezor.wire.thp.ack_handler
 import trezor.wire.thp.ack_handler
 trezor.wire.thp.channel_context
