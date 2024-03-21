@@ -93,9 +93,7 @@ class ChannelContext(Context):
         passphrase="",
     ) -> None:  # TODO change it to output session data
         pass
-        # TODO check, wheter a session with this passphrase already exists
-        # if not, create a new session with this passphrase
-        # if yes, what TODO TODO ???
+        # create a new session with this passphrase
 
 
 def _is_ctrl_byte_continuation(ctrl_byte: int) -> bool:
