@@ -53,11 +53,6 @@ else:
     refresh = display.refresh
 
 
-# in both debug and production, emulator needs to draw the screen explicitly
-if utils.EMULATOR or utils.INTERNAL_MODEL in ("T1B1", "T2B1"):
-    loop.after_step_hook = refresh
-
-
 async def _alert(count: int) -> None:
     short_sleep = loop.sleep(20)
     long_sleep = loop.sleep(80)
@@ -344,6 +339,7 @@ class Layout(Generic[T]):
                 msg = event_call(*event)
                 self._emit_message(msg)
                 self.layout.paint()
+                refresh()
         except Shutdown:
             return
         finally:
