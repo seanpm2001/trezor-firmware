@@ -60,7 +60,7 @@ _ERROR_UNALLOCATED_SESSION = (
 
 
 def get_device_properties() -> Message:
-    return Message(1000, _ENCODED_PROTOBUF_DEVICE_PROPERTIES)
+    return Message(_ENCODED_PROTOBUF_DEVICE_PROPERTIES)
 
 
 def get_channel_allocation_response(nonce: bytes, new_cid: int) -> bytes:
