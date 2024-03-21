@@ -4,17 +4,28 @@ from trezor import protobuf
 class Message:
     def __init__(
         self,
+        message_data: bytes,
+    ) -> None:
+        self.data = message_data
+
+    def to_bytes(self):
+        return self.data
+
+
+class MessageWithType(Message):
+    def __init__(
+        self,
         message_type: int,
         message_data: bytes,
     ) -> None:
         self.type = message_type
-        self.data = message_data
+        super().__init__(message_data)
 
     def to_bytes(self):
         return self.type.to_bytes(2, "big") + self.data
 
 
-class MessageWithId(Message):
+class MessageWithId(MessageWithType):
     def __init__(
         self,
         message_type: int,
