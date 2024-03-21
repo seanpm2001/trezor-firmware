@@ -1,5 +1,5 @@
-from .channel_context import ChannelContext
 from . import ChannelState
+from .channel_context import ChannelContext
 
 
 def getPacketHandler(
