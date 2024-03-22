@@ -8,7 +8,7 @@ from trezor import io, log, loop, utils
 from .protocol_common import MessageWithId
 from .thp import ack_handler, checksum, thp_messages
 from .thp import thp_session as THP
-from .thp.channel_context import ChannelContext
+from .thp.channel_context import ChannelContext, load_cached_channels
 from .thp.checksum import CHECKSUM_LENGTH
 from .thp.thp_messages import (
     CONTINUATION_PACKET,
@@ -35,6 +35,8 @@ _REPORT_CONT_DATA_OFFSET = const(3)
 _BUFFER: bytearray
 _BUFFER_LOCK = None
 
+_CHANNEL_CONTEXTS: dict[int, ChannelContext] = {}
+
 
 async def read_message(iface: WireInterface, buffer: utils.BufferType) -> MessageWithId:
     msg = await read_message_or_init_packet(iface, buffer)
@@ -52,9 +54,8 @@ def set_buffer(buffer):
 
 
 async def thp_main_loop(iface: WireInterface, is_debug_session=False):
-
-    CHANNELS: dict[int, ChannelContext] = {}
-    # TODO load cached channels/sessions
+    global _CHANNEL_CONTEXTS
+    _CHANNEL_CONTEXTS = load_cached_channels()
 
     read = loop.wait(iface.iface_num() | io.POLL_READ)
 
@@ -63,18 +64,23 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
         ctrl_byte, cid = ustruct.unpack(">BH", packet)
 
         if cid == BROADCAST_CHANNEL_ID:
+            # TODO handle exceptions, try-catch?
             await _handle_broadcast(iface, ctrl_byte, packet)
             continue
 
-        if cid in CHANNELS:
-            channel = CHANNELS[cid]
+        if cid in _CHANNEL_CONTEXTS:
+            channel = _CHANNEL_CONTEXTS[cid]
             if channel is None:
                 raise ThpError("Invalid state of a channel")
+            # TODO if the channelContext interface is not None and is different from
+            # the one used in the transmission of the packet, raise an exception
+            # TODO add current wire interface to channelContext if its iface is None
             if channel.get_management_session_state != SessionState.UNALLOCATED:
                 await channel.receive_packet(packet)
                 continue
 
         await _handle_unallocated(iface, cid)
+        # TODO add cleaning sequence if no workflow/channel is active (or some condition like that)
 
 
 async def read_message_or_init_packet(
@@ -316,26 +322,29 @@ async def _handle_broadcast(
 ) -> MessageWithId | None:
     if ctrl_byte != _CHANNEL_ALLOCATION_REQ:
         raise ThpError("Unexpected ctrl_byte in broadcast channel packet")
-
     if __debug__:
         log.debug(__name__, "Received valid message on broadcast channel ")
+
     length, nonce = ustruct.unpack(">H8s", packet[3:])
     header = InitHeader(ctrl_byte, BROADCAST_CHANNEL_ID, length)
-
     payload = _get_buffer_for_payload(length, packet[5:], _MAX_CID_REQ_PAYLOAD_LENGTH)
+
     if not checksum.is_valid(payload[-4:], header.to_bytes() + payload[:-4]):
         raise ThpError("Checksum is not valid")
 
-    channel_id = _get_new_channel_id()
-    THP.create_new_unauthenticated_session(iface, channel_id)
+    deprecated_channel_id = _get_new_channel_id()  # TODO remove
+    THP.create_new_unauthenticated_session(iface, deprecated_channel_id)  # TODO remove
+    new_context: ChannelContext = ChannelContext.create_new_channel(iface)
+    cid = int.from_bytes(new_context.channel_id, "big")
+    _CHANNEL_CONTEXTS[cid] = new_context
 
-    response_data = thp_messages.get_channel_allocation_response(nonce, channel_id)
+    response_data = thp_messages.get_channel_allocation_response(nonce, cid)
     response_header = InitHeader.get_channel_allocation_response_header(
         len(response_data) + CHECKSUM_LENGTH,
     )
     chksum = checksum.compute(response_header.to_bytes() + response_data)
     if __debug__:
-        log.debug(__name__, "New channel allocated with id %d", channel_id)
+        log.debug(__name__, "New channel allocated with id %d", cid)
 
     await write_to_wire(iface, response_header, response_data + chksum)
 
