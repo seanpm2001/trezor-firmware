@@ -65,7 +65,7 @@ class CodecContext(Context):
         self,
         iface: WireInterface,
         buffer: bytearray,
-        channel_id: bytes | None = None,
+        channel_id: bytes,
     ) -> None:
         self.iface = iface
         self.buffer = buffer
