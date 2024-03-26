@@ -52,13 +52,14 @@ async def read_message(iface: WireInterface, buffer: utils.BufferType) -> Messag
 
 
 def set_buffer(buffer):
+    global _BUFFER
     _BUFFER = buffer
-    print(_BUFFER)  # TODO remove
 
 
 async def thp_main_loop(iface: WireInterface, is_debug_session=False):
     global _CHANNEL_CONTEXTS
-    _CHANNEL_CONTEXTS = load_cached_channels()
+    global _BUFFER
+    _CHANNEL_CONTEXTS = load_cached_channels(_BUFFER)
 
     read = loop.wait(iface.iface_num() | io.POLL_READ)
 
