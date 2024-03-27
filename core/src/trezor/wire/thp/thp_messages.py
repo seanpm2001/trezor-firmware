@@ -1,7 +1,9 @@
 import ustruct  # pyright:ignore[reportMissingModuleSource]
 
 from storage.cache_thp import BROADCAST_CHANNEL_ID
+from trezor import protobuf
 
+from .. import message_handler
 from ..protocol_common import Message
 
 CODEC_V1 = 0x3F
@@ -73,3 +75,12 @@ def get_channel_allocation_response(nonce: bytes, new_cid: bytes) -> bytes:
 
 def get_error_unallocated_channel() -> bytes:
     return _ERROR_UNALLOCATED_SESSION
+
+
+def get_handshake_init_response() -> bytes:
+    return b"\x00"  # TODO implement
+
+
+def decode_message(buffer: bytes, msg_type: int) -> protobuf.MessageType:
+    expected_type = protobuf.type_for_wire(msg_type)
+    return message_handler.wrap_protobuf_load(buffer, expected_type)
