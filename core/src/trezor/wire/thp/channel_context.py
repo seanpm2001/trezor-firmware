@@ -7,7 +7,7 @@ import usb
 from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, TAG_LENGTH, ChannelCache
 from trezor import loop, protobuf, utils
-from trezor.messages import CreateNewSession
+from trezor.messages import ThpCreateNewSession
 from trezor.wire import message_handler
 
 from ..protocol_common import Context
@@ -197,11 +197,11 @@ class ChannelContext(Context):
                     message = message_handler.wrap_protobuf_load(buf, expected_type)
                     print(message)
                     # ------------------------------------------------TYPE ERROR------------------------------------------------
-                    session_message: CreateNewSession = message
-                    print("passphrase:", session_message.passphrase)
+                    assert isinstance(message, ThpCreateNewSession)
+                    print("passphrase:", message.passphrase)
                     # await thp_messages.handle_CreateNewSession(message)
-                    if session_message.passphrase is not None:
-                        self.create_new_session(session_message.passphrase)
+                    if message.passphrase is not None:
+                        self.create_new_session(message.passphrase)
                     else:
                         self.create_new_session()
                 except Exception as e:
@@ -263,6 +263,8 @@ class ChannelContext(Context):
         pass
         # TODO protocol.write(self.iface, self.channel_id, session_id, msg)
 
+    # OTHER
+
     def create_new_session(
         self,
         passphrase="",
@@ -274,8 +276,6 @@ class ChannelContext(Context):
         print("help")
         self.sessions[session.session_id] = session
         print("new session created. Session id:", session.session_id)
-
-    # OTHER
 
     def _todo_clear_buffer(self):
         # TODO Buffer clearing not implemented
