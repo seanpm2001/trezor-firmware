@@ -97,7 +97,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         )
 
         buffer = bytearray(64)
-        gen = thp_v1.read_message(self.interface, buffer)
+        gen = thp_v1.deprecated_read_message(self.interface, buffer)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
         gen.send(cid_req_message)
@@ -126,7 +126,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message = header + MESSAGE_TYPE_BYTES + chksum
 
         buffer = bytearray(64)
-        gen = thp_v1.read_message(self.interface, buffer)
+        gen = thp_v1.deprecated_read_message(self.interface, buffer)
 
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
@@ -163,7 +163,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
             )
         ]
         buffer = bytearray(262)
-        gen = thp_v1.read_message(self.interface, buffer)
+        gen = thp_v1.deprecated_read_message(self.interface, buffer)
         query = gen.send(None)
         for packet in packets:
             self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
@@ -203,7 +203,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         buffer = bytearray(1)
         self.assertTrue(len(buffer) <= len(packet))
 
-        gen = thp_v1.read_message(self.interface, buffer)
+        gen = thp_v1.deprecated_read_message(self.interface, buffer)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
         gen.send(packet)
@@ -230,7 +230,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
             self.assertObjectEqual(query, self.interface.wait_object(io.POLL_WRITE))
 
         buffer = bytearray(1024)
-        gen = thp_v1.read_message(self.interface, buffer)
+        gen = thp_v1.deprecated_read_message(self.interface, buffer)
         query = gen.send(None)
         for packet in self.interface.data:
             self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
@@ -327,7 +327,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         header = make_header(PLAINTEXT_1, COMMON_CID, message_size)
         packet = header + MESSAGE_TYPE_BYTES + (b"\x00" * INIT_MESSAGE_DATA_LENGTH)
         buffer = bytearray(65536)
-        gen = thp_v1.read_message(self.interface, buffer)
+        gen = thp_v1.deprecated_read_message(self.interface, buffer)
 
         query = gen.send(None)
 
