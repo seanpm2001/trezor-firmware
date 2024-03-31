@@ -41,16 +41,6 @@ _BUFFER_LOCK = None
 _CHANNEL_CONTEXTS: dict[int, Channel] = {}
 
 
-async def read_message(iface: WireInterface, buffer: utils.BufferType) -> MessageWithId:
-    msg = await read_message_or_init_packet(iface, buffer)
-    while type(msg) is not MessageWithId:
-        if isinstance(msg, InterruptingInitPacket):
-            msg = await read_message_or_init_packet(iface, buffer, msg.initReport)
-        else:
-            raise ThpError("Unexpected output of read_message_or_init_packet:")
-    return msg
-
-
 def set_buffer(buffer):
     global _BUFFER
     _BUFFER = buffer
@@ -96,14 +86,28 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
         # TODO add cleaning sequence if no workflow/channel is active (or some condition like that)
 
 
-async def read_message_or_init_packet(
+async def deprecated_read_message(
+    iface: WireInterface, buffer: utils.BufferType
+) -> MessageWithId:
+    msg = await deprecated_read_message_or_init_packet(iface, buffer)
+    while type(msg) is not MessageWithId:
+        if isinstance(msg, InterruptingInitPacket):
+            msg = await deprecated_read_message_or_init_packet(
+                iface, buffer, msg.initReport
+            )
+        else:
+            raise ThpError("Unexpected output of read_message_or_init_packet:")
+    return msg
+
+
+async def deprecated_read_message_or_init_packet(
     iface: WireInterface, buffer: utils.BufferType, firstReport: bytes | None = None
 ) -> MessageWithId | InterruptingInitPacket:
     report = firstReport
     while True:
         # Wait for an initial report
         if report is None:
-            report = await _get_loop_wait_read(iface)
+            report = await loop.wait(iface.iface_num() | io.POLL_READ)
         if report is None:
             raise ThpError("Reading failed unexpectedly, report is None.")
 
@@ -129,7 +133,9 @@ async def read_message_or_init_packet(
         header = InitHeader(ctrl_byte, cid, payload_length)
 
         # buffer the received data
-        interruptingPacket = await _buffer_received_data(payload, header, iface, report)
+        interruptingPacket = await _deprecated_buffer_received_data(
+            payload, header, iface, report
+        )
         if interruptingPacket is not None:
             return interruptingPacket
 
@@ -191,10 +197,6 @@ async def read_message_or_init_packet(
         return await _handle_allocated(ctrl_byte, session, payload)
 
 
-def _get_loop_wait_read(iface: WireInterface):
-    return loop.wait(iface.iface_num() | io.POLL_READ)
-
-
 def _get_buffer_for_payload(
     payload_length: int, existing_buffer: utils.BufferType, max_length=MAX_PAYLOAD_LEN
 ) -> utils.BufferType:
@@ -213,14 +215,14 @@ def _get_buffer_for_payload(
     return memoryview(existing_buffer)[:payload_length]
 
 
-async def _buffer_received_data(
+async def _deprecated_buffer_received_data(
     payload: utils.BufferType, header: InitHeader, iface, report
 ) -> None | InterruptingInitPacket:
     # buffer the initial data
     nread = utils.memcpy(payload, 0, report, INIT_DATA_OFFSET)
     while nread < header.length:
         # wait for continuation report
-        report = await _get_loop_wait_read(iface)
+        report = await loop.wait(iface.iface_num() | io.POLL_READ)
 
         # channel multiplexing
         cont_ctrl_byte, cont_cid = ustruct.unpack(">BH", report)
