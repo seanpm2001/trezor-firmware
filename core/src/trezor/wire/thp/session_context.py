@@ -16,6 +16,12 @@ if TYPE_CHECKING:
 
 
 class UnexpectedMessageWithType(Exception):
+    """A message was received that is not part of the current workflow.
+
+    Utility exception to inform the session handler that the current workflow
+    should be aborted and a new one started as if `msg` was the first message.
+    """
+
     def __init__(self, msg: MessageWithType) -> None:
         super().__init__()
         self.msg = msg
