@@ -4,7 +4,13 @@ from trezor import protobuf
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
-    from typing import Container  # pyright: ignore[reportShadowedImports]
+    from typing import (  # pyright: ignore[reportShadowedImports]
+        Container,
+        TypeVar,
+        overload,
+    )
+
+    LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
 
 
 class Message:
@@ -46,6 +52,18 @@ class Context:
     def __init__(self, iface: WireInterface, channel_id: bytes) -> None:
         self.iface: WireInterface = iface
         self.channel_id: bytes = channel_id
+
+    if TYPE_CHECKING:
+
+        @overload
+        async def read(
+            self, expected_types: Container[int]
+        ) -> protobuf.MessageType: ...
+
+        @overload
+        async def read(
+            self, expected_types: Container[int], expected_type: type[LoadedMessageType]
+        ) -> LoadedMessageType: ...
 
     async def read(
         self,

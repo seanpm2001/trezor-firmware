@@ -177,9 +177,15 @@ async def handle_session(
                 ctx.channel_id = msg.session_id
 
             try:
-                next_msg = await message_handler.handle_single_message(
+                next_msg_without_id = await message_handler.handle_single_message(
                     ctx, msg, use_workflow=not is_debug_session
                 )
+                if next_msg_without_id is not None:
+                    next_msg = protocol_common.MessageWithId(
+                        next_msg_without_id.type,
+                        next_msg_without_id.data,
+                        bytearray(ctx.channel_id),
+                    )
             except Exception as exc:
                 # Log and ignore. The session handler can only exit explicitly in the
                 # following finally block.

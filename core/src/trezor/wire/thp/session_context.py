@@ -2,8 +2,8 @@ from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
 from storage import cache_thp
 from storage.cache_thp import SessionThpCache
-from trezor import loop, protobuf
-from trezor.wire import message_handler
+from trezor import log, loop, protobuf
+from trezor.wire import AVOID_RESTARTING_FOR, failure, message_handler, protocol_common
 
 from ..protocol_common import Context, MessageWithType
 from . import SessionState
@@ -44,12 +44,66 @@ class SessionContext(Context):
         session_cache = cache_thp.get_new_session(channel_context.channel_cache)
         return cls(channel_context, session_cache)
 
-    async def handle(self) -> None:
+    async def handle(self, is_debug_session: bool = False) -> None:
+        if __debug__ and is_debug_session:
+            import apps.debug
+
+            apps.debug.DEBUG_CONTEXT = self
+
         take = self.incoming_message.take()
+        next_message: MessageWithType | None = None
+
+        # Take a mark of modules that are imported at this point, so we can
+        # roll back and un-import any others.
+        # TODO modules = utils.unimport_begin()
         while True:
-            message = await take
-            print(message)
-            # TODO continue similarly to handle_session function in wire.__init__
+            try:
+                if next_message is None:
+                    # If the previous run did not keep an unprocessed message for us,
+                    # wait for a new one.
+                    try:
+                        message: MessageWithType = await take
+                    except protocol_common.WireError as e:
+                        if __debug__:
+                            log.exception(__name__, e)
+                        await self.write(failure(e))
+                        continue
+                else:
+                    # Process the message from previous run.
+                    message = next_message
+                    next_message = None
+
+                try:
+                    next_message = await message_handler.handle_single_message(
+                        self, message, use_workflow=not is_debug_session
+                    )
+                except Exception as exc:
+                    # Log and ignore. The session handler can only exit explicitly in the
+                    # following finally block.
+                    if __debug__:
+                        log.exception(__name__, exc)
+                finally:
+                    if not __debug__ or not is_debug_session:
+                        # Unload modules imported by the workflow.  Should not raise.
+                        # This is not done for the debug session because the snapshot taken
+                        # in a debug session would clear modules which are in use by the
+                        # workflow running on wire.
+                        # TODO utils.unimport_end(modules)
+
+                        if (
+                            next_message is None
+                            and message.type not in AVOID_RESTARTING_FOR
+                        ):
+                            # Shut down the loop if there is no next message waiting.
+                            # Let the session be restarted from `main`.
+                            loop.clear()
+                            return  # pylint: disable=lost-exception
+
+            except Exception as exc:
+                # Log and try again. The session handler can only exit explicitly via
+                # loop.clear() above.
+                if __debug__:
+                    log.exception(__name__, exc)
 
     async def read(
         self,
