@@ -172,6 +172,7 @@ class Channel(Context):
                 log.debug(
                     __name__, "Received message with an unexpected synchronization bit"
                 )
+            await self._sendAck(sync_bit)
             raise ThpError("Received message with an unexpected synchronization bit")
 
         # 3: Send ACK in response
