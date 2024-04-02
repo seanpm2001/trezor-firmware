@@ -223,7 +223,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message = MessageWithId(
             MESSAGE_TYPE, message_payload, THP._get_id(self.interface, COMMON_CID)
         )
-        gen = thp_v1.write_message(self.interface, message)
+        gen = thp_v1.deprecated_write_message(self.interface, message)
         # exhaust the iterator:
         # (XXX we can only do this because the iterator is only accepting None and returns None)
         for query in gen:
@@ -248,7 +248,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message = MessageWithId(
             MESSAGE_TYPE, b"", THP._get_id(self.interface, COMMON_CID)
         )
-        gen = thp_v1.write_message(self.interface, message)
+        gen = thp_v1.deprecated_write_message(self.interface, message)
 
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_WRITE))
@@ -271,7 +271,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message = MessageWithId(
             MESSAGE_TYPE, message_payload, THP._get_id(self.interface, COMMON_CID)
         )
-        gen = thp_v1.write_message(self.interface, message)
+        gen = thp_v1.deprecated_write_message(self.interface, message)
 
         header = make_header(
             PLAINTEXT_1,
