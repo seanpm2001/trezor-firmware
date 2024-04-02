@@ -2,7 +2,7 @@ import ustruct  # pyright:ignore[reportMissingModuleSource]
 
 from storage.cache_thp import BROADCAST_CHANNEL_ID
 from trezor import protobuf
-from trezor.messages import ThpCreateNewSession
+from trezor.messages import ThpCreateNewSession, ThpNewSession
 
 from .. import message_handler
 from ..protocol_common import Message
@@ -14,6 +14,9 @@ HANDSHAKE_INIT = 0x00
 ACK_MESSAGE = 0x20
 _ERROR = 0x41
 _CHANNEL_ALLOCATION_RES = 0x40
+
+TREZOR_STATE_UNPAIRED = b"\x00"
+TREZOR_STATE_PAIRED = b"\x01"
 
 
 class InitHeader:
@@ -79,7 +82,21 @@ def get_error_unallocated_channel() -> bytes:
 
 
 def get_handshake_init_response() -> bytes:
-    return b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03"  # TODO implement
+    # TODO implement - 32 bytes ephemeral key, 48 bytes encrypted and masked public key, 16 bytes ciphertext of empty string (i.e. noise tag)
+    return b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x30\x31\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x40\x41\x42\x43\x44\x45\x46\x47\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15"
+
+
+def get_handshake_completion_response() -> bytes:
+    return (
+        TREZOR_STATE_PAIRED
+        + b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15"
+    )
+
+
+def get_new_session_message(buffer: bytearray) -> int:
+    msg = ThpNewSession(new_session_id=1)
+    encoded_msg = protobuf.encode(buffer, msg)
+    return encoded_msg
 
 
 def decode_message(buffer: bytes, msg_type: int) -> protobuf.MessageType:
