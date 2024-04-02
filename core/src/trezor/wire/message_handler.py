@@ -63,8 +63,8 @@ if __debug__:
 
 
 async def handle_single_message(
-    ctx: context.CodecContext, msg: protocol_common.MessageWithId, use_workflow: bool
-) -> protocol_common.MessageWithId | None:
+    ctx: context.Context, msg: protocol_common.MessageWithType, use_workflow: bool
+) -> protocol_common.MessageWithType | None:
     """Handle a message that was loaded from USB by the caller.
 
     Find the appropriate handler, run it and write its result on the wire. In case
