@@ -215,7 +215,7 @@ class Channel(Context):
             return
 
         if not _is_ctrl_byte_encrypted_transport(ctrl_byte):
-            print("message is not encrypted. Ignoring")
+            print("Message is not encrypted. Ignoring")
             # TODO ignore message
             self._todo_clear_buffer()
             return
