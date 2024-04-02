@@ -16,10 +16,7 @@ from .thp.channel import (
     load_cached_channels,
 )
 from .thp.checksum import CHECKSUM_LENGTH
-from .thp.thp_messages import (
-    CODEC_V1,
-    InitHeader,
-)
+from .thp.thp_messages import CODEC_V1, InitHeader
 from .thp.thp_session import ThpError
 
 if TYPE_CHECKING:
@@ -86,7 +83,7 @@ def _get_buffer_for_payload(
         raise ThpError("Message too large")
     if payload_length > len(existing_buffer):
         return _try_allocate_new_buffer(payload_length)
-    return _reuse_existing_buffer(existing_buffer, payload_length)
+    return _reuse_existing_buffer(payload_length, existing_buffer)
 
 
 def _try_allocate_new_buffer(payload_length: int) -> utils.BufferType:
