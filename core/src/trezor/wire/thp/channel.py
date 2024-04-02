@@ -153,8 +153,9 @@ class Channel(Context):
             # checksum is not valid -> ignore message
             self._todo_clear_buffer()
             return
-        print("sync bit")
         sync_bit = (ctrl_byte & 0x10) >> 4
+        print("sync bit:", sync_bit)
+
         if _is_ctrl_byte_ack(ctrl_byte):
             self._handle_received_ACK(sync_bit)
             self._todo_clear_buffer()
@@ -367,12 +368,15 @@ class Channel(Context):
     # TODO add debug logging to ACK handling
     def _handle_received_ACK(self, sync_bit: int) -> None:
         if self._ack_is_not_expected():
+            print("ack is not expeccted")
             return
         if self._ack_has_incorrect_sync_bit(sync_bit):
+            print("ack has incorrect sync bit")
             return
 
         if self.waiting_for_ack_timeout is not None:
             self.waiting_for_ack_timeout.close()
+            print("closed waiting for ack")
 
         THP.sync_set_can_send_message(self.channel_cache, True)
 
