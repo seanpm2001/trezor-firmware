@@ -23,6 +23,7 @@ if TREZOR_MODEL in ('DISC1', ):
 
 FEATURE_FLAGS = {
     "SECP256K1_ZKP": True,  # required for trezor.crypto.curve.bip340 (BIP340/Taproot)
+    "ELLIGATOR2": True,
 }
 
 CCFLAGS_MOD = ''
@@ -113,7 +114,6 @@ SOURCE_MOD += [
     'vendor/trezor-crypto/ed25519-donna/ed25519-sha3.c',
     'vendor/trezor-crypto/ed25519-donna/ed25519.c',
     'vendor/trezor-crypto/ed25519-donna/modm-donna-32bit.c',
-    'vendor/trezor-crypto/elligator2.c',
     'vendor/trezor-crypto/groestl.c',
     'vendor/trezor-crypto/hasher.c',
     'vendor/trezor-crypto/hmac.c',
@@ -169,6 +169,12 @@ if FEATURE_FLAGS["SECP256K1_ZKP"]:
         'vendor/trezor-crypto/zkp_context.c',
         'vendor/trezor-crypto/zkp_ecdsa.c',
         'vendor/trezor-crypto/zkp_bip340.c',
+    ]
+
+if FEATURE_FLAGS["ELLIGATOR2"]:
+    CPPDEFINES_MOD += ['USE_ELLIGATOR2']
+    SOURCE_MOD += [
+        'vendor/trezor-crypto/elligator2.c',
     ]
 
 # modtrezorio

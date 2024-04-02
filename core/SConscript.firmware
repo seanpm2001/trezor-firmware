@@ -17,6 +17,7 @@ FEATURE_FLAGS = {
     "RDI": True,
     "SECP256K1_ZKP": True,  # required for trezor.crypto.curve.bip340 (BIP340/Taproot)
     "SYSTEM_VIEW": False,
+    "ELLIGATOR2": False,
 }
 
 FEATURES_WANTED = ["input", "sbu", "sd_card", "rgb_led", "dma2d", "consumption_mask", "usb" ,"optiga"]
@@ -110,7 +111,6 @@ SOURCE_MOD += [
     'vendor/trezor-crypto/ed25519-donna/ed25519-sha3.c',
     'vendor/trezor-crypto/ed25519-donna/ed25519.c',
     'vendor/trezor-crypto/ed25519-donna/modm-donna-32bit.c',
-    'vendor/trezor-crypto/elligator2.c',
     'vendor/trezor-crypto/groestl.c',
     'vendor/trezor-crypto/hasher.c',
     'vendor/trezor-crypto/hmac.c',
@@ -367,6 +367,12 @@ if FEATURE_FLAGS["SYSTEM_VIEW"]:
     ]
     CPPDEFINES_MOD += ['SYSTEM_VIEW']
     CCFLAGS_MOD += '-DSYSTEM_VIEW '
+
+if FEATURE_FLAGS["ELLIGATOR2"]:
+    CPPDEFINES_MOD += ['USE_ELLIGATOR2']
+    SOURCE_MOD += [
+        'vendor/trezor-crypto/elligator2.c',
+    ]
 
 # fonts
 tools.add_font('NORMAL', FONT_NORMAL, CPPDEFINES_MOD, SOURCE_MOD)

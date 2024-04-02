@@ -4,11 +4,15 @@ from trezorcrypto import (  # noqa: F401
     bip39,
     chacha20poly1305,
     crc,
-    elligator2,
     hmac,
     pbkdf2,
     random,
 )
+
+try:
+    from trezorcrypto import elligator2  # noqa: F401
+except Exception:
+    pass
 
 from trezor import utils
 
