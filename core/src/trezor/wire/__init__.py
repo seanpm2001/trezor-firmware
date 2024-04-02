@@ -103,13 +103,6 @@ async def handle_thp_session(iface: WireInterface, is_debug_session: bool = Fals
 
     thp_v1.set_buffer(ctx_buffer)
 
-    if __debug__ and is_debug_session:
-        import apps.debug
-
-        print(apps.debug.DEBUG_CONTEXT)  # TODO remove
-
-        # TODO add debug context or smth to apps.debug
-
     # Take a mark of modules that are imported at this point, so we can
     # roll back and un-import any others.
     modules = utils.unimport_begin()
