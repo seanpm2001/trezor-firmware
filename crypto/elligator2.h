@@ -20,8 +20,9 @@
 
 #ifndef __ELLIGATOR2_H__
 #define __ELLIGATOR2_H__
+#include <stdint.h>
 #include "ed25519-donna/ed25519.h"
 
-bool map_to_curve_elligator2_curve25519(const bignum25519 input,
+bool map_to_curve_elligator2_curve25519(const uint8_t input[32],
                                         curve25519_key output);
 #endif

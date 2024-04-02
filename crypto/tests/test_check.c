@@ -10551,13 +10551,11 @@ START_TEST(test_elligator2) {
     uint8_t input[32] = {0};
     uint8_t output[32] = {0};
     uint8_t expected_output[32] = {0};
-    bignum25519 input_bignum = {0};
 
     memcpy(input, fromhex(tests[i].input), 32);
-    curve25519_expand(input_bignum, input);
     memcpy(expected_output, fromhex(tests[i].output), 32);
 
-    int res = map_to_curve_elligator2_curve25519(input_bignum, output);
+    int res = map_to_curve_elligator2_curve25519(input, output);
     ck_assert_int_eq(res, true);
     ck_assert_mem_eq(output, expected_output, 32);
   }

@@ -47,11 +47,13 @@ static void curve25519_cmov(bignum25519 out, const bignum25519 a,
   memzero(a_copy, sizeof(a_copy));
 }
 
-bool map_to_curve_elligator2_curve25519(const bignum25519 input,
+bool map_to_curve_elligator2_curve25519(const uint8_t input[32],
                                         curve25519_key output) {
   // https://www.rfc-editor.org/rfc/rfc9380.html#map-to-curve25519
   // The procedure from the above link is used, with the exception that the
   // y-coordinate of the output point is not computed, because it is not needed.
+  bignum25519 input_bignum = {0};
+  curve25519_expand(input_bignum, (unsigned char*)input);
 
   // c3 = sqrt(-1)
   bignum25519 c3 = {0};
@@ -69,7 +71,7 @@ bool map_to_curve_elligator2_curve25519(const bignum25519 input,
 
   // tv1 = u^2
   bignum25519 tv1 = {0};
-  curve25519_square(tv1, input);
+  curve25519_square(tv1, input_bignum);
 
   // tv1 = 2 * tv1
   curve25519_add_reduce(tv1, tv1, tv1);
@@ -153,7 +155,7 @@ bool map_to_curve_elligator2_curve25519(const bignum25519 input,
 
   // y21 = y11 * u
   bignum25519 y21 = {0};
-  curve25519_mul(y21, y11, input);
+  curve25519_mul(y21, y11, input_bignum);
   memzero(y11, sizeof(y11));
 
   // y21 = y21 * c2
