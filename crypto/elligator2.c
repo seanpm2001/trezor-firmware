@@ -24,7 +24,7 @@
 
 #include "elligator2.h"
 
-// Returns 1 if a is equal to b, 0 otherwise.
+// Returns 1 if a equals b, returns 0 otherwise.
 static int curve25519_isequal(bignum25519 a, const bignum25519 b) {
   bignum25519 difference;
   curve25519_sub(difference, a, b);
@@ -33,7 +33,7 @@ static int curve25519_isequal(bignum25519 a, const bignum25519 b) {
   return result;
 }
 
-// Sets out to a if c is 1, or b if c is 0.
+// Sets out to a if c equals 1, sets out to b if c equals 0.
 static void curve25519_cmov(bignum25519 out, const bignum25519 a,
                             const bignum25519 b, uint32_t c) {
   assert((int)(c == 1) | (int)(c == 0));
