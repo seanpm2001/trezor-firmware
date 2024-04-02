@@ -132,7 +132,8 @@ def _sync_set_send_bit(cache: SessionThpCache | ChannelCache, bit: int) -> None:
 
     # set third bit to "bit" value
     cache.sync &= 0xDF
-    cache.sync |= 0x20
+    if bit:
+        cache.sync |= 0x20
 
 
 def _decode_session_state(state: bytearray) -> int:
