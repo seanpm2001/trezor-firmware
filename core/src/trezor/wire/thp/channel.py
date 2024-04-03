@@ -175,7 +175,7 @@ class Channel(Context):
 
         THP.sync_set_receive_expected_bit(self.channel_cache, 1 - sync_bit)
 
-        await self._handle_valid_message(
+        await self._handle_message_to_app_or_channel(
             payload_length, message_length, ctrl_byte, sync_bit
         )
         print("channel._handle_completed_message - end")
@@ -189,7 +189,7 @@ class Channel(Context):
             self._todo_clear_buffer()
             raise ThpError("Invalid checksum, ignoring message.")
 
-    async def _handle_valid_message(
+    async def _handle_message_to_app_or_channel(
         self, payload_length: int, message_length: int, ctrl_byte: int, sync_bit: int
     ) -> None:
         state = self.get_channel_state()
@@ -290,12 +290,14 @@ class Channel(Context):
         print("channel._handle_channel_message - passphrase:", message.passphrase)
         # await thp_messages.handle_CreateNewSession(message)
         if message.passphrase is not None:
-            self.create_new_session(message.passphrase)
+            new_session_id: int = self.create_new_session(message.passphrase)
         else:
-            self.create_new_session()
+            new_session_id: int = self.create_new_session()
         # TODO reuse existing buffer and compute size dynamically
         bufferrone = bytearray(2)
-        message_size: int = thp_messages.get_new_session_message(bufferrone)
+        message_size: int = thp_messages.get_new_session_message(
+            bufferrone, new_session_id
+        )
         print(message_size)  # TODO adjust
         loop.schedule(self.write_and_encrypt(bufferrone))
         # TODO not finished
@@ -468,7 +470,7 @@ class Channel(Context):
     def create_new_session(
         self,
         passphrase="",
-    ) -> None:  # TODO change it to output session data
+    ) -> int:
         print("channel.create_new_session")
         from trezor.wire.thp.session_context import SessionContext
 
@@ -480,6 +482,7 @@ class Channel(Context):
             session.session_id,
         )
         print(self.sessions)
+        return session.session_id
 
     def _todo_clear_buffer(self):
         # TODO Buffer clearing not implemented

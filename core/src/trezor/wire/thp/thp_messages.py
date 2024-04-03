@@ -94,8 +94,8 @@ def get_handshake_completion_response() -> bytes:
     )
 
 
-def get_new_session_message(buffer: bytearray) -> int:
-    msg = ThpNewSession(new_session_id=1)
+def get_new_session_message(buffer: bytearray, new_session_id: int) -> int:
+    msg = ThpNewSession(new_session_id=new_session_id)
     encoded_msg = protobuf.encode(buffer, msg)
     return encoded_msg
 

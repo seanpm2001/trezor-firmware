@@ -172,17 +172,10 @@ class CodecContext(Context):
             buffer = bytearray(msg_size)
 
         msg_size = protobuf.encode(buffer, msg)
-
-        msg_session_id = None
-        if self.channel_id is not None:
-            msg_session_id = bytearray(self.channel_id)
         await codec_v1.write_message(
             self.iface,
-            MessageWithId(
-                message_type=msg.MESSAGE_WIRE_TYPE,
-                message_data=memoryview(buffer)[:msg_size],
-                session_id=msg_session_id,
-            ),
+            msg.MESSAGE_WIRE_TYPE,
+            memoryview(buffer)[:msg_size],
         )
 
 
