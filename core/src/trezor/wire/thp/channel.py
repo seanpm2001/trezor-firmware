@@ -287,7 +287,9 @@ class Channel(Context):
         pass
 
     def _handle_channel_message(self, message_length: int, message_type: int) -> None:
-        buf = self.buffer[INIT_DATA_OFFSET + 3 : message_length - CHECKSUM_LENGTH]
+        buf = self.buffer[
+            INIT_DATA_OFFSET + 3 : message_length - CHECKSUM_LENGTH - TAG_LENGTH
+        ]
 
         expected_type = protobuf.type_for_wire(message_type)
         message = message_handler.wrap_protobuf_load(buf, expected_type)
