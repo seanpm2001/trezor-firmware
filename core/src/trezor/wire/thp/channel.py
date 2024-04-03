@@ -596,8 +596,6 @@ def _state_to_str(state: int) -> str:
         return "state: tp5"
     elif state == ChannelState.UNALLOCATED:
         return "state: unallocated"
-    elif state == ChannelState.UNAUTHENTICATED:
-        return "state: unauthenticated"
     else:
         return "state: <not implemented>"
 
