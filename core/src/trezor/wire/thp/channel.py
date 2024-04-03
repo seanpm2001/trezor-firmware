@@ -219,8 +219,6 @@ class Channel(Context):
         )
         cache_thp.set_channel_host_ephemeral_key(self.channel_cache, host_ephemeral_key)
 
-        await self._send_ack(sync_bit)
-
         # send handshake init response message
         loop.schedule(
             self._write_encrypted_payload_loop(
