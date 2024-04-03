@@ -397,7 +397,7 @@ class Channel(Context):
         while True:
             print(
                 "channel._write_encrypted_payload_loop - loop start, sync_bit:",
-                header.ctrl_byte & 0x10,
+                (header.ctrl_byte & 0x10) >> 4,
                 " sync_send_bit:",
                 THP.sync_get_send_bit(self.channel_cache),
             )
