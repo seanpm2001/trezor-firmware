@@ -139,10 +139,18 @@ class SessionContext(Context):
 
 
 def load_cached_sessions(channel: Channel) -> dict[int, SessionContext]:  # TODO
+    print("start loading sessions from cache")
     sessions: dict[int, SessionContext] = {}
     cached_sessions = cache_thp.get_all_allocated_sessions()
+    print(
+        "loaded a total of ",
+        len(cached_sessions),
+        "sessions from cache",
+    )
     for session in cached_sessions:
         if session.channel_id == channel.channel_id:
             sid = int.from_bytes(session.session_id, "big")
             sessions[sid] = SessionContext(channel, session)
+    for i in sessions:
+        print("session", i)
     return sessions

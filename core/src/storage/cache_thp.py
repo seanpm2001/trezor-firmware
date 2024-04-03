@@ -180,7 +180,7 @@ def set_channel_host_ephemeral_key(channel: ChannelCache, key: bytearray) -> Non
 
 
 def get_new_session(channel: ChannelCache):
-
+    print("---------------get new session")
     new_sid = get_next_session_id(channel)
     index = _get_next_session_index()
 
@@ -194,6 +194,8 @@ def get_new_session(channel: ChannelCache):
     _SESSIONS[index].state[:] = bytearray(
         _UNALLOCATED_STATE.to_bytes(_SESSION_STATE_LENGTH, "big")
     )
+    for s in _SESSIONS:
+        print(s)
     return _SESSIONS[index]
 
 

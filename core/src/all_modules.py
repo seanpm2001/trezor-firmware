@@ -217,6 +217,8 @@ trezor.wire.thp.channel
 import trezor.wire.thp.channel
 trezor.wire.thp.checksum
 import trezor.wire.thp.checksum
+trezor.wire.thp.crypto
+import trezor.wire.thp.crypto
 trezor.wire.thp.session_context
 import trezor.wire.thp.session_context
 trezor.wire.thp.thp_messages
