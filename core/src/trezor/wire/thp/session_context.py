@@ -139,11 +139,11 @@ class SessionContext(Context):
 
 
 def load_cached_sessions(channel: Channel) -> dict[int, SessionContext]:  # TODO
-    print("start loading sessions from cache")
+    print("session_context.load_cached_sessions")
     sessions: dict[int, SessionContext] = {}
     cached_sessions = cache_thp.get_all_allocated_sessions()
     print(
-        "loaded a total of ",
+        "session_context.load_cached_sessions - loaded a total of ",
         len(cached_sessions),
         "sessions from cache",
     )
