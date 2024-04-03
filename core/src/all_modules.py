@@ -205,8 +205,6 @@ trezor.wire.errors
 import trezor.wire.errors
 trezor.wire.message_handler
 import trezor.wire.message_handler
-trezor.wire.protocol
-import trezor.wire.protocol
 trezor.wire.protocol_common
 import trezor.wire.protocol_common
 trezor.wire.thp
