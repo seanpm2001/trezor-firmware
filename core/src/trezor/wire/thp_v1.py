@@ -44,34 +44,39 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
     read = loop.wait(iface.iface_num() | io.POLL_READ)
 
     while True:
-        print("main loop")
-        packet = await read
-        ctrl_byte, cid = ustruct.unpack(">BH", packet)
+        try:
+            print("main loop")
+            packet = await read
+            ctrl_byte, cid = ustruct.unpack(">BH", packet)
 
-        if ctrl_byte == CODEC_V1:
-            pass
-            # TODO add handling of (unsupported) codec_v1 packets
-            # possibly ignore continuation packets, i.e. if the
-            # following bytes are not "##"", do not respond
+            if ctrl_byte == CODEC_V1:
+                pass
+                # TODO add handling of (unsupported) codec_v1 packets
+                # possibly ignore continuation packets, i.e. if the
+                # following bytes are not "##"", do not respond
 
-        if cid == BROADCAST_CHANNEL_ID:
-            # TODO handle exceptions, try-catch?
-            await _handle_broadcast(iface, ctrl_byte, packet)
-            continue
-
-        if cid in _CHANNEL_CONTEXTS:
-            channel = _CHANNEL_CONTEXTS[cid]
-            if channel is None:
-                raise ThpError("Invalid state of a channel")
-            if channel.iface is not iface:
-                raise ThpError("Channel has different WireInterface")
-
-            if channel.get_channel_state() != ChannelState.UNALLOCATED:
-                print("packet type in loop:", type(packet))
-                await channel.receive_packet(packet)
+            if cid == BROADCAST_CHANNEL_ID:
+                # TODO handle exceptions, try-catch?
+                await _handle_broadcast(iface, ctrl_byte, packet)
                 continue
 
-        await _handle_unallocated(iface, cid)
+            if cid in _CHANNEL_CONTEXTS:
+                channel = _CHANNEL_CONTEXTS[cid]
+                if channel is None:
+                    raise ThpError("Invalid state of a channel")
+                if channel.iface is not iface:
+                    raise ThpError("Channel has different WireInterface")
+
+                if channel.get_channel_state() != ChannelState.UNALLOCATED:
+                    print("packet type in loop:", type(packet))
+                    await channel.receive_packet(packet)
+                    continue
+            await _handle_unallocated(iface, cid)
+
+        except ThpError as e:
+            if __debug__:
+                log.exception(__name__, e)
+
         # TODO add cleaning sequence if no workflow/channel is active (or some condition like that)
 
 
