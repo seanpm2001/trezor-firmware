@@ -291,8 +291,8 @@ class Channel(Context):
                 self.create_new_session()
             # TODO reuse existing buffer and compute size dynamically
             bufferrone = bytearray(2)
-            message_type: int = thp_messages.get_new_session_message(bufferrone)
-
+            message_size: int = thp_messages.get_new_session_message(bufferrone)
+            print(message_size)  # TODO adjust
             loop.schedule(self._write_encrypted_payload_loop(bufferrone))
         except Exception as e:
             print("Proč??")
