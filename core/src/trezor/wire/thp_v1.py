@@ -45,7 +45,7 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
 
     while True:
         try:
-            print("main loop")
+            print("thp_v1.thp_main_loop")
             packet = await read
             ctrl_byte, cid = ustruct.unpack(">BH", packet)
 
@@ -68,7 +68,6 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
                     raise ThpError("Channel has different WireInterface")
 
                 if channel.get_channel_state() != ChannelState.UNALLOCATED:
-                    print("packet type in loop:", type(packet))
                     await channel.receive_packet(packet)
                     continue
             await _handle_unallocated(iface, cid)
