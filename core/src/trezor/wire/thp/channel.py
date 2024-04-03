@@ -295,7 +295,8 @@ class Channel(Context):
         message = message_handler.wrap_protobuf_load(buf, expected_type)
         print("channel._handle_channel_message:", message)
         # TODO handle other messages than CreateNewSession
-        assert isinstance(message, ThpCreateNewSession)
+        if TYPE_CHECKING:
+            assert isinstance(message, ThpCreateNewSession)
         print("channel._handle_channel_message - passphrase:", message.passphrase)
         # await thp_messages.handle_CreateNewSession(message)
         if message.passphrase is not None:
@@ -603,8 +604,12 @@ def is_channel_state_pairing(state: int) -> bool:
 
 
 def _state_to_str(state: int) -> str:
-    names = {v: k for k, v in ChannelState.__dict__.items() if not k.startswith("__")}
-    return names.get(state)
+    name = {
+        v: k for k, v in ChannelState.__dict__.items() if not k.startswith("__")
+    }.get(state)
+    if name is not None:
+        return name
+    return "UNKNOWN_STATE"
 
 
 def printBytes(a):
