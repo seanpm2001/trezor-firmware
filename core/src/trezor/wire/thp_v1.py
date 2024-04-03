@@ -16,14 +16,13 @@ from .thp.channel import (
     load_cached_channels,
 )
 from .thp.checksum import CHECKSUM_LENGTH
-from .thp.thp_messages import CODEC_V1, InitHeader
+from .thp.thp_messages import CHANNEL_ALLOCATION_REQ, CODEC_V1, InitHeader
 from .thp.thp_session import ThpError
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
 
 _MAX_CID_REQ_PAYLOAD_LENGTH = const(12)  # TODO set to reasonable value
-_CHANNEL_ALLOCATION_REQ = 0x40
 
 
 _BUFFER: bytearray
@@ -137,7 +136,7 @@ async def _handle_broadcast(
     iface: WireInterface, ctrl_byte, packet
 ) -> MessageWithId | None:
     global _BUFFER
-    if ctrl_byte != _CHANNEL_ALLOCATION_REQ:
+    if ctrl_byte != CHANNEL_ALLOCATION_REQ:
         raise ThpError("Unexpected ctrl_byte in broadcast channel packet")
     if __debug__:
         log.debug(__name__, "Received valid message on broadcast channel ")
