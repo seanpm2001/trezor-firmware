@@ -15,8 +15,8 @@ for ButtonRequests. Of course, `context.wait()` transparently works in such situ
 
 from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
-import trezor.wire.protocol as protocol
 from trezor import log, loop, protobuf
+from trezor.wire import codec_v1
 
 from .protocol_common import Context, MessageWithId
 
@@ -74,7 +74,7 @@ class CodecContext(Context):
 
     def read_from_wire(self) -> Awaitable[MessageWithId]:
         """Read a whole message from the wire without parsing it."""
-        return protocol.read_message(self.iface, self.buffer)
+        return codec_v1.read_message(self.iface, self.buffer)
 
     if TYPE_CHECKING:
 
@@ -176,7 +176,7 @@ class CodecContext(Context):
         msg_session_id = None
         if self.channel_id is not None:
             msg_session_id = bytearray(self.channel_id)
-        await protocol.write_message(
+        await codec_v1.write_message(
             self.iface,
             MessageWithId(
                 message_type=msg.MESSAGE_WIRE_TYPE,
