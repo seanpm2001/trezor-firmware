@@ -1,12 +1,12 @@
 import builtins
-from micropython import const
-from typing import TYPE_CHECKING
+from micropython import const  # pyright: ignore[reportMissingModuleSource]
+from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
 from storage.cache_common import DataCache, InvalidSessionError
 from trezor import utils
 
 if TYPE_CHECKING:
-    from typing import TypeVar
+    from typing import TypeVar  # pyright: ignore[reportShadowedImports]
 
     T = TypeVar("T")
 

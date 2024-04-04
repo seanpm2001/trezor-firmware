@@ -79,7 +79,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
     def setUp(self):
         self.interface = MockHID(0xDEADBEEF)
         if not utils.USE_THP:
-            import storage.cache_thp  # noQA:F401
+            import storage.cache_thp  # noqa: F401
 
     def test_simple(self):
         cid_req_header = make_header(
