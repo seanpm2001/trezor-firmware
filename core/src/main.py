@@ -34,7 +34,7 @@ import trezor.pin  # noqa: F401, E402
 
 # === Prepare the USB interfaces first. Do not connect to the host yet.
 # usb imports trezor.utils and trezor.io which is a C module
-import usb  # noqa:E402
+import usb  # noqa: E402
 
 # create an unimport manager that will be reused in the main loop
 unimport_manager = utils.unimport()
@@ -45,7 +45,7 @@ with unimport_manager:
     del boot
 
 # start the USB
-import storage.device  # noqa:E402
+import storage.device  # noqa: E402
 
 usb.bus.open(storage.device.get_device_id())
 
