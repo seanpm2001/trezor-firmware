@@ -1,4 +1,4 @@
-from common import *  # isort:skip
+from common import *  # isort:skip # noqa: F403
 
 from mock_storage import mock_storage
 
@@ -23,7 +23,9 @@ def is_session_started() -> bool:
     return _PROTOCOL_CACHE.get_active_session() is not None
 
 
-class TestStorageCache(unittest.TestCase):
+class TestStorageCache(
+    unittest.TestCase
+):  # noqa: F405 # pyright: ignore[reportUndefinedVariable]
     def setUp(self):
         cache.clear_all()
 

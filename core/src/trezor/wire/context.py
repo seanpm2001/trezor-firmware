@@ -65,12 +65,10 @@ class CodecContext(Context):
         self,
         iface: WireInterface,
         buffer: bytearray,
-        channel_id: bytes,
     ) -> None:
         self.iface = iface
         self.buffer = buffer
-        self.channel_id = channel_id
-        super().__init__(iface, channel_id)
+        super().__init__(iface, codec_v1.SESSION_ID.to_bytes(2, "big"))
 
     def read_from_wire(self) -> Awaitable[MessageWithId]:
         """Read a whole message from the wire without parsing it."""
@@ -100,15 +98,10 @@ class CodecContext(Context):
         to save on having to decode the type code into a protobuf class.
         """
         if __debug__:
-            if self.channel_id is not None:
-                sid = int.from_bytes(self.channel_id, "big")
-            else:
-                sid = -1
             log.debug(
                 __name__,
-                "%s:%x expect: %s",
+                "%s: expect: %s",
                 self.iface.iface_num(),
-                sid,
                 expected_type.MESSAGE_NAME if expected_type else expected_types,
             )
 
@@ -120,22 +113,14 @@ class CodecContext(Context):
         if msg.type not in expected_types:
             raise UnexpectedMessageWithId(msg)
 
-        # TODO check that the message has the expected session_id. If not, raise UnexpectedMessageError
-        # (and maybe update ctx.session_id - depends on expected behaviour)
-
         if expected_type is None:
             expected_type = protobuf.type_for_wire(msg.type)
 
         if __debug__:
-            if self.channel_id is not None:
-                sid = int.from_bytes(self.channel_id, "big")
-            else:
-                sid = -1
             log.debug(
                 __name__,
-                "%s:%x read: %s",
+                "%s: read: %s",
                 self.iface.iface_num(),
-                sid,
                 expected_type.MESSAGE_NAME,
             )
 
@@ -147,15 +132,10 @@ class CodecContext(Context):
     async def write(self, msg: protobuf.MessageType) -> None:
         """Write a message to the wire."""
         if __debug__:
-            if self.channel_id is not None:
-                sid = int.from_bytes(self.channel_id, "big")
-            else:
-                sid = -1
             log.debug(
                 __name__,
-                "%s:%x write: %s",
+                "%s: write: %s",
                 self.iface.iface_num(),
-                sid,
                 msg.MESSAGE_NAME,
             )
 
