@@ -12,7 +12,7 @@ CONTINUATION_PACKET = 0x80
 ENCRYPTED_TRANSPORT = 0x02
 HANDSHAKE_INIT = 0x00
 ACK_MESSAGE = 0x20
-_ERROR = 0x42
+ERROR = 0x42
 CHANNEL_ALLOCATION_REQ = 0x40
 _CHANNEL_ALLOCATION_RES = 0x41
 
@@ -23,7 +23,7 @@ TREZOR_STATE_PAIRED = b"\x01"
 class InitHeader:
     format_str = ">BHH"
 
-    def __init__(self, ctrl_byte, cid: int, length: int) -> None:
+    def __init__(self, ctrl_byte: int, cid: int, length: int) -> None:
         self.ctrl_byte = ctrl_byte
         self.cid = cid
         self.length = length
@@ -48,7 +48,7 @@ class InitHeader:
 
     @classmethod
     def get_error_header(cls, cid, length):
-        return cls(_ERROR, cid, length)
+        return cls(ERROR, cid, length)
 
     @classmethod
     def get_channel_allocation_response_header(cls, length):
