@@ -19,7 +19,7 @@ _WEBAUTHN_PORT_OFFSET = const(2)
 _VCP_PORT_OFFSET = const(3)
 
 if utils.EMULATOR:
-    import uos
+    import uos  # pyright: ignore[reportMissingModuleSource]
 
     UDP_PORT = int(uos.getenv("TREZOR_UDP_PORT") or "21324")
 
