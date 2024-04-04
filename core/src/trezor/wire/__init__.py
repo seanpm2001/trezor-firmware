@@ -30,7 +30,7 @@ from storage.cache_common import InvalidSessionError
 from trezor import log, loop, protobuf, utils
 from trezor.enums import FailureType
 from trezor.messages import Failure
-from trezor.wire import codec_v1, context, message_handler, protocol_common, thp_v1
+from trezor.wire import context, message_handler, protocol_common, thp_v1
 from trezor.wire.errors import DataError, Error
 
 # Import all errors into namespace, so that `wire.Error` is available from
@@ -63,7 +63,7 @@ def setup(iface: WireInterface, is_debug_session: bool = False) -> None:
     if utils.USE_THP:
         loop.schedule(handle_thp_session(iface, is_debug_session))
     else:
-        loop.schedule(handle_session(iface, codec_v1.SESSION_ID, is_debug_session))
+        loop.schedule(handle_session(iface, is_debug_session))
 
 
 def wrap_protobuf_load(
@@ -128,15 +128,12 @@ async def handle_thp_session(iface: WireInterface, is_debug_session: bool = Fals
             print("Exception raised:", exc)
 
 
-async def handle_session(
-    iface: WireInterface, codec_session_id: int, is_debug_session: bool = False
-) -> None:
+async def handle_session(iface: WireInterface, is_debug_session: bool = False) -> None:
     if __debug__ and is_debug_session:
         ctx_buffer = WIRE_BUFFER_DEBUG
     else:
         ctx_buffer = WIRE_BUFFER
-    session_id = codec_session_id.to_bytes(4, "big")
-    ctx = context.CodecContext(iface, ctx_buffer, session_id)
+    ctx = context.CodecContext(iface, ctx_buffer)
     next_msg: protocol_common.MessageWithId | None = None
 
     if __debug__ and is_debug_session:
@@ -164,10 +161,6 @@ async def handle_session(
                 # Process the message from previous run.
                 msg = next_msg
                 next_msg = None
-
-            # Set ctx.session_id to the value msg.session_id
-            if msg.session_id is not None:
-                ctx.channel_id = msg.session_id
 
             try:
                 next_msg_without_id = await message_handler.handle_single_message(
