@@ -123,8 +123,6 @@ class SessionContext(Context):
                 exp_type,
             )
         message: MessageWithType = await self.incoming_message.take()
-        if __debug__:
-            log.debug(__name__, "I'm here")
         if message.type not in expected_types:
             raise UnexpectedMessageWithType(message)
 
@@ -161,4 +159,5 @@ def load_cached_sessions(channel: Channel) -> dict[int, SessionContext]:  # TODO
         if session.channel_id == channel.channel_id:
             sid = int.from_bytes(session.session_id, "big")
             sessions[sid] = SessionContext(channel, session)
+            loop.schedule(sessions[sid].handle())
     return sessions
