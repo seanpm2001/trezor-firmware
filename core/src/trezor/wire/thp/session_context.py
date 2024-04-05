@@ -45,10 +45,12 @@ class SessionContext(Context):
         return cls(channel_context, session_cache)
 
     async def handle(self, is_debug_session: bool = False) -> None:
-        if __debug__ and is_debug_session:
-            import apps.debug
+        if __debug__:
+            log.debug(__name__, "handle - start")
+            if is_debug_session:
+                import apps.debug
 
-            apps.debug.DEBUG_CONTEXT = self
+                apps.debug.DEBUG_CONTEXT = self
 
         take = self.incoming_message.take()
         next_message: MessageWithType | None = None
@@ -110,8 +112,19 @@ class SessionContext(Context):
         expected_types: Container[int],
         expected_type: type[protobuf.MessageType] | None = None,
     ) -> protobuf.MessageType:
-
+        if __debug__:
+            exp_type: str = str(expected_type)
+            if expected_type is not None:
+                exp_type = expected_type.MESSAGE_NAME
+            log.debug(
+                __name__,
+                "Read - with expected types %s and expected type %s",
+                str(expected_types),
+                exp_type,
+            )
         message: MessageWithType = await self.incoming_message.take()
+        if __debug__:
+            log.debug(__name__, "I'm here")
         if message.type not in expected_types:
             raise UnexpectedMessageWithType(message)
 
@@ -130,27 +143,22 @@ class SessionContext(Context):
         return SessionState(state)
 
     def set_session_state(self, state: SessionState) -> None:
-        self.session_cache.state = bytearray(state.value.to_bytes(1, "big"))
-
-    # Called by channel context
-
-    async def receive_message(self, message_type, encoded_protobuf_message):
-        pass  # TODO implement
+        self.session_cache.state = bytearray(state.to_bytes(1, "big"))
 
 
 def load_cached_sessions(channel: Channel) -> dict[int, SessionContext]:  # TODO
-    print("session_context.load_cached_sessions")
+    if __debug__:
+        log.debug(__name__, "load_cached_sessions")
     sessions: dict[int, SessionContext] = {}
     cached_sessions = cache_thp.get_all_allocated_sessions()
-    print(
-        "session_context.load_cached_sessions - loaded a total of ",
-        len(cached_sessions),
-        "sessions from cache",
-    )
+    if __debug__:
+        log.debug(
+            __name__,
+            "load_cached_sessions - loaded a total of %d sessions from cache",
+            len(cached_sessions),
+        )
     for session in cached_sessions:
         if session.channel_id == channel.channel_id:
             sid = int.from_bytes(session.session_id, "big")
             sessions[sid] = SessionContext(channel, session)
-    for i in sessions:
-        print("session", i)
     return sessions

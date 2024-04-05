@@ -10,6 +10,9 @@ if TYPE_CHECKING:
 
     T = TypeVar("T")
 
+if __debug__:
+    from trezor import log
+
 # THP specific constants
 _MAX_CHANNELS_COUNT = 10
 _MAX_SESSIONS_COUNT = const(20)
@@ -170,6 +173,12 @@ def get_all_allocated_sessions() -> list[SessionThpCache]:
     for session in _SESSIONS:
         if _get_session_state(session) != _UNALLOCATED_STATE:
             _list.append(session)
+            if __debug__:
+                log.debug(
+                    __name__, "session %s is not in UNALLOCATED state", str(session)
+                )
+        elif __debug__:
+            log.debug(__name__, "session %s is in UNALLOCATED state", str(session))
     return _list
 
 

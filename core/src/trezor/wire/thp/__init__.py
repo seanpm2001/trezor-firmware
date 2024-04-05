@@ -20,6 +20,7 @@ class ChannelState(IntEnum):
 
 class SessionState(IntEnum):
     UNALLOCATED = 0
+    ALLOCATED = 1
 
 
 class WireInterfaceType(IntEnum):
