@@ -1,12 +1,11 @@
 import ustruct  # pyright: ignore[reportMissingModuleSource]
 from micropython import const  # pyright: ignore[reportMissingModuleSource]
 from typing import TYPE_CHECKING  # pyright:ignore[reportShadowedImports]
-from ubinascii import hexlify  # pyright: ignore[reportMissingModuleSource]
 
 import usb
 from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH, ChannelCache
-from trezor import io, log, loop, protobuf, utils
+from trezor import log, loop, protobuf, utils
 from trezor.enums import FailureType, MessageType
 from trezor.messages import Failure, ThpCreateNewSession
 from trezor.wire import message_handler
@@ -25,6 +24,7 @@ from .thp_messages import (
     InitHeader,
 )
 from .thp_session import ThpError
+from .writer import write_payload_to_wire
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright:ignore[reportMissingImports]
@@ -102,7 +102,7 @@ class Channel(Context):
         else:
             await self._handle_init_packet(packet)
         if __debug__:
-            log.debug(__name__, "self.buffer: %s", get_bytes_as_str(self.buffer))
+            log.debug(__name__, "self.buffer: %s", utils.get_bytes_as_str(self.buffer))
         if self.expected_payload_length + INIT_DATA_OFFSET == self.bytes_read:
             self._finish_message()
             await self._handle_completed_message()
@@ -281,8 +281,8 @@ class Channel(Context):
             log.debug(
                 __name__,
                 "host static pubkey: %s, noise payload: %s",
-                get_bytes_as_str(host_encrypted_static_pubkey),
-                get_bytes_as_str(handshake_completion_request_noise_payload),
+                utils.get_bytes_as_str(host_encrypted_static_pubkey),
+                utils.get_bytes_as_str(handshake_completion_request_noise_payload),
             )
 
         # send hanshake completion response
@@ -416,7 +416,7 @@ class Channel(Context):
                 self.get_channel_id_int(),
                 ack_bit,
             )
-        await self._write_payload_to_wire(header, chksum)
+        await write_payload_to_wire(self.iface, header, chksum)
 
     def _add_sync_bit_to_ctrl_byte(self, ctrl_byte, sync_bit):
         if sync_bit == 0:
@@ -446,8 +446,8 @@ class Channel(Context):
         )
 
         utils.memcpy(self.buffer, data_length, chksum, 0)
-        await self._write_payload_to_wire(
-            header, memoryview(self.buffer[: data_length + CHECKSUM_LENGTH])
+        await write_payload_to_wire(
+            self.iface, header, memoryview(self.buffer[: data_length + CHECKSUM_LENGTH])
         )
 
     async def write_and_encrypt(self, payload: bytes) -> None:
@@ -482,47 +482,13 @@ class Channel(Context):
                     (header.ctrl_byte & 0x10) >> 4,
                     THP.sync_get_send_bit(self.channel_cache),
                 )
-            await self._write_payload_to_wire(header, payload)
+            await write_payload_to_wire(self.iface, header, payload)
             self.waiting_for_ack_timeout = loop.spawn(self._wait_for_ack())
             try:
                 await self.waiting_for_ack_timeout
             except loop.TaskClosed:
                 THP.sync_set_send_bit_to_opposite(self.channel_cache)
                 break
-
-    async def _write_payload_to_wire(self, header: InitHeader, payload: bytes):
-        if __debug__:
-            log.debug(__name__, "write_payload_to_wire")
-        # prepare the report buffer with header data
-        payload_len = len(payload)
-        report = bytearray(REPORT_LENGTH)
-        header.pack_to_buffer(report)
-
-        # write initial report
-        nwritten = utils.memcpy(report, INIT_DATA_OFFSET, payload, 0)
-
-        await self._write_report_to_wire(report)
-
-        # if we have more data to write, use continuation reports for it
-        if nwritten < payload_len:
-            header.pack_to_cont_buffer(report)
-        while nwritten < payload_len:
-            if nwritten >= payload_len - REPORT_LENGTH:
-                report = bytearray(REPORT_LENGTH)
-                header.pack_to_cont_buffer(report)
-            nwritten += utils.memcpy(report, CONT_DATA_OFFSET, payload, nwritten)
-            await self._write_report_to_wire(report)
-
-    async def _write_report_to_wire(self, report: utils.BufferType) -> None:
-        while True:
-            await loop.wait(self.iface.iface_num() | io.POLL_WRITE)
-            if __debug__:
-                log.debug(
-                    __name__, "write_report_to_wire: %s", get_bytes_as_str(report)
-                )
-            n = self.iface.write(report)
-            if n == len(report):
-                return
 
     async def _wait_for_ack(self) -> None:
         await loop.sleep(1000)
@@ -726,7 +692,3 @@ def _state_to_str(state: int) -> str:
     if name is not None:
         return name
     return "UNKNOWN_STATE"
-
-
-def get_bytes_as_str(a):
-    return hexlify(a).decode("utf-8")

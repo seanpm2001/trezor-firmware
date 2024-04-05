@@ -7,17 +7,11 @@ from trezor import io, log, loop, utils
 
 from .protocol_common import MessageWithId
 from .thp import ChannelState, checksum, thp_messages
-from .thp.channel import (
-    CONT_DATA_OFFSET,
-    INIT_DATA_OFFSET,
-    MAX_PAYLOAD_LEN,
-    REPORT_LENGTH,
-    Channel,
-    load_cached_channels,
-)
+from .thp.channel import MAX_PAYLOAD_LEN, REPORT_LENGTH, Channel, load_cached_channels
 from .thp.checksum import CHECKSUM_LENGTH
 from .thp.thp_messages import CHANNEL_ALLOCATION_REQ, CODEC_V1, InitHeader
 from .thp.thp_session import ThpError
+from .thp.writer import write_payload_to_wire
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
@@ -64,8 +58,10 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
             if cid in _CHANNEL_CONTEXTS:
                 channel = _CHANNEL_CONTEXTS[cid]
                 if channel is None:
+                    # TODO send error message to wire
                     raise ThpError("Invalid state of a channel")
                 if channel.iface is not iface:
+                    # TODO send error message to wire
                     raise ThpError("Channel has different WireInterface")
 
                 if channel.get_channel_state() != ChannelState.UNALLOCATED:
@@ -78,63 +74,6 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
                 log.exception(__name__, e)
 
         # TODO add cleaning sequence if no workflow/channel is active (or some condition like that)
-
-
-def _get_buffer_for_payload(
-    payload_length: int, existing_buffer: utils.BufferType, max_length=MAX_PAYLOAD_LEN
-) -> utils.BufferType:
-    if payload_length > max_length:
-        raise ThpError("Message too large")
-    if payload_length > len(existing_buffer):
-        return _try_allocate_new_buffer(payload_length)
-    return _reuse_existing_buffer(payload_length, existing_buffer)
-
-
-def _try_allocate_new_buffer(payload_length: int) -> utils.BufferType:
-    try:
-        payload: utils.BufferType = bytearray(payload_length)
-    except MemoryError:
-        payload = bytearray(REPORT_LENGTH)
-        raise ThpError("Message too large")
-    return payload
-
-
-def _reuse_existing_buffer(
-    payload_length: int, existing_buffer: utils.BufferType
-) -> utils.BufferType:
-    return memoryview(existing_buffer)[:payload_length]
-
-
-async def write_to_wire(
-    iface: WireInterface, header: InitHeader, payload: bytes
-) -> None:
-    loop_write = loop.wait(iface.iface_num() | io.POLL_WRITE)
-
-    payload_length = len(payload)
-
-    # prepare the report buffer with header data
-    report = bytearray(REPORT_LENGTH)
-    header.pack_to_buffer(report)
-
-    # write initial report
-    nwritten = utils.memcpy(report, INIT_DATA_OFFSET, payload, 0)
-    await _write_report(loop_write, iface, report)
-
-    # if we have more data to write, use continuation reports for it
-    if nwritten < payload_length:
-        header.pack_to_cont_buffer(report)
-
-    while nwritten < payload_length:
-        nwritten += utils.memcpy(report, CONT_DATA_OFFSET, payload, nwritten)
-        await _write_report(loop_write, iface, report)
-
-
-async def _write_report(write, iface: WireInterface, report: bytearray) -> None:
-    while True:
-        await write
-        n = iface.write(report)
-        if n == len(report):
-            return
 
 
 async def _handle_broadcast(
@@ -167,14 +106,39 @@ async def _handle_broadcast(
     if __debug__:
         log.debug(__name__, "New channel allocated with id %d", cid)
 
-    await write_to_wire(iface, response_header, response_data + chksum)
+    await write_payload_to_wire(iface, response_header, response_data + chksum)
 
 
 async def _handle_unallocated(iface, cid) -> MessageWithId | None:
     data = thp_messages.get_error_unallocated_channel()
     header = InitHeader.get_error_header(cid, len(data) + CHECKSUM_LENGTH)
     chksum = checksum.compute(header.to_bytes() + data)
-    await write_to_wire(iface, header, data + chksum)
+    await write_payload_to_wire(iface, header, data + chksum)
+
+
+def _get_buffer_for_payload(
+    payload_length: int, existing_buffer: utils.BufferType, max_length=MAX_PAYLOAD_LEN
+) -> utils.BufferType:
+    if payload_length > max_length:
+        raise ThpError("Message too large")
+    if payload_length > len(existing_buffer):
+        return _try_allocate_new_buffer(payload_length)
+    return _reuse_existing_buffer(payload_length, existing_buffer)
+
+
+def _try_allocate_new_buffer(payload_length: int) -> utils.BufferType:
+    try:
+        payload: utils.BufferType = bytearray(payload_length)
+    except MemoryError:
+        payload = bytearray(REPORT_LENGTH)
+        raise ThpError("Message too large")
+    return payload
+
+
+def _reuse_existing_buffer(
+    payload_length: int, existing_buffer: utils.BufferType
+) -> utils.BufferType:
+    return memoryview(existing_buffer)[:payload_length]
 
 
 async def deprecated_read_message(
