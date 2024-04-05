@@ -39,6 +39,7 @@ OPTFLAGS ?= -O3 -g
 CFLAGS   += $(OPTFLAGS) \
             $(SANFLAGS) \
             -std=gnu99 \
+            -ftrivial-auto-var-init=zero \
             -W \
             -Wall \
             -Wextra \
