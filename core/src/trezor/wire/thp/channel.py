@@ -154,7 +154,7 @@ class Channel(Context):
 
         await self._buffer_packet_data(self.buffer, packet, 0)
         if __debug__:
-            log.debug(__name__, "channel._handle_init_packet - end")
+            log.debug(__name__, "handle_init_packet - end")
 
     async def _handle_cont_packet(self, packet: utils.BufferType):
         if __debug__:
@@ -187,6 +187,12 @@ class Channel(Context):
             )
             self._todo_clear_buffer()
             return
+
+        if self._should_be_encrypted() and not _is_ctrl_byte_encrypted_transport(
+            ctrl_byte
+        ):
+            self._todo_clear_buffer()
+            raise ThpError("Message is not encrypted. Ignoring")
 
         # 2: Handle message with unexpected synchronization bit
         if sync_bit != THP.sync_get_receive_expected_bit(self.channel_cache):
@@ -230,10 +236,6 @@ class Channel(Context):
         if state is ChannelState.TH1:
             await self._handle_state_TH1(payload_length, message_length, sync_bit)
             return
-
-        if not _is_ctrl_byte_encrypted_transport(ctrl_byte):
-            self._todo_clear_buffer()
-            raise ThpError("Message is not encrypted. Ignoring")
 
         if state is ChannelState.ENCRYPTED_TRANSPORT:
             await self._handle_state_ENCRYPTED_TRANSPORT(message_length)
@@ -304,7 +306,6 @@ class Channel(Context):
         if session_id == 0:
             await self._handle_channel_message(message_length, message_type)
             return
-
         if session_id not in self.sessions:
             await self.write_error(
                 FailureType.ThpUnallocatedSession, "Unallocated session"
@@ -317,7 +318,6 @@ class Channel(Context):
                 FailureType.ThpUnallocatedSession, "Unallocated session"
             )
             raise ThpError("Unalloacted session")
-
         self.sessions[session_id].incoming_message.publish(
             MessageWithType(
                 message_type,
@@ -329,6 +329,11 @@ class Channel(Context):
 
     async def _handle_pairing(self, message_length: int) -> None:
         pass
+
+    def _should_be_encrypted(self) -> bool:
+        if self.get_channel_state() in [ChannelState.UNALLOCATED, ChannelState.TH1]:
+            return False
+        return True
 
     async def _handle_channel_message(
         self, message_length: int, message_type: int
@@ -434,7 +439,7 @@ class Channel(Context):
 
     async def write(self, msg: protobuf.MessageType, session_id: int = 0) -> None:
         if __debug__:
-            log.debug(__name__, "channel.write: %s", msg.MESSAGE_NAME)
+            log.debug(__name__, "write message: %s", msg.MESSAGE_NAME)
         noise_payload_len = self._encode_into_buffer(msg, session_id)
         await self.write_and_encrypt(self.buffer[:noise_payload_len])
 
