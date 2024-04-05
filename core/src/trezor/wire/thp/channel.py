@@ -10,7 +10,6 @@ from trezor import io, log, loop, protobuf, utils
 from trezor.enums import FailureType, MessageType
 from trezor.messages import Failure, ThpCreateNewSession
 from trezor.wire import message_handler
-from trezor.wire.errors import Error
 from trezor.wire.thp import thp_messages
 
 from ..protocol_common import Context, MessageWithType
@@ -731,20 +730,3 @@ def _state_to_str(state: int) -> str:
 
 def get_bytes_as_str(a):
     return hexlify(a).decode("utf-8")
-
-
-def failure(exc: BaseException) -> Failure:
-    if isinstance(exc, Error):
-        return Failure(code=exc.code, message=exc.message)
-    elif isinstance(exc, loop.TaskClosed):
-        return Failure(code=FailureType.ActionCancelled, message="Cancelled")
-    elif isinstance(exc, ThpError):
-        return Failure(code=FailureType.InvalidSession, message="Invalid session")
-    else:
-        # NOTE: when receiving generic `FirmwareError` on non-debug build,
-        # change the `if __debug__` to `if True` to get the full error message.
-        if __debug__:
-            message = str(exc)
-        else:
-            message = "Firmware error"
-        return Failure(code=FailureType.FirmwareError, message=message)
