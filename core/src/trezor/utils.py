@@ -116,6 +116,7 @@ def presize_module(modname: str, size: int) -> None:
 
 
 if __debug__:
+    from ubinascii import hexlify  # pyright: ignore[reportMissingModuleSource]
 
     def mem_dump(filename: str) -> None:
         from micropython import mem_info  # pyright: ignore[reportMissingModuleSource]
@@ -131,6 +132,9 @@ if __debug__:
             mem_info()
         else:
             mem_info(True)
+
+    def get_bytes_as_str(a):
+        return hexlify(a).decode("utf-8")
 
 
 def ensure(cond: bool, msg: str | None = None) -> None:
