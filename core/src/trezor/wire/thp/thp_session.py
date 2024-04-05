@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING  # pyright:ignore[reportShadowedImports]
 
 from storage import cache_thp as storage_thp_cache
 from storage.cache_thp import ChannelCache, SessionThpCache
+from trezor import log
 from trezor.wire.protocol_common import WireError
 
 if TYPE_CHECKING:
@@ -85,6 +86,8 @@ def sync_set_can_send_message(
 def sync_set_receive_expected_bit(
     cache: SessionThpCache | ChannelCache, bit: int
 ) -> None:
+    if __debug__:
+        log.debug(__name__, "Set sync receive expected bit to %d", bit)
     if bit not in (0, 1):
         raise ThpError("Unexpected receive sync bit")
 
