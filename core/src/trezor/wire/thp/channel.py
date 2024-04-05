@@ -9,12 +9,13 @@ from trezor import log, loop, protobuf, utils
 from trezor.enums import FailureType, MessageType
 from trezor.messages import Failure, ThpCreateNewSession
 from trezor.wire import message_handler
-from trezor.wire.thp import thp_messages
+from trezor.wire.thp import ack_handler, thp_messages
 
 from ..protocol_common import Context, MessageWithType
 from . import ChannelState, SessionState, checksum, crypto
 from . import thp_session as THP
 from .checksum import CHECKSUM_LENGTH
+from .crypto import PUBKEY_LENGTH
 from .thp_messages import (
     ACK_MESSAGE,
     CONTINUATION_PACKET,
@@ -37,8 +38,6 @@ if TYPE_CHECKING:
 
 _WIRE_INTERFACE_USB = b"\x01"
 _MOCK_INTERFACE_HID = b"\x00"
-
-_PUBKEY_LENGTH = const(32)
 
 
 MESSAGE_TYPE_LENGTH = const(2)
@@ -183,7 +182,9 @@ class Channel(Context):
 
         # 1: Handle ACKs
         if _is_ctrl_byte_ack(ctrl_byte):
-            self._handle_received_ACK(sync_bit)
+            ack_handler.handle_received_ACK(
+                self.channel_cache, sync_bit, self.waiting_for_ack_timeout
+            )
             self._todo_clear_buffer()
             return
 
@@ -251,7 +252,7 @@ class Channel(Context):
     ) -> None:
         if not _is_ctrl_byte_handshake_init:
             raise ThpError("Message received is not a handshake init request!")
-        if not payload_length == _PUBKEY_LENGTH + CHECKSUM_LENGTH:
+        if not payload_length == PUBKEY_LENGTH + CHECKSUM_LENGTH:
             raise ThpError("Message received is not a valid handshake init request!")
         host_ephemeral_key = bytearray(
             self.buffer[INIT_DATA_OFFSET : message_length - CHECKSUM_LENGTH]
@@ -301,7 +302,7 @@ class Channel(Context):
         self._decrypt_buffer(message_length)
         session_id, message_type = ustruct.unpack(">BH", self.buffer[INIT_DATA_OFFSET:])
         if session_id == 0:
-            self._handle_channel_message(message_length, message_type)
+            await self._handle_channel_message(message_length, message_type)
             return
 
         if session_id not in self.sessions:
@@ -329,7 +330,9 @@ class Channel(Context):
     async def _handle_pairing(self, message_length: int) -> None:
         pass
 
-    def _handle_channel_message(self, message_length: int, message_type: int) -> None:
+    async def _handle_channel_message(
+        self, message_length: int, message_type: int
+    ) -> None:
         buf = self.buffer[
             INIT_DATA_OFFSET + 3 : message_length - CHECKSUM_LENGTH - TAG_LENGTH
         ]
@@ -361,7 +364,7 @@ class Channel(Context):
             log.debug(
                 __name__, "handle_channel_message - message size: %d", message_size
             )
-        loop.schedule(self.write_and_encrypt(bufferrone))
+        await self.write_and_encrypt(bufferrone)
         # TODO not finished
 
     def _decrypt_single_packet_payload(self, payload: bytes) -> bytearray:
@@ -537,6 +540,7 @@ class Channel(Context):
         from trezor.wire.thp.session_context import SessionContext
 
         session = SessionContext.create_new_session(self)
+        session.set_session_state(SessionState.ALLOCATED)
         self.sessions[session.session_id] = session
         loop.schedule(session.handle())
         if __debug__:
@@ -552,33 +556,6 @@ class Channel(Context):
     def _todo_clear_buffer(self):
         # TODO Buffer clearing not implemented
         pass
-
-    # TODO add debug logging to ACK handling
-    def _handle_received_ACK(self, sync_bit: int) -> None:
-        if self._ack_is_not_expected():
-            if __debug__:
-                log.debug(__name__, "handle_received_ACK - ack is not expected")
-            return
-        if self._ack_has_incorrect_sync_bit(sync_bit):
-            if __debug__:
-                log.debug(
-                    __name__,
-                    "handle_received_ACK - ack has incorrect sync bit",
-                )
-            return
-
-        if self.waiting_for_ack_timeout is not None:
-            self.waiting_for_ack_timeout.close()
-            if __debug__:
-                log.debug(__name__, "handle_received_ACK - closed waiting for ack")
-
-        THP.sync_set_can_send_message(self.channel_cache, True)
-
-    def _ack_is_not_expected(self) -> bool:
-        return THP.sync_can_send_message(self.channel_cache)
-
-    def _ack_has_incorrect_sync_bit(self, sync_bit: int) -> bool:
-        return THP.sync_get_send_bit(self.channel_cache) != sync_bit
 
 
 def load_cached_channels(buffer: utils.BufferType) -> dict[int, Channel]:  # TODO
