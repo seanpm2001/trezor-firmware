@@ -114,6 +114,8 @@ class SessionContext(Context):
     ) -> protobuf.MessageType:
         if __debug__:
             exp_type: str = str(expected_type)
+            if expected_type is not None:
+                exp_type = expected_type.MESSAGE_NAME
             log.debug(
                 __name__,
                 "Read - with expected types %s and expected type %s",
