@@ -113,15 +113,14 @@ class SessionContext(Context):
         expected_type: type[protobuf.MessageType] | None = None,
     ) -> protobuf.MessageType:
         if __debug__:
+            exp_type: str = str(expected_type)
             log.debug(
                 __name__,
                 "Read - with expected types %s and expected type %s",
                 str(expected_types),
-                str(expected_type),
+                exp_type,
             )
         message: MessageWithType = await self.incoming_message.take()
-        if __debug__:
-            log.debug(__name__, "I'm here")
         if message.type not in expected_types:
             raise UnexpectedMessageWithType(message)
 
@@ -158,4 +157,5 @@ def load_cached_sessions(channel: Channel) -> dict[int, SessionContext]:  # TODO
         if session.channel_id == channel.channel_id:
             sid = int.from_bytes(session.session_id, "big")
             sessions[sid] = SessionContext(channel, session)
+            loop.schedule(sessions[sid].handle())
     return sessions
