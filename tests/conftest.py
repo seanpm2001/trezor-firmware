@@ -144,13 +144,6 @@ def _raw_client(request: pytest.FixtureRequest) -> Client:
         else:
             client = _find_client(request, interact)
 
-    # Setting the appropriate language
-    # Not doing it for T1
-    if client.model is not models.T1B1:
-        lang = request.session.config.getoption("lang") or "en"
-        assert isinstance(lang, str)
-        translations.set_language(client, lang)
-
     return client
 
 
