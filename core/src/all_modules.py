@@ -223,6 +223,8 @@ trezor.wire.thp.thp_messages
 import trezor.wire.thp.thp_messages
 trezor.wire.thp.thp_session
 import trezor.wire.thp.thp_session
+trezor.wire.thp.writer
+import trezor.wire.thp.writer
 trezor.wire.thp_v1
 import trezor.wire.thp_v1
 trezor.workflow
