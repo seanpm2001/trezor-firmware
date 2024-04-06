@@ -4,6 +4,7 @@ if not __debug__:
     halt("debug mode inactive")
 
 if __debug__:
+    from micropython import const
     from typing import TYPE_CHECKING
 
     import trezorui2
@@ -37,7 +38,9 @@ if __debug__:
 
     REFRESH_INDEX = 0
 
-    _DEADLOCK_DETECT_SLEEP = loop.sleep(2000)
+    _DEADLOCK_WAIT_TRIES = const(5)
+    _DEADLOCK_SLEEP_MS = const(2000)
+    _DEADLOCK_DETECT_SLEEP = loop.sleep(_DEADLOCK_SLEEP_MS)
 
     def screenshot() -> bool:
         if storage.save_screen:
@@ -52,8 +55,14 @@ if __debug__:
     def notify_layout_change(layout: Layout | None) -> None:
         layout_change_chan.put(layout, replace=True)
 
-    def wait_until_layout_is_running() -> Awaitable[None]:  # type: ignore [awaitable-is-generator]
+    def wait_until_layout_is_running(tries: int | None = _DEADLOCK_WAIT_TRIES) -> Awaitable[None]:  # type: ignore [awaitable-is-generator]
+        counter = 0
         while ui.CURRENT_LAYOUT is None:
+            counter += 1
+            if tries is not None and counter > tries:
+                raise wire.FirmwareError(
+                    "layout deadlock detected (did you send a ButtonAck?)"
+                )
             yield
 
     async def return_layout_change(

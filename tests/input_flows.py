@@ -1031,22 +1031,7 @@ class InputFlowSignTxInformationReplacement(InputFlowBase):
         self.debug.press_right()
         self.debug.press_right()
 
-    def input_flow_t3t1(self) -> BRGeneratorType:
-        yield  # confirm txid
-        self.debug.press_yes()
-        yield  # confirm address
-        self.debug.press_yes()
-        # go back to address
-        self.debug.press_no()
-        # confirm address
-        self.debug.press_yes()
-        yield  # confirm amount
-        self.debug.press_yes()
-
-        yield  # transaction summary, press info
-        self.debug.click(buttons.CORNER_BUTTON)
-        self.debug.click(buttons.CORNER_BUTTON)
-        self.debug.press_yes()
+    input_flow_t3t1 = input_flow_tt
 
 
 def lock_time_input_flow_tt(
