@@ -100,7 +100,7 @@ class InputFlowSetupDevicePINWIpeCode(InputFlowBase):
 
         if self.model() is models.T2B1:
             layout = self.debug.read_layout()
-            if not "PinKeyboard" in layout.all_components():
+            if "PinKeyboard" not in layout.all_components():
                 yield from swipe_if_necessary(self.debug)  # wipe code info
                 self.debug.press_yes()
 
@@ -131,7 +131,7 @@ class InputFlowNewCodeMismatch(InputFlowBase):
 
         if self.model() is models.T2B1:
             layout = self.debug.read_layout()
-            if not "PinKeyboard" in layout.all_components():
+            if "PinKeyboard" not in layout.all_components():
                 yield from swipe_if_necessary(self.debug)  # code info
                 self.debug.press_yes()
 
