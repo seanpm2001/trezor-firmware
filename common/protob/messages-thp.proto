@@ -159,7 +159,7 @@ message ThpCredentialRequest {
 /**
  * Response: Trezor issues a new pairing credential.
  * @next ThpCredentialRequest
- * @next EndRequest
+ * @next ThpEndRequest
  */
 message ThpCredentialResponse {
     optional bytes trezor_static_pubkey = 1; // Trezor's static public key used in the handshake.
@@ -169,12 +169,12 @@ message ThpCredentialResponse {
 /**
  * Request: Host requests transition to the encrypted traffic phase.
  * @start
- * @next EndResponse
+ * @next ThpEndResponse
  */
-message EndRequest {}
+message ThpEndRequest {}
 
 /**
  * Response: Trezor approves transition to the encrypted traffic phase
  * @end
  */
-message EndResponse {}
+message ThpEndResponse {}

@@ -6348,16 +6348,16 @@ if TYPE_CHECKING:
         def is_type_of(cls, msg: Any) -> TypeGuard["ThpCredentialResponse"]:
             return isinstance(msg, cls)
 
-    class EndRequest(protobuf.MessageType):
+    class ThpEndRequest(protobuf.MessageType):
 
         @classmethod
-        def is_type_of(cls, msg: Any) -> TypeGuard["EndRequest"]:
+        def is_type_of(cls, msg: Any) -> TypeGuard["ThpEndRequest"]:
             return isinstance(msg, cls)
 
-    class EndResponse(protobuf.MessageType):
+    class ThpEndResponse(protobuf.MessageType):
 
         @classmethod
-        def is_type_of(cls, msg: Any) -> TypeGuard["EndResponse"]:
+        def is_type_of(cls, msg: Any) -> TypeGuard["ThpEndResponse"]:
             return isinstance(msg, cls)
 
     class WebAuthnListResidentCredentials(protobuf.MessageType):
