@@ -356,14 +356,17 @@ class Channel(Context):
 
         self._decrypt_buffer(message_length)
 
-        message_type = ustruct.unpack(">H", self.buffer[INIT_DATA_OFFSET:])[0]
+        message_type = ustruct.unpack(
+            ">H", self.buffer[INIT_DATA_OFFSET + SESSION_ID_LENGTH :]
+        )[0]
 
         self.connection_context.incoming_message.publish(
             MessageWithType(
                 message_type,
                 self.buffer[
                     INIT_DATA_OFFSET
-                    + MESSAGE_TYPE_LENGTH : message_length
+                    + MESSAGE_TYPE_LENGTH
+                    + SESSION_ID_LENGTH : message_length
                     - CHECKSUM_LENGTH
                     - TAG_LENGTH
                 ],
