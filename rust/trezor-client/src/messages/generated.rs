@@ -83,7 +83,6 @@ trezor_message_impl! {
     DebugLinkWatchLayout => MessageType_DebugLinkWatchLayout,
     DebugLinkResetDebugEvents => MessageType_DebugLinkResetDebugEvents,
     ThpStartPairingRequest => MessageType_ThpStartPairingRequest,
-    ThpStartPairingResponse => MessageType_ThpStartPairingResponse,
     ThpCredentialRequest => MessageType_ThpCredentialRequest,
     ThpCredentialResponse => MessageType_ThpCredentialResponse,
     ThpEndRequest => MessageType_ThpEndRequest,
