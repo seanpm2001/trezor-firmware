@@ -395,7 +395,7 @@ enum MessageType {
     MessageType_ThpCodeEntryTag = 1020[(bitcoin_only)=true, (wire_in)=true, (pairing_in) = true];
     MessageType_ThpCodeEntrySecret = 1021[(bitcoin_only)=true, (wire_out)=true, (pairing_out) = true];
     MessageType_ThpQrCodeTag = 1024[(bitcoin_only)=true, (wire_in)=true, (pairing_in) = true];
-    MessageType_ThpQrCodeSecret = 1025[(bitcoin_only)=true, (wire_out)=true, (pairing_out) = true];   
+    MessageType_ThpQrCodeSecret = 1025[(bitcoin_only)=true, (wire_out)=true, (pairing_out) = true];
     MessageType_ThpNfcUnidirectionalTag = 1032[(bitcoin_only)=true, (wire_in)=true, (pairing_in) = true];
     MessageType_ThpNfcUnideirectionalSecret = 1033[(bitcoin_only)=true, (wire_in)=true, (pairing_in) = true];
 }
