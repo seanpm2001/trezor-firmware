@@ -830,6 +830,2320 @@ impl ::protobuf::reflect::ProtobufValue for ThpNewSession {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpStartPairingRequest)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpStartPairingRequest {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpStartPairingRequest.host_name)
+    pub host_name: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpStartPairingRequest.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpStartPairingRequest {
+    fn default() -> &'a ThpStartPairingRequest {
+        <ThpStartPairingRequest as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpStartPairingRequest {
+    pub fn new() -> ThpStartPairingRequest {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes host_name = 1;
+
+    pub fn host_name(&self) -> &[u8] {
+        match self.host_name.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_host_name(&mut self) {
+        self.host_name = ::std::option::Option::None;
+    }
+
+    pub fn has_host_name(&self) -> bool {
+        self.host_name.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_host_name(&mut self, v: ::std::vec::Vec<u8>) {
+        self.host_name = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_host_name(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.host_name.is_none() {
+            self.host_name = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.host_name.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_host_name(&mut self) -> ::std::vec::Vec<u8> {
+        self.host_name.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "host_name",
+            |m: &ThpStartPairingRequest| { &m.host_name },
+            |m: &mut ThpStartPairingRequest| { &mut m.host_name },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpStartPairingRequest>(
+            "ThpStartPairingRequest",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpStartPairingRequest {
+    const NAME: &'static str = "ThpStartPairingRequest";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.host_name = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.host_name.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.host_name.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpStartPairingRequest {
+        ThpStartPairingRequest::new()
+    }
+
+    fn clear(&mut self) {
+        self.host_name = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpStartPairingRequest {
+        static instance: ThpStartPairingRequest = ThpStartPairingRequest {
+            host_name: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpStartPairingRequest {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpStartPairingRequest").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpStartPairingRequest {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpStartPairingRequest {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCodeEntryCommitment)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpCodeEntryCommitment {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCodeEntryCommitment.commitment)
+    pub commitment: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCodeEntryCommitment.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpCodeEntryCommitment {
+    fn default() -> &'a ThpCodeEntryCommitment {
+        <ThpCodeEntryCommitment as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpCodeEntryCommitment {
+    pub fn new() -> ThpCodeEntryCommitment {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes commitment = 1;
+
+    pub fn commitment(&self) -> &[u8] {
+        match self.commitment.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_commitment(&mut self) {
+        self.commitment = ::std::option::Option::None;
+    }
+
+    pub fn has_commitment(&self) -> bool {
+        self.commitment.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_commitment(&mut self, v: ::std::vec::Vec<u8>) {
+        self.commitment = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_commitment(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.commitment.is_none() {
+            self.commitment = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.commitment.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_commitment(&mut self) -> ::std::vec::Vec<u8> {
+        self.commitment.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "commitment",
+            |m: &ThpCodeEntryCommitment| { &m.commitment },
+            |m: &mut ThpCodeEntryCommitment| { &mut m.commitment },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCodeEntryCommitment>(
+            "ThpCodeEntryCommitment",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpCodeEntryCommitment {
+    const NAME: &'static str = "ThpCodeEntryCommitment";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.commitment = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.commitment.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.commitment.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpCodeEntryCommitment {
+        ThpCodeEntryCommitment::new()
+    }
+
+    fn clear(&mut self) {
+        self.commitment = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpCodeEntryCommitment {
+        static instance: ThpCodeEntryCommitment = ThpCodeEntryCommitment {
+            commitment: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpCodeEntryCommitment {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpCodeEntryCommitment").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpCodeEntryCommitment {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpCodeEntryCommitment {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCodeEntryChallenge)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpCodeEntryChallenge {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCodeEntryChallenge.challenge)
+    pub challenge: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCodeEntryChallenge.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpCodeEntryChallenge {
+    fn default() -> &'a ThpCodeEntryChallenge {
+        <ThpCodeEntryChallenge as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpCodeEntryChallenge {
+    pub fn new() -> ThpCodeEntryChallenge {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes challenge = 1;
+
+    pub fn challenge(&self) -> &[u8] {
+        match self.challenge.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_challenge(&mut self) {
+        self.challenge = ::std::option::Option::None;
+    }
+
+    pub fn has_challenge(&self) -> bool {
+        self.challenge.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_challenge(&mut self, v: ::std::vec::Vec<u8>) {
+        self.challenge = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_challenge(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.challenge.is_none() {
+            self.challenge = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.challenge.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_challenge(&mut self) -> ::std::vec::Vec<u8> {
+        self.challenge.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "challenge",
+            |m: &ThpCodeEntryChallenge| { &m.challenge },
+            |m: &mut ThpCodeEntryChallenge| { &mut m.challenge },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCodeEntryChallenge>(
+            "ThpCodeEntryChallenge",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpCodeEntryChallenge {
+    const NAME: &'static str = "ThpCodeEntryChallenge";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.challenge = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.challenge.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.challenge.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpCodeEntryChallenge {
+        ThpCodeEntryChallenge::new()
+    }
+
+    fn clear(&mut self) {
+        self.challenge = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpCodeEntryChallenge {
+        static instance: ThpCodeEntryChallenge = ThpCodeEntryChallenge {
+            challenge: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpCodeEntryChallenge {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpCodeEntryChallenge").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpCodeEntryChallenge {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpCodeEntryChallenge {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCodeEntryCpaceHost)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpCodeEntryCpaceHost {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCodeEntryCpaceHost.cpace_host_public_key)
+    pub cpace_host_public_key: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCodeEntryCpaceHost.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpCodeEntryCpaceHost {
+    fn default() -> &'a ThpCodeEntryCpaceHost {
+        <ThpCodeEntryCpaceHost as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpCodeEntryCpaceHost {
+    pub fn new() -> ThpCodeEntryCpaceHost {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes cpace_host_public_key = 1;
+
+    pub fn cpace_host_public_key(&self) -> &[u8] {
+        match self.cpace_host_public_key.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_cpace_host_public_key(&mut self) {
+        self.cpace_host_public_key = ::std::option::Option::None;
+    }
+
+    pub fn has_cpace_host_public_key(&self) -> bool {
+        self.cpace_host_public_key.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cpace_host_public_key(&mut self, v: ::std::vec::Vec<u8>) {
+        self.cpace_host_public_key = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_cpace_host_public_key(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.cpace_host_public_key.is_none() {
+            self.cpace_host_public_key = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.cpace_host_public_key.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_cpace_host_public_key(&mut self) -> ::std::vec::Vec<u8> {
+        self.cpace_host_public_key.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "cpace_host_public_key",
+            |m: &ThpCodeEntryCpaceHost| { &m.cpace_host_public_key },
+            |m: &mut ThpCodeEntryCpaceHost| { &mut m.cpace_host_public_key },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCodeEntryCpaceHost>(
+            "ThpCodeEntryCpaceHost",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpCodeEntryCpaceHost {
+    const NAME: &'static str = "ThpCodeEntryCpaceHost";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.cpace_host_public_key = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.cpace_host_public_key.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.cpace_host_public_key.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpCodeEntryCpaceHost {
+        ThpCodeEntryCpaceHost::new()
+    }
+
+    fn clear(&mut self) {
+        self.cpace_host_public_key = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpCodeEntryCpaceHost {
+        static instance: ThpCodeEntryCpaceHost = ThpCodeEntryCpaceHost {
+            cpace_host_public_key: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpCodeEntryCpaceHost {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpCodeEntryCpaceHost").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpCodeEntryCpaceHost {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpCodeEntryCpaceHost {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCodeEntryCpaceTrezor)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpCodeEntryCpaceTrezor {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCodeEntryCpaceTrezor.cpace_trezor_public_key)
+    pub cpace_trezor_public_key: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCodeEntryCpaceTrezor.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpCodeEntryCpaceTrezor {
+    fn default() -> &'a ThpCodeEntryCpaceTrezor {
+        <ThpCodeEntryCpaceTrezor as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpCodeEntryCpaceTrezor {
+    pub fn new() -> ThpCodeEntryCpaceTrezor {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes cpace_trezor_public_key = 1;
+
+    pub fn cpace_trezor_public_key(&self) -> &[u8] {
+        match self.cpace_trezor_public_key.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_cpace_trezor_public_key(&mut self) {
+        self.cpace_trezor_public_key = ::std::option::Option::None;
+    }
+
+    pub fn has_cpace_trezor_public_key(&self) -> bool {
+        self.cpace_trezor_public_key.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_cpace_trezor_public_key(&mut self, v: ::std::vec::Vec<u8>) {
+        self.cpace_trezor_public_key = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_cpace_trezor_public_key(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.cpace_trezor_public_key.is_none() {
+            self.cpace_trezor_public_key = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.cpace_trezor_public_key.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_cpace_trezor_public_key(&mut self) -> ::std::vec::Vec<u8> {
+        self.cpace_trezor_public_key.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "cpace_trezor_public_key",
+            |m: &ThpCodeEntryCpaceTrezor| { &m.cpace_trezor_public_key },
+            |m: &mut ThpCodeEntryCpaceTrezor| { &mut m.cpace_trezor_public_key },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCodeEntryCpaceTrezor>(
+            "ThpCodeEntryCpaceTrezor",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpCodeEntryCpaceTrezor {
+    const NAME: &'static str = "ThpCodeEntryCpaceTrezor";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.cpace_trezor_public_key = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.cpace_trezor_public_key.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.cpace_trezor_public_key.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpCodeEntryCpaceTrezor {
+        ThpCodeEntryCpaceTrezor::new()
+    }
+
+    fn clear(&mut self) {
+        self.cpace_trezor_public_key = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpCodeEntryCpaceTrezor {
+        static instance: ThpCodeEntryCpaceTrezor = ThpCodeEntryCpaceTrezor {
+            cpace_trezor_public_key: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpCodeEntryCpaceTrezor {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpCodeEntryCpaceTrezor").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpCodeEntryCpaceTrezor {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpCodeEntryCpaceTrezor {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCodeEntryTag)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpCodeEntryTag {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCodeEntryTag.tag)
+    pub tag: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCodeEntryTag.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpCodeEntryTag {
+    fn default() -> &'a ThpCodeEntryTag {
+        <ThpCodeEntryTag as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpCodeEntryTag {
+    pub fn new() -> ThpCodeEntryTag {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes tag = 2;
+
+    pub fn tag(&self) -> &[u8] {
+        match self.tag.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_tag(&mut self) {
+        self.tag = ::std::option::Option::None;
+    }
+
+    pub fn has_tag(&self) -> bool {
+        self.tag.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_tag(&mut self, v: ::std::vec::Vec<u8>) {
+        self.tag = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_tag(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.tag.is_none() {
+            self.tag = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.tag.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_tag(&mut self) -> ::std::vec::Vec<u8> {
+        self.tag.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "tag",
+            |m: &ThpCodeEntryTag| { &m.tag },
+            |m: &mut ThpCodeEntryTag| { &mut m.tag },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCodeEntryTag>(
+            "ThpCodeEntryTag",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpCodeEntryTag {
+    const NAME: &'static str = "ThpCodeEntryTag";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                18 => {
+                    self.tag = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.tag.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(2, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.tag.as_ref() {
+            os.write_bytes(2, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpCodeEntryTag {
+        ThpCodeEntryTag::new()
+    }
+
+    fn clear(&mut self) {
+        self.tag = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpCodeEntryTag {
+        static instance: ThpCodeEntryTag = ThpCodeEntryTag {
+            tag: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpCodeEntryTag {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpCodeEntryTag").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpCodeEntryTag {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpCodeEntryTag {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCodeEntrySecret)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpCodeEntrySecret {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCodeEntrySecret.secret)
+    pub secret: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCodeEntrySecret.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpCodeEntrySecret {
+    fn default() -> &'a ThpCodeEntrySecret {
+        <ThpCodeEntrySecret as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpCodeEntrySecret {
+    pub fn new() -> ThpCodeEntrySecret {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes secret = 1;
+
+    pub fn secret(&self) -> &[u8] {
+        match self.secret.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_secret(&mut self) {
+        self.secret = ::std::option::Option::None;
+    }
+
+    pub fn has_secret(&self) -> bool {
+        self.secret.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_secret(&mut self, v: ::std::vec::Vec<u8>) {
+        self.secret = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_secret(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.secret.is_none() {
+            self.secret = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.secret.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_secret(&mut self) -> ::std::vec::Vec<u8> {
+        self.secret.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "secret",
+            |m: &ThpCodeEntrySecret| { &m.secret },
+            |m: &mut ThpCodeEntrySecret| { &mut m.secret },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCodeEntrySecret>(
+            "ThpCodeEntrySecret",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpCodeEntrySecret {
+    const NAME: &'static str = "ThpCodeEntrySecret";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.secret = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.secret.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.secret.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpCodeEntrySecret {
+        ThpCodeEntrySecret::new()
+    }
+
+    fn clear(&mut self) {
+        self.secret = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpCodeEntrySecret {
+        static instance: ThpCodeEntrySecret = ThpCodeEntrySecret {
+            secret: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpCodeEntrySecret {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpCodeEntrySecret").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpCodeEntrySecret {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpCodeEntrySecret {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpQrCodeTag)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpQrCodeTag {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpQrCodeTag.tag)
+    pub tag: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpQrCodeTag.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpQrCodeTag {
+    fn default() -> &'a ThpQrCodeTag {
+        <ThpQrCodeTag as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpQrCodeTag {
+    pub fn new() -> ThpQrCodeTag {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes tag = 1;
+
+    pub fn tag(&self) -> &[u8] {
+        match self.tag.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_tag(&mut self) {
+        self.tag = ::std::option::Option::None;
+    }
+
+    pub fn has_tag(&self) -> bool {
+        self.tag.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_tag(&mut self, v: ::std::vec::Vec<u8>) {
+        self.tag = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_tag(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.tag.is_none() {
+            self.tag = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.tag.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_tag(&mut self) -> ::std::vec::Vec<u8> {
+        self.tag.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "tag",
+            |m: &ThpQrCodeTag| { &m.tag },
+            |m: &mut ThpQrCodeTag| { &mut m.tag },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpQrCodeTag>(
+            "ThpQrCodeTag",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpQrCodeTag {
+    const NAME: &'static str = "ThpQrCodeTag";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.tag = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.tag.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.tag.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpQrCodeTag {
+        ThpQrCodeTag::new()
+    }
+
+    fn clear(&mut self) {
+        self.tag = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpQrCodeTag {
+        static instance: ThpQrCodeTag = ThpQrCodeTag {
+            tag: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpQrCodeTag {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpQrCodeTag").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpQrCodeTag {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpQrCodeTag {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpQrCodeSecret)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpQrCodeSecret {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpQrCodeSecret.secret)
+    pub secret: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpQrCodeSecret.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpQrCodeSecret {
+    fn default() -> &'a ThpQrCodeSecret {
+        <ThpQrCodeSecret as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpQrCodeSecret {
+    pub fn new() -> ThpQrCodeSecret {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes secret = 1;
+
+    pub fn secret(&self) -> &[u8] {
+        match self.secret.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_secret(&mut self) {
+        self.secret = ::std::option::Option::None;
+    }
+
+    pub fn has_secret(&self) -> bool {
+        self.secret.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_secret(&mut self, v: ::std::vec::Vec<u8>) {
+        self.secret = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_secret(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.secret.is_none() {
+            self.secret = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.secret.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_secret(&mut self) -> ::std::vec::Vec<u8> {
+        self.secret.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "secret",
+            |m: &ThpQrCodeSecret| { &m.secret },
+            |m: &mut ThpQrCodeSecret| { &mut m.secret },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpQrCodeSecret>(
+            "ThpQrCodeSecret",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpQrCodeSecret {
+    const NAME: &'static str = "ThpQrCodeSecret";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.secret = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.secret.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.secret.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpQrCodeSecret {
+        ThpQrCodeSecret::new()
+    }
+
+    fn clear(&mut self) {
+        self.secret = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpQrCodeSecret {
+        static instance: ThpQrCodeSecret = ThpQrCodeSecret {
+            secret: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpQrCodeSecret {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpQrCodeSecret").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpQrCodeSecret {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpQrCodeSecret {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpNfcUnidirectionalTag)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpNfcUnidirectionalTag {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpNfcUnidirectionalTag.tag)
+    pub tag: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpNfcUnidirectionalTag.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpNfcUnidirectionalTag {
+    fn default() -> &'a ThpNfcUnidirectionalTag {
+        <ThpNfcUnidirectionalTag as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpNfcUnidirectionalTag {
+    pub fn new() -> ThpNfcUnidirectionalTag {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes tag = 1;
+
+    pub fn tag(&self) -> &[u8] {
+        match self.tag.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_tag(&mut self) {
+        self.tag = ::std::option::Option::None;
+    }
+
+    pub fn has_tag(&self) -> bool {
+        self.tag.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_tag(&mut self, v: ::std::vec::Vec<u8>) {
+        self.tag = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_tag(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.tag.is_none() {
+            self.tag = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.tag.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_tag(&mut self) -> ::std::vec::Vec<u8> {
+        self.tag.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "tag",
+            |m: &ThpNfcUnidirectionalTag| { &m.tag },
+            |m: &mut ThpNfcUnidirectionalTag| { &mut m.tag },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpNfcUnidirectionalTag>(
+            "ThpNfcUnidirectionalTag",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpNfcUnidirectionalTag {
+    const NAME: &'static str = "ThpNfcUnidirectionalTag";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.tag = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.tag.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.tag.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpNfcUnidirectionalTag {
+        ThpNfcUnidirectionalTag::new()
+    }
+
+    fn clear(&mut self) {
+        self.tag = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpNfcUnidirectionalTag {
+        static instance: ThpNfcUnidirectionalTag = ThpNfcUnidirectionalTag {
+            tag: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpNfcUnidirectionalTag {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpNfcUnidirectionalTag").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpNfcUnidirectionalTag {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpNfcUnidirectionalTag {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpNfcUnideirectionalSecret)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpNfcUnideirectionalSecret {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpNfcUnideirectionalSecret.secret)
+    pub secret: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpNfcUnideirectionalSecret.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpNfcUnideirectionalSecret {
+    fn default() -> &'a ThpNfcUnideirectionalSecret {
+        <ThpNfcUnideirectionalSecret as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpNfcUnideirectionalSecret {
+    pub fn new() -> ThpNfcUnideirectionalSecret {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes secret = 1;
+
+    pub fn secret(&self) -> &[u8] {
+        match self.secret.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_secret(&mut self) {
+        self.secret = ::std::option::Option::None;
+    }
+
+    pub fn has_secret(&self) -> bool {
+        self.secret.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_secret(&mut self, v: ::std::vec::Vec<u8>) {
+        self.secret = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_secret(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.secret.is_none() {
+            self.secret = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.secret.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_secret(&mut self) -> ::std::vec::Vec<u8> {
+        self.secret.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "secret",
+            |m: &ThpNfcUnideirectionalSecret| { &m.secret },
+            |m: &mut ThpNfcUnideirectionalSecret| { &mut m.secret },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpNfcUnideirectionalSecret>(
+            "ThpNfcUnideirectionalSecret",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpNfcUnideirectionalSecret {
+    const NAME: &'static str = "ThpNfcUnideirectionalSecret";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.secret = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.secret.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.secret.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpNfcUnideirectionalSecret {
+        ThpNfcUnideirectionalSecret::new()
+    }
+
+    fn clear(&mut self) {
+        self.secret = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpNfcUnideirectionalSecret {
+        static instance: ThpNfcUnideirectionalSecret = ThpNfcUnideirectionalSecret {
+            secret: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpNfcUnideirectionalSecret {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpNfcUnideirectionalSecret").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpNfcUnideirectionalSecret {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpNfcUnideirectionalSecret {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.CredentialReq)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct CredentialReq {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.CredentialReq.host_static_pubkey)
+    pub host_static_pubkey: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.CredentialReq.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a CredentialReq {
+    fn default() -> &'a CredentialReq {
+        <CredentialReq as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl CredentialReq {
+    pub fn new() -> CredentialReq {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes host_static_pubkey = 1;
+
+    pub fn host_static_pubkey(&self) -> &[u8] {
+        match self.host_static_pubkey.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_host_static_pubkey(&mut self) {
+        self.host_static_pubkey = ::std::option::Option::None;
+    }
+
+    pub fn has_host_static_pubkey(&self) -> bool {
+        self.host_static_pubkey.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_host_static_pubkey(&mut self, v: ::std::vec::Vec<u8>) {
+        self.host_static_pubkey = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_host_static_pubkey(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.host_static_pubkey.is_none() {
+            self.host_static_pubkey = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.host_static_pubkey.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_host_static_pubkey(&mut self) -> ::std::vec::Vec<u8> {
+        self.host_static_pubkey.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(1);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "host_static_pubkey",
+            |m: &CredentialReq| { &m.host_static_pubkey },
+            |m: &mut CredentialReq| { &mut m.host_static_pubkey },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<CredentialReq>(
+            "CredentialReq",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for CredentialReq {
+    const NAME: &'static str = "CredentialReq";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.host_static_pubkey = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.host_static_pubkey.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.host_static_pubkey.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> CredentialReq {
+        CredentialReq::new()
+    }
+
+    fn clear(&mut self) {
+        self.host_static_pubkey = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static CredentialReq {
+        static instance: CredentialReq = CredentialReq {
+            host_static_pubkey: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for CredentialReq {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("CredentialReq").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for CredentialReq {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for CredentialReq {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.CredentialResp)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct CredentialResp {
+    // message fields
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.CredentialResp.trezor_static_pubkey)
+    pub trezor_static_pubkey: ::std::option::Option<::std::vec::Vec<u8>>,
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.CredentialResp.credential)
+    pub credential: ::std::option::Option<::std::vec::Vec<u8>>,
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.CredentialResp.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a CredentialResp {
+    fn default() -> &'a CredentialResp {
+        <CredentialResp as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl CredentialResp {
+    pub fn new() -> CredentialResp {
+        ::std::default::Default::default()
+    }
+
+    // optional bytes trezor_static_pubkey = 1;
+
+    pub fn trezor_static_pubkey(&self) -> &[u8] {
+        match self.trezor_static_pubkey.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_trezor_static_pubkey(&mut self) {
+        self.trezor_static_pubkey = ::std::option::Option::None;
+    }
+
+    pub fn has_trezor_static_pubkey(&self) -> bool {
+        self.trezor_static_pubkey.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_trezor_static_pubkey(&mut self, v: ::std::vec::Vec<u8>) {
+        self.trezor_static_pubkey = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_trezor_static_pubkey(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.trezor_static_pubkey.is_none() {
+            self.trezor_static_pubkey = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.trezor_static_pubkey.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_trezor_static_pubkey(&mut self) -> ::std::vec::Vec<u8> {
+        self.trezor_static_pubkey.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    // optional bytes credential = 2;
+
+    pub fn credential(&self) -> &[u8] {
+        match self.credential.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
+    }
+
+    pub fn clear_credential(&mut self) {
+        self.credential = ::std::option::Option::None;
+    }
+
+    pub fn has_credential(&self) -> bool {
+        self.credential.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_credential(&mut self, v: ::std::vec::Vec<u8>) {
+        self.credential = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_credential(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.credential.is_none() {
+            self.credential = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.credential.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_credential(&mut self) -> ::std::vec::Vec<u8> {
+        self.credential.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(2);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "trezor_static_pubkey",
+            |m: &CredentialResp| { &m.trezor_static_pubkey },
+            |m: &mut CredentialResp| { &mut m.trezor_static_pubkey },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "credential",
+            |m: &CredentialResp| { &m.credential },
+            |m: &mut CredentialResp| { &mut m.credential },
+        ));
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<CredentialResp>(
+            "CredentialResp",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for CredentialResp {
+    const NAME: &'static str = "CredentialResp";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                10 => {
+                    self.trezor_static_pubkey = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                18 => {
+                    self.credential = ::std::option::Option::Some(is.read_bytes()?);
+                },
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        if let Some(v) = self.trezor_static_pubkey.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(1, &v);
+        }
+        if let Some(v) = self.credential.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(2, &v);
+        }
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        if let Some(v) = self.trezor_static_pubkey.as_ref() {
+            os.write_bytes(1, v)?;
+        }
+        if let Some(v) = self.credential.as_ref() {
+            os.write_bytes(2, v)?;
+        }
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> CredentialResp {
+        CredentialResp::new()
+    }
+
+    fn clear(&mut self) {
+        self.trezor_static_pubkey = ::std::option::Option::None;
+        self.credential = ::std::option::Option::None;
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static CredentialResp {
+        static instance: CredentialResp = CredentialResp {
+            trezor_static_pubkey: ::std::option::Option::None,
+            credential: ::std::option::Option::None,
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for CredentialResp {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("CredentialResp").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for CredentialResp {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for CredentialResp {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.EndReq)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct EndReq {
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.EndReq.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a EndReq {
+    fn default() -> &'a EndReq {
+        <EndReq as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl EndReq {
+    pub fn new() -> EndReq {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(0);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<EndReq>(
+            "EndReq",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for EndReq {
+    const NAME: &'static str = "EndReq";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> EndReq {
+        EndReq::new()
+    }
+
+    fn clear(&mut self) {
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static EndReq {
+        static instance: EndReq = EndReq {
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for EndReq {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("EndReq").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for EndReq {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for EndReq {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.EndResp)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct EndResp {
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.EndResp.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a EndResp {
+    fn default() -> &'a EndResp {
+        <EndResp as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl EndResp {
+    pub fn new() -> EndResp {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(0);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<EndResp>(
+            "EndResp",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for EndResp {
+    const NAME: &'static str = "EndResp";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> EndResp {
+        EndResp::new()
+    }
+
+    fn clear(&mut self) {
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static EndResp {
+        static instance: EndResp = EndResp {
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for EndResp {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("EndResp").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for EndResp {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for EndResp {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
 #[derive(Clone,Copy,PartialEq,Eq,Debug,Hash)]
 // @@protoc_insertion_point(enum:hw.trezor.messages.thp.ThpPairingMethod)
 pub enum ThpPairingMethod {
@@ -921,9 +3235,26 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     s.thp.ThpPairingMethodR\x0epairingMethods\"R\n\x13ThpCreateNewSession\
     \x12\x1e\n\npassphrase\x18\x01\x20\x01(\tR\npassphrase\x12\x1b\n\ton_dev\
     ice\x18\x02\x20\x01(\x08R\x08onDevice\"5\n\rThpNewSession\x12$\n\x0enew_\
-    session_id\x18\x01\x20\x01(\rR\x0cnewSessionId*\x8b\x01\n\x10ThpPairingM\
-    ethod\x12\x1a\n\x16PairingMethod_NoMethod\x10\x01\x12\x1b\n\x17PairingMe\
-    thod_CodeEntry\x10\x02\x12\x18\n\x14PairingMethod_QrCode\x10\x03\x12$\n\
+    session_id\x18\x01\x20\x01(\rR\x0cnewSessionId\"5\n\x16ThpStartPairingRe\
+    quest\x12\x1b\n\thost_name\x18\x01\x20\x01(\x0cR\x08hostName\"8\n\x16Thp\
+    CodeEntryCommitment\x12\x1e\n\ncommitment\x18\x01\x20\x01(\x0cR\ncommitm\
+    ent\"5\n\x15ThpCodeEntryChallenge\x12\x1c\n\tchallenge\x18\x01\x20\x01(\
+    \x0cR\tchallenge\"J\n\x15ThpCodeEntryCpaceHost\x121\n\x15cpace_host_publ\
+    ic_key\x18\x01\x20\x01(\x0cR\x12cpaceHostPublicKey\"P\n\x17ThpCodeEntryC\
+    paceTrezor\x125\n\x17cpace_trezor_public_key\x18\x01\x20\x01(\x0cR\x14cp\
+    aceTrezorPublicKey\"#\n\x0fThpCodeEntryTag\x12\x10\n\x03tag\x18\x02\x20\
+    \x01(\x0cR\x03tag\",\n\x12ThpCodeEntrySecret\x12\x16\n\x06secret\x18\x01\
+    \x20\x01(\x0cR\x06secret\"\x20\n\x0cThpQrCodeTag\x12\x10\n\x03tag\x18\
+    \x01\x20\x01(\x0cR\x03tag\")\n\x0fThpQrCodeSecret\x12\x16\n\x06secret\
+    \x18\x01\x20\x01(\x0cR\x06secret\"+\n\x17ThpNfcUnidirectionalTag\x12\x10\
+    \n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\"5\n\x1bThpNfcUnideirectionalSecr\
+    et\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"=\n\rCredentialR\
+    eq\x12,\n\x12host_static_pubkey\x18\x01\x20\x01(\x0cR\x10hostStaticPubke\
+    y\"b\n\x0eCredentialResp\x120\n\x14trezor_static_pubkey\x18\x01\x20\x01(\
+    \x0cR\x12trezorStaticPubkey\x12\x1e\n\ncredential\x18\x02\x20\x01(\x0cR\
+    \ncredential\"\x08\n\x06EndReq\"\t\n\x07EndResp*\x8b\x01\n\x10ThpPairing\
+    Method\x12\x1a\n\x16PairingMethod_NoMethod\x10\x01\x12\x1b\n\x17PairingM\
+    ethod_CodeEntry\x10\x02\x12\x18\n\x14PairingMethod_QrCode\x10\x03\x12$\n\
     \x20PairingMethod_NFC_Unidirectional\x10\x04B7\n#com.satoshilabs.trezor.\
     lib.protobufB\x10TrezorMessageThp\
 ";
@@ -943,11 +3274,26 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
     file_descriptor.get(|| {
         let generated_file_descriptor = generated_file_descriptor_lazy.get(|| {
             let mut deps = ::std::vec::Vec::with_capacity(0);
-            let mut messages = ::std::vec::Vec::with_capacity(4);
+            let mut messages = ::std::vec::Vec::with_capacity(19);
             messages.push(ThpDeviceProperties::generated_message_descriptor_data());
             messages.push(ThpHandshakeCompletionReqNoisePayload::generated_message_descriptor_data());
             messages.push(ThpCreateNewSession::generated_message_descriptor_data());
             messages.push(ThpNewSession::generated_message_descriptor_data());
+            messages.push(ThpStartPairingRequest::generated_message_descriptor_data());
+            messages.push(ThpCodeEntryCommitment::generated_message_descriptor_data());
+            messages.push(ThpCodeEntryChallenge::generated_message_descriptor_data());
+            messages.push(ThpCodeEntryCpaceHost::generated_message_descriptor_data());
+            messages.push(ThpCodeEntryCpaceTrezor::generated_message_descriptor_data());
+            messages.push(ThpCodeEntryTag::generated_message_descriptor_data());
+            messages.push(ThpCodeEntrySecret::generated_message_descriptor_data());
+            messages.push(ThpQrCodeTag::generated_message_descriptor_data());
+            messages.push(ThpQrCodeSecret::generated_message_descriptor_data());
+            messages.push(ThpNfcUnidirectionalTag::generated_message_descriptor_data());
+            messages.push(ThpNfcUnideirectionalSecret::generated_message_descriptor_data());
+            messages.push(CredentialReq::generated_message_descriptor_data());
+            messages.push(CredentialResp::generated_message_descriptor_data());
+            messages.push(EndReq::generated_message_descriptor_data());
+            messages.push(EndResp::generated_message_descriptor_data());
             let mut enums = ::std::vec::Vec::with_capacity(1);
             enums.push(ThpPairingMethod::generated_enum_descriptor_data());
             ::protobuf::reflect::GeneratedFileDescriptor::new_generated(

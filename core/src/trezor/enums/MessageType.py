@@ -105,6 +105,16 @@ ThpEndRequest = 1004
 ThpEndResponse = 1005
 ThpCreateNewSession = 1006
 ThpNewSession = 1007
+ThpCodeEntryCommitment = 1016
+ThpCodeEntryChallenge = 1017
+ThpCodeEntryCpaceHost = 1018
+ThpCodeEntryCpaceTrezor = 1019
+ThpCodeEntryTag = 1020
+ThpCodeEntrySecret = 1021
+ThpQrCodeTag = 1024
+ThpQrCodeSecret = 1025
+ThpNfcUnidirectionalTag = 1032
+ThpNfcUnideirectionalSecret = 1033
 if not utils.BITCOIN_ONLY:
     SetU2FCounter = 63
     GetNextU2FCounter = 80

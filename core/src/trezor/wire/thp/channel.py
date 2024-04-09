@@ -7,11 +7,7 @@ from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils
 from trezor.enums import FailureType, MessageType  # , ThpPairingMethod
-from trezor.messages import (
-    Failure,
-    ThpCreateNewSession,
-    ThpNewSession,
-)
+from trezor.messages import Failure, ThpCreateNewSession, ThpNewSession
 from trezor.wire import message_handler
 from trezor.wire.thp import ack_handler, thp_messages
 

@@ -90,6 +90,16 @@ trezor_message_impl! {
     ThpEndResponse => MessageType_ThpEndResponse,
     ThpCreateNewSession => MessageType_ThpCreateNewSession,
     ThpNewSession => MessageType_ThpNewSession,
+    ThpCodeEntryCommitment => MessageType_ThpCodeEntryCommitment,
+    ThpCodeEntryChallenge => MessageType_ThpCodeEntryChallenge,
+    ThpCodeEntryCpaceHost => MessageType_ThpCodeEntryCpaceHost,
+    ThpCodeEntryCpaceTrezor => MessageType_ThpCodeEntryCpaceTrezor,
+    ThpCodeEntryTag => MessageType_ThpCodeEntryTag,
+    ThpCodeEntrySecret => MessageType_ThpCodeEntrySecret,
+    ThpQrCodeTag => MessageType_ThpQrCodeTag,
+    ThpQrCodeSecret => MessageType_ThpQrCodeSecret,
+    ThpNfcUnidirectionalTag => MessageType_ThpNfcUnidirectionalTag,
+    ThpNfcUnideirectionalSecret => MessageType_ThpNfcUnideirectionalSecret,
 }
 
 #[cfg(feature = "binance")]
