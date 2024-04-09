@@ -7986,12 +7986,12 @@ class ThpCredentialResponse(protobuf.MessageType):
         self.credential = credential
 
 
-class EndRequest(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = None
+class ThpEndRequest(protobuf.MessageType):
+    MESSAGE_WIRE_TYPE = 1004
 
 
-class EndResponse(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = None
+class ThpEndResponse(protobuf.MessageType):
+    MESSAGE_WIRE_TYPE = 1005
 
 
 class WebAuthnListResidentCredentials(protobuf.MessageType):
