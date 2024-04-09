@@ -265,7 +265,6 @@ if TYPE_CHECKING:
         SolanaSignTx = 904
         SolanaTxSignature = 905
         ThpStartPairingRequest = 1000
-        ThpStartPairingResponse = 1001
         ThpCredentialRequest = 1002
         ThpCredentialResponse = 1003
         ThpEndRequest = 1004

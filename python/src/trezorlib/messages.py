@@ -273,7 +273,6 @@ class MessageType(IntEnum):
     SolanaSignTx = 904
     SolanaTxSignature = 905
     ThpStartPairingRequest = 1000
-    ThpStartPairingResponse = 1001
     ThpCredentialRequest = 1002
     ThpCredentialResponse = 1003
     ThpEndRequest = 1004
@@ -8028,8 +8027,8 @@ class ThpNfcUnideirectionalSecret(protobuf.MessageType):
         self.secret = secret
 
 
-class CredentialReq(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = None
+class ThpCredentialRequest(protobuf.MessageType):
+    MESSAGE_WIRE_TYPE = 1002
     FIELDS = {
         1: protobuf.Field("host_static_pubkey", "bytes", repeated=False, required=False, default=None),
     }
@@ -8042,8 +8041,8 @@ class CredentialReq(protobuf.MessageType):
         self.host_static_pubkey = host_static_pubkey
 
 
-class CredentialResp(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = None
+class ThpCredentialResponse(protobuf.MessageType):
+    MESSAGE_WIRE_TYPE = 1003
     FIELDS = {
         1: protobuf.Field("trezor_static_pubkey", "bytes", repeated=False, required=False, default=None),
         2: protobuf.Field("credential", "bytes", repeated=False, required=False, default=None),
@@ -8059,12 +8058,12 @@ class CredentialResp(protobuf.MessageType):
         self.credential = credential
 
 
-class EndReq(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = None
+class ThpEndRequest(protobuf.MessageType):
+    MESSAGE_WIRE_TYPE = 1004
 
 
-class EndResp(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = None
+class ThpEndResponse(protobuf.MessageType):
+    MESSAGE_WIRE_TYPE = 1005
 
 
 class WebAuthnListResidentCredentials(protobuf.MessageType):
