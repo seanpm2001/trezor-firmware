@@ -98,7 +98,6 @@ DebugLinkEraseSdCard = 9005
 DebugLinkWatchLayout = 9006
 DebugLinkResetDebugEvents = 9007
 ThpStartPairingRequest = 1000
-ThpStartPairingResponse = 1001
 ThpCredentialRequest = 1002
 ThpCredentialResponse = 1003
 ThpEndRequest = 1004

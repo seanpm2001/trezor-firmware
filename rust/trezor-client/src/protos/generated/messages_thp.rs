@@ -2568,25 +2568,25 @@ impl ::protobuf::reflect::ProtobufValue for ThpNfcUnideirectionalSecret {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
-// @@protoc_insertion_point(message:hw.trezor.messages.thp.CredentialReq)
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCredentialRequest)
 #[derive(PartialEq,Clone,Default,Debug)]
-pub struct CredentialReq {
+pub struct ThpCredentialRequest {
     // message fields
-    // @@protoc_insertion_point(field:hw.trezor.messages.thp.CredentialReq.host_static_pubkey)
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCredentialRequest.host_static_pubkey)
     pub host_static_pubkey: ::std::option::Option<::std::vec::Vec<u8>>,
     // special fields
-    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.CredentialReq.special_fields)
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCredentialRequest.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
-impl<'a> ::std::default::Default for &'a CredentialReq {
-    fn default() -> &'a CredentialReq {
-        <CredentialReq as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a ThpCredentialRequest {
+    fn default() -> &'a ThpCredentialRequest {
+        <ThpCredentialRequest as ::protobuf::Message>::default_instance()
     }
 }
 
-impl CredentialReq {
-    pub fn new() -> CredentialReq {
+impl ThpCredentialRequest {
+    pub fn new() -> ThpCredentialRequest {
         ::std::default::Default::default()
     }
 
@@ -2631,19 +2631,19 @@ impl CredentialReq {
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
             "host_static_pubkey",
-            |m: &CredentialReq| { &m.host_static_pubkey },
-            |m: &mut CredentialReq| { &mut m.host_static_pubkey },
+            |m: &ThpCredentialRequest| { &m.host_static_pubkey },
+            |m: &mut ThpCredentialRequest| { &mut m.host_static_pubkey },
         ));
-        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<CredentialReq>(
-            "CredentialReq",
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCredentialRequest>(
+            "ThpCredentialRequest",
             fields,
             oneofs,
         )
     }
 }
 
-impl ::protobuf::Message for CredentialReq {
-    const NAME: &'static str = "CredentialReq";
+impl ::protobuf::Message for ThpCredentialRequest {
+    const NAME: &'static str = "ThpCredentialRequest";
 
     fn is_initialized(&self) -> bool {
         true
@@ -2691,8 +2691,8 @@ impl ::protobuf::Message for CredentialReq {
         &mut self.special_fields
     }
 
-    fn new() -> CredentialReq {
-        CredentialReq::new()
+    fn new() -> ThpCredentialRequest {
+        ThpCredentialRequest::new()
     }
 
     fn clear(&mut self) {
@@ -2700,8 +2700,8 @@ impl ::protobuf::Message for CredentialReq {
         self.special_fields.clear();
     }
 
-    fn default_instance() -> &'static CredentialReq {
-        static instance: CredentialReq = CredentialReq {
+    fn default_instance() -> &'static ThpCredentialRequest {
+        static instance: ThpCredentialRequest = ThpCredentialRequest {
             host_static_pubkey: ::std::option::Option::None,
             special_fields: ::protobuf::SpecialFields::new(),
         };
@@ -2709,44 +2709,44 @@ impl ::protobuf::Message for CredentialReq {
     }
 }
 
-impl ::protobuf::MessageFull for CredentialReq {
+impl ::protobuf::MessageFull for ThpCredentialRequest {
     fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().message_by_package_relative_name("CredentialReq").unwrap()).clone()
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpCredentialRequest").unwrap()).clone()
     }
 }
 
-impl ::std::fmt::Display for CredentialReq {
+impl ::std::fmt::Display for ThpCredentialRequest {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for CredentialReq {
+impl ::protobuf::reflect::ProtobufValue for ThpCredentialRequest {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
-// @@protoc_insertion_point(message:hw.trezor.messages.thp.CredentialResp)
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCredentialResponse)
 #[derive(PartialEq,Clone,Default,Debug)]
-pub struct CredentialResp {
+pub struct ThpCredentialResponse {
     // message fields
-    // @@protoc_insertion_point(field:hw.trezor.messages.thp.CredentialResp.trezor_static_pubkey)
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCredentialResponse.trezor_static_pubkey)
     pub trezor_static_pubkey: ::std::option::Option<::std::vec::Vec<u8>>,
-    // @@protoc_insertion_point(field:hw.trezor.messages.thp.CredentialResp.credential)
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCredentialResponse.credential)
     pub credential: ::std::option::Option<::std::vec::Vec<u8>>,
     // special fields
-    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.CredentialResp.special_fields)
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCredentialResponse.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
-impl<'a> ::std::default::Default for &'a CredentialResp {
-    fn default() -> &'a CredentialResp {
-        <CredentialResp as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a ThpCredentialResponse {
+    fn default() -> &'a ThpCredentialResponse {
+        <ThpCredentialResponse as ::protobuf::Message>::default_instance()
     }
 }
 
-impl CredentialResp {
-    pub fn new() -> CredentialResp {
+impl ThpCredentialResponse {
+    pub fn new() -> ThpCredentialResponse {
         ::std::default::Default::default()
     }
 
@@ -2827,24 +2827,24 @@ impl CredentialResp {
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
             "trezor_static_pubkey",
-            |m: &CredentialResp| { &m.trezor_static_pubkey },
-            |m: &mut CredentialResp| { &mut m.trezor_static_pubkey },
+            |m: &ThpCredentialResponse| { &m.trezor_static_pubkey },
+            |m: &mut ThpCredentialResponse| { &mut m.trezor_static_pubkey },
         ));
         fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
             "credential",
-            |m: &CredentialResp| { &m.credential },
-            |m: &mut CredentialResp| { &mut m.credential },
+            |m: &ThpCredentialResponse| { &m.credential },
+            |m: &mut ThpCredentialResponse| { &mut m.credential },
         ));
-        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<CredentialResp>(
-            "CredentialResp",
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCredentialResponse>(
+            "ThpCredentialResponse",
             fields,
             oneofs,
         )
     }
 }
 
-impl ::protobuf::Message for CredentialResp {
-    const NAME: &'static str = "CredentialResp";
+impl ::protobuf::Message for ThpCredentialResponse {
+    const NAME: &'static str = "ThpCredentialResponse";
 
     fn is_initialized(&self) -> bool {
         true
@@ -2901,8 +2901,8 @@ impl ::protobuf::Message for CredentialResp {
         &mut self.special_fields
     }
 
-    fn new() -> CredentialResp {
-        CredentialResp::new()
+    fn new() -> ThpCredentialResponse {
+        ThpCredentialResponse::new()
     }
 
     fn clear(&mut self) {
@@ -2911,8 +2911,8 @@ impl ::protobuf::Message for CredentialResp {
         self.special_fields.clear();
     }
 
-    fn default_instance() -> &'static CredentialResp {
-        static instance: CredentialResp = CredentialResp {
+    fn default_instance() -> &'static ThpCredentialResponse {
+        static instance: ThpCredentialResponse = ThpCredentialResponse {
             trezor_static_pubkey: ::std::option::Option::None,
             credential: ::std::option::Option::None,
             special_fields: ::protobuf::SpecialFields::new(),
@@ -2921,55 +2921,55 @@ impl ::protobuf::Message for CredentialResp {
     }
 }
 
-impl ::protobuf::MessageFull for CredentialResp {
+impl ::protobuf::MessageFull for ThpCredentialResponse {
     fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().message_by_package_relative_name("CredentialResp").unwrap()).clone()
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpCredentialResponse").unwrap()).clone()
     }
 }
 
-impl ::std::fmt::Display for CredentialResp {
+impl ::std::fmt::Display for ThpCredentialResponse {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for CredentialResp {
+impl ::protobuf::reflect::ProtobufValue for ThpCredentialResponse {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
-// @@protoc_insertion_point(message:hw.trezor.messages.thp.EndReq)
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpEndRequest)
 #[derive(PartialEq,Clone,Default,Debug)]
-pub struct EndReq {
+pub struct ThpEndRequest {
     // special fields
-    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.EndReq.special_fields)
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpEndRequest.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
-impl<'a> ::std::default::Default for &'a EndReq {
-    fn default() -> &'a EndReq {
-        <EndReq as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a ThpEndRequest {
+    fn default() -> &'a ThpEndRequest {
+        <ThpEndRequest as ::protobuf::Message>::default_instance()
     }
 }
 
-impl EndReq {
-    pub fn new() -> EndReq {
+impl ThpEndRequest {
+    pub fn new() -> ThpEndRequest {
         ::std::default::Default::default()
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
         let mut fields = ::std::vec::Vec::with_capacity(0);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
-        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<EndReq>(
-            "EndReq",
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpEndRequest>(
+            "ThpEndRequest",
             fields,
             oneofs,
         )
     }
 }
 
-impl ::protobuf::Message for EndReq {
-    const NAME: &'static str = "EndReq";
+impl ::protobuf::Message for ThpEndRequest {
+    const NAME: &'static str = "ThpEndRequest";
 
     fn is_initialized(&self) -> bool {
         true
@@ -3008,71 +3008,71 @@ impl ::protobuf::Message for EndReq {
         &mut self.special_fields
     }
 
-    fn new() -> EndReq {
-        EndReq::new()
+    fn new() -> ThpEndRequest {
+        ThpEndRequest::new()
     }
 
     fn clear(&mut self) {
         self.special_fields.clear();
     }
 
-    fn default_instance() -> &'static EndReq {
-        static instance: EndReq = EndReq {
+    fn default_instance() -> &'static ThpEndRequest {
+        static instance: ThpEndRequest = ThpEndRequest {
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
     }
 }
 
-impl ::protobuf::MessageFull for EndReq {
+impl ::protobuf::MessageFull for ThpEndRequest {
     fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().message_by_package_relative_name("EndReq").unwrap()).clone()
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpEndRequest").unwrap()).clone()
     }
 }
 
-impl ::std::fmt::Display for EndReq {
+impl ::std::fmt::Display for ThpEndRequest {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for EndReq {
+impl ::protobuf::reflect::ProtobufValue for ThpEndRequest {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
-// @@protoc_insertion_point(message:hw.trezor.messages.thp.EndResp)
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpEndResponse)
 #[derive(PartialEq,Clone,Default,Debug)]
-pub struct EndResp {
+pub struct ThpEndResponse {
     // special fields
-    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.EndResp.special_fields)
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpEndResponse.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
-impl<'a> ::std::default::Default for &'a EndResp {
-    fn default() -> &'a EndResp {
-        <EndResp as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a ThpEndResponse {
+    fn default() -> &'a ThpEndResponse {
+        <ThpEndResponse as ::protobuf::Message>::default_instance()
     }
 }
 
-impl EndResp {
-    pub fn new() -> EndResp {
+impl ThpEndResponse {
+    pub fn new() -> ThpEndResponse {
         ::std::default::Default::default()
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
         let mut fields = ::std::vec::Vec::with_capacity(0);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
-        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<EndResp>(
-            "EndResp",
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpEndResponse>(
+            "ThpEndResponse",
             fields,
             oneofs,
         )
     }
 }
 
-impl ::protobuf::Message for EndResp {
-    const NAME: &'static str = "EndResp";
+impl ::protobuf::Message for ThpEndResponse {
+    const NAME: &'static str = "ThpEndResponse";
 
     fn is_initialized(&self) -> bool {
         true
@@ -3111,36 +3111,36 @@ impl ::protobuf::Message for EndResp {
         &mut self.special_fields
     }
 
-    fn new() -> EndResp {
-        EndResp::new()
+    fn new() -> ThpEndResponse {
+        ThpEndResponse::new()
     }
 
     fn clear(&mut self) {
         self.special_fields.clear();
     }
 
-    fn default_instance() -> &'static EndResp {
-        static instance: EndResp = EndResp {
+    fn default_instance() -> &'static ThpEndResponse {
+        static instance: ThpEndResponse = ThpEndResponse {
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
     }
 }
 
-impl ::protobuf::MessageFull for EndResp {
+impl ::protobuf::MessageFull for ThpEndResponse {
     fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().message_by_package_relative_name("EndResp").unwrap()).clone()
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpEndResponse").unwrap()).clone()
     }
 }
 
-impl ::std::fmt::Display for EndResp {
+impl ::std::fmt::Display for ThpEndResponse {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for EndResp {
+impl ::protobuf::reflect::ProtobufValue for ThpEndResponse {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
@@ -3248,15 +3248,15 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x01\x20\x01(\x0cR\x03tag\")\n\x0fThpQrCodeSecret\x12\x16\n\x06secret\
     \x18\x01\x20\x01(\x0cR\x06secret\"+\n\x17ThpNfcUnidirectionalTag\x12\x10\
     \n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\"5\n\x1bThpNfcUnideirectionalSecr\
-    et\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"=\n\rCredentialR\
-    eq\x12,\n\x12host_static_pubkey\x18\x01\x20\x01(\x0cR\x10hostStaticPubke\
-    y\"b\n\x0eCredentialResp\x120\n\x14trezor_static_pubkey\x18\x01\x20\x01(\
-    \x0cR\x12trezorStaticPubkey\x12\x1e\n\ncredential\x18\x02\x20\x01(\x0cR\
-    \ncredential\"\x08\n\x06EndReq\"\t\n\x07EndResp*\x8b\x01\n\x10ThpPairing\
-    Method\x12\x1a\n\x16PairingMethod_NoMethod\x10\x01\x12\x1b\n\x17PairingM\
-    ethod_CodeEntry\x10\x02\x12\x18\n\x14PairingMethod_QrCode\x10\x03\x12$\n\
-    \x20PairingMethod_NFC_Unidirectional\x10\x04B7\n#com.satoshilabs.trezor.\
-    lib.protobufB\x10TrezorMessageThp\
+    et\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"D\n\x14ThpCreden\
+    tialRequest\x12,\n\x12host_static_pubkey\x18\x01\x20\x01(\x0cR\x10hostSt\
+    aticPubkey\"i\n\x15ThpCredentialResponse\x120\n\x14trezor_static_pubkey\
+    \x18\x01\x20\x01(\x0cR\x12trezorStaticPubkey\x12\x1e\n\ncredential\x18\
+    \x02\x20\x01(\x0cR\ncredential\"\x0f\n\rThpEndRequest\"\x10\n\x0eThpEndR\
+    esponse*\x8b\x01\n\x10ThpPairingMethod\x12\x1a\n\x16PairingMethod_NoMeth\
+    od\x10\x01\x12\x1b\n\x17PairingMethod_CodeEntry\x10\x02\x12\x18\n\x14Pai\
+    ringMethod_QrCode\x10\x03\x12$\n\x20PairingMethod_NFC_Unidirectional\x10\
+    \x04B7\n#com.satoshilabs.trezor.lib.protobufB\x10TrezorMessageThp\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
@@ -3290,10 +3290,10 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
             messages.push(ThpQrCodeSecret::generated_message_descriptor_data());
             messages.push(ThpNfcUnidirectionalTag::generated_message_descriptor_data());
             messages.push(ThpNfcUnideirectionalSecret::generated_message_descriptor_data());
-            messages.push(CredentialReq::generated_message_descriptor_data());
-            messages.push(CredentialResp::generated_message_descriptor_data());
-            messages.push(EndReq::generated_message_descriptor_data());
-            messages.push(EndResp::generated_message_descriptor_data());
+            messages.push(ThpCredentialRequest::generated_message_descriptor_data());
+            messages.push(ThpCredentialResponse::generated_message_descriptor_data());
+            messages.push(ThpEndRequest::generated_message_descriptor_data());
+            messages.push(ThpEndResponse::generated_message_descriptor_data());
             let mut enums = ::std::vec::Vec::with_capacity(1);
             enums.push(ThpPairingMethod::generated_enum_descriptor_data());
             ::protobuf::reflect::GeneratedFileDescriptor::new_generated(

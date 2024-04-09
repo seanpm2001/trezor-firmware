@@ -6,7 +6,6 @@ option java_package = "com.satoshilabs.trezor.lib.protobuf";
 option java_outer_classname = "TrezorMessageThp";
 
 
-
 /**
  * Numeric identifiers of pairing methods.
  * @embed
@@ -110,7 +109,8 @@ message ThpCodeEntryTag {
 
 /**
  * Response: Trezor finishes the CPACE protocol.
- * @end
+ * @next ThpCredentialRequest
+ * @next ThpEndRequest
  */
 message ThpCodeEntrySecret {
     optional bytes secret = 1;    // Trezor's secret
@@ -126,7 +126,8 @@ message ThpQrCodeTag {
 
 /**
  * Response: Trezor sends the QR secret.
- * @end
+ * @next ThpCredentialRequest
+ * @next ThpEndRequest
  */
 message ThpQrCodeSecret {
     optional bytes secret = 1;    // Trezor's secret
@@ -142,7 +143,8 @@ message ThpNfcUnidirectionalTag {
 
 /**
  * Response: Trezor sends the Unidirectioal NFC secret.
- * @end
+ * @next ThpCredentialRequest
+ * @next ThpEndRequest
  */
 message ThpNfcUnideirectionalSecret {
     optional bytes secret = 1;    // Trezor's secret
@@ -160,7 +162,7 @@ message ThpCredentialRequest {
 /**
  * Response: Trezor issues a new pairing credential.
  * @next ThpCredentialRequest
- * @next EndRequest
+ * @next ThpEndRequest
  */
 message ThpCredentialResponse {
     optional bytes trezor_static_pubkey = 1; // Trezor's static public key used in the handshake.
@@ -170,12 +172,12 @@ message ThpCredentialResponse {
 /**
  * Request: Host requests transition to the encrypted traffic phase.
  * @start
- * @next EndResponse
+ * @next ThpEndResponse
  */
-message EndRequest {}
+message ThpEndRequest {}
 
 /**
  * Response: Trezor approves transition to the encrypted traffic phase
  * @end
  */
-message EndResponse {}
+message ThpEndResponse {}
