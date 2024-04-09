@@ -23,15 +23,16 @@ reads the message's header. When the message type is known the first handler is 
 
 """
 
-from micropython import const
 from typing import TYPE_CHECKING
 
-from storage.cache_common import InvalidSessionError
 from trezor import log, loop, protobuf, utils
-from trezor.enums import FailureType
-from trezor.messages import Failure
 from trezor.wire import context, message_handler, protocol_common, thp_v1
-from trezor.wire.errors import DataError, Error
+from trezor.wire.message_handler import (
+    AVOID_RESTARTING_FOR,
+    WIRE_BUFFER,
+    WIRE_BUFFER_DEBUG,
+    failure,
+)
 
 # Import all errors into namespace, so that `wire.Error` is available from
 # other packages.
@@ -43,7 +44,6 @@ if TYPE_CHECKING:
     from typing import (
         Any,
         Callable,
-        Container,
         Coroutine,
         TypeVar,
     )
@@ -64,35 +64,6 @@ def setup(iface: WireInterface, is_debug_session: bool = False) -> None:
         loop.schedule(handle_thp_session(iface, is_debug_session))
     else:
         loop.schedule(handle_session(iface, is_debug_session))
-
-
-def wrap_protobuf_load(
-    buffer: bytes,
-    expected_type: type[LoadedMessageType],
-) -> LoadedMessageType:
-    try:
-        msg = protobuf.decode(buffer, expected_type, EXPERIMENTAL_ENABLED)
-        if __debug__ and utils.EMULATOR:
-            log.debug(
-                __name__, "received message contents:\n%s", utils.dump_protobuf(msg)
-            )
-        return msg
-    except Exception as e:
-        if __debug__:
-            log.exception(__name__, e)
-        if e.args:
-            raise DataError("Failed to decode message: " + " ".join(e.args))
-        else:
-            raise DataError("Failed to decode message")
-
-
-_PROTOBUF_BUFFER_SIZE = const(8192)
-
-WIRE_BUFFER = bytearray(_PROTOBUF_BUFFER_SIZE)
-
-if __debug__:
-    PROTOBUF_BUFFER_SIZE_DEBUG = 1024
-    WIRE_BUFFER_DEBUG = bytearray(PROTOBUF_BUFFER_SIZE_DEBUG)
 
 
 async def handle_thp_session(iface: WireInterface, is_debug_session: bool = False):
@@ -195,33 +166,3 @@ async def handle_session(iface: WireInterface, is_debug_session: bool = False) -
             # loop.clear() above.
             if __debug__:
                 log.exception(__name__, exc)
-
-
-def _find_handler_placeholder(iface: WireInterface, msg_type: int) -> Handler | None:
-    """Placeholder handler lookup before a proper one is registered."""
-    return None
-
-
-find_handler = _find_handler_placeholder
-AVOID_RESTARTING_FOR: Container[int] = ()
-
-
-def failure(exc: BaseException) -> Failure:
-    if isinstance(exc, Error):
-        return Failure(code=exc.code, message=exc.message)
-    elif isinstance(exc, loop.TaskClosed):
-        return Failure(code=FailureType.ActionCancelled, message="Cancelled")
-    elif isinstance(exc, InvalidSessionError):
-        return Failure(code=FailureType.InvalidSession, message="Invalid session")
-    else:
-        # NOTE: when receiving generic `FirmwareError` on non-debug build,
-        # change the `if __debug__` to `if True` to get the full error message.
-        if __debug__:
-            message = str(exc)
-        else:
-            message = "Firmware error"
-        return Failure(code=FailureType.FirmwareError, message=message)
-
-
-def unexpected_message() -> Failure:
-    return Failure(code=FailureType.UnexpectedMessage, message="Unexpected message")
