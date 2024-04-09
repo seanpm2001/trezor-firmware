@@ -30,7 +30,10 @@ async def recovery_process() -> Success:
     import storage
     from trezor.enums import MessageType
 
-    wire.AVOID_RESTARTING_FOR = (MessageType.Initialize, MessageType.GetFeatures)
+    wire.message_handler.AVOID_RESTARTING_FOR = (
+        MessageType.Initialize,
+        MessageType.GetFeatures,
+    )
     try:
         return await _continue_recovery_process()
     except recover.RecoveryAborted:

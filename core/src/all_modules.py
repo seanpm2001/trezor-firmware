@@ -229,6 +229,8 @@ trezor.wire.thp.checksum
 import trezor.wire.thp.checksum
 trezor.wire.thp.crypto
 import trezor.wire.thp.crypto
+trezor.wire.thp.pairing_context
+import trezor.wire.thp.pairing_context
 trezor.wire.thp.session_context
 import trezor.wire.thp.session_context
 trezor.wire.thp.thp_messages
@@ -409,6 +411,12 @@ apps.misc.get_firmware_hash
 import apps.misc.get_firmware_hash
 apps.misc.sign_identity
 import apps.misc.sign_identity
+apps.thp
+import apps.thp
+apps.thp.create_session
+import apps.thp.create_session
+apps.thp.pairing
+import apps.thp.pairing
 apps.workflow_handlers
 import apps.workflow_handlers
 

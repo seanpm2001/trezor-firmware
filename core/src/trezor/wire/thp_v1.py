@@ -22,7 +22,7 @@ _MAX_CID_REQ_PAYLOAD_LENGTH = const(12)  # TODO set to reasonable value
 _BUFFER: bytearray
 _BUFFER_LOCK = None
 
-_CHANNEL_CONTEXTS: dict[int, Channel] = {}
+CHANNELS: dict[int, Channel] = {}
 
 
 def set_buffer(buffer):
@@ -31,9 +31,9 @@ def set_buffer(buffer):
 
 
 async def thp_main_loop(iface: WireInterface, is_debug_session=False):
-    global _CHANNEL_CONTEXTS
+    global CHANNELS
     global _BUFFER
-    _CHANNEL_CONTEXTS = load_cached_channels(_BUFFER)
+    CHANNELS = load_cached_channels(_BUFFER)
 
     read = loop.wait(iface.iface_num() | io.POLL_READ)
 
@@ -55,8 +55,8 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
                 await _handle_broadcast(iface, ctrl_byte, packet)
                 continue
 
-            if cid in _CHANNEL_CONTEXTS:
-                channel = _CHANNEL_CONTEXTS[cid]
+            if cid in CHANNELS:
+                channel = CHANNELS[cid]
                 if channel is None:
                     # TODO send error message to wire
                     raise ThpError("Invalid state of a channel")
@@ -94,7 +94,7 @@ async def _handle_broadcast(
 
     new_context: Channel = Channel.create_new_channel(iface, _BUFFER)
     cid = int.from_bytes(new_context.channel_id, "big")
-    _CHANNEL_CONTEXTS[cid] = new_context
+    CHANNELS[cid] = new_context
 
     response_data = thp_messages.get_channel_allocation_response(
         nonce, new_context.channel_id

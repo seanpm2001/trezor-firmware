@@ -14,7 +14,7 @@ class ChannelState(IntEnum):
     TP2 = 4
     TP3 = 5
     TP4 = 6
-    TP5 = 7
+    TC1 = 7
     ENCRYPTED_TRANSPORT = 8
 
 

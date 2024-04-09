@@ -125,7 +125,8 @@ class CodecContext(Context):
             )
 
         # look up the protobuf class and parse the message
-        from . import wrap_protobuf_load
+        from . import message_handler  # noqa: F401
+        from .message_handler import wrap_protobuf_load
 
         return wrap_protobuf_load(msg.data, expected_type)
 
