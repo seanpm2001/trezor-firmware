@@ -378,7 +378,6 @@ enum MessageType {
 
     // THP
     MessageType_ThpStartPairingRequest = 1000 [(bitcoin_only) = true, (wire_in) = true];
-    MessageType_ThpStartPairingResponse = 1001 [(bitcoin_only) = true, (wire_out) = true];
     MessageType_ThpCredentialRequest = 1002 [(bitcoin_only) = true, (wire_in) = true];
     MessageType_ThpCredentialResponse = 1003 [(bitcoin_only) = true, (wire_out) = true];
     MessageType_ThpEndRequest = 1004 [(bitcoin_only) = true, (wire_in) = true];
@@ -396,3 +395,5 @@ enum MessageType {
     MessageType_ThpNfcUnidirectionalTag = 1032[(bitcoin_only)=true,(wire_in)=true];
     MessageType_ThpNfcUnideirectionalSecret = 1033[(bitcoin_only)=true,(wire_in)=true];
 }
+
+
