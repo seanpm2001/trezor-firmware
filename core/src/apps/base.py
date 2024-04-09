@@ -269,7 +269,7 @@ async def handle_DoPreauthorized(msg: DoPreauthorized) -> protobuf.MessageType:
         get_context().iface, req.MESSAGE_WIRE_TYPE
     )
     if handler is None:
-        return wire.unexpected_message()
+        return wire.message_handler.unexpected_message()
 
     return await handler(req, authorization.get())  # type: ignore [Expected 1 positional argument]
 

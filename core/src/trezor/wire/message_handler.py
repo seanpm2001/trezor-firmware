@@ -86,15 +86,20 @@ async def handle_single_message(
             msg_type = f"{msg.type} - unknown message type"
         if ctx.channel_id is not None:
             sid = int.from_bytes(ctx.channel_id, "big")
+            log.debug(
+                __name__,
+                "%s:%x receive: <%s>",
+                ctx.iface.iface_num(),
+                sid,
+                msg_type,
+            )
         else:
-            sid = -1
-        log.debug(
-            __name__,
-            "%s:%x receive: <%s>",
-            ctx.iface.iface_num(),
-            sid,
-            msg_type,
-        )
+            log.debug(
+                __name__,
+                "%s:unknown_sid receive: <%s>",
+                ctx.iface.iface_num(),
+                msg_type,
+            )
 
     res_msg: protobuf.MessageType | None = None
 

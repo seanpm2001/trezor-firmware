@@ -3,7 +3,8 @@ from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 from storage import cache_thp
 from storage.cache_thp import SessionThpCache
 from trezor import log, loop, protobuf
-from trezor.wire import AVOID_RESTARTING_FOR, failure, message_handler, protocol_common
+from trezor.wire import message_handler, protocol_common
+from trezor.wire.message_handler import AVOID_RESTARTING_FOR, failure
 
 from ..protocol_common import Context, MessageWithType
 from . import SessionState
@@ -34,7 +35,7 @@ class SessionContext(Context):
                 "The session has different channel id than the provided channel context!"
             )
         super().__init__(channel.iface, channel.channel_id)
-        self.channel_context = channel
+        self.channel = channel
         self.session_cache = session_cache
         self.session_id = int.from_bytes(session_cache.session_id, "big")
         self.incoming_message = loop.chan()
@@ -132,7 +133,7 @@ class SessionContext(Context):
         return message_handler.wrap_protobuf_load(message.data, expected_type)
 
     async def write(self, msg: protobuf.MessageType) -> None:
-        return await self.channel_context.write(msg, self.session_id)
+        return await self.channel.write(msg, self.session_id)
 
     # ACCESS TO SESSION DATA
 
