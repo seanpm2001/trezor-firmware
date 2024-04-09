@@ -6318,7 +6318,7 @@ if TYPE_CHECKING:
         def is_type_of(cls, msg: Any) -> TypeGuard["ThpNfcUnideirectionalSecret"]:
             return isinstance(msg, cls)
 
-    class CredentialReq(protobuf.MessageType):
+    class ThpCredentialRequest(protobuf.MessageType):
         host_static_pubkey: "bytes | None"
 
         def __init__(
@@ -6329,10 +6329,10 @@ if TYPE_CHECKING:
             pass
 
         @classmethod
-        def is_type_of(cls, msg: Any) -> TypeGuard["CredentialReq"]:
+        def is_type_of(cls, msg: Any) -> TypeGuard["ThpCredentialRequest"]:
             return isinstance(msg, cls)
 
-    class CredentialResp(protobuf.MessageType):
+    class ThpCredentialResponse(protobuf.MessageType):
         trezor_static_pubkey: "bytes | None"
         credential: "bytes | None"
 
@@ -6345,19 +6345,19 @@ if TYPE_CHECKING:
             pass
 
         @classmethod
-        def is_type_of(cls, msg: Any) -> TypeGuard["CredentialResp"]:
+        def is_type_of(cls, msg: Any) -> TypeGuard["ThpCredentialResponse"]:
             return isinstance(msg, cls)
 
-    class EndReq(protobuf.MessageType):
+    class EndRequest(protobuf.MessageType):
 
         @classmethod
-        def is_type_of(cls, msg: Any) -> TypeGuard["EndReq"]:
+        def is_type_of(cls, msg: Any) -> TypeGuard["EndRequest"]:
             return isinstance(msg, cls)
 
-    class EndResp(protobuf.MessageType):
+    class EndResponse(protobuf.MessageType):
 
         @classmethod
-        def is_type_of(cls, msg: Any) -> TypeGuard["EndResp"]:
+        def is_type_of(cls, msg: Any) -> TypeGuard["EndResponse"]:
             return isinstance(msg, cls)
 
     class WebAuthnListResidentCredentials(protobuf.MessageType):
