@@ -1,12 +1,12 @@
 from trezor import log, loop
 from trezor.messages import ThpCreateNewSession, ThpNewSession
 from trezor.wire.thp import SessionState, channel
-from trezor.wire.thp.session_context import SessionContext
 
 
 async def create_new_session(
     channel: channel.Channel, message: ThpCreateNewSession
 ) -> ThpNewSession:
+    from trezor.wire.thp.session_context import SessionContext
 
     session = SessionContext.create_new_session(channel)
     session.set_session_state(SessionState.ALLOCATED)
