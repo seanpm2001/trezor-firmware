@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING  # pyright:ignore[reportShadowedImports]
 import usb
 from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH, ChannelCache
-from trezor import log, loop, protobuf, utils
+from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType, MessageType  # , ThpPairingMethod
 from trezor.messages import Failure
 from trezor.wire import message_handler
@@ -534,8 +534,17 @@ class Channel(Context):
             try:
                 await self.waiting_for_ack_timeout
             except loop.TaskClosed:
-                THP.sync_set_send_bit_to_opposite(self.channel_cache)
                 break
+
+        THP.sync_set_send_bit_to_opposite(self.channel_cache)
+
+        # Let the main loop be restarted and clear loop, if there is no other
+        # workflow and the state is ENCRYPTED_TRANSPORT
+        if (
+            not workflow.tasks
+            and self.get_channel_state() is ChannelState.ENCRYPTED_TRANSPORT
+        ):
+            loop.clear()
 
     async def _wait_for_ack(self) -> None:
         await loop.sleep(1000)
