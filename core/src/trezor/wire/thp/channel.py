@@ -406,10 +406,8 @@ class Channel(Context):
                 message.passphrase,
             )
         # await thp_messages.handle_CreateNewSession(message)
-        if message.passphrase is not None:
-            new_session_id: int = self.create_new_session(message.passphrase)
-        else:
-            new_session_id: int = self.create_new_session()
+        new_session_id: int = self.create_new_session(message.passphrase)
+
         # TODO reuse existing buffer and compute size dynamically
         bufferrone = bytearray(5)
 
@@ -604,7 +602,7 @@ class Channel(Context):
 
     def create_new_session(
         self,
-        passphrase="",
+        passphrase: str | None,
     ) -> int:
         if __debug__:
             log.debug(__name__, " create_new_session")
