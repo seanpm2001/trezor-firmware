@@ -835,7 +835,7 @@ impl ::protobuf::reflect::ProtobufValue for ThpNewSession {
 pub struct ThpStartPairingRequest {
     // message fields
     // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpStartPairingRequest.host_name)
-    pub host_name: ::std::option::Option<::std::vec::Vec<u8>>,
+    pub host_name: ::std::option::Option<::std::string::String>,
     // special fields
     // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpStartPairingRequest.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -852,12 +852,12 @@ impl ThpStartPairingRequest {
         ::std::default::Default::default()
     }
 
-    // optional bytes host_name = 1;
+    // optional string host_name = 1;
 
-    pub fn host_name(&self) -> &[u8] {
+    pub fn host_name(&self) -> &str {
         match self.host_name.as_ref() {
             Some(v) => v,
-            None => &[],
+            None => "",
         }
     }
 
@@ -870,22 +870,22 @@ impl ThpStartPairingRequest {
     }
 
     // Param is passed by value, moved
-    pub fn set_host_name(&mut self, v: ::std::vec::Vec<u8>) {
+    pub fn set_host_name(&mut self, v: ::std::string::String) {
         self.host_name = ::std::option::Option::Some(v);
     }
 
     // Mutable pointer to the field.
     // If field is not initialized, it is initialized with default value first.
-    pub fn mut_host_name(&mut self) -> &mut ::std::vec::Vec<u8> {
+    pub fn mut_host_name(&mut self) -> &mut ::std::string::String {
         if self.host_name.is_none() {
-            self.host_name = ::std::option::Option::Some(::std::vec::Vec::new());
+            self.host_name = ::std::option::Option::Some(::std::string::String::new());
         }
         self.host_name.as_mut().unwrap()
     }
 
     // Take field
-    pub fn take_host_name(&mut self) -> ::std::vec::Vec<u8> {
-        self.host_name.take().unwrap_or_else(|| ::std::vec::Vec::new())
+    pub fn take_host_name(&mut self) -> ::std::string::String {
+        self.host_name.take().unwrap_or_else(|| ::std::string::String::new())
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
@@ -915,7 +915,7 @@ impl ::protobuf::Message for ThpStartPairingRequest {
         while let Some(tag) = is.read_raw_tag_or_eof()? {
             match tag {
                 10 => {
-                    self.host_name = ::std::option::Option::Some(is.read_bytes()?);
+                    self.host_name = ::std::option::Option::Some(is.read_string()?);
                 },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
@@ -930,7 +930,7 @@ impl ::protobuf::Message for ThpStartPairingRequest {
     fn compute_size(&self) -> u64 {
         let mut my_size = 0;
         if let Some(v) = self.host_name.as_ref() {
-            my_size += ::protobuf::rt::bytes_size(1, &v);
+            my_size += ::protobuf::rt::string_size(1, &v);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
@@ -939,7 +939,7 @@ impl ::protobuf::Message for ThpStartPairingRequest {
 
     fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
         if let Some(v) = self.host_name.as_ref() {
-            os.write_bytes(1, v)?;
+            os.write_string(1, v)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -3236,9 +3236,9 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\x1e\n\npassphrase\x18\x01\x20\x01(\tR\npassphrase\x12\x1b\n\ton_dev\
     ice\x18\x02\x20\x01(\x08R\x08onDevice\"5\n\rThpNewSession\x12$\n\x0enew_\
     session_id\x18\x01\x20\x01(\rR\x0cnewSessionId\"5\n\x16ThpStartPairingRe\
-    quest\x12\x1b\n\thost_name\x18\x01\x20\x01(\x0cR\x08hostName\"8\n\x16Thp\
-    CodeEntryCommitment\x12\x1e\n\ncommitment\x18\x01\x20\x01(\x0cR\ncommitm\
-    ent\"5\n\x15ThpCodeEntryChallenge\x12\x1c\n\tchallenge\x18\x01\x20\x01(\
+    quest\x12\x1b\n\thost_name\x18\x01\x20\x01(\tR\x08hostName\"8\n\x16ThpCo\
+    deEntryCommitment\x12\x1e\n\ncommitment\x18\x01\x20\x01(\x0cR\ncommitmen\
+    t\"5\n\x15ThpCodeEntryChallenge\x12\x1c\n\tchallenge\x18\x01\x20\x01(\
     \x0cR\tchallenge\"J\n\x15ThpCodeEntryCpaceHost\x121\n\x15cpace_host_publ\
     ic_key\x18\x01\x20\x01(\x0cR\x12cpaceHostPublicKey\"P\n\x17ThpCodeEntryC\
     paceTrezor\x125\n\x17cpace_trezor_public_key\x18\x01\x20\x01(\x0cR\x14cp\

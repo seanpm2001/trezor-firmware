@@ -7,7 +7,7 @@ from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType, MessageType  # , ThpPairingMethod
-from trezor.messages import Failure
+from trezor.messages import Failure, ThpDeviceProperties
 from trezor.wire import message_handler
 from trezor.wire.thp import ack_handler, thp_messages
 from trezor.wire.thp.handler_provider import get_handler
@@ -61,9 +61,7 @@ class Channel(Context):
         self.is_cont_packet_expected: bool = False
         self.expected_payload_length: int = 0
         self.bytes_read: int = 0
-        self.selected_pairing_methods = (
-            []
-        )  # TODO better  # ThpPairingMethod.PairingMethod_NoMethod
+        self.selected_pairing_methods = []
         from trezor.wire.thp.session_context import load_cached_sessions
 
         self.connection_context = None
@@ -300,6 +298,22 @@ class Channel(Context):
             + TAG_LENGTH : message_length
             - CHECKSUM_LENGTH
         ]
+
+        device_properties = thp_messages.decode_message(
+            self.buffer[
+                INIT_DATA_OFFSET
+                + KEY_LENGTH
+                + TAG_LENGTH : message_length
+                - CHECKSUM_LENGTH
+                - TAG_LENGTH
+            ],
+            0,
+            "ThpDeviceProperties",
+        )
+        if TYPE_CHECKING:
+            assert isinstance(device_properties, ThpDeviceProperties)
+        for i in device_properties.pairing_methods:
+            self.selected_pairing_methods.append(i)
         if __debug__:
             log.debug(
                 __name__,
@@ -308,13 +322,20 @@ class Channel(Context):
                 utils.get_bytes_as_str(handshake_completion_request_noise_payload),
             )
 
+        paired: bool = False  # TODO should be output from credential check
+
         # send hanshake completion response
         loop.schedule(
             self._write_encrypted_payload_loop(
-                HANDSHAKE_COMP_RES, thp_messages.get_handshake_completion_response()
+                HANDSHAKE_COMP_RES,
+                thp_messages.get_handshake_completion_response(paired=paired),
             )
         )
-        self.set_channel_state(ChannelState.ENCRYPTED_TRANSPORT)
+        # TODO add credential recognition
+        if paired:
+            self.set_channel_state(ChannelState.ENCRYPTED_TRANSPORT)
+        else:
+            self.set_channel_state(ChannelState.TP1)
 
     async def _handle_state_ENCRYPTED_TRANSPORT(self, message_length: int) -> None:
         if __debug__:
@@ -354,7 +375,11 @@ class Channel(Context):
 
         if self.connection_context is None:
             self.connection_context = PairingContext(self)
+            loop.schedule(self.connection_context.handle())
 
+        print("TEST selected methods")
+        for i in self.selected_pairing_methods:
+            print("method:", i)
         self._decrypt_buffer(message_length)
 
         message_type = ustruct.unpack(

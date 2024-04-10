@@ -1,7 +1,7 @@
 import ustruct  # pyright:ignore[reportMissingModuleSource]
 
 from storage.cache_thp import BROADCAST_CHANNEL_ID
-from trezor import protobuf
+from trezor import log, protobuf
 
 from .. import message_handler
 from ..protocol_common import Message
@@ -90,16 +90,27 @@ def get_handshake_init_response() -> bytes:
     return b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x30\x31\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x20\x21\x22\x23\x24\x25\x26\x27\x28\x29\x30\x31\x32\x33\x34\x35\x36\x37\x38\x39\x40\x41\x42\x43\x44\x45\x46\x47\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15"
 
 
-def get_handshake_completion_response() -> bytes:
+def get_handshake_completion_response(paired: bool) -> bytes:
+    if paired:
+        return (
+            TREZOR_STATE_PAIRED
+            + b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15"
+        )
     return (
-        TREZOR_STATE_PAIRED
+        TREZOR_STATE_UNPAIRED
         + b"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x10\x11\x12\x13\x14\x15"
     )
 
 
-def decode_message(buffer: bytes, msg_type: int) -> protobuf.MessageType:
-    print("decode message")
-    expected_type = protobuf.type_for_wire(msg_type)
+def decode_message(
+    buffer: bytes, msg_type: int, message_name: str | None = None
+) -> protobuf.MessageType:
+    if __debug__:
+        log.debug(__name__, "decode message")
+    if message_name is not None:
+        expected_type = protobuf.type_for_name(message_name)
+    else:
+        expected_type = protobuf.type_for_wire(msg_type)
     x = message_handler.wrap_protobuf_load(buffer, expected_type)
     print("result decoded", x)
     return x
