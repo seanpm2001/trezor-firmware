@@ -80,7 +80,6 @@ impl HorizontalSwipe {
     }
 }
 
-#[derive(Clone)]
 pub struct Frame<T> {
     border: Insets,
     bounds: Rect,

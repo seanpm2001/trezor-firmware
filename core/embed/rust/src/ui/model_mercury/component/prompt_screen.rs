@@ -9,7 +9,6 @@ use super::{HoldToConfirm, TapToConfirm};
 
 /// Component requesting an action from a user. Most typically embedded as a
 /// content of a Frame and promptin "Tap to confirm" or "Hold to XYZ".
-#[derive(Clone)]
 pub enum PromptScreen {
     Tap(TapToConfirm),
     Hold(HoldToConfirm),
