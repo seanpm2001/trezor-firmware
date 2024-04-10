@@ -1,26 +1,22 @@
-from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
-
+from trezor import log
+from trezor.enums import ThpPairingMethod
+from trezor.messages import (
+    ThpCodeEntryChallenge,
+    ThpCodeEntryCommitment,
+    ThpCodeEntryCpaceHost,
+    ThpCodeEntryCpaceTrezor,
+    ThpCodeEntrySecret,
+    ThpCodeEntryTag,
+    ThpNfcUnideirectionalSecret,
+    ThpNfcUnidirectionalTag,
+    ThpQrCodeSecret,
+    ThpQrCodeTag,
+    ThpStartPairingRequest,
+)
 from trezor.wire.errors import UnexpectedMessage
 from trezor.wire.thp import ChannelState
 from trezor.wire.thp.channel import Channel
 from trezor.wire.thp.thp_session import ThpError
-
-if TYPE_CHECKING:
-    from trezor.enums import ThpPairingMethod
-    from trezor.messages import (
-        ThpCodeEntryChallenge,
-        ThpCodeEntryCommitment,
-        ThpCodeEntryCpaceHost,
-        ThpCodeEntryCpaceTrezor,
-        ThpCodeEntrySecret,
-        ThpCodeEntryTag,
-        ThpNfcUnideirectionalSecret,
-        ThpNfcUnidirectionalTag,
-        ThpQrCodeSecret,
-        ThpQrCodeTag,
-        ThpStartPairingRequest,
-    )
-
 
 # TODO implement the following handlers
 
@@ -28,6 +24,8 @@ if TYPE_CHECKING:
 async def handle_pairing_request(
     channel: Channel, message: ThpStartPairingRequest
 ) -> ThpCodeEntryCommitment | None:
+    if __debug__:
+        log.debug(__name__, "handle_pairing_request")
     _check_state(channel, ChannelState.TP1)
     if _is_method_included(channel, ThpPairingMethod.PairingMethod_CodeEntry):
         channel.set_channel_state(ChannelState.TP2)
