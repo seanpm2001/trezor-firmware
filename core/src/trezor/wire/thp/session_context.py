@@ -47,7 +47,7 @@ class SessionContext(Context):
 
     async def handle(self, is_debug_session: bool = False) -> None:
         if __debug__:
-            log.debug(__name__, "handle - start")
+            log.debug(__name__, "handle - start (session_id: %d)", self.session_id)
             if is_debug_session:
                 import apps.debug
 
@@ -98,8 +98,6 @@ class SessionContext(Context):
                             and message.type not in AVOID_RESTARTING_FOR
                         ):
                             # Shut down the loop if there is no next message waiting.
-                            # Let the session be restarted from `main`.
-                            loop.clear()
                             return  # pylint: disable=lost-exception
 
             except Exception as exc:
