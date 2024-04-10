@@ -229,6 +229,8 @@ trezor.wire.thp.checksum
 import trezor.wire.thp.checksum
 trezor.wire.thp.crypto
 import trezor.wire.thp.crypto
+trezor.wire.thp.handler_provider
+import trezor.wire.thp.handler_provider
 trezor.wire.thp.pairing_context
 import trezor.wire.thp.pairing_context
 trezor.wire.thp.session_context
