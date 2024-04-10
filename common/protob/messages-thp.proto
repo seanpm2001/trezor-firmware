@@ -62,7 +62,7 @@ message ThpNewSession{
  * @next ThpNfcUnidirectionalTag       // Sent by the Host
  */
 message ThpStartPairingRequest{
-    optional bytes host_name = 1;      // Human-readable host name
+    optional string host_name = 1;      // Human-readable host name
 }
 
 /**

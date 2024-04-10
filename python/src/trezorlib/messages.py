@@ -7801,13 +7801,13 @@ class ThpNewSession(protobuf.MessageType):
 class ThpStartPairingRequest(protobuf.MessageType):
     MESSAGE_WIRE_TYPE = 1008
     FIELDS = {
-        1: protobuf.Field("host_name", "bytes", repeated=False, required=False, default=None),
+        1: protobuf.Field("host_name", "string", repeated=False, required=False, default=None),
     }
 
     def __init__(
         self,
         *,
-        host_name: Optional["bytes"] = None,
+        host_name: Optional["str"] = None,
     ) -> None:
         self.host_name = host_name
 

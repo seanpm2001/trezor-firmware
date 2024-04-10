@@ -13,7 +13,7 @@ from apps.thp.pairing import handle_pairing_request
 from .channel import Channel
 
 if TYPE_CHECKING:
-    from typing import Container  # pyright:ignore[reportShadowedImports]
+    from typing import Container, Generator  # pyright:ignore[reportShadowedImports]
 
     pass
 
@@ -34,9 +34,6 @@ class PairingContext:
         take = self.incoming_message.take()
         next_message: MessageWithType | None = None
 
-        # Take a mark of modules that are imported at this point, so we can
-        # roll back and un-import any others.
-        # TODO modules = utils.unimport_begin()
         while True:
             try:
                 if next_message is None:
@@ -74,8 +71,6 @@ class PairingContext:
                         if next_message is None:
 
                             # Shut down the loop if there is no next message waiting.
-                            # Let the session be restarted from `main`.
-                            loop.clear()
                             return  # pylint: disable=lost-exception
 
             except Exception as exc:
@@ -146,7 +141,6 @@ async def handle_pairing_message(
         if TYPE_CHECKING:
             assert isinstance(req_msg, ThpStartPairingRequest)  # TODO remove
         task = handler(ctx.channel, req_msg)
-
         # Run the workflow task.  Workflow can do more on-the-wire
         # communication inside, but it should eventually return a
         # response message, or raise an exception (a rather common
@@ -154,7 +148,7 @@ async def handle_pairing_message(
         if use_workflow:
             # Spawn a workflow around the task. This ensures that concurrent
             # workflows are shut down.
-            # res_msg = await workflow.spawn(context.with_context(ctx, task))
+            res_msg = await workflow.spawn(with_context(ctx, task))
             pass  # TODO
         else:
             # For debug messages, ignore workflow processing and just await
@@ -187,7 +181,6 @@ async def handle_pairing_message(
             else:
                 log.exception(__name__, exc)
         res_msg = message_handler.failure(exc)
-
     if res_msg is not None:
         # perform the write outside the big try-except block, so that usb write
         # problem bubbles up
@@ -197,3 +190,34 @@ async def handle_pairing_message(
 
 def get_handler(messageType: int):
     return handle_pairing_request
+
+
+def with_context(ctx: PairingContext, workflow: loop.Task) -> Generator:
+    """Run a workflow in a particular context.
+
+    Stores the context in a closure and installs it into the global variable every time
+    the closure is resumed, thus making sure that all calls to `wire.context.*` will
+    work as expected.
+    """
+    global CURRENT_CONTEXT
+    send_val = None
+    send_exc = None
+
+    while True:
+        CURRENT_CONTEXT = ctx
+        try:
+            if send_exc is not None:
+                res = workflow.throw(send_exc)
+            else:
+                res = workflow.send(send_val)
+        except StopIteration as st:
+            return st.value
+        finally:
+            CURRENT_CONTEXT = None
+
+        try:
+            send_val = yield res
+        except BaseException as e:
+            send_exc = e
+        else:
+            send_exc = None
