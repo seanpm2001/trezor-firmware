@@ -8,7 +8,7 @@ from trezor.wire.message_handler import AVOID_RESTARTING_FOR, failure
 
 from ..protocol_common import Context, MessageWithType
 from . import SessionState
-from .channel import Channel
+from . import channel
 
 if TYPE_CHECKING:
     from typing import Container  # pyright: ignore[reportShadowedImports]
@@ -29,7 +29,9 @@ class UnexpectedMessageWithType(Exception):
 
 
 class SessionContext(Context):
-    def __init__(self, channel: Channel, session_cache: SessionThpCache) -> None:
+    def __init__(
+        self, channel: channel.Channel, session_cache: SessionThpCache
+    ) -> None:
         if channel.channel_id != session_cache.channel_id:
             raise Exception(
                 "The session has different channel id than the provided channel context!"
@@ -41,7 +43,7 @@ class SessionContext(Context):
         self.incoming_message = loop.chan()
 
     @classmethod
-    def create_new_session(cls, channel_context: Channel) -> "SessionContext":
+    def create_new_session(cls, channel_context: channel.Channel) -> "SessionContext":
         session_cache = cache_thp.get_new_session(channel_context.channel_cache)
         return cls(channel_context, session_cache)
 
@@ -145,7 +147,7 @@ class SessionContext(Context):
         self.session_cache.state = bytearray(state.to_bytes(1, "big"))
 
 
-def load_cached_sessions(channel: Channel) -> dict[int, SessionContext]:  # TODO
+def load_cached_sessions(channel: channel.Channel) -> dict[int, SessionContext]:  # TODO
     if __debug__:
         log.debug(__name__, "load_cached_sessions")
     sessions: dict[int, SessionContext] = {}

@@ -7,9 +7,10 @@ from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils
 from trezor.enums import FailureType, MessageType  # , ThpPairingMethod
-from trezor.messages import Failure, ThpCreateNewSession, ThpNewSession
+from trezor.messages import Failure
 from trezor.wire import message_handler
 from trezor.wire.thp import ack_handler, thp_messages
+from trezor.wire.thp.handler_provider import get_handler
 
 from ..protocol_common import Context, MessageWithType
 from . import ChannelState, SessionState, checksum, crypto
@@ -397,40 +398,12 @@ class Channel(Context):
         if __debug__:
             log.debug(__name__, "handle_channel_message: %s", message)
         # TODO handle other messages than CreateNewSession
-        if TYPE_CHECKING:
-            assert isinstance(message, ThpCreateNewSession)
-        if __debug__:
-            log.debug(
-                __name__,
-                "handle_channel_message - passphrase: %s",
-                message.passphrase,
-            )
-        # await thp_messages.handle_CreateNewSession(message)
-        new_session_id: int = self.create_new_session(message.passphrase)
 
-        # TODO reuse existing buffer and compute size dynamically
-        bufferrone = bytearray(5)
-
-        msg = ThpNewSession(new_session_id=new_session_id)
-        message_size: int = thp_messages.get_new_session_message(
-            bufferrone, new_session_id
-        )
-        if __debug__:
-            log.debug(
-                __name__, "handle_channel_message - message size: %d", message_size
-            )
-
-        _encode_session_into_buffer(memoryview(bufferrone), 0)
-        if TYPE_CHECKING:
-            assert msg.MESSAGE_WIRE_TYPE is not None
-        _encode_message_type_into_buffer(
-            memoryview(bufferrone), msg.MESSAGE_WIRE_TYPE, SESSION_ID_LENGTH
-        )
-        _encode_message_into_buffer(
-            memoryview(bufferrone), msg, SESSION_ID_LENGTH + MESSAGE_TYPE_LENGTH
-        )
-        await self.write(ThpNewSession(new_session_id=new_session_id))
-        # TODO not finished
+        handler = get_handler(message)
+        task = handler(self, message)
+        response_message = await task
+        # TODO handle
+        await self.write(response_message)
 
     def _decrypt_single_packet_payload(self, payload: bytes) -> bytearray:
         payload_buffer = bytearray(payload)
@@ -599,28 +572,6 @@ class Channel(Context):
             memoryview(self.buffer), error_message, MESSAGE_TYPE_LENGTH
         )
         return protobuf.encoded_length(error_message)
-
-    def create_new_session(
-        self,
-        passphrase: str | None,
-    ) -> int:
-        if __debug__:
-            log.debug(__name__, " create_new_session")
-        from trezor.wire.thp.session_context import SessionContext
-
-        session = SessionContext.create_new_session(self)
-        session.set_session_state(SessionState.ALLOCATED)
-        self.sessions[session.session_id] = session
-        loop.schedule(session.handle())
-        if __debug__:
-            log.debug(
-                __name__,
-                "create_new_session - new session created. Session id: %d",
-                session.session_id,
-            )
-        if __debug__:
-            print(self.sessions)
-        return session.session_id
 
     def _todo_clear_buffer(self):
         # TODO Buffer clearing not implemented

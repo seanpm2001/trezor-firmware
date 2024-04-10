@@ -776,6 +776,8 @@ if FROZEN:
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/tezos/*.py'))
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'trezor/enums/Tezos*.py'))
 
+        SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/thp/*.py'))
+
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/zcash/*.py'))
 
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/webauthn/*.py'))
