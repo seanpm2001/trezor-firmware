@@ -6,8 +6,8 @@ import usb
 from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils, workflow
-from trezor.enums import FailureType, MessageType  # , ThpPairingMethod
-from trezor.messages import Failure, ThpDeviceProperties
+from trezor.enums import FailureType, MessageType
+from trezor.messages import Failure, ThpCreateNewSession, ThpDeviceProperties
 from trezor.wire import message_handler
 from trezor.wire.thp import ack_handler, thp_messages
 from trezor.wire.thp.handler_provider import get_handler
@@ -322,7 +322,7 @@ class Channel(Context):
                 utils.get_bytes_as_str(handshake_completion_request_noise_payload),
             )
 
-        paired: bool = False  # TODO should be output from credential check
+        paired: bool = True  # TODO should be output from credential check
 
         # send hanshake completion response
         loop.schedule(
@@ -416,8 +416,11 @@ class Channel(Context):
 
         expected_type = protobuf.type_for_wire(message_type)
         message = message_handler.wrap_protobuf_load(buf, expected_type)
-        if __debug__:
-            log.debug(__name__, "handle_channel_message: %s", message)
+
+        if not ThpCreateNewSession.is_type_of(message):
+            raise ThpError(
+                "This message cannot be handled by channel itself. It must be send to allocated session."
+            )
         # TODO handle other messages than CreateNewSession
 
         handler = get_handler(message)
