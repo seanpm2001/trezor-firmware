@@ -85,6 +85,7 @@ trezor_message_impl! {
     ThpCreateNewSession => MessageType_ThpCreateNewSession,
     ThpNewSession => MessageType_ThpNewSession,
     ThpStartPairingRequest => MessageType_ThpStartPairingRequest,
+    ThpPairingPreparationsFinished => MessageType_ThpPairingPreparationsFinished,
     ThpCredentialRequest => MessageType_ThpCredentialRequest,
     ThpCredentialResponse => MessageType_ThpCredentialResponse,
     ThpEndRequest => MessageType_ThpEndRequest,

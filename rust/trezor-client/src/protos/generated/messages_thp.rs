@@ -988,6 +988,109 @@ impl ::protobuf::reflect::ProtobufValue for ThpStartPairingRequest {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpPairingPreparationsFinished)
+#[derive(PartialEq,Clone,Default,Debug)]
+pub struct ThpPairingPreparationsFinished {
+    // special fields
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpPairingPreparationsFinished.special_fields)
+    pub special_fields: ::protobuf::SpecialFields,
+}
+
+impl<'a> ::std::default::Default for &'a ThpPairingPreparationsFinished {
+    fn default() -> &'a ThpPairingPreparationsFinished {
+        <ThpPairingPreparationsFinished as ::protobuf::Message>::default_instance()
+    }
+}
+
+impl ThpPairingPreparationsFinished {
+    pub fn new() -> ThpPairingPreparationsFinished {
+        ::std::default::Default::default()
+    }
+
+    fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
+        let mut fields = ::std::vec::Vec::with_capacity(0);
+        let mut oneofs = ::std::vec::Vec::with_capacity(0);
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpPairingPreparationsFinished>(
+            "ThpPairingPreparationsFinished",
+            fields,
+            oneofs,
+        )
+    }
+}
+
+impl ::protobuf::Message for ThpPairingPreparationsFinished {
+    const NAME: &'static str = "ThpPairingPreparationsFinished";
+
+    fn is_initialized(&self) -> bool {
+        true
+    }
+
+    fn merge_from(&mut self, is: &mut ::protobuf::CodedInputStream<'_>) -> ::protobuf::Result<()> {
+        while let Some(tag) = is.read_raw_tag_or_eof()? {
+            match tag {
+                tag => {
+                    ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
+                },
+            };
+        }
+        ::std::result::Result::Ok(())
+    }
+
+    // Compute sizes of nested messages
+    #[allow(unused_variables)]
+    fn compute_size(&self) -> u64 {
+        let mut my_size = 0;
+        my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
+        self.special_fields.cached_size().set(my_size as u32);
+        my_size
+    }
+
+    fn write_to_with_cached_sizes(&self, os: &mut ::protobuf::CodedOutputStream<'_>) -> ::protobuf::Result<()> {
+        os.write_unknown_fields(self.special_fields.unknown_fields())?;
+        ::std::result::Result::Ok(())
+    }
+
+    fn special_fields(&self) -> &::protobuf::SpecialFields {
+        &self.special_fields
+    }
+
+    fn mut_special_fields(&mut self) -> &mut ::protobuf::SpecialFields {
+        &mut self.special_fields
+    }
+
+    fn new() -> ThpPairingPreparationsFinished {
+        ThpPairingPreparationsFinished::new()
+    }
+
+    fn clear(&mut self) {
+        self.special_fields.clear();
+    }
+
+    fn default_instance() -> &'static ThpPairingPreparationsFinished {
+        static instance: ThpPairingPreparationsFinished = ThpPairingPreparationsFinished {
+            special_fields: ::protobuf::SpecialFields::new(),
+        };
+        &instance
+    }
+}
+
+impl ::protobuf::MessageFull for ThpPairingPreparationsFinished {
+    fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
+        static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpPairingPreparationsFinished").unwrap()).clone()
+    }
+}
+
+impl ::std::fmt::Display for ThpPairingPreparationsFinished {
+    fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
+        ::protobuf::text_format::fmt(self, f)
+    }
+}
+
+impl ::protobuf::reflect::ProtobufValue for ThpPairingPreparationsFinished {
+    type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
+}
+
 // @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpCodeEntryCommitment)
 #[derive(PartialEq,Clone,Default,Debug)]
 pub struct ThpCodeEntryCommitment {
@@ -3236,27 +3339,28 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x12\x1e\n\npassphrase\x18\x01\x20\x01(\tR\npassphrase\x12\x1b\n\ton_dev\
     ice\x18\x02\x20\x01(\x08R\x08onDevice\"5\n\rThpNewSession\x12$\n\x0enew_\
     session_id\x18\x01\x20\x01(\rR\x0cnewSessionId\"5\n\x16ThpStartPairingRe\
-    quest\x12\x1b\n\thost_name\x18\x01\x20\x01(\tR\x08hostName\"8\n\x16ThpCo\
-    deEntryCommitment\x12\x1e\n\ncommitment\x18\x01\x20\x01(\x0cR\ncommitmen\
-    t\"5\n\x15ThpCodeEntryChallenge\x12\x1c\n\tchallenge\x18\x01\x20\x01(\
-    \x0cR\tchallenge\"J\n\x15ThpCodeEntryCpaceHost\x121\n\x15cpace_host_publ\
-    ic_key\x18\x01\x20\x01(\x0cR\x12cpaceHostPublicKey\"P\n\x17ThpCodeEntryC\
-    paceTrezor\x125\n\x17cpace_trezor_public_key\x18\x01\x20\x01(\x0cR\x14cp\
-    aceTrezorPublicKey\"#\n\x0fThpCodeEntryTag\x12\x10\n\x03tag\x18\x02\x20\
-    \x01(\x0cR\x03tag\",\n\x12ThpCodeEntrySecret\x12\x16\n\x06secret\x18\x01\
-    \x20\x01(\x0cR\x06secret\"\x20\n\x0cThpQrCodeTag\x12\x10\n\x03tag\x18\
-    \x01\x20\x01(\x0cR\x03tag\")\n\x0fThpQrCodeSecret\x12\x16\n\x06secret\
-    \x18\x01\x20\x01(\x0cR\x06secret\"+\n\x17ThpNfcUnidirectionalTag\x12\x10\
-    \n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\"5\n\x1bThpNfcUnideirectionalSecr\
-    et\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"D\n\x14ThpCreden\
-    tialRequest\x12,\n\x12host_static_pubkey\x18\x01\x20\x01(\x0cR\x10hostSt\
-    aticPubkey\"i\n\x15ThpCredentialResponse\x120\n\x14trezor_static_pubkey\
-    \x18\x01\x20\x01(\x0cR\x12trezorStaticPubkey\x12\x1e\n\ncredential\x18\
-    \x02\x20\x01(\x0cR\ncredential\"\x0f\n\rThpEndRequest\"\x10\n\x0eThpEndR\
-    esponse*\x8b\x01\n\x10ThpPairingMethod\x12\x1a\n\x16PairingMethod_NoMeth\
-    od\x10\x01\x12\x1b\n\x17PairingMethod_CodeEntry\x10\x02\x12\x18\n\x14Pai\
-    ringMethod_QrCode\x10\x03\x12$\n\x20PairingMethod_NFC_Unidirectional\x10\
-    \x04B7\n#com.satoshilabs.trezor.lib.protobufB\x10TrezorMessageThp\
+    quest\x12\x1b\n\thost_name\x18\x01\x20\x01(\tR\x08hostName\"\x20\n\x1eTh\
+    pPairingPreparationsFinished\"8\n\x16ThpCodeEntryCommitment\x12\x1e\n\nc\
+    ommitment\x18\x01\x20\x01(\x0cR\ncommitment\"5\n\x15ThpCodeEntryChalleng\
+    e\x12\x1c\n\tchallenge\x18\x01\x20\x01(\x0cR\tchallenge\"J\n\x15ThpCodeE\
+    ntryCpaceHost\x121\n\x15cpace_host_public_key\x18\x01\x20\x01(\x0cR\x12c\
+    paceHostPublicKey\"P\n\x17ThpCodeEntryCpaceTrezor\x125\n\x17cpace_trezor\
+    _public_key\x18\x01\x20\x01(\x0cR\x14cpaceTrezorPublicKey\"#\n\x0fThpCod\
+    eEntryTag\x12\x10\n\x03tag\x18\x02\x20\x01(\x0cR\x03tag\",\n\x12ThpCodeE\
+    ntrySecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"\x20\n\
+    \x0cThpQrCodeTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\")\n\x0fT\
+    hpQrCodeSecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"+\n\
+    \x17ThpNfcUnidirectionalTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03ta\
+    g\"5\n\x1bThpNfcUnideirectionalSecret\x12\x16\n\x06secret\x18\x01\x20\
+    \x01(\x0cR\x06secret\"D\n\x14ThpCredentialRequest\x12,\n\x12host_static_\
+    pubkey\x18\x01\x20\x01(\x0cR\x10hostStaticPubkey\"i\n\x15ThpCredentialRe\
+    sponse\x120\n\x14trezor_static_pubkey\x18\x01\x20\x01(\x0cR\x12trezorSta\
+    ticPubkey\x12\x1e\n\ncredential\x18\x02\x20\x01(\x0cR\ncredential\"\x0f\
+    \n\rThpEndRequest\"\x10\n\x0eThpEndResponse*\x8b\x01\n\x10ThpPairingMeth\
+    od\x12\x1a\n\x16PairingMethod_NoMethod\x10\x01\x12\x1b\n\x17PairingMetho\
+    d_CodeEntry\x10\x02\x12\x18\n\x14PairingMethod_QrCode\x10\x03\x12$\n\x20\
+    PairingMethod_NFC_Unidirectional\x10\x04B7\n#com.satoshilabs.trezor.lib.\
+    protobufB\x10TrezorMessageThp\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
@@ -3274,12 +3378,13 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
     file_descriptor.get(|| {
         let generated_file_descriptor = generated_file_descriptor_lazy.get(|| {
             let mut deps = ::std::vec::Vec::with_capacity(0);
-            let mut messages = ::std::vec::Vec::with_capacity(19);
+            let mut messages = ::std::vec::Vec::with_capacity(20);
             messages.push(ThpDeviceProperties::generated_message_descriptor_data());
             messages.push(ThpHandshakeCompletionReqNoisePayload::generated_message_descriptor_data());
             messages.push(ThpCreateNewSession::generated_message_descriptor_data());
             messages.push(ThpNewSession::generated_message_descriptor_data());
             messages.push(ThpStartPairingRequest::generated_message_descriptor_data());
+            messages.push(ThpPairingPreparationsFinished::generated_message_descriptor_data());
             messages.push(ThpCodeEntryCommitment::generated_message_descriptor_data());
             messages.push(ThpCodeEntryChallenge::generated_message_descriptor_data());
             messages.push(ThpCodeEntryCpaceHost::generated_message_descriptor_data());
