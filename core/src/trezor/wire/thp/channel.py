@@ -7,7 +7,11 @@ from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType, MessageType
-from trezor.messages import Failure, ThpCreateNewSession, ThpDeviceProperties
+from trezor.messages import (
+    Failure,
+    ThpCreateNewSession,
+    ThpHandshakeCompletionReqNoisePayload,
+)
 from trezor.wire import message_handler
 from trezor.wire.thp import ack_handler, thp_messages
 from trezor.wire.thp.handler_provider import get_handler
@@ -299,7 +303,7 @@ class Channel(Context):
             - CHECKSUM_LENGTH
         ]
 
-        device_properties = thp_messages.decode_message(
+        noise_payload = thp_messages.decode_message(
             self.buffer[
                 INIT_DATA_OFFSET
                 + KEY_LENGTH
@@ -308,11 +312,11 @@ class Channel(Context):
                 - TAG_LENGTH
             ],
             0,
-            "ThpDeviceProperties",
+            "ThpHandshakeCompletionReqNoisePayload",
         )
         if TYPE_CHECKING:
-            assert isinstance(device_properties, ThpDeviceProperties)
-        for i in device_properties.pairing_methods:
+            assert isinstance(noise_payload, ThpHandshakeCompletionReqNoisePayload)
+        for i in noise_payload.pairing_methods:
             self.selected_pairing_methods.append(i)
         if __debug__:
             log.debug(
@@ -322,7 +326,7 @@ class Channel(Context):
                 utils.get_bytes_as_str(handshake_completion_request_noise_payload),
             )
 
-        paired: bool = True  # TODO should be output from credential check
+        paired: bool = False  # TODO should be output from credential check
 
         # send hanshake completion response
         loop.schedule(

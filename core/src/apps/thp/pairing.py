@@ -1,4 +1,4 @@
-from trezor import log
+from trezor import log, protobuf
 from trezor.enums import ThpPairingMethod
 from trezor.messages import (
     ThpCodeEntryChallenge,
@@ -22,8 +22,9 @@ from trezor.wire.thp.thp_session import ThpError
 
 
 async def handle_pairing_request(
-    channel: Channel, message: ThpStartPairingRequest
+    channel: Channel, message: protobuf.MessageType
 ) -> ThpCodeEntryCommitment | None:
+    assert ThpStartPairingRequest.is_type_of(message)
     if __debug__:
         log.debug(__name__, "handle_pairing_request")
     _check_state(channel, ChannelState.TP1)
