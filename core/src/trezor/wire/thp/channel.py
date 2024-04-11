@@ -376,10 +376,6 @@ class Channel(Context):
         if self.connection_context is None:
             self.connection_context = PairingContext(self)
             loop.schedule(self.connection_context.handle())
-
-        print("TEST selected methods")
-        for i in self.selected_pairing_methods:
-            print("method:", i)
         self._decrypt_buffer(message_length)
 
         message_type = ustruct.unpack(
