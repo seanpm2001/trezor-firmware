@@ -9,7 +9,16 @@ from trezor.wire.protocol_common import MessageWithType
 from trezor.wire.thp.session_context import UnexpectedMessageWithType
 from trezor.wire.thp.thp_session import ThpError
 
-from apps.thp.pairing import handle_pairing_request
+from apps.thp.pairing import (
+    handle_code_entry_challenge,
+    handle_code_entry_cpace,
+    handle_code_entry_tag,
+    handle_credential_request,
+    handle_end_request,
+    handle_nfc_unidirectional_tag,
+    handle_pairing_request,
+    handle_qr_code_tag,
+)
 
 from .channel import Channel
 
@@ -17,6 +26,17 @@ if TYPE_CHECKING:
     from typing import Container, Generator  # pyright:ignore[reportShadowedImports]
 
     pass
+
+handlers = {
+    MessageType.ThpStartPairingRequest: handle_pairing_request,
+    MessageType.ThpCodeEntryChallenge: handle_code_entry_challenge,
+    MessageType.ThpCodeEntryCpaceHost: handle_code_entry_cpace,
+    MessageType.ThpCodeEntryTag: handle_code_entry_tag,
+    MessageType.ThpQrCodeTag: handle_qr_code_tag,
+    MessageType.ThpNfcUnidirectionalTag: handle_nfc_unidirectional_tag,
+    MessageType.ThpCredentialRequest: handle_credential_request,
+    MessageType.ThpEndRequest: handle_end_request,
+}
 
 
 class PairingContext:
@@ -189,10 +209,12 @@ async def handle_pairing_message(
 
 
 def get_handler(messageType: int):
-    if messageType == MessageType.ThpStartPairingRequest:
-        return handle_pairing_request
-    else:
-        raise ThpError("Handler for this method is not implemented yet")
+    if TYPE_CHECKING:
+        assert isinstance(messageType, MessageType)
+    handler = handlers.get(messageType)
+    if handler is None:
+        raise ThpError("Pairing handler for this message is not available!")
+    return handler
 
 
 def with_context(ctx: PairingContext, workflow: loop.Task) -> Generator:
