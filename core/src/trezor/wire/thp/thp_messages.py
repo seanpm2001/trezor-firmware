@@ -112,5 +112,4 @@ def decode_message(
     else:
         expected_type = protobuf.type_for_wire(msg_type)
     x = message_handler.wrap_protobuf_load(buffer, expected_type)
-    print("result decoded", x)
     return x
