@@ -267,10 +267,11 @@ if TYPE_CHECKING:
         ThpCreateNewSession = 1000
         ThpNewSession = 1001
         ThpStartPairingRequest = 1008
-        ThpCredentialRequest = 1009
-        ThpCredentialResponse = 1010
-        ThpEndRequest = 1011
-        ThpEndResponse = 1012
+        ThpPairingPreparationsFinished = 1009
+        ThpCredentialRequest = 1010
+        ThpCredentialResponse = 1011
+        ThpEndRequest = 1012
+        ThpEndResponse = 1013
         ThpCodeEntryCommitment = 1016
         ThpCodeEntryChallenge = 1017
         ThpCodeEntryCpaceHost = 1018
