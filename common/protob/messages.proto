@@ -384,10 +384,11 @@ enum MessageType {
     MessageType_ThpCreateNewSession = 1000[(bitcoin_only)=true, (wire_in)=true, (channel_in) = true];
     MessageType_ThpNewSession = 1001[(bitcoin_only)=true, (wire_out)=true, (channel_out) = true];
     MessageType_ThpStartPairingRequest = 1008 [(bitcoin_only) = true, (wire_in) = true, (pairing_in) = true];
-    MessageType_ThpCredentialRequest = 1009 [(bitcoin_only) = true, (wire_in) = true, (pairing_in) = true];
-    MessageType_ThpCredentialResponse = 1010 [(bitcoin_only) = true, (wire_out) = true, (pairing_out) = true];
-    MessageType_ThpEndRequest = 1011 [(bitcoin_only) = true, (wire_in) = true, (pairing_in) = true];
-    MessageType_ThpEndResponse = 1012[(bitcoin_only) = true, (wire_out) = true, (pairing_out) = true];
+    MessageType_ThpPairingPreparationsFinished = 1009 [(bitcoin_only) = true, (wire_in) = true, (pairing_out) = true];
+    MessageType_ThpCredentialRequest = 1010 [(bitcoin_only) = true, (wire_in) = true, (pairing_in) = true];
+    MessageType_ThpCredentialResponse = 1011 [(bitcoin_only) = true, (wire_out) = true, (pairing_out) = true];
+    MessageType_ThpEndRequest = 1012 [(bitcoin_only) = true, (wire_in) = true, (pairing_in) = true];
+    MessageType_ThpEndResponse = 1013[(bitcoin_only) = true, (wire_out) = true, (pairing_out) = true];
     MessageType_ThpCodeEntryCommitment = 1016[(bitcoin_only)=true, (wire_out)=true, (pairing_out) = true];
     MessageType_ThpCodeEntryChallenge = 1017[(bitcoin_only)=true, (wire_in)=true, (pairing_in) = true];
     MessageType_ThpCodeEntryCpaceHost = 1018[(bitcoin_only)=true, (wire_in)=true, (pairing_in) = true];
