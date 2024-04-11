@@ -58,11 +58,19 @@ message ThpNewSession{
  * Request: Start pairing process.
  * @start
  * @next ThpCodeEntryCommitment
- * @next ThpQrCodeTag                  // Sent by the Host
- * @next ThpNfcUnidirectionalTag       // Sent by the Host
+ * @next ThpPairingPreparationsFinished
  */
 message ThpStartPairingRequest{
     optional string host_name = 1;      // Human-readable host name
+}
+
+/**
+ * Response: Pairing is ready for user input / OOB communication.
+ * @next ThpCodeEntryCpace
+ * @next ThpQrCodeTag
+ * @next ThpNfcUnidirectionalTag
+ */
+ message ThpPairingPreparationsFinished{
 }
 
 /**
@@ -75,9 +83,7 @@ message ThpCodeEntryCommitment {
 
 /**
  * Response: Host responds to Trezor's Code Entry commitment with a challenge.
- * @next ThpCodeEntryCpaceHost         // Sent by the Host
- * @next ThpQrCodeTag                  // Sent by the Host
- * @next ThpNfcUnidirectionalTag       // Sent by the Host
+ * @next ThpPairingPreparationsFinished
  */
 message ThpCodeEntryChallenge {
     optional bytes challenge = 1;      // host's random 32-byte challenge

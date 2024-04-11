@@ -13,6 +13,7 @@ from trezor.messages import (
     ThpEndResponse,
     ThpNfcUnideirectionalSecret,
     ThpNfcUnidirectionalTag,
+    ThpPairingPreparationsFinished,
     ThpQrCodeSecret,
     ThpQrCodeTag,
     ThpStartPairingRequest,
@@ -27,7 +28,7 @@ from trezor.wire.thp.thp_session import ThpError
 
 async def handle_pairing_request(
     channel: Channel, message: protobuf.MessageType
-) -> ThpCodeEntryCommitment | None:
+) -> ThpCodeEntryCommitment | ThpPairingPreparationsFinished:
     assert ThpStartPairingRequest.is_type_of(message)
 
     if __debug__:
@@ -37,16 +38,17 @@ async def handle_pairing_request(
         channel.set_channel_state(ChannelState.TP2)
         return ThpCodeEntryCommitment()
     channel.set_channel_state(ChannelState.TP3)
-    return None
+    return ThpPairingPreparationsFinished()
 
 
 async def handle_code_entry_challenge(
     channel: Channel, message: protobuf.MessageType
-) -> None:
+) -> ThpPairingPreparationsFinished:
     assert ThpCodeEntryChallenge.is_type_of(message)
 
     _check_state(channel, ChannelState.TP2)
     channel.set_channel_state(ChannelState.TP3)
+    return ThpPairingPreparationsFinished()
 
 
 async def handle_code_entry_cpace(
