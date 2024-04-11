@@ -1,12 +1,13 @@
 from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
 from trezor import log, loop, protobuf, workflow
-from trezor.messages import ThpStartPairingRequest
+from trezor.enums import MessageType
 from trezor.wire import message_handler, protocol_common
 from trezor.wire.context import UnexpectedMessageWithId
 from trezor.wire.errors import ActionCancelled
 from trezor.wire.protocol_common import MessageWithType
 from trezor.wire.thp.session_context import UnexpectedMessageWithType
+from trezor.wire.thp.thp_session import ThpError
 
 from apps.thp.pairing import handle_pairing_request
 
@@ -138,9 +139,8 @@ async def handle_pairing_message(
         req_msg = message_handler.wrap_protobuf_load(msg.data, req_type)
 
         # Create the handler task.
-        if TYPE_CHECKING:
-            assert isinstance(req_msg, ThpStartPairingRequest)  # TODO remove
         task = handler(ctx.channel, req_msg)
+
         # Run the workflow task.  Workflow can do more on-the-wire
         # communication inside, but it should eventually return a
         # response message, or raise an exception (a rather common
@@ -189,7 +189,10 @@ async def handle_pairing_message(
 
 
 def get_handler(messageType: int):
-    return handle_pairing_request
+    if messageType == MessageType.ThpStartPairingRequest:
+        return handle_pairing_request
+    else:
+        raise ThpError("Handler for this method is not implemented yet")
 
 
 def with_context(ctx: PairingContext, workflow: loop.Task) -> Generator:
