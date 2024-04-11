@@ -18,7 +18,7 @@ async def create_new_session(
         log.debug(
             __name__,
             "create_new_session - new session created. Passphrase: %s, Session id: %d",
-            message.passphrase,
+            message.passphrase if message.passphrase is not None else "",
             session.session_id,
         )
         print(channel.sessions)
