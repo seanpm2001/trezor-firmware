@@ -6206,6 +6206,12 @@ if TYPE_CHECKING:
         def is_type_of(cls, msg: Any) -> TypeGuard["ThpStartPairingRequest"]:
             return isinstance(msg, cls)
 
+    class ThpPairingPreparationsFinished(protobuf.MessageType):
+
+        @classmethod
+        def is_type_of(cls, msg: Any) -> TypeGuard["ThpPairingPreparationsFinished"]:
+            return isinstance(msg, cls)
+
     class ThpCodeEntryCommitment(protobuf.MessageType):
         commitment: "bytes | None"
 
