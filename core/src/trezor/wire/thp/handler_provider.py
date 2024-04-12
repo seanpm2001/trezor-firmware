@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     pass
 
 
-def get_handler(
+def get_handler_for_channel_message(
     msg: protobuf.MessageType,
 ) -> Callable[[Any, Any], Coroutine[Any, Any, protobuf.MessageType]]:
     return create_session.create_new_session
