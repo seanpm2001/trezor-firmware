@@ -1,46 +1,28 @@
 from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
 from trezor import log, loop, protobuf, workflow
-from trezor.enums import MessageType
-from trezor.wire import message_handler, protocol_common
+from trezor.wire import context, message_handler, protocol_common
 from trezor.wire.context import UnexpectedMessageWithId
 from trezor.wire.errors import ActionCancelled
-from trezor.wire.protocol_common import MessageWithType
+from trezor.wire.protocol_common import Context, MessageWithType
 from trezor.wire.thp.session_context import UnexpectedMessageWithType
-from trezor.wire.thp.thp_session import ThpError
-
-from apps.thp.pairing import (
-    handle_code_entry_challenge,
-    handle_code_entry_cpace,
-    handle_code_entry_tag,
-    handle_credential_request,
-    handle_end_request,
-    handle_nfc_unidirectional_tag,
-    handle_pairing_request,
-    handle_qr_code_tag,
-)
 
 from .channel import Channel
 
 if TYPE_CHECKING:
-    from typing import Container, Generator  # pyright:ignore[reportShadowedImports]
+    from typing import (  # pyright:ignore[reportShadowedImports]
+        Any,
+        Callable,
+        Container,
+        Coroutine,
+    )
 
     pass
 
-handlers = {
-    MessageType.ThpStartPairingRequest: handle_pairing_request,
-    MessageType.ThpCodeEntryChallenge: handle_code_entry_challenge,
-    MessageType.ThpCodeEntryCpaceHost: handle_code_entry_cpace,
-    MessageType.ThpCodeEntryTag: handle_code_entry_tag,
-    MessageType.ThpQrCodeTag: handle_qr_code_tag,
-    MessageType.ThpNfcUnidirectionalTag: handle_nfc_unidirectional_tag,
-    MessageType.ThpCredentialRequest: handle_credential_request,
-    MessageType.ThpEndRequest: handle_end_request,
-}
 
-
-class PairingContext:
+class PairingContext(Context):
     def __init__(self, channel: Channel) -> None:
+        super().__init__(channel.iface, channel.channel_id)
         self.channel = channel
         self.incoming_message = loop.chan()
 
@@ -115,7 +97,9 @@ class PairingContext:
                 str(expected_types),
                 exp_type,
             )
+
         message: MessageWithType = await self.incoming_message.take()
+
         if message.type not in expected_types:
             raise UnexpectedMessageWithType(message)
 
@@ -126,6 +110,15 @@ class PairingContext:
 
     async def write(self, msg: protobuf.MessageType) -> None:
         return await self.channel.write(msg)
+
+
+def _find_handler_placeholder(
+    messageType: int,
+) -> Callable[[Any, Any], Coroutine[Any, Any, protobuf.MessageType]]:
+    raise Exception()
+
+
+get_handler = _find_handler_placeholder
 
 
 async def handle_pairing_message(
@@ -159,7 +152,7 @@ async def handle_pairing_message(
         req_msg = message_handler.wrap_protobuf_load(msg.data, req_type)
 
         # Create the handler task.
-        task = handler(ctx.channel, req_msg)
+        task = handler(ctx, req_msg)
 
         # Run the workflow task.  Workflow can do more on-the-wire
         # communication inside, but it should eventually return a
@@ -168,7 +161,7 @@ async def handle_pairing_message(
         if use_workflow:
             # Spawn a workflow around the task. This ensures that concurrent
             # workflows are shut down.
-            res_msg = await workflow.spawn(with_context(ctx, task))
+            res_msg = await workflow.spawn(context.with_context(ctx, task))
             pass  # TODO
         else:
             # For debug messages, ignore workflow processing and just await
@@ -206,43 +199,3 @@ async def handle_pairing_message(
         # problem bubbles up
         await ctx.write(res_msg)
     return None
-
-
-def get_handler(messageType: int):
-    if TYPE_CHECKING:
-        assert isinstance(messageType, MessageType)
-    handler = handlers.get(messageType)
-    if handler is None:
-        raise ThpError("Pairing handler for this message is not available!")
-    return handler
-
-
-def with_context(ctx: PairingContext, workflow: loop.Task) -> Generator:
-    """Run a workflow in a particular context.
-
-    Stores the context in a closure and installs it into the global variable every time
-    the closure is resumed, thus making sure that all calls to `wire.context.*` will
-    work as expected.
-    """
-    global CURRENT_CONTEXT
-    send_val = None
-    send_exc = None
-
-    while True:
-        CURRENT_CONTEXT = ctx
-        try:
-            if send_exc is not None:
-                res = workflow.throw(send_exc)
-            else:
-                res = workflow.send(send_val)
-        except StopIteration as st:
-            return st.value
-        finally:
-            CURRENT_CONTEXT = None
-
-        try:
-            send_val = yield res
-        except BaseException as e:
-            send_exc = e
-        else:
-            send_exc = None
