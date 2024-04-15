@@ -39,13 +39,13 @@ async def handle_pairing_request(
     if _is_method_included(ctx, ThpPairingMethod.PairingMethod_CodeEntry):
         ctx.channel.set_channel_state(ChannelState.TP2)
         await context.call(ThpCodeEntryCommitment(), ThpCodeEntryChallenge)
-
-    ctx.channel.set_channel_state(ChannelState.TP3)
-    await context.call_any(
-        ThpPairingPreparationsFinished(),
-        MessageType.ThpQrCodeTag,
-        MessageType.ThpNfcUnidirectionalTag,
-    )
+    else:
+        ctx.channel.set_channel_state(ChannelState.TP3)
+        await context.call_any(
+            ThpPairingPreparationsFinished(),
+            MessageType.ThpQrCodeTag,
+            MessageType.ThpNfcUnidirectionalTag,
+        )
 
 
 async def handle_code_entry_challenge(
