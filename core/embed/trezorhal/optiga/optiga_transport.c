@@ -33,6 +33,8 @@
 
 #include TREZOR_BOARD
 
+void vcp_println(const char *fmt, ...);
+
 // Maximum possible packet size that can be transmitted.
 #define OPTIGA_MAX_PACKET_SIZE (OPTIGA_DATA_REG_LEN - 5)
 
@@ -197,6 +199,8 @@ static optiga_result optiga_i2c_write(const uint8_t *data, uint16_t data_size) {
     }
     hal_delay_us(1000);
   }
+  vcp_println("Error: OPTIGA_ERR_I2C_WRITE, File: %s, Line: %d", __FILE__,
+              __LINE__);
   return OPTIGA_ERR_I2C_WRITE;
 }
 
@@ -209,6 +213,8 @@ static optiga_result optiga_i2c_read(uint8_t *buffer, uint16_t buffer_size) {
       return OPTIGA_SUCCESS;
     }
   }
+  vcp_println("Error: OPTIGA_ERR_I2C_READ, File: %s, Line: %d", __FILE__,
+              __LINE__);
   return OPTIGA_ERR_I2C_READ;
 }
 
@@ -260,6 +266,8 @@ static optiga_result optiga_check_ack(void) {
   optiga_result ret = OPTIGA_SUCCESS;
   if (frame_size != 3 || frame_buffer[0] != fctr || frame_buffer[1] != 0 ||
       frame_buffer[2] != 0) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     ret = OPTIGA_ERR_UNEXPECTED;
   }
 
@@ -290,6 +298,8 @@ static optiga_result optiga_ensure_ready(void) {
         // Not busy and no response that would need to be flushed out.
         return OPTIGA_SUCCESS;
       }
+      vcp_println("Eror: OPTIGA_ERR_BUSY, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       ret = OPTIGA_ERR_BUSY;
     }
 
@@ -302,6 +312,8 @@ static optiga_result optiga_ensure_ready(void) {
 
     uint16_t size = (frame_buffer[2] << 8) + frame_buffer[3];
     if (size > sizeof(frame_buffer)) {
+      vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       return OPTIGA_ERR_SIZE;
     }
 
@@ -316,6 +328,8 @@ static optiga_result optiga_ensure_ready(void) {
     }
 
     if (size < 3) {
+      vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       return OPTIGA_ERR_UNEXPECTED;
     }
 
@@ -338,11 +352,15 @@ static optiga_result optiga_ensure_ready(void) {
     }
   }
 
+  vcp_println("Error: OPTIGA_ERR_TIMEOUT, File: %s, Line: %d", __FILE__,
+              __LINE__);
   return OPTIGA_ERR_TIMEOUT;
 }
 
 optiga_result optiga_set_data_reg_len(size_t size) {
   if (size > 0xffff) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
 
@@ -365,6 +383,8 @@ optiga_result optiga_set_data_reg_len(size_t size) {
   }
 
   if ((frame_buffer[0] << 8) + frame_buffer[1] != size) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
   return OPTIGA_SUCCESS;
@@ -385,6 +405,8 @@ static optiga_result optiga_read(void) {
     if (frame_buffer[0] & I2C_STATE_BYTE1_RESP_RDY) {
       uint16_t size = (frame_buffer[2] << 8) + frame_buffer[3];
       if (size > sizeof(frame_buffer)) {
+        vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                    __LINE__);
         return OPTIGA_ERR_SIZE;
       }
 
@@ -400,6 +422,8 @@ static optiga_result optiga_read(void) {
 
       if (calc_crc(frame_buffer, size - 2) !=
           (frame_buffer[size - 2] << 8) + frame_buffer[size - 1]) {
+        vcp_println("Error: OPTIGA_ERR_CRC, File: %s, Line: %d", __FILE__,
+                    __LINE__);
         return OPTIGA_ERR_CRC;
       }
 
@@ -412,10 +436,14 @@ static optiga_result optiga_read(void) {
       // Optiga has no response ready and is not busy. This shouldn't happen if
       // we are expecting to read a response, but Optiga occasionally fails to
       // give any response to a command.
+      vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       return OPTIGA_ERR_UNEXPECTED;
     }
   }
 
+  vcp_println("Error: OPTIGA_ERR_TIMEOUT, File: %s, Line: %d", __FILE__,
+              __LINE__);
   return OPTIGA_ERR_TIMEOUT;
 }
 
@@ -425,6 +453,8 @@ static optiga_result optiga_send_packet(uint8_t packet_control_byte,
   _Static_assert(sizeof(frame_buffer) - 7 >= OPTIGA_MAX_PACKET_SIZE - 1);
 
   if (packet_data_size > sizeof(frame_buffer) - 7) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
 
@@ -459,11 +489,15 @@ static optiga_result optiga_receive_packet(uint8_t *packet_control_byte,
   if (frame_size < 3 || frame_buffer[0] != fctr ||
       *packet_data_size + 4 != frame_size) {
     frame_size = 0;
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
   frame_size = 0;
 
   if (*packet_data_size > max_packet_data_size) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
 
@@ -597,6 +631,8 @@ optiga_result optiga_execute_command(const uint8_t *command_data,
   }
   sec_chan_size = command_size + SEC_CHAN_OVERHEAD_SIZE;
   if (sec_chan_size > sizeof(sec_chan_buffer)) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
 
@@ -617,6 +653,8 @@ optiga_result optiga_execute_command(const uint8_t *command_data,
                                       associated_data, sizeof(associated_data),
                                       command_data, command_size,
                                       SEC_CHAN_TAG_SIZE, ciphertext)) {
+    vcp_println("Error: OPTIGA_ERR_PROCESS, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PROCESS;
   }
 
@@ -634,12 +672,16 @@ optiga_result optiga_execute_command(const uint8_t *command_data,
       sec_chan_buffer[0] != SCTR_PROTECTED ||
       memcmp(&sec_chan_buffer[SEC_CHAN_SEQ_OFFSET], sec_chan_sseq,
              SEC_CHAN_SEQ_SIZE) != 0) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
 
   *response_size = sec_chan_size - SEC_CHAN_OVERHEAD_SIZE;
   if (*response_size > max_response_size) {
     *response_size = 0;
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
 
@@ -654,6 +696,8 @@ optiga_result optiga_execute_command(const uint8_t *command_data,
                                       ciphertext,
                                       *response_size + SEC_CHAN_TAG_SIZE,
                                       SEC_CHAN_TAG_SIZE, response_data)) {
+    vcp_println("Error: OPTIGA_ERR_PROCESS, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PROCESS;
   }
 
@@ -676,6 +720,8 @@ optiga_result optiga_sec_chan_handshake(const uint8_t *secret,
   if (sec_chan_size != 2 + SEC_CHAN_RND_SIZE + SEC_CHAN_SEQ_SIZE ||
       sec_chan_buffer[0] != SCTR_HELLO ||
       sec_chan_buffer[1] != SEC_CHAN_PROTOCOL) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
 
@@ -709,6 +755,8 @@ optiga_result optiga_sec_chan_handshake(const uint8_t *secret,
                                       associated_data, sizeof(associated_data),
                                       payload, SEC_CHAN_HANDSHAKE_SIZE,
                                       SEC_CHAN_TAG_SIZE, ciphertext)) {
+    vcp_println("Error: OPTIGA_ERR_PROCESS, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PROCESS;
   }
 
@@ -723,6 +771,8 @@ optiga_result optiga_sec_chan_handshake(const uint8_t *secret,
   // Process response (sctr[1], mseq[4], ciphertext[44]).
   if (sec_chan_size != SEC_CHAN_HANDSHAKE_SIZE + SEC_CHAN_OVERHEAD_SIZE ||
       sec_chan_buffer[0] != SCTR_FINISHED) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
   uint8_t *mseq = &sec_chan_buffer[SEC_CHAN_SEQ_OFFSET];
@@ -738,12 +788,16 @@ optiga_result optiga_sec_chan_handshake(const uint8_t *secret,
                       sizeof(associated_data), ciphertext,
                       SEC_CHAN_HANDSHAKE_SIZE + SEC_CHAN_TAG_SIZE,
                       SEC_CHAN_TAG_SIZE, response_payload)) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
 
   if (memcmp(response_payload, rnd, SEC_CHAN_RND_SIZE) != 0 ||
       memcmp(response_payload + SEC_CHAN_RND_SIZE, mseq, SEC_CHAN_SEQ_SIZE) !=
           0) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
 

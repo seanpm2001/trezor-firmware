@@ -33,6 +33,8 @@
 #include "optiga_transport.h"
 #include "sha2.h"
 
+void vcp_println(const char *fmt, ...);
+
 // Static buffer for commands and responses.
 static uint8_t tx_buffer[OPTIGA_MAX_APDU_SIZE] = {0};
 static size_t tx_size = 0;
@@ -53,11 +55,15 @@ const optiga_metadata_item OPTIGA_META_VERSION_DEFAULT = {
 static optiga_result process_output(uint8_t **out_data, size_t *out_size) {
   // Check that there is no trailing output data in the response.
   if (tx_size < 4 || (tx_buffer[2] << 8) + tx_buffer[3] != tx_size - 4) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
 
   // Check response status code.
   if (tx_buffer[0] != 0) {
+    vcp_println("Error: OPTIGA_ERR_CMD, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_CMD;
   }
 
@@ -76,6 +82,8 @@ static optiga_result process_output_fixedlen(uint8_t *data, size_t data_size) {
 
   // Expecting data_size bytes of output data in the response.
   if (out_size != data_size) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
 
@@ -97,6 +105,8 @@ static optiga_result process_output_varlen(uint8_t *data, size_t max_data_size,
   }
 
   if (out_size > max_data_size) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
 
@@ -157,12 +167,16 @@ optiga_result optiga_parse_metadata(const uint8_t *serialized,
 
   if (serialized_size < 2 || serialized[0] != 0x20 ||
       serialized[1] + 2 != serialized_size) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
   size_t pos = 2;
   while (pos < serialized_size) {
     if (pos + 2 >= serialized_size) {
+      vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       return OPTIGA_ERR_PARAM;
     }
 
@@ -177,6 +191,8 @@ optiga_result optiga_parse_metadata(const uint8_t *serialized,
 
     if (item == NULL || item->ptr != NULL) {
       // Invalid tag or multiply defined tag.
+      vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       return OPTIGA_ERR_PARAM;
     }
 
@@ -186,6 +202,8 @@ optiga_result optiga_parse_metadata(const uint8_t *serialized,
   }
 
   if (pos != serialized_size) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -198,6 +216,8 @@ optiga_result optiga_serialize_metadata(const optiga_metadata *metadata,
                                         size_t *serialized_size) {
   *serialized_size = 0;
   if (max_serialized < 2) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
 
@@ -212,6 +232,8 @@ optiga_result optiga_serialize_metadata(const optiga_metadata *metadata,
     }
 
     if (max_serialized < pos + 2 + item->len) {
+      vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       return OPTIGA_ERR_SIZE;
     }
 
@@ -223,6 +245,8 @@ optiga_result optiga_serialize_metadata(const optiga_metadata *metadata,
 
   // Set length byte.
   if (pos - 2 > 256) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
   serialized[1] = pos - 2;
@@ -327,6 +351,8 @@ optiga_result optiga_set_data_object(uint16_t oid, bool set_metadata,
                                      const uint8_t *data, size_t data_size) {
   tx_size = data_size + 8;
   if (tx_size > sizeof(tx_buffer)) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -364,6 +390,8 @@ optiga_result optiga_count_data_object(uint16_t oid, uint8_t count) {
 
   tx_size = 9;
   if (tx_size > sizeof(tx_buffer)) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -393,6 +421,8 @@ optiga_result optiga_count_data_object(uint16_t oid, uint8_t count) {
 optiga_result optiga_get_random(uint8_t *random, size_t random_size) {
   if (random_size < OPTIGA_RANDOM_MIN_SIZE ||
       random_size > OPTIGA_RANDOM_MAX_SIZE) {
+    vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_SIZE;
   }
 
@@ -422,6 +452,8 @@ optiga_result optiga_encrypt_sym(optiga_sym_mode mode, uint16_t oid,
                                  uint8_t *output, size_t max_output_size,
                                  size_t *output_size) {
   if (input_size < 1 || input_size > 640) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -524,6 +556,8 @@ optiga_result optiga_clear_auto_state(uint16_t key_oid) {
   // Expecting no output data. Response status code should indicate failure.
   if (tx_size != 4 || tx_buffer[0] != 0xff || tx_buffer[2] != 0 ||
       tx_buffer[3] != 0) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
 
@@ -539,6 +573,8 @@ optiga_result optiga_calc_sign(uint16_t oid, const uint8_t *digest,
                                size_t max_sig_size, size_t *sig_size) {
   tx_size = digest_size + 12;
   if (tx_size > sizeof(tx_buffer)) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -576,12 +612,16 @@ optiga_result optiga_calc_sign(uint16_t oid, const uint8_t *digest,
 
   for (int i = 0; i < 2; ++i) {
     if (!der_reencode_int(&sig_reader, &sig_writer)) {
+      vcp_println("Error: OPTIGA_ERR_PROCESS, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       return OPTIGA_ERR_PROCESS;
     }
   }
 
   if (buffer_remaining(&sig_reader) != 0) {
     // Unexpected trailing data.
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_UNEXPECTED;
   }
 
@@ -600,6 +640,8 @@ optiga_result optiga_verify_sign(optiga_curve curve, const uint8_t *public_key,
                                  size_t sig_size) {
   tx_size = 17 + digest_size + sig_size + public_key_size;
   if (tx_size > sizeof(tx_buffer)) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -703,6 +745,8 @@ optiga_result optiga_calc_ssec(optiga_curve curve, uint16_t oid,
   static const size_t MAX_PUBKEY_SIZE = 5 + 2 * 66;
 
   if (public_key_size > MAX_PUBKEY_SIZE) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -747,10 +791,14 @@ optiga_result optiga_derive_key(optiga_key_derivation deriv, uint16_t oid,
        deriv == OPTIGA_DERIV_HKDF_SHA512);
 
   if (salt_size > 1024 || (!is_hkdf && salt_size < 8)) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
   if (info_size > 256 || (!is_hkdf && info_size != 0)) {
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -848,6 +896,8 @@ optiga_result optiga_set_priv_key(uint16_t oid, const uint8_t priv_key[32]) {
   uint16_t payload_version = 0;
   if (metadata.version.ptr != NULL) {
     if (metadata.version.len != 2) {
+      vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                  __LINE__);
       return OPTIGA_ERR_UNEXPECTED;
     }
     payload_version =
@@ -857,6 +907,8 @@ optiga_result optiga_set_priv_key(uint16_t oid, const uint8_t priv_key[32]) {
 
   if (payload_version > 23) {
     // CBOR integer encoding not implemented.
+    vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PARAM;
   }
 
@@ -904,6 +956,8 @@ optiga_result optiga_set_priv_key(uint16_t oid, const uint8_t priv_key[32]) {
   if (0 != ecdsa_sign_digest(&nist256p1, TA_PRIV_KEY, digest, &sop_cmd1[81],
                              NULL, NULL)) {
     memzero(sop_cmd2, sizeof(sop_cmd2));
+    vcp_println("Error: OPTIGA_ERR_PROCESS, File: %s, Line: %d", __FILE__,
+                __LINE__);
     return OPTIGA_ERR_PROCESS;
   }
 
