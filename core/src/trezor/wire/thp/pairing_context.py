@@ -111,6 +111,23 @@ class PairingContext(Context):
     async def write(self, msg: protobuf.MessageType) -> None:
         return await self.channel.write(msg)
 
+    async def call(
+        self, msg: protobuf.MessageType, expected_type: type[protobuf.MessageType]
+    ) -> protobuf.MessageType:
+        assert expected_type.MESSAGE_WIRE_TYPE is not None
+
+        await self.write(msg)
+        del msg
+
+        return await self.read((expected_type.MESSAGE_WIRE_TYPE,), expected_type)
+
+    async def call_any(
+        self, msg: protobuf.MessageType, *expected_types: int
+    ) -> protobuf.MessageType:
+        await self.write(msg)
+        del msg
+        return await self.read(expected_types)
+
 
 def _find_handler_placeholder(
     messageType: int,

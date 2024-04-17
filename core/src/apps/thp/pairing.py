@@ -18,9 +18,8 @@ from trezor.messages import (
     ThpQrCodeTag,
     ThpStartPairingRequest,
 )
-from trezor.wire import context
 from trezor.wire.errors import UnexpectedMessage
-from trezor.wire.thp import ChannelState, pairing_context
+from trezor.wire.thp import ChannelState
 from trezor.wire.thp.pairing_context import PairingContext
 from trezor.wire.thp.thp_session import ThpError
 
@@ -29,117 +28,127 @@ from trezor.wire.thp.thp_session import ThpError
 
 async def handle_pairing_request(
     ctx: PairingContext, message: protobuf.MessageType
-) -> None:
+) -> None | ThpEndResponse:
     assert ThpStartPairingRequest.is_type_of(message)
 
     if __debug__:
         log.debug(__name__, "handle_pairing_request")
+
     _check_state(ctx, ChannelState.TP1)
 
     if _is_method_included(ctx, ThpPairingMethod.PairingMethod_CodeEntry):
         ctx.channel.set_channel_state(ChannelState.TP2)
-        response = await context.call(ThpCodeEntryCommitment(), ThpCodeEntryChallenge)
 
-    else:
-        ctx.channel.set_channel_state(ChannelState.TP3)
-        response = await context.call_any(
-            ThpPairingPreparationsFinished(),
-            MessageType.ThpQrCodeTag,
-            MessageType.ThpNfcUnidirectionalTag,
-        )
-    await _handle_response(ctx, response)
+        response = await ctx.call(ThpCodeEntryCommitment(), ThpCodeEntryChallenge)
+        return await _handle_code_entry_challenge(ctx, response)
+
+    ctx.channel.set_channel_state(ChannelState.TP3)
+    response = await ctx.call_any(
+        ThpPairingPreparationsFinished(),
+        MessageType.ThpQrCodeTag,
+        MessageType.ThpNfcUnidirectionalTag,
+    )
+    if ThpQrCodeTag.is_type_of(response):
+        return await _handle_qr_code_tag(ctx, response)
+    if ThpNfcUnidirectionalTag.is_type_of(response):
+        return await _handle_nfc_unidirectional_tag(ctx, response)
 
 
-async def handle_code_entry_challenge(
+async def _handle_code_entry_challenge(
     ctx: PairingContext, message: protobuf.MessageType
-) -> None:
+) -> None | ThpEndResponse:
     assert ThpCodeEntryChallenge.is_type_of(message)
 
     _check_state(ctx, ChannelState.TP2)
     ctx.channel.set_channel_state(ChannelState.TP3)
-    response = await context.call_any(
+    response = await ctx.call_any(
         ThpPairingPreparationsFinished(),
         MessageType.ThpCodeEntryCpaceHost,
         MessageType.ThpQrCodeTag,
         MessageType.ThpNfcUnidirectionalTag,
     )
-    await _handle_response(ctx, response)
+    if ThpCodeEntryCpaceHost.is_type_of(response):
+        return await _handle_code_entry_cpace(ctx, response)
+    if ThpQrCodeTag.is_type_of(response):
+        return await _handle_qr_code_tag(ctx, response)
+    if ThpNfcUnidirectionalTag.is_type_of(response):
+        return await _handle_nfc_unidirectional_tag(ctx, response)
 
 
-async def handle_code_entry_cpace(
+async def _handle_code_entry_cpace(
     ctx: PairingContext, message: protobuf.MessageType
-) -> None:
+) -> None | ThpEndResponse:
     assert ThpCodeEntryCpaceHost.is_type_of(message)
 
     _check_state(ctx, ChannelState.TP3)
     _check_method_is_allowed(ctx, ThpPairingMethod.PairingMethod_CodeEntry)
     ctx.channel.set_channel_state(ChannelState.TP4)
-    response = await context.call(ThpCodeEntryCpaceTrezor(), ThpCodeEntryTag)
-    await _handle_response(ctx, response)
+    response = await ctx.call(ThpCodeEntryCpaceTrezor(), ThpCodeEntryTag)
+    return await _handle_code_entry_tag(ctx, response)
 
 
-async def handle_code_entry_tag(
+async def _handle_code_entry_tag(
     ctx: PairingContext, message: protobuf.MessageType
-) -> None:
+) -> None | ThpEndResponse:
     assert ThpCodeEntryTag.is_type_of(message)
 
     _check_state(ctx, ChannelState.TP4)
     ctx.channel.set_channel_state(ChannelState.TC1)
-    response = await context.call_any(
+    response = await ctx.call_any(
         ThpCodeEntrySecret(),
         MessageType.ThpCredentialRequest,
         MessageType.ThpEndRequest,
     )
-    await _handle_response(ctx, response)
+    await _handle_credential_request_or_end_request(ctx, response)
 
 
-async def handle_qr_code_tag(
+async def _handle_qr_code_tag(
     ctx: PairingContext, message: protobuf.MessageType
-) -> None:
+) -> None | ThpEndResponse:
     assert ThpQrCodeTag.is_type_of(message)
 
     _check_state(ctx, ChannelState.TP3)
     _check_method_is_allowed(ctx, ThpPairingMethod.PairingMethod_QrCode)
     ctx.channel.set_channel_state(ChannelState.TC1)
-    response = await context.call_any(
+    response = await ctx.call_any(
         ThpQrCodeSecret(),
         MessageType.ThpCredentialRequest,
         MessageType.ThpEndRequest,
     )
-    await _handle_response(ctx, response)
+    await _handle_credential_request_or_end_request(ctx, response)
 
 
-async def handle_nfc_unidirectional_tag(
+async def _handle_nfc_unidirectional_tag(
     ctx: PairingContext, message: protobuf.MessageType
-) -> None:
+) -> None | ThpEndResponse:
     assert ThpNfcUnidirectionalTag.is_type_of(message)
 
     _check_state(ctx, ChannelState.TP3)
     _check_method_is_allowed(ctx, ThpPairingMethod.PairingMethod_NFC_Unidirectional)
     ctx.channel.set_channel_state(ChannelState.TC1)
-    response = await context.call_any(
+    response = await ctx.call_any(
         ThpNfcUnideirectionalSecret(),
         MessageType.ThpCredentialRequest,
         MessageType.ThpEndRequest,
     )
-    await _handle_response(ctx, response)
+    await _handle_credential_request_or_end_request(ctx, response)
 
 
-async def handle_credential_request(
+async def _handle_credential_request(
     ctx: PairingContext, message: protobuf.MessageType
-) -> None:
+) -> None | ThpEndResponse:
     assert ThpCredentialRequest.is_type_of(message)
 
     _check_state(ctx, ChannelState.TC1)
-    response = await context.call_any(
+    response = await ctx.call_any(
         ThpCredentialResponse(),
         MessageType.ThpCredentialRequest,
         MessageType.ThpEndRequest,
     )
-    await _handle_response(ctx, response)
+    await _handle_credential_request_or_end_request(ctx, response)
 
 
-async def handle_end_request(
+async def _handle_end_request(
     ctx: PairingContext, message: protobuf.MessageType
 ) -> ThpEndResponse:
     assert ThpEndRequest.is_type_of(message)
@@ -163,12 +172,13 @@ def _is_method_included(ctx: PairingContext, method: ThpPairingMethod) -> bool:
     return method in ctx.channel.selected_pairing_methods
 
 
-async def _handle_response(
+async def _handle_credential_request_or_end_request(
     ctx: PairingContext, response: protobuf.MessageType | None
-) -> None:
-    if response is None:
-        raise Exception("Something is not ok")
-    if response.MESSAGE_WIRE_TYPE is None:
-        raise Exception("Something is not ok")
-    handler = pairing_context.get_handler(response.MESSAGE_WIRE_TYPE)
-    await handler(ctx, response)
+) -> None | ThpEndResponse:
+    if ThpCredentialRequest.is_type_of(response):
+        return await _handle_credential_request(ctx, response)
+    if ThpEndRequest.is_type_of(response):
+        return await _handle_end_request(ctx, response)
+    raise UnexpectedMessage(
+        "Received message is not credential request or end request."
+    )
