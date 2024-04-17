@@ -374,14 +374,11 @@ class Channel(Context):
         )
 
     async def _handle_pairing(self, message_length: int) -> None:
-        from trezor.wire.thp.handler_provider import get_handler_for_pairing
 
-        from . import pairing_context
         from .pairing_context import PairingContext
 
         if self.connection_context is None:
             self.connection_context = PairingContext(self)
-            pairing_context.get_handler = get_handler_for_pairing  # noqa
 
             loop.schedule(self.connection_context.handle())
         self._decrypt_buffer(message_length)
@@ -430,9 +427,9 @@ class Channel(Context):
                 "This message cannot be handled by channel itself. It must be send to allocated session."
             )
         # TODO handle other messages than CreateNewSession
-        from trezor.wire.thp.handler_provider import get_handler_for_handshake
+        from trezor.wire.thp.handler_provider import get_handler_for_channel_message
 
-        handler = get_handler_for_handshake(message)
+        handler = get_handler_for_channel_message(message)
         task = handler(self, message)
         response_message = await task
         # TODO handle
