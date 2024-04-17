@@ -6165,12 +6165,14 @@ if TYPE_CHECKING:
     class ThpCreateNewSession(protobuf.MessageType):
         passphrase: "str | None"
         on_device: "bool | None"
+        derive_cardano: "bool | None"
 
         def __init__(
             self,
             *,
             passphrase: "str | None" = None,
             on_device: "bool | None" = None,
+            derive_cardano: "bool | None" = None,
         ) -> None:
             pass
 
