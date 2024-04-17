@@ -132,7 +132,8 @@ def _get_unauthenticated_session_or_none(session_id) -> SessionThpCache | None:
 def _sync_set_send_bit(cache: SessionThpCache | ChannelCache, bit: int) -> None:
     if bit not in (0, 1):
         raise ThpError("Unexpected send sync bit")
-
+    if __debug__:
+        log.debug(__name__, "setting sync send bit to %d", bit)
     # set third bit to "bit" value
     cache.sync &= 0xDF
     if bit:
