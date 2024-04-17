@@ -7773,6 +7773,7 @@ class ThpCreateNewSession(protobuf.MessageType):
     FIELDS = {
         1: protobuf.Field("passphrase", "string", repeated=False, required=False, default=None),
         2: protobuf.Field("on_device", "bool", repeated=False, required=False, default=None),
+        3: protobuf.Field("derive_cardano", "bool", repeated=False, required=False, default=None),
     }
 
     def __init__(
@@ -7780,9 +7781,11 @@ class ThpCreateNewSession(protobuf.MessageType):
         *,
         passphrase: Optional["str"] = None,
         on_device: Optional["bool"] = None,
+        derive_cardano: Optional["bool"] = None,
     ) -> None:
         self.passphrase = passphrase
         self.on_device = on_device
+        self.derive_cardano = derive_cardano
 
 
 class ThpNewSession(protobuf.MessageType):

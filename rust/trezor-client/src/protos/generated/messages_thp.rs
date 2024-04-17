@@ -502,6 +502,8 @@ pub struct ThpCreateNewSession {
     pub passphrase: ::std::option::Option<::std::string::String>,
     // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCreateNewSession.on_device)
     pub on_device: ::std::option::Option<bool>,
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpCreateNewSession.derive_cardano)
+    pub derive_cardano: ::std::option::Option<bool>,
     // special fields
     // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpCreateNewSession.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -573,8 +575,27 @@ impl ThpCreateNewSession {
         self.on_device = ::std::option::Option::Some(v);
     }
 
+    // optional bool derive_cardano = 3;
+
+    pub fn derive_cardano(&self) -> bool {
+        self.derive_cardano.unwrap_or(false)
+    }
+
+    pub fn clear_derive_cardano(&mut self) {
+        self.derive_cardano = ::std::option::Option::None;
+    }
+
+    pub fn has_derive_cardano(&self) -> bool {
+        self.derive_cardano.is_some()
+    }
+
+    // Param is passed by value, moved
+    pub fn set_derive_cardano(&mut self, v: bool) {
+        self.derive_cardano = ::std::option::Option::Some(v);
+    }
+
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
-        let mut fields = ::std::vec::Vec::with_capacity(2);
+        let mut fields = ::std::vec::Vec::with_capacity(3);
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
             "passphrase",
@@ -585,6 +606,11 @@ impl ThpCreateNewSession {
             "on_device",
             |m: &ThpCreateNewSession| { &m.on_device },
             |m: &mut ThpCreateNewSession| { &mut m.on_device },
+        ));
+        fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
+            "derive_cardano",
+            |m: &ThpCreateNewSession| { &m.derive_cardano },
+            |m: &mut ThpCreateNewSession| { &mut m.derive_cardano },
         ));
         ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpCreateNewSession>(
             "ThpCreateNewSession",
@@ -610,6 +636,9 @@ impl ::protobuf::Message for ThpCreateNewSession {
                 16 => {
                     self.on_device = ::std::option::Option::Some(is.read_bool()?);
                 },
+                24 => {
+                    self.derive_cardano = ::std::option::Option::Some(is.read_bool()?);
+                },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
                 },
@@ -628,6 +657,9 @@ impl ::protobuf::Message for ThpCreateNewSession {
         if let Some(v) = self.on_device {
             my_size += 1 + 1;
         }
+        if let Some(v) = self.derive_cardano {
+            my_size += 1 + 1;
+        }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
         my_size
@@ -639,6 +671,9 @@ impl ::protobuf::Message for ThpCreateNewSession {
         }
         if let Some(v) = self.on_device {
             os.write_bool(2, v)?;
+        }
+        if let Some(v) = self.derive_cardano {
+            os.write_bool(3, v)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -659,6 +694,7 @@ impl ::protobuf::Message for ThpCreateNewSession {
     fn clear(&mut self) {
         self.passphrase = ::std::option::Option::None;
         self.on_device = ::std::option::Option::None;
+        self.derive_cardano = ::std::option::Option::None;
         self.special_fields.clear();
     }
 
@@ -666,6 +702,7 @@ impl ::protobuf::Message for ThpCreateNewSession {
         static instance: ThpCreateNewSession = ThpCreateNewSession {
             passphrase: ::std::option::Option::None,
             on_device: ::std::option::Option::None,
+            derive_cardano: ::std::option::Option::None,
             special_fields: ::protobuf::SpecialFields::new(),
         };
         &instance
@@ -3335,32 +3372,33 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     \x0epairingMethods\"\xb2\x01\n%ThpHandshakeCompletionReqNoisePayload\x12\
     6\n\x17host_pairing_credential\x18\x01\x20\x01(\x0cR\x15hostPairingCrede\
     ntial\x12Q\n\x0fpairing_methods\x18\x02\x20\x03(\x0e2(.hw.trezor.message\
-    s.thp.ThpPairingMethodR\x0epairingMethods\"R\n\x13ThpCreateNewSession\
+    s.thp.ThpPairingMethodR\x0epairingMethods\"y\n\x13ThpCreateNewSession\
     \x12\x1e\n\npassphrase\x18\x01\x20\x01(\tR\npassphrase\x12\x1b\n\ton_dev\
-    ice\x18\x02\x20\x01(\x08R\x08onDevice\"5\n\rThpNewSession\x12$\n\x0enew_\
-    session_id\x18\x01\x20\x01(\rR\x0cnewSessionId\"5\n\x16ThpStartPairingRe\
-    quest\x12\x1b\n\thost_name\x18\x01\x20\x01(\tR\x08hostName\"\x20\n\x1eTh\
-    pPairingPreparationsFinished\"8\n\x16ThpCodeEntryCommitment\x12\x1e\n\nc\
-    ommitment\x18\x01\x20\x01(\x0cR\ncommitment\"5\n\x15ThpCodeEntryChalleng\
-    e\x12\x1c\n\tchallenge\x18\x01\x20\x01(\x0cR\tchallenge\"J\n\x15ThpCodeE\
-    ntryCpaceHost\x121\n\x15cpace_host_public_key\x18\x01\x20\x01(\x0cR\x12c\
-    paceHostPublicKey\"P\n\x17ThpCodeEntryCpaceTrezor\x125\n\x17cpace_trezor\
-    _public_key\x18\x01\x20\x01(\x0cR\x14cpaceTrezorPublicKey\"#\n\x0fThpCod\
-    eEntryTag\x12\x10\n\x03tag\x18\x02\x20\x01(\x0cR\x03tag\",\n\x12ThpCodeE\
-    ntrySecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"\x20\n\
-    \x0cThpQrCodeTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\")\n\x0fT\
-    hpQrCodeSecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"+\n\
-    \x17ThpNfcUnidirectionalTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03ta\
-    g\"5\n\x1bThpNfcUnideirectionalSecret\x12\x16\n\x06secret\x18\x01\x20\
-    \x01(\x0cR\x06secret\"D\n\x14ThpCredentialRequest\x12,\n\x12host_static_\
-    pubkey\x18\x01\x20\x01(\x0cR\x10hostStaticPubkey\"i\n\x15ThpCredentialRe\
-    sponse\x120\n\x14trezor_static_pubkey\x18\x01\x20\x01(\x0cR\x12trezorSta\
-    ticPubkey\x12\x1e\n\ncredential\x18\x02\x20\x01(\x0cR\ncredential\"\x0f\
-    \n\rThpEndRequest\"\x10\n\x0eThpEndResponse*\x8b\x01\n\x10ThpPairingMeth\
-    od\x12\x1a\n\x16PairingMethod_NoMethod\x10\x01\x12\x1b\n\x17PairingMetho\
-    d_CodeEntry\x10\x02\x12\x18\n\x14PairingMethod_QrCode\x10\x03\x12$\n\x20\
-    PairingMethod_NFC_Unidirectional\x10\x04B7\n#com.satoshilabs.trezor.lib.\
-    protobufB\x10TrezorMessageThp\
+    ice\x18\x02\x20\x01(\x08R\x08onDevice\x12%\n\x0ederive_cardano\x18\x03\
+    \x20\x01(\x08R\rderiveCardano\"5\n\rThpNewSession\x12$\n\x0enew_session_\
+    id\x18\x01\x20\x01(\rR\x0cnewSessionId\"5\n\x16ThpStartPairingRequest\
+    \x12\x1b\n\thost_name\x18\x01\x20\x01(\tR\x08hostName\"\x20\n\x1eThpPair\
+    ingPreparationsFinished\"8\n\x16ThpCodeEntryCommitment\x12\x1e\n\ncommit\
+    ment\x18\x01\x20\x01(\x0cR\ncommitment\"5\n\x15ThpCodeEntryChallenge\x12\
+    \x1c\n\tchallenge\x18\x01\x20\x01(\x0cR\tchallenge\"J\n\x15ThpCodeEntryC\
+    paceHost\x121\n\x15cpace_host_public_key\x18\x01\x20\x01(\x0cR\x12cpaceH\
+    ostPublicKey\"P\n\x17ThpCodeEntryCpaceTrezor\x125\n\x17cpace_trezor_publ\
+    ic_key\x18\x01\x20\x01(\x0cR\x14cpaceTrezorPublicKey\"#\n\x0fThpCodeEntr\
+    yTag\x12\x10\n\x03tag\x18\x02\x20\x01(\x0cR\x03tag\",\n\x12ThpCodeEntryS\
+    ecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"\x20\n\x0cThp\
+    QrCodeTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\")\n\x0fThpQrCod\
+    eSecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"+\n\x17ThpN\
+    fcUnidirectionalTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\"5\n\
+    \x1bThpNfcUnideirectionalSecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0c\
+    R\x06secret\"D\n\x14ThpCredentialRequest\x12,\n\x12host_static_pubkey\
+    \x18\x01\x20\x01(\x0cR\x10hostStaticPubkey\"i\n\x15ThpCredentialResponse\
+    \x120\n\x14trezor_static_pubkey\x18\x01\x20\x01(\x0cR\x12trezorStaticPub\
+    key\x12\x1e\n\ncredential\x18\x02\x20\x01(\x0cR\ncredential\"\x0f\n\rThp\
+    EndRequest\"\x10\n\x0eThpEndResponse*\x8b\x01\n\x10ThpPairingMethod\x12\
+    \x1a\n\x16PairingMethod_NoMethod\x10\x01\x12\x1b\n\x17PairingMethod_Code\
+    Entry\x10\x02\x12\x18\n\x14PairingMethod_QrCode\x10\x03\x12$\n\x20Pairin\
+    gMethod_NFC_Unidirectional\x10\x04B7\n#com.satoshilabs.trezor.lib.protob\
+    ufB\x10TrezorMessageThp\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
