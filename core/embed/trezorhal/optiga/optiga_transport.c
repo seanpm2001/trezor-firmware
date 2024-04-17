@@ -34,6 +34,7 @@
 #include TREZOR_BOARD
 
 void vcp_println(const char *fmt, ...);
+void vcp_print(const char *fmt, ...);
 
 // Maximum possible packet size that can be transmitted.
 #define OPTIGA_MAX_PACKET_SIZE (OPTIGA_DATA_REG_LEN - 5)
@@ -668,12 +669,36 @@ optiga_result optiga_execute_command(const uint8_t *command_data,
 
   increment_seq(sec_chan_sseq);
 
-  if (sec_chan_size < SEC_CHAN_OVERHEAD_SIZE ||
-      sec_chan_buffer[0] != SCTR_PROTECTED ||
-      memcmp(&sec_chan_buffer[SEC_CHAN_SEQ_OFFSET], sec_chan_sseq,
-             SEC_CHAN_SEQ_SIZE) != 0) {
+  if (sec_chan_size < SEC_CHAN_OVERHEAD_SIZE) {
     vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
                 __LINE__);
+    vcp_print("sec_chan_size: %d, sec_chan_buffer: ", sec_chan_size);
+    for (size_t i = 0; i < sec_chan_size; ++i) {
+      vcp_print("%02x", sec_chan_buffer[i]);
+    }
+    vcp_println("");
+    return OPTIGA_ERR_UNEXPECTED;
+  }
+
+  if (sec_chan_buffer[0] != SCTR_PROTECTED) {
+    vcp_println("Error: OPTIGA_ERR_UNEXPECTED, File: %s, Line: %d", __FILE__,
+                __LINE__);
+    vcp_println("sec_chan_buffer[0]: %02x", sec_chan_buffer[0]);
+    return OPTIGA_ERR_UNEXPECTED;
+  }
+
+  if (memcmp(&sec_chan_buffer[SEC_CHAN_SEQ_OFFSET], sec_chan_sseq,
+             SEC_CHAN_SEQ_SIZE) != 0) {
+    vcp_println("sec_chan_buffer[SEC_CHAN_SEQ_OFFSET]: ");
+    for (size_t i = 0; i < SEC_CHAN_SEQ_SIZE; ++i) {
+      vcp_print("%02x", sec_chan_buffer[SEC_CHAN_SEQ_OFFSET + i]);
+    }
+    vcp_println("");
+    vcp_println("sec_chan_sseq: ");
+    for (size_t i = 0; i < SEC_CHAN_SEQ_SIZE; ++i) {
+      vcp_print("%02x", sec_chan_sseq[i]);
+    }
+    vcp_println("");
     return OPTIGA_ERR_UNEXPECTED;
   }
 
