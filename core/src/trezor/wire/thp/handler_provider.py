@@ -9,16 +9,8 @@ if TYPE_CHECKING:
 
     pass
 
-from apps.thp.pairing import handle_pairing_request
 
-
-def get_handler_for_handshake(
+def get_handler_for_channel_message(
     msg: protobuf.MessageType,
 ) -> Callable[[Any, Any], Coroutine[Any, Any, protobuf.MessageType]]:
     return create_session.create_new_session
-
-
-def get_handler_for_pairing(
-    messageType: int,
-) -> Callable[[Any, Any], Coroutine[Any, Any, protobuf.MessageType | None]]:
-    return handle_pairing_request
