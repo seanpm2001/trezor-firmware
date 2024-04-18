@@ -51,7 +51,6 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
                 # following bytes are not "##"", do not respond
 
             if cid == BROADCAST_CHANNEL_ID:
-                # TODO handle exceptions, try-catch?
                 await _handle_broadcast(iface, ctrl_byte, packet)
                 continue
 
