@@ -60,7 +60,7 @@ EXPERIMENTAL_ENABLED = False
 
 def setup(iface: WireInterface, is_debug_session: bool = False) -> None:
     """Initialize the wire stack on passed WireInterface."""
-    if utils.USE_THP:
+    if utils.USE_THP and not is_debug_session:
         loop.schedule(handle_thp_session(iface, is_debug_session))
     else:
         loop.schedule(handle_session(iface, is_debug_session))
