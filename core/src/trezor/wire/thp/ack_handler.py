@@ -1,40 +1,30 @@
 from storage.cache_thp import ChannelCache, SessionThpCache
-from trezor import log, loop
+from trezor import log
 
 from . import thp_session as THP
 
 
-def handle_received_ACK(
-    cache: SessionThpCache | ChannelCache,
-    sync_bit: int,
-    waiting_for_ack_timeout: loop.spawn | None = None,
-) -> None:
+def is_ack_valid(cache: SessionThpCache | ChannelCache, sync_bit: int) -> bool:
+    if not _is_ack_expected(cache):
+        return False
 
-    if _ack_is_not_expected(cache):
-        _conditionally_log_debug("Received unexpected ACK message")
-        return
-    if _ack_has_incorrect_sync_bit(cache, sync_bit):
-        _conditionally_log_debug("Received ACK message with wrong sync bit")
-        return
+    if not _has_ack_correct_sync_bit(cache, sync_bit):
+        return False
 
-    # ACK is expected and it has correct sync bit
-    _conditionally_log_debug("Received ACK message with correct sync bit")
-    if waiting_for_ack_timeout is not None:
-        waiting_for_ack_timeout.close()
-        _conditionally_log_debug('Closed "waiting for ack" task')
-    THP.sync_set_can_send_message(cache, True)
+    return True
 
 
-def _ack_is_not_expected(cache: SessionThpCache | ChannelCache) -> bool:
-    return THP.sync_can_send_message(cache)
+def _is_ack_expected(cache: SessionThpCache | ChannelCache) -> bool:
+    is_expected: bool = not THP.sync_can_send_message(cache)
+    if not is_expected and __debug__:
+        log.debug(__name__, "Received unexpected ACK message")
+    return is_expected
 
 
-def _ack_has_incorrect_sync_bit(
+def _has_ack_correct_sync_bit(
     cache: SessionThpCache | ChannelCache, sync_bit: int
 ) -> bool:
-    return THP.sync_get_send_bit(cache) != sync_bit
-
-
-def _conditionally_log_debug(message):
-    if __debug__:
-        log.debug(__name__, message)
+    is_correct: bool = THP.sync_get_send_bit(cache) == sync_bit
+    if __debug__ and not is_correct:
+        log.debug(__name__, "Received ACK message with wrong sync bit")
+    return is_correct
