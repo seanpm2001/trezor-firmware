@@ -327,6 +327,8 @@ optiga_result optiga_get_error_code(uint8_t *error_code) {
 optiga_result optiga_get_data_object(uint16_t oid, bool get_metadata,
                                      uint8_t *data, size_t max_data_size,
                                      size_t *data_size) {
+  vcp_println("Command: get_data_object");
+
   tx_size = 6;
   uint8_t *ptr = tx_buffer;
   *(ptr++) = 0x81;  // command code
@@ -349,6 +351,8 @@ optiga_result optiga_get_data_object(uint16_t oid, bool get_metadata,
  */
 optiga_result optiga_set_data_object(uint16_t oid, bool set_metadata,
                                      const uint8_t *data, size_t data_size) {
+  vcp_println("Command: set_data_object");
+
   tx_size = data_size + 8;
   if (tx_size > sizeof(tx_buffer)) {
     vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
@@ -384,6 +388,8 @@ optiga_result optiga_set_data_object(uint16_t oid, bool set_metadata,
  * https://github.com/Infineon/optiga-trust-m/blob/develop/documents/OPTIGA%E2%84%A2%20Trust%20M%20Solution%20Reference%20Manual.md#setdataobject
  */
 optiga_result optiga_count_data_object(uint16_t oid, uint8_t count) {
+  vcp_println("Command: count_data_object");
+
   if (count == 0) {
     return OPTIGA_SUCCESS;
   }
@@ -419,6 +425,8 @@ optiga_result optiga_count_data_object(uint16_t oid, uint8_t count) {
  * https://github.com/Infineon/optiga-trust-m/blob/develop/documents/OPTIGA%E2%84%A2%20Trust%20M%20Solution%20Reference%20Manual.md#getrandom
  */
 optiga_result optiga_get_random(uint8_t *random, size_t random_size) {
+  vcp_println("Command: get_random");
+
   if (random_size < OPTIGA_RANDOM_MIN_SIZE ||
       random_size > OPTIGA_RANDOM_MAX_SIZE) {
     vcp_println("Error: OPTIGA_ERR_SIZE, File: %s, Line: %d", __FILE__,
@@ -451,6 +459,8 @@ optiga_result optiga_encrypt_sym(optiga_sym_mode mode, uint16_t oid,
                                  const uint8_t *input, size_t input_size,
                                  uint8_t *output, size_t max_output_size,
                                  size_t *output_size) {
+  vcp_println("Command: encrypt_sym");
+
   if (input_size < 1 || input_size > 640) {
     vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
                 __LINE__);
@@ -483,6 +493,8 @@ optiga_result optiga_encrypt_sym(optiga_sym_mode mode, uint16_t oid,
  */
 optiga_result optiga_set_auto_state(uint16_t nonce_oid, uint16_t key_oid,
                                     const uint8_t *key, size_t key_size) {
+  vcp_println("Command: set_auto_state");
+
   uint8_t nonce[16] = {0};
 
   tx_size = 11;
@@ -533,6 +545,8 @@ optiga_result optiga_set_auto_state(uint16_t nonce_oid, uint16_t key_oid,
 }
 
 optiga_result optiga_clear_auto_state(uint16_t key_oid) {
+  vcp_println("Command: clear_auto_state");
+
   tx_size = 12;
   uint8_t *ptr = tx_buffer;
   *(ptr++) = 0x95;  // command code
@@ -571,6 +585,8 @@ optiga_result optiga_clear_auto_state(uint16_t key_oid) {
 optiga_result optiga_calc_sign(uint16_t oid, const uint8_t *digest,
                                size_t digest_size, uint8_t *signature,
                                size_t max_sig_size, size_t *sig_size) {
+  vcp_println("Command: calc_sign");
+
   tx_size = digest_size + 12;
   if (tx_size > sizeof(tx_buffer)) {
     vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
@@ -638,6 +654,8 @@ optiga_result optiga_verify_sign(optiga_curve curve, const uint8_t *public_key,
                                  size_t public_key_size, const uint8_t *digest,
                                  size_t digest_size, const uint8_t *signature,
                                  size_t sig_size) {
+  vcp_println("Command: verify_sign");
+
   tx_size = 17 + digest_size + sig_size + public_key_size;
   if (tx_size > sizeof(tx_buffer)) {
     vcp_println("Error: OPTIGA_ERR_PARAM, File: %s, Line: %d", __FILE__,
@@ -681,6 +699,8 @@ optiga_result optiga_gen_key_pair(optiga_curve curve, optiga_key_usage usage,
                                   uint16_t oid, uint8_t *public_key,
                                   size_t max_public_key_size,
                                   size_t *public_key_size) {
+  vcp_println("Command: gen_key_pair");
+
   tx_size = 13;
   uint8_t *ptr = tx_buffer;
   *(ptr++) = 0xB8;  // command code
@@ -710,6 +730,8 @@ optiga_result optiga_gen_key_pair(optiga_curve curve, optiga_key_usage usage,
  */
 optiga_result optiga_gen_sym_key(optiga_aes algorithm, optiga_key_usage usage,
                                  uint16_t oid) {
+  vcp_println("Command: gen_sym_key");
+
   tx_size = 13;
   uint8_t *ptr = tx_buffer;
   *(ptr++) = 0xB9;  // command code
@@ -741,6 +763,8 @@ optiga_result optiga_calc_ssec(optiga_curve curve, uint16_t oid,
                                const uint8_t *public_key,
                                size_t public_key_size, uint8_t *secret,
                                size_t max_secret_size, size_t *secret_size) {
+  vcp_println("Command: calc_sec");
+
   // Size of a P521 public key encoded as a DER BIT STRING.
   static const size_t MAX_PUBKEY_SIZE = 5 + 2 * 66;
 
@@ -786,6 +810,8 @@ optiga_result optiga_derive_key(optiga_key_derivation deriv, uint16_t oid,
                                 const uint8_t *salt, size_t salt_size,
                                 uint8_t *info, size_t info_size, uint8_t *key,
                                 size_t key_size) {
+  vcp_println("Command: derive_key");
+
   const bool is_hkdf =
       (deriv == OPTIGA_DERIV_HKDF_SHA256 || deriv == OPTIGA_DERIV_HKDF_SHA384 ||
        deriv == OPTIGA_DERIV_HKDF_SHA512);
@@ -879,6 +905,8 @@ optiga_result optiga_set_trust_anchor(void) {
  * https://github.com/Infineon/optiga-trust-m/blob/develop/documents/OPTIGA%E2%84%A2%20Trust%20M%20Solution%20Reference%20Manual.md#setobjectprotected
  */
 optiga_result optiga_set_priv_key(uint16_t oid, const uint8_t priv_key[32]) {
+  vcp_println("Command: set_priv_key");
+
   uint8_t metadata_buffer[256] = {0};
   size_t metadata_size = 0;
   optiga_result ret = optiga_get_data_object(
