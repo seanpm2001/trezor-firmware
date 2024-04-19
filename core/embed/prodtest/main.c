@@ -208,6 +208,14 @@ static void test_display(const char *colors) {
   vcp_println("OK");
 }
 
+extern int random_delays_wait_time;
+
+static void set_wait_time(const char *wait_time_string) {
+  int wait_time = atoi(wait_time_string);
+  random_delays_wait_time = wait_time;
+  vcp_println("OK");
+}
+
 #ifdef USE_BUTTON
 
 static secbool test_btn_press(uint32_t deadline, uint32_t btn) {
@@ -678,6 +686,10 @@ int main(void) {
 
     } else if (startswith(line, "DISP ")) {
       test_display(line + 5);
+
+    } else if (startswith(line, "SET WAIT TIME ")) {
+      set_wait_time(line + 14);
+
 #ifdef USE_BUTTON
     } else if (startswith(line, "BUTTON ")) {
       test_button(line + 7);

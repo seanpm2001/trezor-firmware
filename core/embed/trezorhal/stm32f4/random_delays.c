@@ -54,6 +54,8 @@ _Static_assert(CHACHA_DRBG_OPTIMAL_RESEED_LENGTH(1) == DRBG_TRNG_ENTROPY_LENGTH,
                "");
 #define BUFFER_LENGTH 64
 
+int random_delays_wait_time = 0;
+
 static CHACHA_DRBG_CTX drbg_ctx;
 static secbool drbg_initialized = secfalse;
 static uint8_t session_delay;
@@ -193,18 +195,8 @@ void rdi_handler(uint32_t uw_tick) {
  * against fault injection.
  */
 void wait_random(void) {
-  int wait = drbg_random8();
   volatile int i = 0;
-  volatile int j = wait;
-  while (i < wait) {
-    if (i + j != wait) {
-      shutdown_privileged();
-    }
-    ++i;
-    --j;
-  }
-  // Double-check loop completion.
-  if (i != wait || j != 0) {
-    shutdown_privileged();
+  for (i = 0; i < random_delays_wait_time; i++) {
+    __asm__("nop");
   }
 }
