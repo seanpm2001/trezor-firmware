@@ -91,12 +91,12 @@ async def _handle_broadcast(
     if not checksum.is_valid(payload[-4:], header.to_bytes() + payload[:-4]):
         raise ThpError("Checksum is not valid")
 
-    new_context: Channel = Channel.create_new_channel(iface, _BUFFER)
-    cid = int.from_bytes(new_context.channel_id, "big")
-    CHANNELS[cid] = new_context
+    new_channel: Channel = Channel.create_new_channel(iface, _BUFFER)
+    cid = int.from_bytes(new_channel.channel_id, "big")
+    CHANNELS[cid] = new_channel
 
     response_data = thp_messages.get_channel_allocation_response(
-        nonce, new_context.channel_id
+        nonce, new_channel.channel_id
     )
     response_header = InitHeader.get_channel_allocation_response_header(
         len(response_data) + CHECKSUM_LENGTH,
