@@ -799,7 +799,7 @@ pub enum TranslatedString {
     recovery__num_of_words = 511,  // "Select the number of words in your backup."
     recovery__only_first_n_letters = 512,  // "You'll only have to select the first 2-4 letters of each word."
     recovery__progress_will_be_lost = 513,  // "All progress will be lost."
-    recovery__select_num_of_words = 514,  // "Select the number of words in your backup."
+    recovery__select_num_of_words = 514,  // "\"\""
     recovery__share_already_entered = 515,  // "Share already entered"
     recovery__share_from_another_multi_share_backup = 516,  // "You have entered a share from another multi-share backup."
     recovery__share_num_template = 517,  // "Share {0}"
@@ -1251,6 +1251,9 @@ pub enum TranslatedString {
     cardano__deposit = 851,  // "Deposit:"
     #[cfg(feature = "universal_fw")]
     cardano__vote_delegation = 852,  // "Vote delegation"
+    recovery__title_unlock_repeated_backup = 853,  // "Multi-share backup"
+    recovery__unlock_repeated_backup = 854,  // "Do you want to unlock the seed for repeated backup?"
+    recovery__unlock_repeated_backup_verb = 855,  // "Unlock backup"
 }
 
 impl TranslatedString {
@@ -2045,7 +2048,7 @@ impl TranslatedString {
             Self::recovery__num_of_words => "Select the number of words in your backup.",
             Self::recovery__only_first_n_letters => "You'll only have to select the first 2-4 letters of each word.",
             Self::recovery__progress_will_be_lost => "All progress will be lost.",
-            Self::recovery__select_num_of_words => "Select the number of words in your backup.",
+            Self::recovery__select_num_of_words => "\"\"",
             Self::recovery__share_already_entered => "Share already entered",
             Self::recovery__share_from_another_multi_share_backup => "You have entered a share from another multi-share backup.",
             Self::recovery__share_num_template => "Share {0}",
@@ -2497,6 +2500,9 @@ impl TranslatedString {
             Self::cardano__deposit => "Deposit:",
             #[cfg(feature = "universal_fw")]
             Self::cardano__vote_delegation => "Vote delegation",
+            Self::recovery__title_unlock_repeated_backup => "Multi-share backup",
+            Self::recovery__unlock_repeated_backup => "Do you want to unlock the seed for repeated backup?",
+            Self::recovery__unlock_repeated_backup_verb => "Unlock backup",
         }
     }
 
@@ -3744,6 +3750,9 @@ impl TranslatedString {
             Qstr::MP_QSTR_cardano__deposit => Some(Self::cardano__deposit),
             #[cfg(feature = "universal_fw")]
             Qstr::MP_QSTR_cardano__vote_delegation => Some(Self::cardano__vote_delegation),
+            Qstr::MP_QSTR_recovery__title_unlock_repeated_backup => Some(Self::recovery__title_unlock_repeated_backup),
+            Qstr::MP_QSTR_recovery__unlock_repeated_backup => Some(Self::recovery__unlock_repeated_backup),
+            Qstr::MP_QSTR_recovery__unlock_repeated_backup_verb => Some(Self::recovery__unlock_repeated_backup_verb),
             _ => None,
         }
     }

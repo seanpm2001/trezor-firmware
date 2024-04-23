@@ -851,5 +851,8 @@
   "849": "cardano__delegating_to_key_hash",
   "850": "cardano__delegating_to_script",
   "851": "cardano__deposit",
-  "852": "cardano__vote_delegation"
+  "852": "cardano__vote_delegation",
+  "853": "recovery__title_unlock_repeated_backup",
+  "854": "recovery__unlock_repeated_backup",
+  "855": "recovery__unlock_repeated_backup_verb"
 }

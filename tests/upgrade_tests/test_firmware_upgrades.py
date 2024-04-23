@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, List, Optional
 import pytest
 
 from trezorlib import btc, debuglink, device, exceptions, fido, models
-from trezorlib.messages import BackupType
+from trezorlib.messages import BackupType, RecoveryStatus
 from trezorlib.tools import H_
 
 from ..common import MNEMONIC_SLIP39_BASIC_20_3of6, MNEMONIC_SLIP39_BASIC_20_3of6_SECRET
@@ -287,7 +287,7 @@ def test_upgrade_shamir_recovery(gen: str, tag: Optional[str]):
     with EmulatorWrapper(gen, tag) as emu, BackgroundDeviceHandler(
         emu.client
     ) as device_handler:
-        assert emu.client.features.recovery_mode is False
+        assert emu.client.features.recovery_status == RecoveryStatus.NoRecovery
         emu.client.watch_layout(True)
         debug = device_handler.debuglink()
 
@@ -308,7 +308,7 @@ def test_upgrade_shamir_recovery(gen: str, tag: Optional[str]):
 
     with EmulatorWrapper(gen, storage=storage) as emu:
         assert device_id == emu.client.features.device_id
-        assert emu.client.features.recovery_mode
+        assert emu.client.features.recovery_status == RecoveryStatus.InNormalRecovery
         debug = emu.client.debug
         emu.client.watch_layout(True)
 
