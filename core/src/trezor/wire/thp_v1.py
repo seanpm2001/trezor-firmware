@@ -6,12 +6,12 @@ from storage.cache_thp import BROADCAST_CHANNEL_ID
 from trezor import io, log, loop, utils
 
 from .protocol_common import MessageWithId
-from .thp import ChannelState, checksum, thp_messages
-from .thp.channel import MAX_PAYLOAD_LEN, REPORT_LENGTH, Channel, load_cached_channels
+from .thp import ChannelState, channel_manager, checksum, session_manager, thp_messages
+from .thp.channel import Channel
 from .thp.checksum import CHECKSUM_LENGTH
 from .thp.thp_messages import CHANNEL_ALLOCATION_REQ, CODEC_V1, InitHeader
 from .thp.thp_session import ThpError
-from .thp.writer import write_payload_to_wire
+from .thp.writer import MAX_PAYLOAD_LEN, REPORT_LENGTH, write_payload_to_wire
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
@@ -33,7 +33,9 @@ def set_buffer(buffer):
 async def thp_main_loop(iface: WireInterface, is_debug_session=False):
     global CHANNELS
     global _BUFFER
-    CHANNELS = load_cached_channels(_BUFFER)
+    CHANNELS = channel_manager.load_cached_channels(_BUFFER)
+    for ch in CHANNELS.values():
+        ch.sessions = session_manager.load_cached_sessions(ch)
 
     read = loop.wait(iface.iface_num() | io.POLL_READ)
 
@@ -55,18 +57,9 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
                 continue
 
             if cid in CHANNELS:
-                channel = CHANNELS[cid]
-                if channel is None:
-                    # TODO send error message to wire
-                    raise ThpError("Invalid state of a channel")
-                if channel.iface is not iface:
-                    # TODO send error message to wire
-                    raise ThpError("Channel has different WireInterface")
-
-                if channel.get_channel_state() != ChannelState.UNALLOCATED:
-                    await channel.receive_packet(packet)
-                    continue
-            await _handle_unallocated(iface, cid)
+                await _handle_allocated(iface, cid, packet)
+            else:
+                await _handle_unallocated(iface, cid)
 
         except ThpError as e:
             if __debug__:
@@ -76,7 +69,7 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
 
 
 async def _handle_broadcast(
-    iface: WireInterface, ctrl_byte, packet
+    iface: WireInterface, ctrl_byte: int, packet: utils.BufferType
 ) -> MessageWithId | None:
     global _BUFFER
     if ctrl_byte != CHANNEL_ALLOCATION_REQ:
@@ -91,7 +84,7 @@ async def _handle_broadcast(
     if not checksum.is_valid(payload[-4:], header.to_bytes() + payload[:-4]):
         raise ThpError("Checksum is not valid")
 
-    new_channel: Channel = Channel.create_new_channel(iface, _BUFFER)
+    new_channel: Channel = channel_manager.create_new_channel(iface, _BUFFER)
     cid = int.from_bytes(new_channel.channel_id, "big")
     CHANNELS[cid] = new_channel
 
@@ -106,6 +99,21 @@ async def _handle_broadcast(
         log.debug(__name__, "New channel allocated with id %d", cid)
 
     await write_payload_to_wire(iface, response_header, response_data + chksum)
+
+
+async def _handle_allocated(
+    iface: WireInterface, cid: int, packet: utils.BufferType
+) -> None:
+    channel = CHANNELS[cid]
+    if channel is None:
+        # TODO send error message to wire
+        raise ThpError("Invalid state of a channel")
+    if channel.iface is not iface:
+        # TODO send error message to wire
+        raise ThpError("Channel has different WireInterface")
+
+    if channel.get_channel_state() != ChannelState.UNALLOCATED:
+        await channel.receive_packet(packet)
 
 
 async def _handle_unallocated(iface, cid) -> MessageWithId | None:
