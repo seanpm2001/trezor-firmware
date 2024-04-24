@@ -37,12 +37,12 @@ async def handle_pairing_request(
     _check_state(ctx, ChannelState.TP1)
 
     if _is_method_included(ctx, ThpPairingMethod.PairingMethod_CodeEntry):
-        ctx.channel.set_channel_state(ChannelState.TP2)
+        ctx.channel_ctx.set_channel_state(ChannelState.TP2)
 
         response = await ctx.call(ThpCodeEntryCommitment(), ThpCodeEntryChallenge)
         return await _handle_code_entry_challenge(ctx, response)
 
-    ctx.channel.set_channel_state(ChannelState.TP3)
+    ctx.channel_ctx.set_channel_state(ChannelState.TP3)
     response = await ctx.call_any(
         ThpPairingPreparationsFinished(),
         MessageType.ThpQrCodeTag,
@@ -63,7 +63,7 @@ async def _handle_code_entry_challenge(
     assert ThpCodeEntryChallenge.is_type_of(message)
 
     _check_state(ctx, ChannelState.TP2)
-    ctx.channel.set_channel_state(ChannelState.TP3)
+    ctx.channel_ctx.set_channel_state(ChannelState.TP3)
     response = await ctx.call_any(
         ThpPairingPreparationsFinished(),
         MessageType.ThpCodeEntryCpaceHost,
@@ -88,7 +88,7 @@ async def _handle_code_entry_cpace(
 
     _check_state(ctx, ChannelState.TP3)
     _check_method_is_allowed(ctx, ThpPairingMethod.PairingMethod_CodeEntry)
-    ctx.channel.set_channel_state(ChannelState.TP4)
+    ctx.channel_ctx.set_channel_state(ChannelState.TP4)
     response = await ctx.call(ThpCodeEntryCpaceTrezor(), ThpCodeEntryTag)
     return await _handle_code_entry_tag(ctx, response)
 
@@ -149,7 +149,7 @@ async def _handle_end_request(
     assert ThpEndRequest.is_type_of(message)
 
     _check_state(ctx, ChannelState.TC1)
-    ctx.channel.set_channel_state(ChannelState.ENCRYPTED_TRANSPORT)
+    ctx.channel_ctx.set_channel_state(ChannelState.ENCRYPTED_TRANSPORT)
     return ThpEndResponse()
 
 
@@ -161,7 +161,7 @@ async def _handle_tag_message(
 ) -> ThpEndResponse:
     _check_state(ctx, expected_state)
     _check_method_is_allowed(ctx, used_method)
-    ctx.channel.set_channel_state(ChannelState.TC1)
+    ctx.channel_ctx.set_channel_state(ChannelState.TC1)
     response = await ctx.call_any(
         msg,
         MessageType.ThpCredentialRequest,
@@ -171,7 +171,7 @@ async def _handle_tag_message(
 
 
 def _check_state(ctx: PairingContext, expected_state: ChannelState) -> None:
-    if expected_state is not ctx.channel.get_channel_state():
+    if expected_state is not ctx.channel_ctx.get_channel_state():
         raise UnexpectedMessage("Unexpected message")
 
 
@@ -181,7 +181,7 @@ def _check_method_is_allowed(ctx: PairingContext, method: ThpPairingMethod) -> N
 
 
 def _is_method_included(ctx: PairingContext, method: ThpPairingMethod) -> bool:
-    return method in ctx.channel.selected_pairing_methods
+    return method in ctx.channel_ctx.selected_pairing_methods
 
 
 async def _handle_credential_request_or_end_request(
