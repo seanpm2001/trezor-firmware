@@ -6,11 +6,10 @@ use crate::{
     },
 };
 
-use super::{Bitmap, BitmapFormat, Canvas, DrawingCache, Renderer, Shape, ShapeClone};
-
-use without_alloc::alloc::LocalAllocLeakExt;
+use super::{base::SimpleClone, Bitmap, BitmapFormat, Canvas, DrawingCache, Renderer, Shape};
 
 /// A shape for rendering compressed TOIF images.
+#[derive(Clone)]
 pub struct ToifImage<'a> {
     /// Image position
     pos: Point,
@@ -60,8 +59,8 @@ impl<'a> ToifImage<'a> {
         }
     }
 
-    pub fn render(self, renderer: &mut impl Renderer<'a>) {
-        renderer.render_shape(self);
+    pub fn render(mut self, renderer: &mut impl Renderer<'a>) {
+        renderer.render_shape(&mut self);
     }
 
     fn draw_grayscale(&self, canvas: &mut dyn Canvas, cache: &DrawingCache<'a>) {
@@ -178,12 +177,4 @@ impl<'a> Shape<'a> for ToifImage<'a> {
     }
 }
 
-impl<'a> ShapeClone<'a> for ToifImage<'a> {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape<'a>>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(ToifImage { ..self }))
-    }
-}
+impl SimpleClone for ToifImage<'_> {}

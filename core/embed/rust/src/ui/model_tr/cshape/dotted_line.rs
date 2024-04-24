@@ -1,12 +1,11 @@
 use crate::ui::{
     display::Color,
     geometry::{Offset, Point, Rect},
-    shape::{Canvas, DrawingCache, Renderer, Shape, ShapeClone},
+    shape::{Canvas, DrawingCache, Renderer, Shape, SimpleClone},
 };
 
-use without_alloc::alloc::LocalAllocLeakExt;
-
 // Shape of horizontal solid/dotted line
+#[derive(Clone)]
 pub struct HorizontalLine {
     /// Position of the left-top point
     pos: Point,
@@ -43,13 +42,13 @@ impl HorizontalLine {
         Self { step, ..self }
     }
 
-    pub fn render<'s>(self, renderer: &mut impl Renderer<'s>) {
-        renderer.render_shape(self);
+    pub fn render<'s>(mut self, renderer: &mut impl Renderer<'s>) {
+        renderer.render_shape(&mut self);
     }
 }
 
-impl<'s> Shape<'s> for HorizontalLine {
-    fn bounds(&self, _cache: &DrawingCache<'s>) -> Rect {
+impl Shape<'_> for HorizontalLine {
+    fn bounds(&self, _cache: &DrawingCache) -> Rect {
         let size = Offset::new(self.length, self.thickness as i16);
         Rect::from_top_left_and_size(self.pos, size)
     }
@@ -76,12 +75,4 @@ impl<'s> Shape<'s> for HorizontalLine {
     }
 }
 
-impl<'s> ShapeClone<'s> for HorizontalLine {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape<'s>>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(HorizontalLine { ..self }))
-    }
-}
+impl SimpleClone for HorizontalLine {}

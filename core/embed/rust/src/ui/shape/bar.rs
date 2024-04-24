@@ -1,10 +1,9 @@
 use crate::ui::{display::Color, geometry::Rect};
 
-use super::{Canvas, DrawingCache, Renderer, Shape, ShapeClone};
-
-use without_alloc::alloc::LocalAllocLeakExt;
+use super::{base::SimpleClone, Canvas, DrawingCache, Renderer, Shape};
 
 /// A shape for the rendering variuous type of rectangles.
+#[derive(Clone)]
 pub struct Bar {
     /// Rectangle position and dimenstion
     area: Rect,
@@ -58,8 +57,8 @@ impl Bar {
         Self { alpha, ..self }
     }
 
-    pub fn render<'s>(self, renderer: &mut impl Renderer<'s>) {
-        renderer.render_shape(self);
+    pub fn render<'s>(mut self, renderer: &mut impl Renderer<'s>) {
+        renderer.render_shape(&mut self);
     }
 }
 
@@ -117,12 +116,4 @@ impl Shape<'_> for Bar {
     }
 }
 
-impl<'s> ShapeClone<'s> for Bar {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape<'s>>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(Bar { ..self }))
-    }
-}
+impl SimpleClone for Bar {}

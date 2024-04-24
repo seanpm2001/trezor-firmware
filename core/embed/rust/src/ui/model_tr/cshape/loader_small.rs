@@ -1,10 +1,8 @@
 use crate::ui::{
     display::Color,
     geometry::{Offset, Point, Rect},
-    shape::{Canvas, DrawingCache, Renderer, Shape, ShapeClone},
+    shape::{Canvas, DrawingCache, Renderer, Shape, SimpleClone},
 };
-
-use without_alloc::alloc::LocalAllocLeakExt;
 
 use core::f32::consts::SQRT_2;
 
@@ -25,6 +23,7 @@ static STARS: [(Offset, Offset); STAR_COUNT] = [
 ];
 
 /// A shape of a TS3 small loader
+#[derive(Clone)]
 pub struct LoaderSmall {
     /// Position of point (0,0)
     pos: Point,
@@ -47,8 +46,8 @@ impl LoaderSmall {
         Self { color, ..self }
     }
 
-    pub fn render<'s>(self, renderer: &mut impl Renderer<'s>) {
-        renderer.render_shape(self);
+    pub fn render<'s>(mut self, renderer: &mut impl Renderer<'s>) {
+        renderer.render_shape(&mut self);
     }
 }
 
@@ -77,12 +76,4 @@ impl Shape<'_> for LoaderSmall {
     }
 }
 
-impl ShapeClone<'_> for LoaderSmall {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(LoaderSmall { ..self }))
-    }
-}
+impl SimpleClone for LoaderSmall {}

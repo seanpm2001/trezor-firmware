@@ -3,9 +3,7 @@ use crate::ui::{
     geometry::{Alignment, Offset, Point, Rect},
 };
 
-use super::{BitmapView, Canvas, DrawingCache, Renderer, Shape, ShapeClone};
-
-use without_alloc::alloc::LocalAllocLeakExt;
+use super::{alloc_utils, BitmapView, Canvas, DrawingCache, Renderer, Shape, ShapeClone};
 
 /// A shape for text strings rendering.
 pub struct Text<'a> {
@@ -51,7 +49,7 @@ impl<'a> Text<'a> {
 
     pub fn render<'r>(mut self, renderer: &mut impl Renderer<'r>) {
         self.bounds = self.calc_bounds();
-        renderer.render_shape(self);
+        renderer.render_shape(&mut self);
     }
 
     fn aligned_pos(&self) -> Point {
@@ -110,14 +108,14 @@ impl<'a> Shape<'_> for Text<'a> {
     }
 }
 
-impl<'a, 's> ShapeClone<'s> for Text<'a> {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape<'s>>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        let text = bump.copy_str(self.text)?;
-        Some(clone.uninit.init(Text { text, ..self }))
+impl<'s> ShapeClone<'s> for Text<'_> {
+    fn clone_at_bump<'alloc>(
+        &self,
+        allocator: &'alloc dyn alloc_traits::LocalAlloc<'alloc>,
+    ) -> Option<&'alloc mut dyn Shape<'s>> {
+        let clone = alloc_utils::alloc_t::<Text>(allocator)?;
+        let text = alloc_utils::copy_str(allocator, self.text)?;
+        Some(clone.uninit.init(Text { text, ..*self }))
     }
 }
 

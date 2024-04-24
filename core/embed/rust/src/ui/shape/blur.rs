@@ -1,9 +1,8 @@
 use crate::ui::geometry::Rect;
 
-use super::{Canvas, DrawingCache, Renderer, Shape, ShapeClone};
+use super::{base::SimpleClone, Canvas, DrawingCache, Renderer, Shape};
 
-use without_alloc::alloc::LocalAllocLeakExt;
-
+#[derive(Clone)]
 pub struct Blurring {
     // Blurred area
     area: Rect,
@@ -17,8 +16,8 @@ impl Blurring {
         Self { area, radius }
     }
 
-    pub fn render<'s>(self, renderer: &mut impl Renderer<'s>) {
-        renderer.render_shape(self);
+    pub fn render<'s>(mut self, renderer: &mut impl Renderer<'s>) {
+        renderer.render_shape(&mut self);
     }
 }
 
@@ -34,12 +33,4 @@ impl Shape<'_> for Blurring {
     }
 }
 
-impl<'s> ShapeClone<'s> for Blurring {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape<'s>>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(Blurring { ..self }))
-    }
-}
+impl SimpleClone for Blurring {}

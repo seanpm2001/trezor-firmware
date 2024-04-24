@@ -1,3 +1,4 @@
+pub mod alloc_utils;
 mod bar;
 mod base;
 mod bitmap;
@@ -16,7 +17,7 @@ mod toif;
 mod utils;
 
 pub use bar::Bar;
-pub use base::{Shape, ShapeClone};
+pub use base::{Shape, ShapeClone, SimpleClone};
 pub use bitmap::{Bitmap, BitmapFormat, BitmapView};
 #[cfg(feature = "ui_blurring")]
 pub use blur::Blurring;

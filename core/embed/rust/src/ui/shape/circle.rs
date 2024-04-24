@@ -3,11 +3,10 @@ use crate::ui::{
     geometry::{Point, Rect},
 };
 
-use super::{Canvas, DrawingCache, Renderer, Shape, ShapeClone};
-
-use without_alloc::alloc::LocalAllocLeakExt;
+use super::{base::SimpleClone, Canvas, DrawingCache, Renderer, Shape};
 
 /// A shape for rendering various types of circles or circle sectors.
+#[derive(Clone)]
 pub struct Circle {
     center: Point,
     radius: i16,
@@ -63,8 +62,8 @@ impl Circle {
         }
     }
 
-    pub fn render<'s>(self, renderer: &mut impl Renderer<'s>) {
-        renderer.render_shape(self);
+    pub fn render<'s>(mut self, renderer: &mut impl Renderer<'s>) {
+        renderer.render_shape(&mut self);
     }
 }
 
@@ -128,12 +127,4 @@ impl Shape<'_> for Circle {
     }
 }
 
-impl<'s> ShapeClone<'s> for Circle {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape<'s>>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(Circle { ..self }))
-    }
-}
+impl SimpleClone for Circle {}

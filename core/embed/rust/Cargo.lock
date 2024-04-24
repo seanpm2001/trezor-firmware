@@ -313,6 +313,7 @@ version = "0.1.0"
 name = "trezor_lib"
 version = "0.1.0"
 dependencies = [
+ "alloc-traits",
  "bindgen",
  "cc",
  "cstr_core",

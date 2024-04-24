@@ -1,10 +1,8 @@
 use crate::ui::{
     display::Color,
     geometry::{Offset, Point, Rect},
-    shape::{Canvas, DrawingCache, Renderer, Shape, ShapeClone},
+    shape::{Canvas, DrawingCache, Renderer, Shape, SimpleClone},
 };
-
-use without_alloc::alloc::LocalAllocLeakExt;
 
 static CELLS: [Offset; 24] = [
     Offset::new(1, -4),
@@ -33,6 +31,7 @@ static CELLS: [Offset; 24] = [
     Offset::new(0, -4),
 ];
 
+#[derive(Clone)]
 pub struct LoaderCircular {
     /// Position of point (0,0)
     pos: Point,
@@ -76,8 +75,8 @@ impl LoaderCircular {
         Rect::from_top_left_and_size(pt, Offset::uniform(self.scale))
     }
 
-    pub fn render<'s>(self, renderer: &mut impl Renderer<'s>) {
-        renderer.render_shape(self);
+    pub fn render<'s>(mut self, renderer: &mut impl Renderer<'s>) {
+        renderer.render_shape(&mut self);
     }
 }
 
@@ -105,12 +104,4 @@ impl<'s> Shape<'s> for LoaderCircular {
     }
 }
 
-impl ShapeClone<'_> for LoaderCircular {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(LoaderCircular { ..self }))
-    }
-}
+impl SimpleClone for LoaderCircular {}

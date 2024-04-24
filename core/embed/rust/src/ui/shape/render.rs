@@ -31,9 +31,7 @@ pub trait Renderer<'a> {
         viewport
     }
 
-    fn render_shape<S>(&mut self, shape: S)
-    where
-        S: Shape<'a> + ShapeClone<'a>;
+    fn render_shape(&mut self, shape: &mut dyn ShapeClone<'a>);
 
     fn in_window(&mut self, r: Rect, inner: &dyn Fn(&mut Self)) {
         let original = self.set_window(r);
@@ -103,10 +101,7 @@ where
         self.canvas.set_viewport(viewport);
     }
 
-    fn render_shape<S>(&mut self, mut shape: S)
-    where
-        S: Shape<'alloc> + ShapeClone<'alloc>,
-    {
+    fn render_shape(&mut self, shape: &mut dyn ShapeClone<'alloc>) {
         if self.canvas.viewport().contains(shape.bounds(self.cache)) {
             shape.draw(self.canvas, self.cache);
             shape.cleanup(self.cache);
@@ -235,10 +230,7 @@ where
         self.viewport = viewport.absolute_clip(self.canvas.bounds());
     }
 
-    fn render_shape<S>(&mut self, shape: S)
-    where
-        S: Shape<'alloc> + ShapeClone<'alloc>,
-    {
+    fn render_shape(&mut self, shape: &mut dyn ShapeClone<'alloc>) {
         // Is the shape visible?
         if self.viewport.contains(shape.bounds(self.cache)) {
             // Clone the shape & push it to the list

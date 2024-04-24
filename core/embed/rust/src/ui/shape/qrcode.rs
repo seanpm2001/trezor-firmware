@@ -6,14 +6,13 @@ use crate::ui::{
 use qrcodegen::QrCode;
 
 use super::{
-    utils::line_points, Bitmap, BitmapFormat, Canvas, DrawingCache, Renderer, Shape, ShapeClone,
+    utils::line_points, base::SimpleClone, Bitmap, BitmapFormat, Canvas, DrawingCache, Renderer, Shape
 };
-
-use without_alloc::alloc::LocalAllocLeakExt;
 
 const MAX_QRCODE_BYTES: usize = 400;
 
 /// A shape for `QrCode` rendering.
+#[derive(Clone)]
 pub struct QrImage {
     /// Destination rectangle
     area: Rect,
@@ -84,8 +83,8 @@ impl QrImage {
         }
     }
 
-    pub fn render<'s>(self, renderer: &mut impl Renderer<'s>) {
-        renderer.render_shape(self);
+    pub fn render<'s>(mut self, renderer: &mut impl Renderer<'s>) {
+        renderer.render_shape(&mut self);
     }
 
     fn draw_row(&self, slice_row: &mut [u8], qr_y: i16) {
@@ -158,12 +157,4 @@ impl Shape<'_> for QrImage {
     }
 }
 
-impl<'s> ShapeClone<'s> for QrImage {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape<'s>>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(QrImage { ..self }))
-    }
-}
+impl SimpleClone for QrImage {}

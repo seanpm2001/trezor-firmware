@@ -3,11 +3,12 @@ use crate::{
     ui::geometry::{Alignment2D, Offset, Point, Rect},
 };
 
-use super::{Bitmap, BitmapFormat, BitmapView, Canvas, DrawingCache, Renderer, Shape, ShapeClone};
-
-use without_alloc::alloc::LocalAllocLeakExt;
+use super::{
+    base::SimpleClone, Bitmap, BitmapFormat, BitmapView, Canvas, DrawingCache, Renderer, Shape,
+};
 
 /// A shape for rendering compressed JPEG images.
+#[derive(Clone)]
 pub struct JpegImage<'a> {
     /// Image position
     pos: Point,
@@ -63,8 +64,8 @@ impl<'a> JpegImage<'a> {
         Self { dim, ..self }
     }
 
-    pub fn render(self, renderer: &mut impl Renderer<'a>) {
-        renderer.render_shape(self);
+    pub fn render(mut self, renderer: &mut impl Renderer<'a>) {
+        renderer.render_shape(&mut self);
     }
 }
 
@@ -192,12 +193,4 @@ impl<'a> Shape<'a> for JpegImage<'a> {
     }
 }
 
-impl<'a> ShapeClone<'a> for JpegImage<'a> {
-    fn clone_at_bump<'alloc, T>(self, bump: &'alloc T) -> Option<&'alloc mut dyn Shape<'a>>
-    where
-        T: LocalAllocLeakExt<'alloc>,
-    {
-        let clone = bump.alloc_t()?;
-        Some(clone.uninit.init(JpegImage { ..self }))
-    }
-}
+impl SimpleClone for JpegImage<'_> {}
