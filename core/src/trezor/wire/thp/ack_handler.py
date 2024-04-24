@@ -16,7 +16,7 @@ def is_ack_valid(cache: SessionThpCache | ChannelCache, sync_bit: int) -> bool:
 
 def _is_ack_expected(cache: SessionThpCache | ChannelCache) -> bool:
     is_expected: bool = not THP.sync_can_send_message(cache)
-    if not is_expected and __debug__:
+    if __debug__ and not is_expected:
         log.debug(__name__, "Received unexpected ACK message")
     return is_expected
 
