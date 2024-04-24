@@ -5,9 +5,9 @@ from trezor.wire import context, message_handler, protocol_common
 from trezor.wire.context import UnexpectedMessageWithId
 from trezor.wire.errors import ActionCancelled
 from trezor.wire.protocol_common import Context, MessageWithType
-from trezor.wire.thp.session_context import UnexpectedMessageWithType
 
-from .channel import Channel
+from . import ChannelContext
+from .session_context import UnexpectedMessageWithType
 
 if TYPE_CHECKING:
     from typing import Container  # pyright:ignore[reportShadowedImports]
@@ -16,9 +16,9 @@ if TYPE_CHECKING:
 
 
 class PairingContext(Context):
-    def __init__(self, channel: Channel) -> None:
-        super().__init__(channel.iface, channel.channel_id)
-        self.channel = channel
+    def __init__(self, channel_ctx: ChannelContext) -> None:
+        super().__init__(channel_ctx.iface, channel_ctx.channel_id)
+        self.channel_ctx = channel_ctx
         self.incoming_message = loop.chan()
 
     async def handle(self, is_debug_session: bool = False) -> None:
@@ -104,7 +104,7 @@ class PairingContext(Context):
         return message_handler.wrap_protobuf_load(message.data, expected_type)
 
     async def write(self, msg: protobuf.MessageType) -> None:
-        return await self.channel.write(msg)
+        return await self.channel_ctx.write(msg)
 
     async def call(
         self, msg: protobuf.MessageType, expected_type: type[protobuf.MessageType]
@@ -125,7 +125,9 @@ class PairingContext(Context):
 
 
 async def handle_pairing_request_message(
-    ctx: PairingContext, msg: protocol_common.MessageWithType, use_workflow: bool
+    pairing_ctx: PairingContext,
+    msg: protocol_common.MessageWithType,
+    use_workflow: bool,
 ) -> protocol_common.MessageWithType | None:
 
     res_msg: protobuf.MessageType | None = None
@@ -147,7 +149,7 @@ async def handle_pairing_request_message(
         req_msg = message_handler.wrap_protobuf_load(msg.data, req_type)
 
         # Create the handler task.
-        task = handle_pairing_request(ctx, req_msg)
+        task = handle_pairing_request(pairing_ctx, req_msg)
 
         # Run the workflow task.  Workflow can do more on-the-wire
         # communication inside, but it should eventually return a
@@ -156,7 +158,7 @@ async def handle_pairing_request_message(
         if use_workflow:
             # Spawn a workflow around the task. This ensures that concurrent
             # workflows are shut down.
-            res_msg = await workflow.spawn(context.with_context(ctx, task))
+            res_msg = await workflow.spawn(context.with_context(pairing_ctx, task))
             pass  # TODO
         else:
             # For debug messages, ignore workflow processing and just await
@@ -193,5 +195,5 @@ async def handle_pairing_request_message(
     if res_msg is not None:
         # perform the write outside the big try-except block, so that usb write
         # problem bubbles up
-        await ctx.write(res_msg)
+        await pairing_ctx.write(res_msg)
     return None

@@ -7,6 +7,8 @@ from trezor.wire.thp.thp_messages import InitHeader
 INIT_DATA_OFFSET = const(5)
 CONT_DATA_OFFSET = const(3)
 REPORT_LENGTH = const(64)
+MAX_PAYLOAD_LEN = const(60000)
+MESSAGE_TYPE_LENGTH = const(2)
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
