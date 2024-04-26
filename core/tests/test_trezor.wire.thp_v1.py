@@ -101,13 +101,11 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         gen = thp_v1.read_message(self.interface, buffer)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
-
+        gen.send(cid_req_message)
+        gen.send(None)
+        gen.send(message)
         with self.assertRaises(StopIteration) as e:
-            gen.send(cid_req_message)
-            gen.send(None)  # TODO fix this weird behaviour
-            gen.send(message)
-            gen.send(None)  # TODO fix this weird behaviour
-            gen.send(None)  # TODO fix this weird behaviour
+            gen.send(None)
 
         # e.value is StopIteration. e.value.value is the return value of the call
         result = e.value.value
@@ -133,10 +131,8 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
 
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
-
+        gen.send(message)
         with self.assertRaises(StopIteration) as e:
-            gen.send(message)
-            gen.send(None)
             gen.send(None)
 
         # e.value is StopIteration. e.value.value is the return value of the call
@@ -211,9 +207,8 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         gen = thp_v1.read_message(self.interface, buffer)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
+        gen.send(packet)
         with self.assertRaises(StopIteration) as e:
-            gen.send(packet)
-            gen.send(None)
             gen.send(None)
 
         # e.value is StopIteration. e.value.value is the return value of the call
