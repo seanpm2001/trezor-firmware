@@ -1,5 +1,5 @@
-from micropython import const  # pyright: ignore[reportMissingModuleSource]
-from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
+from micropython import const
+from typing import TYPE_CHECKING
 
 from storage.cache_common import InvalidSessionError
 from trezor import log, loop, protobuf, utils, workflow
