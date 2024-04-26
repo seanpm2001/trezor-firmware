@@ -1,6 +1,11 @@
+from typing import TYPE_CHECKING
+
 from trezor import log, loop
 from trezor.messages import ThpCreateNewSession, ThpNewSession
-from trezor.wire.thp import ChannelContext, SessionState
+from trezor.wire.thp import SessionState
+
+if TYPE_CHECKING:
+    from trezor.wire.thp import ChannelContext
 
 
 async def create_new_session(

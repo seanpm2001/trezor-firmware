@@ -46,7 +46,7 @@ def select_buffer(
 
 
 def encode_into_buffer(
-    buffer: memoryview, msg: protobuf.MessageType, session_id: int
+    buffer: utils.BufferType, msg: protobuf.MessageType, session_id: int
 ) -> int:
 
     # cannot write message without wire type
@@ -58,7 +58,7 @@ def encode_into_buffer(
 
     if required_min_size > len(buffer):
         # message is too big, we need to allocate a new buffer
-        buffer = memoryview(bytearray(required_min_size))
+        buffer = bytearray(required_min_size)
 
     _encode_session_into_buffer(memoryview(buffer), session_id)
     _encode_message_type_into_buffer(

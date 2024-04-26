@@ -4,11 +4,7 @@ from trezor import protobuf
 
 if TYPE_CHECKING:
     from trezorio import WireInterface
-    from typing import (
-        Container,
-        TypeVar,
-        overload,
-    )
+    from typing import Container, TypeVar, overload
 
     LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
 
