@@ -1,4 +1,4 @@
-from trezor import log, protobuf
+from trezor import protobuf
 from trezor.enums import MessageType, ThpPairingMethod
 from trezor.messages import (
     ThpCodeEntryChallenge,
@@ -24,6 +24,9 @@ from trezor.wire.thp.pairing_context import PairingContext
 from trezor.wire.thp.thp_session import ThpError
 
 # TODO implement the following handlers
+
+if __debug__:
+    from trezor import log
 
 
 async def handle_pairing_request(

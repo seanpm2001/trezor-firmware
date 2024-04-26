@@ -6,7 +6,7 @@ from trezor.wire import message_handler, protocol_common
 from trezor.wire.message_handler import AVOID_RESTARTING_FOR, failure
 
 from ..protocol_common import Context, MessageWithType
-from . import ChannelContext, SessionState
+from . import SessionState
 
 if TYPE_CHECKING:
     from typing import (  # pyright: ignore[reportShadowedImports]
@@ -14,6 +14,8 @@ if TYPE_CHECKING:
         Awaitable,
         Container,
     )
+
+    from . import ChannelContext
 
     pass
 
