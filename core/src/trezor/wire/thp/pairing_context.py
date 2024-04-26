@@ -1,18 +1,22 @@
-from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
+from typing import TYPE_CHECKING
 
-from trezor import log, loop, protobuf, workflow
+from trezor import loop, protobuf, workflow
 from trezor.wire import context, message_handler, protocol_common
 from trezor.wire.context import UnexpectedMessageWithId
 from trezor.wire.errors import ActionCancelled
 from trezor.wire.protocol_common import Context, MessageWithType
 
-from . import ChannelContext
 from .session_context import UnexpectedMessageWithType
 
 if TYPE_CHECKING:
-    from typing import Container  # pyright:ignore[reportShadowedImports]
+    from typing import Container
+
+    from . import ChannelContext
 
     pass
+
+if __debug__:
+    from trezor import log
 
 
 class PairingContext(Context):
