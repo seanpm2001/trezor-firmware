@@ -19,7 +19,6 @@ from trezor.wire.thp.thp_messages import (
 )
 
 from . import (
-    ChannelContext,
     ChannelState,
     SessionState,
     checksum,
@@ -32,6 +31,8 @@ from .writer import INIT_DATA_OFFSET, MESSAGE_TYPE_LENGTH, write_payload_to_wire
 
 if TYPE_CHECKING:
     from trezor.messages import ThpHandshakeCompletionReqNoisePayload
+
+    from . import ChannelContext
 
 if __debug__:
     from . import state_to_str

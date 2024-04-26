@@ -1,7 +1,15 @@
+from typing import TYPE_CHECKING
+
 from storage import cache_thp
-from trezor import log, loop
-from trezor.wire.thp import ChannelContext
-from trezor.wire.thp.session_context import SessionContext
+from trezor import loop
+
+from .session_context import SessionContext
+
+if __debug__:
+    from trezor import log
+
+if TYPE_CHECKING:
+    from . import ChannelContext
 
 
 def create_new_session(channel_ctx: ChannelContext) -> SessionContext:
