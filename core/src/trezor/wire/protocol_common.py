@@ -41,13 +41,13 @@ class MessageWithId(MessageWithType):
         super().__init__(message_type, message_data)
 
 
-class WireError(Exception):
-    pass
-
-
 class Context:
     def __init__(self, iface: WireInterface, channel_id: bytes) -> None:
         self.iface: WireInterface = iface
         self.channel_id: bytes = channel_id
 
     async def write(self, msg: protobuf.MessageType) -> None: ...
+
+
+class WireError(Exception):
+    pass
