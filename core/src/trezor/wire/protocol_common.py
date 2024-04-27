@@ -1,4 +1,9 @@
+from typing import TYPE_CHECKING
+
 from trezor import protobuf
+
+if TYPE_CHECKING:
+    from trezorio import WireInterface
 
 
 class Message:
@@ -41,8 +46,8 @@ class WireError(Exception):
 
 
 class Context:
-    def __init__(self, iface, channel_id) -> None:
-        self.iface = iface
-        self.channel_id = channel_id
+    def __init__(self, iface: WireInterface, channel_id: bytes) -> None:
+        self.iface: WireInterface = iface
+        self.channel_id: bytes = channel_id
 
     async def write(self, msg: protobuf.MessageType) -> None: ...

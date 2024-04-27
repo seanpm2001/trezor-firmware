@@ -62,8 +62,8 @@ def get_cid(session: SessionThpCache) -> int:
     return storage_thp_cache._get_cid(session)
 
 
-def get_next_channel_id() -> int:
-    return storage_thp_cache.get_next_channel_id()
+def get_next_channel_id() -> int:  # deprecated TODO remove
+    return int.from_bytes(storage_thp_cache.get_next_channel_id(), "big")
 
 
 def sync_can_send_message(session: SessionThpCache) -> bool:
