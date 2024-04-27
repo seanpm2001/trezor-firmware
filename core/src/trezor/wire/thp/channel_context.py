@@ -2,11 +2,14 @@ import ustruct
 from micropython import const
 from typing import TYPE_CHECKING
 
-from storage.cache_thp import SessionThpCache
+import usb
+from storage import cache_thp
+from storage.cache_thp import ChannelCache
 from trezor import loop, protobuf, utils
 
 from ..protocol_common import Context
-from . import thp_session
+
+# from . import thp_session
 from .thp_messages import CONTINUATION_PACKET, ENCRYPTED_TRANSPORT
 
 # from .thp_session import SessionState, ThpError
@@ -17,23 +20,30 @@ if TYPE_CHECKING:
 _INIT_DATA_OFFSET = const(5)
 _CONT_DATA_OFFSET = const(3)
 
+_WIRE_INTERFACE_USB = b"\x00"
+
 
 class ChannelContext(Context):
-    def __init__(
-        self, iface: WireInterface, channel_id: int, session_data: SessionThpCache
-    ) -> None:
-        super().__init__(iface, channel_id)
-        self.session_data = session_data
+    def __init__(self, channel_cache: ChannelCache) -> None:
+        iface = _decode_iface(channel_cache.iface)
+        super().__init__(iface, channel_cache.channel_id)
+        self.channel_cache = channel_cache
         self.buffer: utils.BufferType
         self.waiting_for_ack_timeout: loop.Task | None
         self.is_cont_packet_expected: bool = False
         self.expected_payload_length: int = 0
         self.bytes_read = 0
 
-    # ACCESS TO SESSION_DATA
+    @classmethod
+    def create_new_channel(cls, iface: WireInterface) -> "ChannelContext":
+        channel_cache = cache_thp.get_new_unauthenticated_channel(_encode_iface(iface))
+        return cls(channel_cache)
 
-    def get_management_session_state(self):
-        return thp_session.get_state(self.session_data)
+    # ACCESS TO CHANNEL_DATA
+
+    def get_management_session_state(self):  # TODO redo for channel state
+        # return thp_session.get_state(self.session_data)
+        pass
 
     # CALLED BY THP_MAIN_LOOP
 
@@ -94,6 +104,31 @@ class ChannelContext(Context):
     ) -> None:  # TODO change it to output session data
         pass
         # create a new session with this passphrase
+
+
+def load_cached_channels() -> dict[int, ChannelContext]:  # TODO
+    channels: dict[int, ChannelContext] = {}
+    cached_channels = cache_thp.get_all_allocated_channels()
+    for c in cached_channels:
+        channels[int.from_bytes(c.channel_id, "big")] = ChannelContext(c)
+    return channels
+
+
+def _decode_iface(cached_iface: bytes) -> WireInterface:
+    if cached_iface == _WIRE_INTERFACE_USB:
+        iface = usb.iface_wire
+        if iface is None:
+            raise RuntimeError("There is no valid USB WireInterface")
+        return iface
+    # TODO implement bluetooth interface
+    raise Exception("Unknown WireInterface")
+
+
+def _encode_iface(iface: WireInterface) -> bytes:
+    if iface is usb.iface_wire:
+        return _WIRE_INTERFACE_USB
+    # TODO implement bluetooth interface
+    raise Exception("Unknown WireInterface")
 
 
 def _is_ctrl_byte_continuation(ctrl_byte: int) -> bool:

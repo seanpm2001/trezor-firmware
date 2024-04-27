@@ -165,7 +165,8 @@ async def handle_session(
                 next_msg = None
 
             # Set ctx.session_id to the value msg.session_id
-            ctx.channel_id = msg.session_id
+            if msg.session_id is not None:
+                ctx.channel_id = msg.session_id
 
             try:
                 next_msg = await message_handler.handle_single_message(
