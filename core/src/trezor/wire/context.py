@@ -186,7 +186,7 @@ class CodecContext(Context):
         )
 
 
-CURRENT_CONTEXT: CodecContext | None = None
+CURRENT_CONTEXT: Context | None = None
 
 
 def wait(task: Awaitable[T]) -> Awaitable[T]:
@@ -251,7 +251,7 @@ async def maybe_call(
     await call(msg, expected_type)
 
 
-def get_context() -> CodecContext:
+def get_context() -> Context:
     """Get the current session context.
 
     Can be needed in case the caller needs raw read and raw write capabilities, which
@@ -265,7 +265,7 @@ def get_context() -> CodecContext:
     return CURRENT_CONTEXT
 
 
-def with_context(ctx: CodecContext, workflow: loop.Task) -> Generator:
+def with_context(ctx: Context, workflow: loop.Task) -> Generator:
     """Run a workflow in a particular context.
 
     Stores the context in a closure and installs it into the global variable every time

@@ -5,10 +5,11 @@ from ubinascii import hexlify
 
 import usb
 from storage import cache_thp
-from storage.cache_thp import KEY_LENGTH, TAG_LENGTH, ChannelCache
-from trezor import loop, protobuf, utils
+from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH, ChannelCache
+from trezor import io, loop, protobuf, utils
 from trezor.messages import ThpCreateNewSession
 from trezor.wire import message_handler
+from trezor.wire.thp import thp_messages
 
 from ..protocol_common import Context, MessageWithType
 from . import ChannelState, SessionState, checksum
@@ -19,6 +20,7 @@ from .thp_messages import (
     CONTINUATION_PACKET,
     ENCRYPTED_TRANSPORT,
     HANDSHAKE_INIT,
+    InitHeader,
 )
 from .thp_session import ThpError
 
@@ -34,6 +36,7 @@ _PUBKEY_LENGTH = const(32)
 INIT_DATA_OFFSET = const(5)
 CONT_DATA_OFFSET = const(3)
 
+MESSAGE_TYPE_LENGTH = const(2)
 
 REPORT_LENGTH = const(64)
 MAX_PAYLOAD_LEN = const(60000)
@@ -45,7 +48,7 @@ class Channel(Context):
         super().__init__(iface, channel_cache.channel_id)
         self.channel_cache = channel_cache
         self.buffer: utils.BufferType
-        self.waiting_for_ack_timeout: loop.Task | None
+        self.waiting_for_ack_timeout: loop.spawn | None
         self.is_cont_packet_expected: bool = False
         self.expected_payload_length: int = 0
         self.bytes_read = 0
@@ -175,6 +178,9 @@ class Channel(Context):
             )
             # TODO send ack in response
             # TODO send handshake init response message
+            await self._write_encrypted_payload_loop(
+                thp_messages.get_handshake_init_response()
+            )
             self.set_channel_state(ChannelState.TH2)
             return
 
@@ -196,7 +202,7 @@ class Channel(Context):
                     expected_type = protobuf.type_for_wire(message_type)
                     message = message_handler.wrap_protobuf_load(buf, expected_type)
                     print(message)
-                    # ------------------------------------------------TYPE ERROR------------------------------------------------
+                    # TODO handle other messages than CreateNewSession
                     assert isinstance(message, ThpCreateNewSession)
                     print("passphrase:", message.passphrase)
                     # await thp_messages.handle_CreateNewSession(message)
@@ -262,10 +268,84 @@ class Channel(Context):
     # CALLED BY WORKFLOW / SESSION CONTEXT
 
     async def write(self, msg: protobuf.MessageType, session_id: int = 0) -> None:
-        pass
-        # TODO protocol.write(self.iface, self.channel_id, session_id, msg)
 
-    # OTHER
+        noise_payload_len = self._encode_into_buffer(msg, session_id)
+
+        # trezor.crypto.noise.encode(key, payload=self.buffer)
+
+        # TODO payload_len should be output from trezor.crypto.noise.encode
+        payload_len = noise_payload_len  # + TAG_LENGTH # TODO
+
+        await self._write_encrypted_payload_loop(self.buffer[:payload_len])
+
+    async def _write_encrypted_payload_loop(self, payload: bytes) -> None:
+
+        payload_len = len(payload)
+        header = InitHeader(
+            ENCRYPTED_TRANSPORT, int.from_bytes(self.channel_id, "big"), payload_len
+        )
+
+        while True:
+            print("write encrypted payload loop - start")
+            await self._write_encrypted_payload(header, payload, payload_len)
+            self.waiting_for_ack_timeout = loop.spawn(self._wait_for_ack())
+            try:
+                await self.waiting_for_ack_timeout
+            except loop.TaskClosed:
+                break
+
+    async def _write_encrypted_payload(
+        self, header: InitHeader, payload: bytes, payload_len: int
+    ):
+
+        # prepare the report buffer with header data
+        report = bytearray(REPORT_LENGTH)
+        header.pack_to_buffer(report)
+
+        # write initial report
+        nwritten = utils.memcpy(report, INIT_DATA_OFFSET, payload, 0)
+        await self._write_report(report)
+
+        # if we have more data to write, use continuation reports for it
+        if nwritten < payload_len:
+            header.pack_to_cont_buffer(report)
+        while nwritten < payload_len:
+            nwritten += utils.memcpy(report, CONT_DATA_OFFSET, payload, nwritten)
+            await self._write_report(report)
+
+    async def _write_report(self, report: utils.BufferType) -> None:
+        while True:
+            await loop.wait(self.iface.iface_num() | io.POLL_WRITE)
+            n = self.iface.write(report)
+            if n == len(report):
+                return
+
+    async def _wait_for_ack(self) -> None:
+        await loop.sleep(1000)
+        # TODO retry write
+
+    def _encode_into_buffer(self, msg: protobuf.MessageType, session_id: int) -> int:
+
+        # cannot write message without wire type
+        assert msg.MESSAGE_WIRE_TYPE is not None
+
+        msg_size = protobuf.encoded_length(msg)
+        offset = SESSION_ID_LENGTH + MESSAGE_TYPE_LENGTH
+        payload_size = offset + msg_size
+
+        if payload_size > len(self.buffer) or not isinstance(self.buffer, bytearray):
+            # message is too big or buffer is not bytearray, we need to allocate a new buffer
+            self.buffer = bytearray(payload_size)
+
+        buffer = self.buffer
+        session_id_bytes = int.to_bytes(session_id, SESSION_ID_LENGTH, "big")
+        msg_type_bytes = int.to_bytes(msg.MESSAGE_WIRE_TYPE, MESSAGE_TYPE_LENGTH, "big")
+
+        utils.memcpy(buffer, 0, session_id_bytes, 0)
+        utils.memcpy(buffer, SESSION_ID_LENGTH, msg_type_bytes, 0)
+        assert isinstance(buffer, bytearray)
+        msg_size = protobuf.encode(buffer[offset:], msg)
+        return payload_size
 
     def create_new_session(
         self,
