@@ -222,7 +222,7 @@ class TestStorageCache(unittest.TestCase):
         self.assertEqual(cache.get(KEY), b"hello")
 
         # supplying a different session ID starts a new cache
-        call_Initialize(session_id=b"A" * _PROTOCOL_CACHE._SESSION_ID_LENGTH)
+        call_Initialize(session_id=b"A" * _PROTOCOL_CACHE.SESSION_ID_LENGTH)
         self.assertIsNone(cache.get(KEY))
 
         # but resuming a session loads the previous one

@@ -19,7 +19,7 @@ _CHANNEL_ALLOCATION_RES = 0x40
 class InitHeader:
     format_str = ">BHH"
 
-    def __init__(self, ctrl_byte, cid, length) -> None:
+    def __init__(self, ctrl_byte, cid: int, length: int) -> None:
         self.ctrl_byte = ctrl_byte
         self.cid = cid
         self.length = length
@@ -79,7 +79,7 @@ def get_error_unallocated_channel() -> bytes:
 
 
 def get_handshake_init_response() -> bytes:
-    return b"\x00"  # TODO implement
+    return b"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03"  # TODO implement
 
 
 def decode_message(buffer: bytes, msg_type: int) -> protobuf.MessageType:

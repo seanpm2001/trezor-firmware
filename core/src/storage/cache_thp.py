@@ -20,7 +20,7 @@ _CHANNEL_STATE_LENGTH = const(1)
 _WIRE_INTERFACE_LENGTH = const(1)
 _SESSION_STATE_LENGTH = const(1)
 _CHANNEL_ID_LENGTH = const(2)
-_SESSION_ID_LENGTH = const(1)
+SESSION_ID_LENGTH = const(1)
 BROADCAST_CHANNEL_ID = const(65535)
 KEY_LENGTH = const(32)
 TAG_LENGTH = const(16)
@@ -61,7 +61,7 @@ class ChannelCache(ConnectionCache):
 
 class SessionThpCache(ConnectionCache):
     def __init__(self) -> None:
-        self.session_id = bytearray(_SESSION_ID_LENGTH)
+        self.session_id = bytearray(SESSION_ID_LENGTH)
         self.state = bytearray(_SESSION_STATE_LENGTH)
         if utils.BITCOIN_ONLY:
             self.fields = (
@@ -284,7 +284,7 @@ def get_next_session_id(channel: ChannelCache) -> bytes:
         if _is_session_id_unique(channel):
             break
     new_sid = channel.session_id_counter
-    return new_sid.to_bytes(_SESSION_ID_LENGTH, "big")
+    return new_sid.to_bytes(SESSION_ID_LENGTH, "big")
 
 
 def _is_session_id_unique(channel: ChannelCache) -> bool:
@@ -307,10 +307,8 @@ def _get_cid(session: SessionThpCache) -> int:
 
 
 def create_new_unauthenticated_session(session_id: bytes) -> SessionThpCache:
-    if len(session_id) != _SESSION_ID_LENGTH:
-        raise ValueError(
-            "session_id must be X bytes long, where X=", _SESSION_ID_LENGTH
-        )
+    if len(session_id) != SESSION_ID_LENGTH:
+        raise ValueError("session_id must be X bytes long, where X=", SESSION_ID_LENGTH)
     global _active_session_idx
     global _is_active_session_authenticated
     global _next_unauthenicated_session_index
