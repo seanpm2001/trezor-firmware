@@ -211,6 +211,10 @@ class Channel(Context):
         if state is ChannelState.TH2:
             await self._handle_state_TH2(message_length, sync_bit)
             return
+        if is_channel_state_pairing(state):
+            await self._handle_pairing(message_length)
+            return
+        raise ThpError("Unimplemented channel state")
 
     async def _handle_state_TH1(
         self, payload_length: int, message_length: int, sync_bit: int
@@ -278,6 +282,9 @@ class Channel(Context):
                 self.buffer[INIT_DATA_OFFSET + 3 : message_length - CHECKSUM_LENGTH],
             )
         )
+
+    async def _handle_pairing(self, message_length: int) -> None:
+        pass
 
     def _handle_channel_message(self, message_length: int, message_type: int) -> None:
         buf = self.buffer[INIT_DATA_OFFSET + 3 : message_length - CHECKSUM_LENGTH]
@@ -578,6 +585,18 @@ def _is_ctrl_byte_handshake_init(ctrl_byte: int) -> bool:
 
 def _is_ctrl_byte_ack(ctrl_byte: int) -> bool:
     return ctrl_byte & 0xEF == ACK_MESSAGE
+
+
+def is_channel_state_pairing(state: int) -> bool:
+    if state in (
+        ChannelState.TP1,
+        ChannelState.TP2,
+        ChannelState.TP3,
+        ChannelState.TP4,
+        ChannelState.TP5,
+    ):
+        return True
+    return False
 
 
 def _state_to_str(state: int) -> str:
