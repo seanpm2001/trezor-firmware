@@ -1,8 +1,12 @@
+from micropython import const  # pyright: ignore[reportMissingModuleSource]
 from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
 from trezor import io, log, loop, utils
-from trezor.wire.thp.channel import CONT_DATA_OFFSET, INIT_DATA_OFFSET, REPORT_LENGTH
 from trezor.wire.thp.thp_messages import InitHeader
+
+INIT_DATA_OFFSET = const(5)
+CONT_DATA_OFFSET = const(3)
+REPORT_LENGTH = const(64)
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
