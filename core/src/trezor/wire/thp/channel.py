@@ -24,7 +24,12 @@ from .thp_messages import (
     InitHeader,
 )
 from .thp_session import ThpError
-from .writer import write_payload_to_wire
+from .writer import (
+    CONT_DATA_OFFSET,
+    INIT_DATA_OFFSET,
+    REPORT_LENGTH,
+    write_payload_to_wire,
+)
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright:ignore[reportMissingImports]
@@ -35,12 +40,9 @@ _MOCK_INTERFACE_HID = b"\x00"
 
 _PUBKEY_LENGTH = const(32)
 
-INIT_DATA_OFFSET = const(5)
-CONT_DATA_OFFSET = const(3)
 
 MESSAGE_TYPE_LENGTH = const(2)
 
-REPORT_LENGTH = const(64)
 MAX_PAYLOAD_LEN = const(60000)
 
 
