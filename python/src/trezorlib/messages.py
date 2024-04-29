@@ -272,13 +272,13 @@ class MessageType(IntEnum):
     SolanaAddress = 903
     SolanaSignTx = 904
     SolanaTxSignature = 905
-    ThpStartPairingRequest = 1000
-    ThpCredentialRequest = 1002
-    ThpCredentialResponse = 1003
-    ThpEndRequest = 1004
-    ThpEndResponse = 1005
-    ThpCreateNewSession = 1006
-    ThpNewSession = 1007
+    ThpCreateNewSession = 1000
+    ThpNewSession = 1001
+    ThpStartPairingRequest = 1008
+    ThpCredentialRequest = 1009
+    ThpCredentialResponse = 1010
+    ThpEndRequest = 1011
+    ThpEndResponse = 1012
     ThpCodeEntryCommitment = 1016
     ThpCodeEntryChallenge = 1017
     ThpCodeEntryCpaceHost = 1018
@@ -7771,7 +7771,7 @@ class ThpHandshakeCompletionReqNoisePayload(protobuf.MessageType):
 
 
 class ThpCreateNewSession(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = 1006
+    MESSAGE_WIRE_TYPE = 1000
     FIELDS = {
         1: protobuf.Field("passphrase", "string", repeated=False, required=False, default=None),
         2: protobuf.Field("on_device", "bool", repeated=False, required=False, default=None),
@@ -7788,7 +7788,7 @@ class ThpCreateNewSession(protobuf.MessageType):
 
 
 class ThpNewSession(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = 1007
+    MESSAGE_WIRE_TYPE = 1001
     FIELDS = {
         1: protobuf.Field("new_session_id", "uint32", repeated=False, required=False, default=None),
     }
@@ -7802,7 +7802,7 @@ class ThpNewSession(protobuf.MessageType):
 
 
 class ThpStartPairingRequest(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = 1000
+    MESSAGE_WIRE_TYPE = 1008
     FIELDS = {
         1: protobuf.Field("host_name", "bytes", repeated=False, required=False, default=None),
     }
@@ -7956,7 +7956,7 @@ class ThpNfcUnideirectionalSecret(protobuf.MessageType):
 
 
 class ThpCredentialRequest(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = 1002
+    MESSAGE_WIRE_TYPE = 1009
     FIELDS = {
         1: protobuf.Field("host_static_pubkey", "bytes", repeated=False, required=False, default=None),
     }
@@ -7970,7 +7970,7 @@ class ThpCredentialRequest(protobuf.MessageType):
 
 
 class ThpCredentialResponse(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = 1003
+    MESSAGE_WIRE_TYPE = 1010
     FIELDS = {
         1: protobuf.Field("trezor_static_pubkey", "bytes", repeated=False, required=False, default=None),
         2: protobuf.Field("credential", "bytes", repeated=False, required=False, default=None),
@@ -7987,11 +7987,11 @@ class ThpCredentialResponse(protobuf.MessageType):
 
 
 class ThpEndRequest(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = 1004
+    MESSAGE_WIRE_TYPE = 1011
 
 
 class ThpEndResponse(protobuf.MessageType):
-    MESSAGE_WIRE_TYPE = 1005
+    MESSAGE_WIRE_TYPE = 1012
 
 
 class WebAuthnListResidentCredentials(protobuf.MessageType):
