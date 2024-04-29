@@ -49,7 +49,7 @@ class Channel(Context):
         super().__init__(iface, channel_cache.channel_id)
         self.channel_cache = channel_cache
         self.buffer: utils.BufferType
-        self.waiting_for_ack_timeout: loop.spawn | None
+        self.waiting_for_ack_timeout: loop.spawn | None = None
         self.is_cont_packet_expected: bool = False
         self.expected_payload_length: int = 0
         self.bytes_read = 0
