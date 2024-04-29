@@ -44,7 +44,6 @@ _CHANNEL_CONTEXTS: dict[int, Channel] = {}
 def set_buffer(buffer):
     global _BUFFER
     _BUFFER = buffer
-    print("setbuffer,", type(_BUFFER))
 
 
 async def thp_main_loop(iface: WireInterface, is_debug_session=False):
