@@ -339,6 +339,8 @@ apps.common.authorization
 import apps.common.authorization
 apps.common.backup_types
 import apps.common.backup_types
+apps.common.cache
+import apps.common.cache
 apps.common.cbor
 import apps.common.cbor
 apps.common.coininfo

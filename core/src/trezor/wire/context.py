@@ -15,6 +15,8 @@ for ButtonRequests. Of course, `context.wait()` transparently works in such situ
 
 from typing import TYPE_CHECKING
 
+from storage import cache
+from storage.cache import SESSIONLESS_FLAG
 from trezor import log, loop, protobuf
 from trezor.wire import codec_v1
 
@@ -275,3 +277,49 @@ def with_context(ctx: Context, workflow: loop.Task) -> Generator:
             send_exc = e
         else:
             send_exc = None
+
+
+# ACCESS TO CACHE
+
+if TYPE_CHECKING:
+    T = TypeVar("T")
+
+    @overload
+    def cache_get(key: int) -> bytes | None:  # noqa: F811
+        ...
+
+    @overload
+    def cache_get(key: int, default: T) -> bytes | T:  # noqa: F811
+        ...
+
+
+def cache_get(key: int, default: T | None = None) -> bytes | T | None:  # noqa: F811
+    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
+        return cache.get_sessionless(key, default)
+    return CURRENT_CONTEXT.cache_get(key, default)
+
+
+def cache_get_int(key: int, default: T | None = None) -> int | T | None:  # noqa: F811
+    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
+        return cache.get_int_sessionless(key, default)
+    return CURRENT_CONTEXT.cache_get_int(key, default)
+
+
+def cache_is_set(key: int) -> bool:
+    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
+        return cache.is_set_sessionless(key)
+    return CURRENT_CONTEXT.cache_is_set(key)
+
+
+def cache_set(key: int, value: bytes) -> None:
+    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
+        cache.set_sessionless(key, value)
+        return
+    CURRENT_CONTEXT.cache_set(key, value)
+
+
+def cache_set_int(key: int, value: int) -> None:
+    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
+        cache.set_int_sessionless(key, value)
+        return
+    CURRENT_CONTEXT.cache_set_int(key, value)

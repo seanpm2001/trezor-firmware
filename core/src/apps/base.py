@@ -6,6 +6,7 @@ from trezor import TR, config, utils, wire, workflow
 from trezor.enums import HomescreenFormat, MessageType
 from trezor.messages import Success, UnlockPath
 from trezor.ui.layouts import confirm_action
+from trezor.wire import context
 
 from . import workflow_handlers
 
@@ -33,7 +34,7 @@ def busy_expiry_ms() -> int:
     Returns the time left until the busy state expires or 0 if the device is not in the busy state.
     """
 
-    busy_deadline_ms = storage_cache.get_int(storage_cache.APP_COMMON_BUSY_DEADLINE_MS)
+    busy_deadline_ms = context.cache_get_int(storage_cache.APP_COMMON_BUSY_DEADLINE_MS)
     if busy_deadline_ms is None:
         return 0
 
@@ -175,7 +176,7 @@ def get_features() -> Features:
     return f
 
 
-# handle_Initialize should not be used with THP to start a new session
+@storage_cache.check_thp_is_not_used
 async def handle_Initialize(msg: Initialize) -> Features:
     if utils.USE_THP:
         raise ValueError("With THP enabled, a session id must be provided in args")
@@ -183,8 +184,8 @@ async def handle_Initialize(msg: Initialize) -> Features:
     session_id = storage_cache.start_session(msg.session_id)
 
     if not utils.BITCOIN_ONLY:
-        derive_cardano = storage_cache.get(storage_cache.APP_COMMON_DERIVE_CARDANO)
-        have_seed = storage_cache.is_set(storage_cache.APP_COMMON_SEED)
+        derive_cardano = context.cache_get(storage_cache.APP_COMMON_DERIVE_CARDANO)
+        have_seed = context.cache_is_set(storage_cache.APP_COMMON_SEED)
 
         if (
             have_seed
@@ -194,11 +195,11 @@ async def handle_Initialize(msg: Initialize) -> Features:
             # seed is already derived, and host wants to change derive_cardano setting
             # => create a new session
             storage_cache.end_current_session()
-            session_id = storage_cache.start_session()  # This should not be used in THP
+            session_id = storage_cache.start_session()
             have_seed = False
 
         if not have_seed:
-            storage_cache.set(
+            context.cache_set(
                 storage_cache.APP_COMMON_DERIVE_CARDANO,
                 b"\x01" if msg.derive_cardano else b"",
             )
@@ -229,7 +230,7 @@ async def handle_SetBusy(msg: SetBusy) -> Success:
         import utime
 
         deadline = utime.ticks_add(utime.ticks_ms(), msg.expiry_ms)
-        storage_cache.set_int(storage_cache.APP_COMMON_BUSY_DEADLINE_MS, deadline)
+        context.cache_set_int(storage_cache.APP_COMMON_BUSY_DEADLINE_MS, deadline)
     else:
         storage_cache.delete(storage_cache.APP_COMMON_BUSY_DEADLINE_MS)
     set_homescreen()
@@ -338,7 +339,7 @@ def set_homescreen() -> None:
 
     set_default = workflow.set_default  # local_cache_attribute
 
-    if storage_cache.is_set(storage_cache.APP_COMMON_BUSY_DEADLINE_MS):
+    if context.cache_is_set(storage_cache.APP_COMMON_BUSY_DEADLINE_MS):
         from apps.homescreen import busyscreen
 
         set_default(busyscreen)

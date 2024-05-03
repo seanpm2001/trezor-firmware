@@ -14,7 +14,11 @@ async def create_new_session(
     # from apps.common.seed import get_seed TODO
     from trezor.wire.thp.session_manager import create_new_session
 
+    from apps.common.seed import derive_and_store_roots
+
     session = create_new_session(channel)
+    await derive_and_store_roots(session, message)
+
     session.set_session_state(SessionState.ALLOCATED)
     channel.sessions[session.session_id] = session
     loop.schedule(session.handle())

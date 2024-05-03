@@ -59,14 +59,15 @@ async def _init_step(
 ) -> MoneroLiveRefreshStartAck:
     import storage.cache as storage_cache
     from trezor.messages import MoneroLiveRefreshStartAck
+    from trezor.wire import context
 
     from apps.common import paths
 
     await paths.validate_path(keychain, msg.address_n)
 
-    if not storage_cache.get(storage_cache.APP_MONERO_LIVE_REFRESH):
+    if not context.cache_get(storage_cache.APP_MONERO_LIVE_REFRESH):
         await layout.require_confirm_live_refresh()
-        storage_cache.set(storage_cache.APP_MONERO_LIVE_REFRESH, b"\x01")
+        context.cache_set(storage_cache.APP_MONERO_LIVE_REFRESH, b"\x01")
 
     s.creds = misc.get_creds(keychain, msg.address_n, msg.network_type)
 

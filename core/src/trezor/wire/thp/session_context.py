@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
 from storage.cache_thp import SessionThpCache
-from trezor import log, loop, protobuf
+from trezor import log, loop, protobuf, utils
 from trezor.wire import message_handler, protocol_common
 from trezor.wire.message_handler import AVOID_RESTARTING_FOR, failure
 
@@ -13,6 +13,8 @@ if TYPE_CHECKING:
         Any,
         Awaitable,
         Container,
+        TypeVar,
+        overload,
     )
 
     from . import ChannelContext
@@ -160,3 +162,33 @@ class SessionContext(Context):
 
     def set_session_state(self, state: SessionState) -> None:
         self.session_cache.state = bytearray(state.to_bytes(1, "big"))
+
+    # ACCESS TO CACHE
+
+    if TYPE_CHECKING:
+        T = TypeVar("T")
+
+        @overload
+        def cache_get(self, key: int) -> bytes | None:  # noqa: F811
+            ...
+
+        @overload
+        def cache_get(self, key: int, default: T) -> bytes | T:  # noqa: F811
+            ...
+
+    def cache_get(
+        self, key: int, default: T | None = None
+    ) -> bytes | T | None:  # noqa: F811
+        utils.ensure(key < len(self.session_cache.fields))
+        if self.session_cache.data[key][0] != 1:
+            return default
+        return bytes(self.session_cache.data[key][1:])
+
+    def cache_is_set(self, key: int) -> bool:
+        return self.session_cache.is_set(key)
+
+    def cache_set(self, key: int, value: bytes) -> None:
+        utils.ensure(key < len(self.session_cache.fields))
+        utils.ensure(len(value) <= self.session_cache.fields[key])
+        self.session_cache.data[key][0] = 1
+        self.session_cache.data[key][1:] = value

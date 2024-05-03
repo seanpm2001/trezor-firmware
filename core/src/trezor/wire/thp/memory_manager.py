@@ -45,6 +45,19 @@ def select_buffer(
     raise Exception("Failed to create a buffer for channel")  # TODO handle better
 
 
+def get_write_buffer(
+    buffer: utils.BufferType, msg: protobuf.MessageType
+) -> utils.BufferType:
+    msg_size = protobuf.encoded_length(msg)
+    payload_size = SESSION_ID_LENGTH + MESSAGE_TYPE_LENGTH + msg_size
+    required_min_size = payload_size + CHECKSUM_LENGTH + TAG_LENGTH
+
+    if required_min_size > len(buffer):
+        # message is too big, we need to allocate a new buffer
+        return bytearray(required_min_size)
+    return buffer
+
+
 def encode_into_buffer(
     buffer: utils.BufferType, msg: protobuf.MessageType, session_id: int
 ) -> int:
@@ -54,11 +67,6 @@ def encode_into_buffer(
 
     msg_size = protobuf.encoded_length(msg)
     payload_size = SESSION_ID_LENGTH + MESSAGE_TYPE_LENGTH + msg_size
-    required_min_size = payload_size + CHECKSUM_LENGTH + TAG_LENGTH
-
-    if required_min_size > len(buffer):
-        # message is too big, we need to allocate a new buffer
-        buffer = bytearray(required_min_size)
 
     _encode_session_into_buffer(memoryview(buffer), session_id)
     _encode_message_type_into_buffer(
