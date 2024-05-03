@@ -35,6 +35,8 @@ if TYPE_CHECKING:
     from . import ChannelContext
 
 if __debug__:
+    from trezor.messages import LoadDevice
+
     from . import state_to_str
 
 
@@ -237,7 +239,7 @@ async def _handle_state_TH2(
         )
 
     # TODO add credential recognition
-    paired: bool = True  # TODO should be output from credential check
+    paired: bool = False  # TODO should be output from credential check
 
     # send hanshake completion response
     await ctx.write_handshake_message(
@@ -334,7 +336,7 @@ async def _handle_channel_message(
     expected_type = protobuf.type_for_wire(message_type)
     message = message_handler.wrap_protobuf_load(buf, expected_type)
 
-    if not ThpCreateNewSession.is_type_of(message):
+    if not _is_channel_message(message):
         raise ThpError(
             "The received message cannot be handled by channel itself. It must be sent to allocated session."
         )
@@ -348,3 +350,9 @@ async def _handle_channel_message(
     await ctx.write(response_message)
     if __debug__:
         log.debug(__name__, "_handle_channel_message - end")
+
+
+def _is_channel_message(message) -> bool:
+    if __debug__:
+        return ThpCreateNewSession.is_type_of(message) or LoadDevice.is_type_of(message)
+    return ThpCreateNewSession.is_type_of(message)

@@ -3,13 +3,15 @@ from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 if TYPE_CHECKING:
     from enum import IntEnum
     from trezorio import WireInterface
-    from typing import Protocol
+    from typing import Protocol, TypeVar, overload
 
     from storage.cache_thp import ChannelCache
     from trezor import loop, protobuf, utils
     from trezor.enums import FailureType
     from trezor.wire.thp.pairing_context import PairingContext
     from trezor.wire.thp.session_context import SessionContext
+
+    T = TypeVar("T")
 
     class ChannelContext(Protocol):
         buffer: utils.BufferType
@@ -39,6 +41,18 @@ if TYPE_CHECKING:
         def decrypt_buffer(self, message_length: int) -> None: ...
 
         def get_channel_id_int(self) -> int: ...
+
+        @overload
+        def cache_get(self, key: int) -> bytes | None: ...
+
+        @overload
+        def cache_get(self, key: int, default: T) -> bytes | T: ...
+
+        def cache_get(self, key: int, default: T | None = None) -> bytes | T | None: ...
+
+        def cache_is_set(self, key: int) -> bool: ...
+
+        def cache_set(self, key: int, value: bytes) -> None: ...
 
 else:
     IntEnum = object

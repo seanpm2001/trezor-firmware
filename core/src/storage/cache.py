@@ -9,9 +9,25 @@ from trezor import utils
 SESSIONLESS_FLAG = const(128)
 
 if TYPE_CHECKING:
-    from typing import TypeVar, overload
+    from typing import Callable, ParamSpec, TypeVar, overload
 
     T = TypeVar("T")
+    P = ParamSpec("P")
+
+
+def check_thp_is_not_used(f: Callable[P, T]) -> Callable[P, T]:
+    """A type-safe decorator to raise an exception when the function is called with THP enabled.
+
+    This decorator should be removed after the caches for Codec_v1 and THP are properly refactored and separated.
+    """
+
+    def inner(*args: P.args, **kwargs: P.kwargs) -> T:
+        if utils.USE_THP:
+            raise Exception("Cannot call this function with the new THP enabled")
+        return f(*args, **kwargs)
+
+    return inner
+
 
 # Traditional cache keys
 APP_COMMON_SEED = const(0)
@@ -74,31 +90,6 @@ _SESSIONLESS_CACHE.clear()
 
 gc.collect()
 
-
-def clear_all() -> None:
-    global autolock_last_touch
-    autolock_last_touch = None
-    _SESSIONLESS_CACHE.clear()
-    _PROTOCOL_CACHE.clear_all()
-
-
-def start_session(received_session_id: bytes | None = None) -> bytes:
-    return _PROTOCOL_CACHE.start_session(received_session_id)
-
-
-def end_current_session() -> None:
-    _PROTOCOL_CACHE.end_current_session()
-
-
-def delete(key: int) -> None:
-    if key & SESSIONLESS_FLAG:
-        return _SESSIONLESS_CACHE.delete(key ^ SESSIONLESS_FLAG)
-    active_session = _PROTOCOL_CACHE.get_active_session()
-    if active_session is None:
-        raise InvalidSessionError
-    return active_session.delete(key)
-
-
 if TYPE_CHECKING:
 
     @overload
@@ -109,21 +100,14 @@ if TYPE_CHECKING:
         ...
 
 
-def get(key: int, default: T | None = None) -> bytes | T | None:  # noqa: F811
-    if key & SESSIONLESS_FLAG:
-        return _SESSIONLESS_CACHE.get(key ^ SESSIONLESS_FLAG, default)
-    active_session = _PROTOCOL_CACHE.get_active_session()
-    if active_session is None:
-        raise InvalidSessionError
-    return active_session.get(key, default)
+# Common functions
 
 
-def get_int(key: int, default: T | None = None) -> int | T | None:  # noqa: F811
-    encoded = get(key)
-    if encoded is None:
-        return default
-    else:
-        return int.from_bytes(encoded, "big")
+def clear_all() -> None:
+    global autolock_last_touch
+    autolock_last_touch = None
+    _SESSIONLESS_CACHE.clear()
+    _PROTOCOL_CACHE.clear_all()
 
 
 def get_int_all_sessions(key: int) -> builtins.set[int]:
@@ -136,27 +120,121 @@ def get_int_all_sessions(key: int) -> builtins.set[int]:
     return _PROTOCOL_CACHE.get_int_all_sessions(key)
 
 
+# Sessionless functions
+
+
+def get_sessionless(
+    key: int, default: T | None = None
+) -> bytes | T | None:  # noqa: F811
+    if key & SESSIONLESS_FLAG:
+        return _SESSIONLESS_CACHE.get(key ^ SESSIONLESS_FLAG, default)
+    raise ValueError("Argument 'key' does not have a sessionless flag")
+
+
+def get_int_sessionless(
+    key: int, default: T | None = None
+) -> int | T | None:  # noqa: F811
+    encoded = get_sessionless(key)
+    if encoded is None:
+        return default
+    else:
+        return int.from_bytes(encoded, "big")
+
+
+def is_set_sessionless(key: int) -> bool:
+    if key & SESSIONLESS_FLAG:
+        return _SESSIONLESS_CACHE.is_set(key ^ SESSIONLESS_FLAG)
+    raise ValueError("Argument 'key' does not have a sessionless flag")
+
+
+def set_sessionless(key: int, value: bytes) -> None:
+    if key & SESSIONLESS_FLAG:
+        _SESSIONLESS_CACHE.set(key ^ SESSIONLESS_FLAG, value)
+        return
+    raise ValueError("Argument 'key' does not have a sessionless flag")
+
+
+def set_int_sessionless(key: int, value: int) -> None:
+
+    if not key & SESSIONLESS_FLAG:
+        raise ValueError("Argument 'key' does not have a sessionless flag")
+
+    length = _SESSIONLESS_CACHE.fields[key ^ SESSIONLESS_FLAG]
+    encoded = value.to_bytes(length, "big")
+
+    # Ensure that the value fits within the length. Micropython's int.to_bytes()
+    # doesn't raise OverflowError.
+    assert int.from_bytes(encoded, "big") == value
+
+    set_sessionless(key, encoded)
+
+
+# Codec_v1 specific functions
+
+
+@check_thp_is_not_used
+def start_session(received_session_id: bytes | None = None) -> bytes:
+    return cache_codec.start_session(received_session_id)
+
+
+@check_thp_is_not_used
+def end_current_session() -> None:
+    cache_codec.end_current_session()
+
+
+@check_thp_is_not_used
+def delete(key: int) -> None:
+    if key & SESSIONLESS_FLAG:
+        return _SESSIONLESS_CACHE.delete(key ^ SESSIONLESS_FLAG)
+    active_session = cache_codec.get_active_session()
+    if active_session is None:
+        raise InvalidSessionError
+    return active_session.delete(key)
+
+
+@check_thp_is_not_used
+def get(key: int, default: T | None = None) -> bytes | T | None:  # noqa: F811
+    if key & SESSIONLESS_FLAG:
+        return get_sessionless(key, default)
+    active_session = cache_codec.get_active_session()
+    if active_session is None:
+        raise InvalidSessionError
+    return active_session.get(key, default)
+
+
+@check_thp_is_not_used
+def get_int(key: int, default: T | None = None) -> int | T | None:  # noqa: F811
+    encoded = get(key)
+    if encoded is None:
+        return default
+    else:
+        return int.from_bytes(encoded, "big")
+
+
+@check_thp_is_not_used
 def is_set(key: int) -> bool:
     if key & SESSIONLESS_FLAG:
         return _SESSIONLESS_CACHE.is_set(key ^ SESSIONLESS_FLAG)
-    active_session = _PROTOCOL_CACHE.get_active_session()
+    active_session = cache_codec.get_active_session()
     if active_session is None:
         raise InvalidSessionError
     return active_session.is_set(key)
 
 
+@check_thp_is_not_used
 def set(key: int, value: bytes) -> None:
     if key & SESSIONLESS_FLAG:
         _SESSIONLESS_CACHE.set(key ^ SESSIONLESS_FLAG, value)
         return
-    active_session = _PROTOCOL_CACHE.get_active_session()
+    active_session = cache_codec.get_active_session()
     if active_session is None:
         raise InvalidSessionError
     active_session.set(key, value)
 
 
+@check_thp_is_not_used
 def set_int(key: int, value: int) -> None:
-    active_session = _PROTOCOL_CACHE.get_active_session()
+    active_session = cache_codec.get_active_session()
 
     if key & SESSIONLESS_FLAG:
         length = _SESSIONLESS_CACHE.fields[key ^ SESSIONLESS_FLAG]
@@ -172,39 +250,3 @@ def set_int(key: int, value: int) -> None:
     assert int.from_bytes(encoded, "big") == value
 
     set(key, encoded)
-
-
-if TYPE_CHECKING:
-    from typing import Awaitable, Callable, ParamSpec, TypeVar
-
-    P = ParamSpec("P")
-    ByteFunc = Callable[P, bytes]
-    AsyncByteFunc = Callable[P, Awaitable[bytes]]
-
-
-def stored(key: int) -> Callable[[ByteFunc[P]], ByteFunc[P]]:
-    def decorator(func: ByteFunc[P]) -> ByteFunc[P]:
-        def wrapper(*args: P.args, **kwargs: P.kwargs):
-            value = get(key)
-            if value is None:
-                value = func(*args, **kwargs)
-                set(key, value)
-            return value
-
-        return wrapper
-
-    return decorator
-
-
-def stored_async(key: int) -> Callable[[AsyncByteFunc[P]], AsyncByteFunc[P]]:
-    def decorator(func: AsyncByteFunc[P]) -> AsyncByteFunc[P]:
-        async def wrapper(*args: P.args, **kwargs: P.kwargs):
-            value = get(key)
-            if value is None:
-                value = await func(*args, **kwargs)
-                set(key, value)
-            return value
-
-        return wrapper
-
-    return decorator

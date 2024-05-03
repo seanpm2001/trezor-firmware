@@ -325,6 +325,8 @@ apps.common.address_type
 import apps.common.address_type
 apps.common.authorization
 import apps.common.authorization
+apps.common.cache
+import apps.common.cache
 apps.common.cbor
 import apps.common.cbor
 apps.common.coininfo
