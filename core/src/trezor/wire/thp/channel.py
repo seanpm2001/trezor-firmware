@@ -22,7 +22,8 @@ if __debug__:
     from . import state_to_str
 
 if TYPE_CHECKING:
-    from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
+    from trezorio import WireInterface
+    from typing import TypeVar, overload
 
     from . import ChannelContext, PairingContext
     from .session_context import SessionContext
@@ -173,6 +174,7 @@ class Channel:
     async def write(self, msg: protobuf.MessageType, session_id: int = 0) -> None:
         if __debug__:
             log.debug(__name__, "write message: %s", msg.MESSAGE_NAME)
+        self.buffer = memory_manager.get_write_buffer(self.buffer, msg)
         noise_payload_len = memory_manager.encode_into_buffer(
             self.buffer, msg, session_id
         )
@@ -274,3 +276,33 @@ class Channel:
 
     async def _wait_for_ack(self) -> None:
         await loop.sleep(1000)
+
+    # ACCESS TO CACHE
+
+    if TYPE_CHECKING:
+        T = TypeVar("T")
+
+        @overload
+        def cache_get(self, key: int) -> bytes | None:  # noqa: F811
+            ...
+
+        @overload
+        def cache_get(self, key: int, default: T) -> bytes | T:  # noqa: F811
+            ...
+
+    def cache_get(
+        self, key: int, default: T | None = None
+    ) -> bytes | T | None:  # noqa: F811
+        utils.ensure(key < len(self.channel_cache.fields))
+        if self.channel_cache.data[key][0] != 1:
+            return default
+        return bytes(self.channel_cache.data[key][1:])
+
+    def cache_is_set(self, key: int) -> bool:
+        return self.channel_cache.is_set(key)
+
+    def cache_set(self, key: int, value: bytes) -> None:
+        utils.ensure(key < len(self.channel_cache.fields))
+        utils.ensure(len(value) <= self.channel_cache.fields[key])
+        self.channel_cache.data[key][0] = 1
+        self.channel_cache.data[key][1:] = value

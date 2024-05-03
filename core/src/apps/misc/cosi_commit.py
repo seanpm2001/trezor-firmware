@@ -59,6 +59,7 @@ async def cosi_commit(msg: CosiCommit) -> CosiSignature:
     from trezor.crypto import cosi
     from trezor.crypto.curve import ed25519
     from trezor.ui.layouts import confirm_blob, confirm_text
+    from trezor.wire import context
     from trezor.wire.context import call
 
     from apps.common import paths
@@ -71,11 +72,11 @@ async def cosi_commit(msg: CosiCommit) -> CosiSignature:
     seckey = node.private_key()
     pubkey = ed25519.publickey(seckey)
 
-    if not storage_cache.is_set(storage_cache.APP_MISC_COSI_COMMITMENT):
+    if not context.cache_is_set(storage_cache.APP_MISC_COSI_COMMITMENT):
         nonce, commitment = cosi.commit()
-        storage_cache.set(storage_cache.APP_MISC_COSI_NONCE, nonce)
-        storage_cache.set(storage_cache.APP_MISC_COSI_COMMITMENT, commitment)
-    commitment = storage_cache.get(storage_cache.APP_MISC_COSI_COMMITMENT)
+        context.cache_set(storage_cache.APP_MISC_COSI_NONCE, nonce)
+        context.cache_set(storage_cache.APP_MISC_COSI_COMMITMENT, commitment)
+    commitment = context.cache_get(storage_cache.APP_MISC_COSI_COMMITMENT)
     if commitment is None:
         raise RuntimeError
 
@@ -101,7 +102,7 @@ async def cosi_commit(msg: CosiCommit) -> CosiSignature:
     )
 
     # clear nonce from cache
-    nonce = storage_cache.get(storage_cache.APP_MISC_COSI_NONCE)
+    nonce = context.cache_get(storage_cache.APP_MISC_COSI_NONCE)
     storage_cache.delete(storage_cache.APP_MISC_COSI_COMMITMENT)
     storage_cache.delete(storage_cache.APP_MISC_COSI_NONCE)
     if nonce is None:
