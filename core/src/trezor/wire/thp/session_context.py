@@ -17,6 +17,8 @@ if TYPE_CHECKING:
         overload,
     )
 
+    from storage.cache_common import DataCache
+
     from . import ChannelContext
 
     pass
@@ -164,6 +166,9 @@ class SessionContext(Context):
         self.session_cache.state = bytearray(state.to_bytes(1, "big"))
 
     # ACCESS TO CACHE
+    @property
+    def cache(self) -> DataCache:
+        return self.session_cache
 
     if TYPE_CHECKING:
         T = TypeVar("T")

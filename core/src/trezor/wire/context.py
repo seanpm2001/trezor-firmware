@@ -15,8 +15,8 @@ for ButtonRequests. Of course, `context.wait()` transparently works in such situ
 
 from typing import TYPE_CHECKING
 
-from storage import cache
-from storage.cache import SESSIONLESS_FLAG
+from storage import cache, cache_codec
+from storage.cache_common import SESSIONLESS_FLAG
 from trezor import log, loop, protobuf
 from trezor.wire import codec_v1
 
@@ -34,6 +34,8 @@ if TYPE_CHECKING:
         TypeVar,
         overload,
     )
+
+    from storage.cache_common import DataCache
 
     Msg = TypeVar("Msg", bound=protobuf.MessageType)
     HandlerTask = Coroutine[Any, Any, protobuf.MessageType]
@@ -162,30 +164,12 @@ class CodecContext(Context):
         )
 
     # ACCESS TO CACHE
-
-    if TYPE_CHECKING:
-        T = TypeVar("T")
-
-        @overload
-        def cache_get(self, key: int) -> bytes | None: ...
-
-        @overload
-        def cache_get(self, key: int, default: T) -> bytes | T: ...
-
-    def cache_get(self, key: int, default: T | None = None) -> bytes | T | None:
-        return cache.get(key, default)
-
-    def cache_get_int(self, key: int, default: T | None = None) -> int | T | None:
-        return cache.get_int(key, default)
-
-    def cache_is_set(self, key: int) -> bool:
-        return cache.is_set(key)
-
-    def cache_set(self, key: int, value: bytes) -> None:
-        cache.set(key, value)
-
-    def cache_set_int(self, key: int, value: int) -> None:
-        cache.set_int(key, value)
+    @property
+    def cache(self) -> DataCache:
+        c = cache_codec.get_active_session()
+        if c is None:
+            raise Exception("There is no active session")
+        return c
 
 
 CURRENT_CONTEXT: Context | None = None
@@ -313,32 +297,38 @@ if TYPE_CHECKING:
 
 
 def cache_get(key: int, default: T | None = None) -> bytes | T | None:  # noqa: F811
-    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
-        return cache.get_sessionless(key, default)
-    return CURRENT_CONTEXT.cache_get(key, default)
+    cache = _get_cache_for_key(key)
+    return cache.get(key, default)
 
 
 def cache_get_int(key: int, default: T | None = None) -> int | T | None:  # noqa: F811
-    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
-        return cache.get_int_sessionless(key, default)
-    return CURRENT_CONTEXT.cache_get_int(key, default)
+    cache = _get_cache_for_key(key)
+    return cache.get_int(key, default)
 
 
 def cache_is_set(key: int) -> bool:
-    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
-        return cache.is_set_sessionless(key)
-    return CURRENT_CONTEXT.cache_is_set(key)
+    cache = _get_cache_for_key(key)
+    return cache.is_set(key)
 
 
 def cache_set(key: int, value: bytes) -> None:
-    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
-        cache.set_sessionless(key, value)
-        return
-    CURRENT_CONTEXT.cache_set(key, value)
+    cache = _get_cache_for_key(key)
+    cache.set(key, value)
 
 
 def cache_set_int(key: int, value: int) -> None:
-    if CURRENT_CONTEXT is None or key & SESSIONLESS_FLAG:
-        cache.set_int_sessionless(key, value)
-        return
-    CURRENT_CONTEXT.cache_set_int(key, value)
+    cache = _get_cache_for_key(key)
+    cache.set_int(key, value)
+
+
+def cache_delete(key: int) -> None:
+    cache = _get_cache_for_key(key)
+    cache.delete(key)
+
+
+def _get_cache_for_key(key) -> DataCache:
+    if key & SESSIONLESS_FLAG:
+        return cache.get_sessionless_cache()
+    if CURRENT_CONTEXT:
+        return CURRENT_CONTEXT.cache
+    raise Exception("No wire context")

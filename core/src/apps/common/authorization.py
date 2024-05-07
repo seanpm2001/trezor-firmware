@@ -1,6 +1,10 @@
 from typing import Iterable
 
 import storage.cache as storage_cache
+from storage.cache_common import (
+    APP_COMMON_AUTHORIZATION_DATA,
+    APP_COMMON_AUTHORIZATION_TYPE,
+)
 from trezor import protobuf
 from trezor.enums import MessageType
 from trezor.wire import context
@@ -8,13 +12,6 @@ from trezor.wire import context
 WIRE_TYPES: dict[int, tuple[int, ...]] = {
     MessageType.AuthorizeCoinJoin: (MessageType.SignTx, MessageType.GetOwnershipProof),
 }
-
-APP_COMMON_AUTHORIZATION_DATA = (
-    storage_cache.APP_COMMON_AUTHORIZATION_DATA
-)  # global_import_cache
-APP_COMMON_AUTHORIZATION_TYPE = (
-    storage_cache.APP_COMMON_AUTHORIZATION_TYPE
-)  # global_import_cache
 
 
 def is_set() -> bool:
@@ -58,5 +55,5 @@ def get_wire_types() -> Iterable[int]:
 
 
 def clear() -> None:
-    storage_cache.delete(APP_COMMON_AUTHORIZATION_TYPE)
-    storage_cache.delete(APP_COMMON_AUTHORIZATION_DATA)
+    context.cache_delete(APP_COMMON_AUTHORIZATION_TYPE)
+    context.cache_delete(APP_COMMON_AUTHORIZATION_DATA)
