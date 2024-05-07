@@ -6,6 +6,8 @@ if TYPE_CHECKING:
     from trezorio import WireInterface
     from typing import Container, TypeVar, overload
 
+    from storage.cache_common import DataCache
+
     LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
     T = TypeVar("T")
 
@@ -70,23 +72,8 @@ class Context:
 
     async def write(self, msg: protobuf.MessageType) -> None: ...
 
-    if TYPE_CHECKING:
-
-        @overload
-        def cache_get(self, key: int) -> bytes | None: ...
-
-        @overload
-        def cache_get(self, key: int, default: T) -> bytes | T: ...
-
-    def cache_get(self, key: int, default: T | None = None) -> bytes | T | None: ...
-
-    def cache_get_int(self, key: int, default: T | None = None) -> int | T | None: ...
-
-    def cache_is_set(self, key: int) -> bool: ...
-
-    def cache_set(self, key: int, value: bytes) -> None: ...
-
-    def cache_set_int(self, key: int, value: int) -> None: ...
+    @property
+    def cache(self) -> DataCache: ...
 
 
 class WireError(Exception):

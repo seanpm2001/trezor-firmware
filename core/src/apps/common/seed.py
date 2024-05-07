@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-import storage.cache as storage_cache
 import storage.device as storage_device
+from storage.cache_common import APP_COMMON_SEED, APP_COMMON_SEED_WITHOUT_PASSPHRASE
 from trezor import log, utils
 from trezor.crypto import hmac
 from trezor.wire import context
@@ -18,6 +18,12 @@ if TYPE_CHECKING:
     from trezor.wire.protocol_common import Context
 
     from .paths import Bip32Path, Slip21Path
+
+if not utils.BITCOIN_ONLY:
+    from storage.cache_common import (
+        APP_CARDANO_ICARUS_SECRET,
+        APP_COMMON_DERIVE_CARDANO,
+    )
 
 
 class Slip21Node:
@@ -52,7 +58,7 @@ class Slip21Node:
 
 
 async def get_seed() -> bytes:
-    common_seed = context.cache_get(storage_cache.APP_COMMON_SEED)
+    common_seed = context.cache_get(APP_COMMON_SEED)
     assert common_seed is not None
     return common_seed
 
@@ -77,10 +83,10 @@ if not utils.BITCOIN_ONLY:
         # This handling is specific. In the rest of the code, a context.cache_* is used instead
         if ctx is None:
             ctx = get_context()
-        need_seed = not ctx.cache_is_set(storage_cache.APP_COMMON_SEED)
-        need_cardano_secret = ctx.cache_get(
-            storage_cache.APP_COMMON_DERIVE_CARDANO
-        ) and not ctx.cache_is_set(storage_cache.APP_CARDANO_ICARUS_SECRET)
+        need_seed = not ctx.cache.is_set(APP_COMMON_SEED)
+        need_cardano_secret = ctx.cache.get(
+            APP_COMMON_DERIVE_CARDANO
+        ) and not ctx.cache.is_set(APP_CARDANO_ICARUS_SECRET)
 
         if not need_seed and not need_cardano_secret:
             return
@@ -92,7 +98,7 @@ if not utils.BITCOIN_ONLY:
 
         if need_seed:
             common_seed = mnemonic.get_seed(passphrase)
-            ctx.cache_set(storage_cache.APP_COMMON_SEED, common_seed)
+            ctx.cache.set(APP_COMMON_SEED, common_seed)
 
         if need_cardano_secret:
             from apps.cardano.seed import derive_and_store_secrets
@@ -100,7 +106,7 @@ if not utils.BITCOIN_ONLY:
             derive_and_store_secrets(ctx, passphrase)
 
 
-@cache.stored(storage_cache.APP_COMMON_SEED_WITHOUT_PASSPHRASE)
+@cache.stored(APP_COMMON_SEED_WITHOUT_PASSPHRASE)
 def _get_seed_without_passphrase() -> bytes:
     if not storage_device.is_initialized():
         raise Exception("Device is not initialized")
