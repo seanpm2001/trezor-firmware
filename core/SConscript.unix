@@ -9,6 +9,7 @@ EVERYTHING = BITCOIN_ONLY != '1'
 TREZOR_MODEL = ARGUMENTS.get('TREZOR_MODEL', 'T')
 DMA2D =  TREZOR_MODEL in ('T', )
 CMAKELISTS = int(ARGUMENTS.get('CMAKELISTS', 0))
+THP = ARGUMENTS.get('THP', '0') == '1' # Trezor-Host Protocol
 
 if TREZOR_MODEL in ('DISC1', ):
     # skip unix build
@@ -23,7 +24,6 @@ if TREZOR_MODEL in ('DISC1', ):
 
 FEATURE_FLAGS = {
     "SECP256K1_ZKP": True,  # required for trezor.crypto.curve.bip340 (BIP340/Taproot)
-    "ELLIGATOR2": True,
 }
 
 CCFLAGS_MOD = ''
@@ -171,8 +171,8 @@ if FEATURE_FLAGS["SECP256K1_ZKP"]:
         'vendor/trezor-crypto/zkp_bip340.c',
     ]
 
-if FEATURE_FLAGS["ELLIGATOR2"]:
-    CPPDEFINES_MOD += ['USE_ELLIGATOR2']
+if THP:
+    CPPDEFINES_MOD += ['USE_THP']
     SOURCE_MOD += [
         'vendor/trezor-crypto/elligator2.c',
     ]
@@ -752,6 +752,7 @@ if FROZEN:
         backlight=TREZOR_MODEL in ('T',),
         optiga=TREZOR_MODEL in ('R',),
         ui_layout=UI_LAYOUT,
+        thp=THP,
         )
 
     source_mpyc = env.FrozenCFile(

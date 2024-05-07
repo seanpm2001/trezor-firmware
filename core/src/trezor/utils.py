@@ -11,6 +11,7 @@ from trezorutils import (  # noqa: F401
     USE_BACKLIGHT,
     USE_OPTIGA,
     USE_SD_CARD,
+    USE_THP,
     VERSION_MAJOR,
     VERSION_MINOR,
     VERSION_PATCH,

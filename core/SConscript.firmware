@@ -11,13 +11,13 @@ BOOTLOADER_DEVEL = ARGUMENTS.get('BOOTLOADER_DEVEL', '0') == '1'
 EVERYTHING = BITCOIN_ONLY != '1'
 TREZOR_MODEL = ARGUMENTS.get('TREZOR_MODEL', 'T')
 CMAKELISTS = int(ARGUMENTS.get('CMAKELISTS', 0))
+THP = ARGUMENTS.get('THP', '0') == '1' # Trezor-Host Protocol
 
 
 FEATURE_FLAGS = {
     "RDI": True,
     "SECP256K1_ZKP": True,  # required for trezor.crypto.curve.bip340 (BIP340/Taproot)
     "SYSTEM_VIEW": False,
-    "ELLIGATOR2": False,
 }
 
 FEATURES_WANTED = ["input", "sbu", "sd_card", "rgb_led", "dma2d", "consumption_mask", "usb" ,"optiga"]
@@ -368,8 +368,8 @@ if FEATURE_FLAGS["SYSTEM_VIEW"]:
     CPPDEFINES_MOD += ['SYSTEM_VIEW']
     CCFLAGS_MOD += '-DSYSTEM_VIEW '
 
-if FEATURE_FLAGS["ELLIGATOR2"]:
-    CPPDEFINES_MOD += ['USE_ELLIGATOR2']
+if THP:
+    CPPDEFINES_MOD += ['USE_THP']
     SOURCE_MOD += [
         'vendor/trezor-crypto/elligator2.c',
     ]
@@ -670,6 +670,7 @@ if FROZEN:
         backlight='backlight' in FEATURES_AVAILABLE,
         optiga='optiga' in FEATURES_AVAILABLE,
         ui_layout=UI_LAYOUT,
+        thp=THP,
         )
 
     source_mpyc = env.FrozenCFile(
