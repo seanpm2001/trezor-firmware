@@ -16,7 +16,6 @@ if __debug__:
 # THP specific constants
 _MAX_CHANNELS_COUNT = 10
 _MAX_SESSIONS_COUNT = const(20)
-_MAX_UNAUTHENTICATED_SESSIONS_COUNT = const(5)  # TODO remove
 
 
 _CHANNEL_STATE_LENGTH = const(1)
@@ -85,7 +84,6 @@ class SessionThpCache(ConnectionCache):
                 1,  # APP_MONERO_LIVE_REFRESH
             )
         self.sync = 0x80  # can_send_bit | sync_receive_bit | sync_send_bit | rfu(5)
-        self.last_usage = 0
         super().__init__()
 
     def clear(self) -> None:

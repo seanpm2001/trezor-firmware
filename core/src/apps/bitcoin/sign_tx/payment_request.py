@@ -26,7 +26,7 @@ class PaymentRequestVerifier:
     def __init__(
         self, msg: TxAckPaymentRequest, coin: coininfo.CoinInfo, keychain: Keychain
     ) -> None:
-        from storage import cache
+        from storage.cache_common import APP_COMMON_NONCE
         from trezor.crypto.hashlib import sha256
         from trezor.utils import HashWriter
 
@@ -42,9 +42,9 @@ class PaymentRequestVerifier:
 
         if msg.nonce:
             nonce = bytes(msg.nonce)
-            if context.cache_get(cache.APP_COMMON_NONCE) != nonce:
+            if context.cache_get(APP_COMMON_NONCE) != nonce:
                 raise DataError("Invalid nonce in payment request.")
-            cache.delete(cache.APP_COMMON_NONCE)
+            context.cache_delete(APP_COMMON_NONCE)
         else:
             nonce = b""
             if msg.memos:

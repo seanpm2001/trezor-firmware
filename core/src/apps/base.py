@@ -2,6 +2,11 @@ from typing import TYPE_CHECKING
 
 import storage.cache as storage_cache
 import storage.device as storage_device
+from storage.cache_common import (
+    APP_COMMON_BUSY_DEADLINE_MS,
+    APP_COMMON_DERIVE_CARDANO,
+    APP_COMMON_SEED,
+)
 from trezor import TR, config, utils, wire, workflow
 from trezor.enums import HomescreenFormat, MessageType
 from trezor.messages import Success, UnlockPath
@@ -34,7 +39,7 @@ def busy_expiry_ms() -> int:
     Returns the time left until the busy state expires or 0 if the device is not in the busy state.
     """
 
-    busy_deadline_ms = context.cache_get_int(storage_cache.APP_COMMON_BUSY_DEADLINE_MS)
+    busy_deadline_ms = context.cache_get_int(APP_COMMON_BUSY_DEADLINE_MS)
     if busy_deadline_ms is None:
         return 0
 
@@ -184,8 +189,8 @@ async def handle_Initialize(msg: Initialize) -> Features:
     session_id = storage_cache.start_session(msg.session_id)
 
     if not utils.BITCOIN_ONLY:
-        derive_cardano = context.cache_get(storage_cache.APP_COMMON_DERIVE_CARDANO)
-        have_seed = context.cache_is_set(storage_cache.APP_COMMON_SEED)
+        derive_cardano = context.cache_get(APP_COMMON_DERIVE_CARDANO)
+        have_seed = context.cache_is_set(APP_COMMON_SEED)
 
         if (
             have_seed
@@ -200,7 +205,7 @@ async def handle_Initialize(msg: Initialize) -> Features:
 
         if not have_seed:
             context.cache_set(
-                storage_cache.APP_COMMON_DERIVE_CARDANO,
+                APP_COMMON_DERIVE_CARDANO,
                 b"\x01" if msg.derive_cardano else b"",
             )
 
@@ -230,9 +235,9 @@ async def handle_SetBusy(msg: SetBusy) -> Success:
         import utime
 
         deadline = utime.ticks_add(utime.ticks_ms(), msg.expiry_ms)
-        context.cache_set_int(storage_cache.APP_COMMON_BUSY_DEADLINE_MS, deadline)
+        context.cache_set_int(APP_COMMON_BUSY_DEADLINE_MS, deadline)
     else:
-        storage_cache.delete(storage_cache.APP_COMMON_BUSY_DEADLINE_MS)
+        context.cache_delete(APP_COMMON_BUSY_DEADLINE_MS)
     set_homescreen()
     workflow.close_others()
     return Success()
@@ -339,7 +344,7 @@ def set_homescreen() -> None:
 
     set_default = workflow.set_default  # local_cache_attribute
 
-    if context.cache_is_set(storage_cache.APP_COMMON_BUSY_DEADLINE_MS):
+    if context.cache_is_set(APP_COMMON_BUSY_DEADLINE_MS):
         from apps.homescreen import busyscreen
 
         set_default(busyscreen)
