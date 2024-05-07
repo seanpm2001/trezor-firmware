@@ -59,13 +59,6 @@ bool map_to_curve_elligator2_curve25519(const uint8_t input[32],
   bignum25519 c3 = {0};
   curve25519_set_sqrtneg1(c3);
 
-  // c2 = 2^c1 = 2^((q + 3) / 8) = c3 + 1
-  bignum25519 one = {0};
-  bignum25519 c2 = {0};
-  curve25519_set(one, 1);
-  curve25519_add_reduce(c2, c3, one);
-  memzero(c2, sizeof(c2));
-
   // J = 486662
   bignum25519 j = {0};
   curve25519_set(j, 486662);
@@ -80,6 +73,8 @@ bool map_to_curve_elligator2_curve25519(const uint8_t input[32],
 
   // xd = tv1 + 1
   bignum25519 xd = {0};
+  bignum25519 one = {0};
+  curve25519_set(one, 1);
   curve25519_add_reduce(xd, tv1, one);
   memzero(one, sizeof(one));
 
