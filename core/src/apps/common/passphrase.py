@@ -1,15 +1,46 @@
 from micropython import const
+from typing import TYPE_CHECKING
 
 import storage.device as storage_device
+from storage.cache import check_thp_is_not_used
 from trezor.wire import DataError
 
 _MAX_PASSPHRASE_LEN = const(50)
+
+if TYPE_CHECKING:
+    from trezor.messages import ThpCreateNewSession
 
 
 def is_enabled() -> bool:
     return storage_device.is_passphrase_enabled()
 
 
+async def get_passphrase(msg: ThpCreateNewSession) -> str:
+    if not is_enabled():
+        return ""
+
+    if msg.on_device or storage_device.get_passphrase_always_on_device():
+        passphrase = await _get_on_device()
+    else:
+        passphrase = msg.passphrase or ""
+
+    if len(passphrase.encode()) > _MAX_PASSPHRASE_LEN:
+        raise DataError(f"Maximum passphrase length is {_MAX_PASSPHRASE_LEN} bytes")
+
+    return passphrase
+
+
+async def _get_on_device() -> str:
+    from trezor import workflow
+    from trezor.ui.layouts import request_passphrase_on_device
+
+    workflow.close_others()  # request exclusive UI access
+    passphrase = await request_passphrase_on_device(_MAX_PASSPHRASE_LEN)
+
+    return passphrase
+
+
+@check_thp_is_not_used
 async def get() -> str:
     from trezor import workflow
 
@@ -29,6 +60,7 @@ async def get() -> str:
         return passphrase
 
 
+@check_thp_is_not_used
 async def _request_on_host() -> str:
     from trezor import TR
     from trezor.messages import PassphraseAck, PassphraseRequest
