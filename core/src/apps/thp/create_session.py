@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 async def create_new_session(
     channel: ChannelContext, message: ThpCreateNewSession
 ) -> ThpNewSession:
-    # from apps.common.seed import get_seed TODO
     from trezor.wire.thp.session_manager import create_new_session
 
     from apps.common.seed import derive_and_store_roots

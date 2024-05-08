@@ -10,7 +10,8 @@ from trezor.wire.context import get_context
 from apps.common import cache
 
 from . import mnemonic
-from .passphrase import get as get_passphrase
+from .passphrase import get as get_passphrase_legacy
+from .passphrase import get_passphrase as get_passphrase
 
 if TYPE_CHECKING:
     from trezor.crypto import bip32
@@ -68,7 +69,32 @@ if not utils.BITCOIN_ONLY:
     # We want to derive both the normal seed and the Cardano seed together, AND
     # expose a method for Cardano to do the same
 
-    async def derive_and_store_roots(
+    async def derive_and_store_roots(ctx: Context, msg: ThpCreateNewSession) -> None:
+
+        if msg.passphrase is not None and msg.on_device:
+            raise Exception("Passphrase provided when it shouldn't be!")
+
+        from trezor import wire
+
+        if not storage_device.is_initialized():
+            raise wire.NotInitialized("Device is not initialized")
+
+        if ctx.cache.is_set(APP_COMMON_SEED):
+            raise Exception("Seed is already set!")
+
+        if ctx.cache.is_set(APP_CARDANO_ICARUS_SECRET):
+            raise Exception("Cardano icarus secret is already set!")
+
+        passphrase = await get_passphrase(msg)
+        common_seed = mnemonic.get_seed(passphrase)
+        ctx.cache.set(APP_COMMON_SEED, common_seed)
+
+        if msg.derive_cardano:
+            from apps.cardano.seed import derive_and_store_secrets
+
+            derive_and_store_secrets(ctx, passphrase)
+
+    async def derive_and_store_roots_legacy(
         ctx: Context | None = None, msg: ThpCreateNewSession | None = None
     ) -> None:
         if __debug__:
@@ -92,7 +118,7 @@ if not utils.BITCOIN_ONLY:
             return
 
         if msg is None or msg.on_device:
-            passphrase = await get_passphrase()
+            passphrase = await get_passphrase_legacy()
         else:
             passphrase = msg.passphrase or ""
 
