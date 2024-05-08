@@ -1,7 +1,8 @@
 from typing import TYPE_CHECKING
 
-import storage.cache as storage_cache
+import storage.cache_codec as cache_codec
 import storage.device as storage_device
+from storage.cache import check_thp_is_not_used
 from storage.cache_common import (
     APP_COMMON_BUSY_DEADLINE_MS,
     APP_COMMON_DERIVE_CARDANO,
@@ -181,12 +182,14 @@ def get_features() -> Features:
     return f
 
 
-@storage_cache.check_thp_is_not_used
-async def handle_Initialize(msg: Initialize) -> Features:
-    if utils.USE_THP:
-        raise ValueError("With THP enabled, a session id must be provided in args")
+@check_thp_is_not_used
+async def handle_Initialize(
+    msg: Initialize,
+) -> Features:
+    session_id = cache_codec.start_session(msg.session_id)
 
-    session_id = storage_cache.start_session(msg.session_id)
+    # TODO change cardano derivation
+    # ctx = context.get_context()
 
     if not utils.BITCOIN_ONLY:
         derive_cardano = context.cache_get(APP_COMMON_DERIVE_CARDANO)
@@ -199,8 +202,8 @@ async def handle_Initialize(msg: Initialize) -> Features:
         ):
             # seed is already derived, and host wants to change derive_cardano setting
             # => create a new session
-            storage_cache.end_current_session()
-            session_id = storage_cache.start_session()
+            cache_codec.end_current_session()
+            session_id = cache_codec.start_session()
             have_seed = False
 
         if not have_seed:
@@ -244,7 +247,7 @@ async def handle_SetBusy(msg: SetBusy) -> Success:
 
 
 async def handle_EndSession(msg: EndSession) -> Success:
-    storage_cache.end_current_session()
+    cache_codec.end_current_session()
     return Success()
 
 
