@@ -27,6 +27,32 @@ async def get_passphrase(msg: ThpCreateNewSession) -> str:
     if len(passphrase.encode()) > _MAX_PASSPHRASE_LEN:
         raise DataError(f"Maximum passphrase length is {_MAX_PASSPHRASE_LEN} bytes")
 
+    # non-empty passphrase
+    if passphrase:
+        from trezor import TR
+        from trezor.ui.layouts import confirm_action, confirm_blob
+
+        # We want to hide the passphrase, or show it, according to settings.
+        if storage_device.get_hide_passphrase_from_host():
+            await confirm_action(
+                "passphrase_host1_hidden",
+                TR.passphrase__hidden_wallet,
+                description=f"{TR.passphrase__access_hidden_wallet}\n{TR.passphrase__from_host_not_shown}",
+            )
+        else:
+            await confirm_action(
+                "passphrase_host1",
+                TR.passphrase__hidden_wallet,
+                description=TR.passphrase__next_screen_will_show_passphrase,
+                verb=TR.buttons__continue,
+            )
+
+            await confirm_blob(
+                "passphrase_host2",
+                TR.passphrase__title_confirm,
+                passphrase,
+            )
+
     return passphrase
 
 
