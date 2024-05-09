@@ -1,8 +1,9 @@
 from typing import TYPE_CHECKING
 
 import storage.device as storage_device
+from storage.cache import check_thp_is_not_used
 from storage.cache_common import APP_COMMON_SEED, APP_COMMON_SEED_WITHOUT_PASSPHRASE
-from trezor import log, utils
+from trezor import utils
 from trezor.crypto import hmac
 from trezor.wire import context
 from trezor.wire.context import get_context
@@ -95,21 +96,14 @@ if not utils.BITCOIN_ONLY:
 
             derive_and_store_secrets(ctx, passphrase)
 
-    async def derive_and_store_roots_legacy(
-        ctx: Context | None = None, msg: ThpCreateNewSession | None = None
-    ) -> None:
-        if __debug__:
-            log.debug(__name__, "derive_and_store_roots start")
-
+    @check_thp_is_not_used
+    async def derive_and_store_roots_legacy() -> None:
         from trezor import wire
 
         if not storage_device.is_initialized():
             raise wire.NotInitialized("Device is not initialized")
 
-        # For old codec_v1 implementation, the context is passed using get_context
-        # This handling is specific. In the rest of the code, a context.cache_* is used instead
-        if ctx is None:
-            ctx = get_context()
+        ctx = get_context()
         need_seed = not ctx.cache.is_set(APP_COMMON_SEED)
         need_cardano_secret = ctx.cache.get(
             APP_COMMON_DERIVE_CARDANO
@@ -118,10 +112,7 @@ if not utils.BITCOIN_ONLY:
         if not need_seed and not need_cardano_secret:
             return
 
-        if msg is None or msg.on_device:
-            passphrase = await get_passphrase_legacy()
-        else:
-            passphrase = msg.passphrase or ""
+        passphrase = await get_passphrase_legacy()
 
         if need_seed:
             common_seed = mnemonic.get_seed(passphrase)
