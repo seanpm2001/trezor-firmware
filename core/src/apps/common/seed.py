@@ -6,6 +6,7 @@ from trezor import log, utils
 from trezor.crypto import hmac
 from trezor.wire import context
 from trezor.wire.context import get_context
+from trezor.wire.errors import DataError
 
 from apps.common import cache
 
@@ -72,7 +73,7 @@ if not utils.BITCOIN_ONLY:
     async def derive_and_store_roots(ctx: Context, msg: ThpCreateNewSession) -> None:
 
         if msg.passphrase is not None and msg.on_device:
-            raise Exception("Passphrase provided when it shouldn't be!")
+            raise DataError("Passphrase provided when it shouldn't be!")
 
         from trezor import wire
 

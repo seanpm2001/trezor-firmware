@@ -1,7 +1,9 @@
 from typing import TYPE_CHECKING
 
 from trezor import log, loop
-from trezor.messages import ThpCreateNewSession, ThpNewSession
+from trezor.enums import FailureType
+from trezor.messages import Failure, ThpCreateNewSession, ThpNewSession
+from trezor.wire.errors import DataError
 from trezor.wire.thp import SessionState
 
 if TYPE_CHECKING:
@@ -10,13 +12,17 @@ if TYPE_CHECKING:
 
 async def create_new_session(
     channel: ChannelContext, message: ThpCreateNewSession
-) -> ThpNewSession:
+) -> ThpNewSession | Failure:
     from trezor.wire.thp.session_manager import create_new_session
 
     from apps.common.seed import derive_and_store_roots
 
     session = create_new_session(channel)
-    await derive_and_store_roots(session, message)
+    try:
+        await derive_and_store_roots(session, message)
+    except DataError as e:
+        return Failure(code=FailureType.DataError, message=e.message)
+    # TODO handle other errors
 
     session.set_session_state(SessionState.ALLOCATED)
     channel.sessions[session.session_id] = session
