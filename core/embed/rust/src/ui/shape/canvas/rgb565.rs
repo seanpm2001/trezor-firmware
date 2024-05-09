@@ -61,16 +61,12 @@ impl<'a> BasicCanvas for Rgb565Canvas<'a> {
 
     fn fill_rect(&mut self, r: Rect, color: Color, alpha: u8) {
         let r = r.translate(self.viewport.origin);
-        if let Some(bitblt) = BitBltFill::new(r, self.viewport.clip, color, alpha) {
-            bitblt.rgb565_fill(&mut self.bitmap);
-        }
+        self.bitmap.bitblt_fill(r, self.viewport.clip, color, alpha);
     }
 
     fn draw_bitmap(&mut self, r: Rect, bitmap: BitmapView) {
         let r = r.translate(self.viewport.origin);
-        if let Some(bitblt) = BitBltCopy::new(r, self.viewport.clip, &bitmap) {
-            bitblt.rgb565_copy(&mut self.bitmap);
-        }
+        self.bitmap.bitblt_copy(&bitmap, r, self.viewport.clip);
     }
 }
 
@@ -101,9 +97,7 @@ impl<'a> Canvas for Rgb565Canvas<'a> {
 
     fn blend_bitmap(&mut self, r: Rect, src: BitmapView) {
         let r = r.translate(self.viewport.origin);
-        if let Some(bitblt) = BitBltCopy::new(r, self.viewport.clip, &src) {
-            bitblt.rgb565_blend(&mut self.bitmap);
-        }
+        self.bitmap.bitblt_blend(&src, r, self.viewport.clip);
     }
 
     #[cfg(feature = "ui_blurring")]

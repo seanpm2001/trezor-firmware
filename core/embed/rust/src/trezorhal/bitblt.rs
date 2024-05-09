@@ -6,9 +6,17 @@ use crate::ui::{
     shape::{Bitmap, BitmapFormat, BitmapView},
 };
 
-pub type BitBlt = ffi::gfx_bitblt_t;
+/// Waits for the DMA2D peripheral transfer to complete.
+pub fn wait_for_transfer() {
+    // SAFETY:
+    // `ffi::dma2d_wait()` is always safe to call.
+    #[cfg(feature = "dma2d")]
+    unsafe {
+        ffi::dma2d_wait()
+    }
+}
 
-impl Default for BitBlt {
+impl Default for ffi::gfx_bitblt_t {
     fn default() -> Self {
         Self {
             width: 0,
@@ -28,7 +36,7 @@ impl Default for BitBlt {
     }
 }
 
-impl BitBlt {
+impl ffi::gfx_bitblt_t {
     /// Sets the destination bitmap.
     ///
     /// Be sure that clipping rectangle specified in the `new_fill()` or
@@ -108,99 +116,27 @@ impl BitBlt {
         }
     }
 
-    /// Waits for the DMA2D peripheral transfer to complete.
-    pub fn wait_for_transfer() {
-        // SAFETY:
-        // `ffi::dma2d_wait()` is always safe to call.
-        #[cfg(feature = "dma2d")]
-        unsafe {
-            ffi::dma2d_wait()
-        }
-    }
-}
-
-/// Rectangle filling operation.
-pub struct BitBltFill {
-    bitblt: BitBlt,
-}
-
-impl BitBltFill {
-    /// Prepares bitblt **fill** operation
-    ///
-    /// - `r` is the rectangle to fill.
-    /// - `clip` is the clipping rectangle and must be completely inside the
-    ///   destination bitmap.
-    /// - `color` is the color to fill the rectangle with.
-    /// - `alpha` is the alpha value to use for blending.
-    ///
-    /// The function ensures proper clipping and returns `None` if the fill
-    /// operation is not needed.
-    pub fn new(r: Rect, clip: Rect, color: Color, alpha: u8) -> Option<Self> {
+    pub unsafe fn fill_op(
+        dst: &mut Bitmap,
+        r: Rect,
+        clip: Rect,
+        color: Color,
+        alpha: u8,
+    ) -> Option<Self> {
         let r = r.clamp(clip);
-        if !r.is_empty() {
-            Some(Self {
-                bitblt: BitBlt::default()
-                    .with_rect(r)
-                    .with_fg(color)
-                    .with_alpha(alpha),
-            })
-        } else {
-            None
+        if r.is_empty() {
+            return None;
         }
+
+        let blt_op = Self::default()
+            .with_rect(r)
+            .with_fg(color)
+            .with_alpha(alpha);
+
+        Some(unsafe { blt_op.with_dst(dst) })
     }
 
-    /// Fills a rectangle in the destination bitmap with the specified color.
-    ///
-    /// Destination bitmap must be in RGB565 format
-    pub fn rgb565_fill(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::RGB565);
-        unsafe { ffi::gfx_rgb565_fill(&self.bitblt.with_dst(dst)) };
-        dst.mark_dma_pending()
-    }
-
-    /// Fills a rectangle in the destination bitmap with the specified color.
-    ///
-    /// The destination bitmap is in the RGBA8888 format.
-    pub fn rgba8888_fill(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::RGBA8888);
-        unsafe { ffi::gfx_rgba8888_fill(&self.bitblt.with_dst(dst)) };
-        dst.mark_dma_pending()
-    }
-
-    /// Fills a rectangle in the destination bitmap with the specified color.
-    ///
-    /// The destination bitmap is in the MONO8 format.
-    pub fn mono8_fill(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::RGBA8888);
-        unsafe { ffi::gfx_mono8_fill(&self.bitblt.with_dst(dst)) };
-        dst.mark_dma_pending()
-    }
-
-    /// Fills a rectangle on the display with the specified color.
-    #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
-    pub fn display_fill(&self) {
-        unsafe { ffi::display_fill(&self.bitblt) };
-    }
-}
-
-/// Rectangle copying or blending operation.
-pub struct BitBltCopy<'a> {
-    bitblt: BitBlt,
-    src: &'a BitmapView<'a>,
-}
-
-impl<'a> BitBltCopy<'a> {
-    /// Prepares `BitBltCopy` structure for copying or blending a part of the
-    /// source bitmap to the destination bitmap or display.
-    ///
-    /// - `r` is the rectangle in the destination bitmap.
-    /// - `clip` is the clipping rectangle and must be completely inside the
-    ///   destination bitmap.
-    /// - `src` represents the source bitmap.
-    ///
-    /// The function ensures proper clipping and returns `None` if the copy
-    /// operation is not needed.
-    pub fn new(r: Rect, clip: Rect, src: &'a BitmapView) -> Option<Self> {
+    pub unsafe fn copy_op(dst: &mut Bitmap, src: &BitmapView, r: Rect, clip: Rect) -> Option<Self> {
         let mut offset = src.offset;
         let mut r_dst = r;
 
@@ -232,175 +168,141 @@ impl<'a> BitBltCopy<'a> {
         r.y1 = r.y1.min(r.y0 + src.size().y - offset.y);
 
         if !r.is_empty() {
-            Some(Self {
-                bitblt: BitBlt::default()
+            Some(
+                Self::default()
                     .with_rect(r)
                     .with_src(src.bitmap, offset.x, offset.y)
                     .with_bg(src.bg_color)
                     .with_fg(src.fg_color),
-                src,
-            })
+            )
         } else {
             None
         }
     }
+}
 
-    /// Copies a part of the source bitmap to the destination bitmap in RGB565
-    /// format.
-    pub fn rgb565_copy(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::RGB565);
-
-        let bitblt = self.bitblt.with_dst(dst);
-
-        // SAFETY:
-        // - The destination and source bitmaps are in the correct formats.
-        // - Source and destination coordinates are properly clipped, which is ensured
-        //   by the `new()` and `with_dst()` methods.
-        // - BitBlt structure is properly initialized.
-        // - The DMA pending flag is set for both bitmaps after operations.
-        match self.src.format() {
-            BitmapFormat::MONO4 => unsafe { ffi::gfx_rgb565_copy_mono4(&bitblt) },
-            BitmapFormat::RGB565 => unsafe { ffi::gfx_rgb565_copy_rgb565(&bitblt) },
-            _ => unimplemented!(),
-        }
-
-        self.src.bitmap.mark_dma_pending();
-        dst.mark_dma_pending();
-    }
-
-    /// Blends a part of the source bitmap with the destination bitmap in RGB565
-    /// format.
-    pub fn rgb565_blend(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::RGB565);
-
-        let bitblt = self.bitblt.with_dst(dst);
-
-        // SAFETY:
-        // - The destination and source bitmaps are in the correct formats.
-        // - Source and destination coordinates are properly clipped, which is ensured
-        //   by the `new()` and `with_dst()` methods.
-        // - BitBlt structure is properly initialized.
-        // - The DMA pending flag is set for both bitmaps after operations.
-        match self.src.format() {
-            BitmapFormat::MONO4 => unsafe { ffi::gfx_rgb565_blend_mono4(&bitblt) },
-            _ => unimplemented!(),
-        }
-
-        self.src.bitmap.mark_dma_pending();
-        dst.mark_dma_pending();
-    }
-
-    /// Copies a part of the source bitmap to the destination bitmap in RGBA8888
-    /// format.
-    pub fn rgba8888_copy(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::RGBA8888);
-
-        let bitblt = self.bitblt.with_dst(dst);
-
-        // SAFETY:
-        // - The destination and source bitmaps are in the correct formats.
-        // - Source and destination coordinates are properly clipped, which is ensured
-        //   by the `new()` and `with_dst()` methods.
-        // - BitBlt structure is properly initialized.
-        // - The DMA pending flag is set for both bitmaps after operations.
-        match self.src.format() {
-            BitmapFormat::MONO4 => unsafe { ffi::gfx_rgba8888_copy_mono4(&bitblt) },
-            BitmapFormat::RGB565 => unsafe { ffi::gfx_rgba8888_copy_rgb565(&bitblt) },
-            BitmapFormat::RGBA8888 => unsafe { ffi::gfx_rgba8888_copy_rgba8888(&bitblt) },
-            _ => unimplemented!(),
-        }
-
-        self.src.bitmap.mark_dma_pending();
-        dst.mark_dma_pending();
-    }
-
-    /// Blends a part of the source bitmap with the destination bitmap in
-    /// RGBA8888 format.
-    pub fn rgba8888_blend(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::RGBA8888);
-
-        let bitblt = self.bitblt.with_dst(dst);
-
-        // SAFETY:
-        // - The destination and source bitmaps are in the correct formats.
-        // - Source and destination coordinates are properly clipped, which is ensured
-        //   by the `new()` and `with_dst()` methods.
-        // - BitBlt structure is properly initialized.
-        // - The DMA pending flag is set for both bitmaps after operations.
-        match self.src.format() {
-            BitmapFormat::MONO4 => unsafe { ffi::gfx_rgba8888_blend_mono4(&bitblt) },
-            _ => unimplemented!(),
-        }
-
-        self.src.bitmap.mark_dma_pending();
-        dst.mark_dma_pending();
-    }
-
-    /// Copies a part of the source bitmap to the destination bitmap in MONO8
-    /// format.
-    pub fn mono8_copy(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::MONO8);
-
-        let bitblt = self.bitblt.with_dst(dst);
-
-        // SAFETY:
-        // - The destination and source bitmaps are in the correct formats.
-        // - Source and destination coordinates are properly clipped, which is ensured
-        //   by the `new()` and `with_dst()` methods.
-        // - BitBlt structure is properly initialized.
-        // - The DMA pending flag is set for both bitmaps after operations.
-
-        match self.src.format() {
-            BitmapFormat::MONO1P => unsafe { ffi::gfx_mono8_copy_mono1p(&bitblt) },
-            BitmapFormat::MONO4 => unsafe { ffi::gfx_mono8_copy_mono4(&bitblt) },
-            _ => unimplemented!(),
-        }
-
-        self.src.bitmap.mark_dma_pending();
-        dst.mark_dma_pending();
-    }
-
-    /// Blends a part of the source bitmap with the destination bitmap in MONO8
-    /// format.
-    pub fn mono8_blend(&self, dst: &mut Bitmap) {
-        assert!(dst.format() == BitmapFormat::MONO8);
-
-        let bitblt = self.bitblt.with_dst(dst);
-
-        // SAFETY:
-        // - The destination and source bitmaps are in the correct formats.
-        // - Source and destination coordinates are properly clipped, which is ensured
-        //   by the `new()` and `with_dst()` methods.
-        // - BitBlt structure is properly initialized.
-        // - The DMA pending flag is set for both bitmaps after operations.
-
-        match self.src.format() {
-            BitmapFormat::MONO1P => unsafe { ffi::gfx_mono8_blend_mono1p(&bitblt) },
-            BitmapFormat::MONO4 => unsafe { ffi::gfx_mono8_blend_mono4(&bitblt) },
-            _ => unimplemented!(),
-        }
-
-        self.src.bitmap.mark_dma_pending();
-        dst.mark_dma_pending();
-    }
-
-    /// Copies a part of the source bitmap to the display.
-    ///
-    /// - The source bitmap uses the RGB565 format.
+/// Rectangle filling operation.
+pub trait BitBltFill {
+    fn bitblt_fill(&mut self, r: Rect, clip: Rect, color: Color, alpha: u8) -> bool;
     #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
-    pub fn display_copy(&self) {
-        // SAFETY:
-        // - The source bitmap is in the correct formats.
-        // - Source and destination coordinates are properly clipped, which is ensured
-        //   by the `new()` and `with_dst()` methods.
-        // - BitBlt structure is properly initialized.
-        // - The DMA pending flag is set for src bitmap after operations.
+    fn display_fill(&mut self, r: Rect, clip: Rect, color: Color, alpha: u8);
+}
 
-        match self.src.format() {
-            BitmapFormat::RGB565 => unsafe { ffi::display_copy_rgb565(&self.bitblt) },
+impl BitBltFill for Bitmap<'_> {
+    fn bitblt_fill(&mut self, r: Rect, clip: Rect, color: Color, alpha: u8) -> bool {
+        // SAFETY: dropped at the end of function
+        let Some(blt_op) = (unsafe { ffi::gfx_bitblt_t::fill_op(self, r, clip, color, alpha) })
+        else {
+            return false;
+        };
+
+        match self.format() {
+            BitmapFormat::RGB565 => unsafe { ffi::gfx_rgb565_fill(&blt_op) },
+            BitmapFormat::RGBA8888 => unsafe { ffi::gfx_rgba8888_fill(&blt_op) },
+            BitmapFormat::MONO8 => unsafe { ffi::gfx_mono8_fill(&blt_op) },
             _ => unimplemented!(),
         }
 
-        self.src.bitmap.mark_dma_pending();
+        self.mark_dma_pending();
+        true
+    }
+
+    /// Fills a rectangle on the display with the specified color.
+    #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
+    fn display_fill(&mut self, r: Rect, clip: Rect, color: Color, alpha: u8) {
+        let Some(blt_op) = (unsafe { ffi::gfx_bitblt_t::fill_op(self, r, clip, color, alpha) })
+        else {
+            return;
+        };
+        unsafe { ffi::display_fill(&blt_op) };
+    }
+}
+
+pub trait BitBltCopy {
+    fn bitblt_copy(&mut self, src: &BitmapView, r: Rect, clip: Rect) -> bool;
+    fn bitblt_blend(&mut self, src: &BitmapView, r: Rect, clip: Rect) -> bool;
+    #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
+    fn display_copy(&mut self, src: &BitmapView, r: Rect, clip: Rect);
+}
+
+impl BitBltCopy for Bitmap<'_> {
+    fn bitblt_copy(&mut self, src: &BitmapView, r: Rect, clip: Rect) -> bool {
+        // SAFETY: dropped at the end of function
+        let Some(blt_op) = (unsafe { ffi::gfx_bitblt_t::copy_op(self, src, r, clip) }) else {
+            return false;
+        };
+
+        match (self.format(), src.format()) {
+            (BitmapFormat::MONO8, BitmapFormat::MONO1P) => unsafe {
+                ffi::gfx_mono8_copy_mono1p(&blt_op)
+            },
+            (BitmapFormat::MONO8, BitmapFormat::MONO4) => unsafe {
+                ffi::gfx_mono8_copy_mono4(&blt_op)
+            },
+            (BitmapFormat::RGB565, BitmapFormat::MONO4) => unsafe {
+                ffi::gfx_rgb565_copy_mono4(&blt_op)
+            },
+            (BitmapFormat::RGB565, BitmapFormat::RGB565) => unsafe {
+                ffi::gfx_rgb565_copy_rgb565(&blt_op)
+            },
+            (BitmapFormat::RGBA8888, BitmapFormat::MONO4) => unsafe {
+                ffi::gfx_rgba8888_copy_mono4(&blt_op)
+            },
+            (BitmapFormat::RGBA8888, BitmapFormat::RGB565) => unsafe {
+                ffi::gfx_rgba8888_copy_rgb565(&blt_op)
+            },
+            (BitmapFormat::RGBA8888, BitmapFormat::RGBA8888) => unsafe {
+                ffi::gfx_rgba8888_copy_rgba8888(&blt_op)
+            },
+            _ => unimplemented!(),
+        }
+
+        self.mark_dma_pending();
+        src.bitmap.mark_dma_pending();
+        true
+    }
+
+    fn bitblt_blend(&mut self, src: &BitmapView, r: Rect, clip: Rect) -> bool {
+        // SAFETY: dropped at the end of function
+        let Some(blt_op) = (unsafe { ffi::gfx_bitblt_t::copy_op(self, src, r, clip) }) else {
+            return false;
+        };
+
+        match (self.format(), src.format()) {
+            (BitmapFormat::MONO8, BitmapFormat::MONO1P) => unsafe {
+                ffi::gfx_mono8_blend_mono1p(&blt_op)
+            },
+            (BitmapFormat::MONO8, BitmapFormat::MONO4) => unsafe {
+                ffi::gfx_mono8_blend_mono4(&blt_op)
+            },
+            (BitmapFormat::RGB565, BitmapFormat::MONO4) => unsafe {
+                ffi::gfx_rgb565_blend_mono4(&blt_op)
+            },
+            (BitmapFormat::RGBA8888, BitmapFormat::MONO4) => unsafe {
+                ffi::gfx_rgba8888_blend_mono4(&blt_op)
+            },
+            _ => unimplemented!(),
+        }
+
+        self.mark_dma_pending();
+        src.bitmap.mark_dma_pending();
+        true
+    }
+
+    #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
+    fn display_copy(&mut self, src: &BitmapView, r: Rect, clip: Rect) {
+        let Some(blt_op) = (unsafe { ffi::gfx_bitblt_t::copy_op(self, src, r, clip) }) else {
+            return;
+        };
+
+        match (self.format(), src.format()) {
+            (BitmapFormat::RGB565, BitmapFormat::RGB565) => unsafe {
+                ffi::display_copy_rgb565(&blt_op)
+            },
+            _ => unimplemented!(),
+        }
+
+        self.mark_dma_pending();
+        src.bitmap.mark_dma_pending();
     }
 }
