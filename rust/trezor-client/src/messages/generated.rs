@@ -82,6 +82,14 @@ trezor_message_impl! {
     DebugLinkEraseSdCard => MessageType_DebugLinkEraseSdCard,
     DebugLinkWatchLayout => MessageType_DebugLinkWatchLayout,
     DebugLinkResetDebugEvents => MessageType_DebugLinkResetDebugEvents,
+    ThpStartPairingRequest => MessageType_ThpStartPairingRequest,
+    ThpStartPairingResponse => MessageType_ThpStartPairingResponse,
+    ThpCredentialRequest => MessageType_ThpCredentialRequest,
+    ThpCredentialResponse => MessageType_ThpCredentialResponse,
+    ThpEndRequest => MessageType_ThpEndRequest,
+    ThpEndResponse => MessageType_ThpEndResponse,
+    ThpCreateNewSession => MessageType_ThpCreateNewSession,
+    ThpNewSession => MessageType_ThpNewSession,
 }
 
 #[cfg(feature = "binance")]
