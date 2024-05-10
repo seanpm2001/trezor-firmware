@@ -1,40 +1,52 @@
 use crate::{io::BinaryData, ui::geometry::Offset};
 
-impl<'a> BinaryData<'a> {
-    fn read_u8(&self, ofs: usize) -> Option<u8> {
+struct BinaryDataReader<'a> {
+    data: BinaryData<'a>,
+    ofs: usize,
+}
+
+impl<'a> BinaryDataReader<'a> {
+    pub fn new(data: BinaryData<'a>) -> Self {
+        Self { data, ofs: 0 }
+    }
+
+    pub fn read(&mut self, dest: &mut [u8]) -> Option<usize> {
+        let len = self.data.read(self.ofs, dest);
+        self.ofs += len;
+        if len == dest.len() {
+            Some(len)
+        } else {
+            None
+        }
+    }
+
+    pub fn skip(&mut self, len: usize) -> Option<usize> {
+        self.ofs += len;
+        Some(len)
+    }
+
+    pub fn read_u8(&mut self) -> Option<u8> {
         let mut buff: [u8; 1] = [0; 1];
-        if self.read(ofs, buff.as_mut()) == buff.len() {
-            Some(buff[0])
-        } else {
-            None
-        }
+        self.read(&mut buff)?;
+        Some(buff[0])
     }
 
-    fn read_u16_le(&self, ofs: usize) -> Option<u16> {
+    pub fn read_u16_le(&mut self) -> Option<u16> {
         let mut buff: [u8; 2] = [0; 2];
-        if self.read(ofs, buff.as_mut()) == buff.len() {
-            Some(u16::from_le_bytes(buff))
-        } else {
-            None
-        }
+        self.read(&mut buff)?;
+        Some(u16::from_le_bytes(buff))
     }
 
-    fn read_u16_be(&self, ofs: usize) -> Option<u16> {
+    pub fn read_u16_be(&mut self) -> Option<u16> {
         let mut buff: [u8; 2] = [0; 2];
-        if self.read(ofs, buff.as_mut()) == buff.len() {
-            Some(u16::from_be_bytes(buff))
-        } else {
-            None
-        }
+        self.read(&mut buff)?;
+        Some(u16::from_be_bytes(buff))
     }
 
-    fn read_u32_le(&self, ofs: usize) -> Option<u32> {
+    pub fn read_u32_le(&mut self) -> Option<u32> {
         let mut buff: [u8; 4] = [0; 4];
-        if self.read(ofs, buff.as_mut()) == buff.len() {
-            Some(u32::from_le_bytes(buff))
-        } else {
-            None
-        }
+        self.read(&mut buff)?;
+        Some(u32::from_le_bytes(buff))
     }
 }
 
@@ -56,11 +68,12 @@ impl ToifInfo {
     pub const HEADER_LENGTH: usize = 12;
 
     pub fn parse(image: BinaryData) -> Option<Self> {
-        if image.read_u8(0)? != b'T' && image.read_u8(1)? != b'O' && image.read_u8(2)? != b'I' {
+        let mut reader = BinaryDataReader::new(image);
+        if reader.read_u8()? != b'T' && reader.read_u8()? != b'O' && reader.read_u8()? != b'I' {
             return None;
         }
 
-        let format = match image.read_u8(3)? {
+        let format = match reader.read_u8()? {
             b'f' => ToifFormat::FullColorBE,
             b'g' => ToifFormat::GrayScaleOH,
             b'F' => ToifFormat::FullColorLE,
@@ -68,9 +81,9 @@ impl ToifInfo {
             _ => return None,
         };
 
-        let width = image.read_u16_le(4)?;
-        let height = image.read_u16_le(6)?;
-        let len = image.read_u32_le(8)? as usize;
+        let width = reader.read_u16_le()?;
+        let height = reader.read_u16_le()?;
+        let len = reader.read_u32_le()? as usize;
 
         if width > 1024 || height > 1024 || len > 65536 {
             return None;
@@ -135,33 +148,34 @@ impl JpegInfo {
         const M_EOI: u16 = 0xFFD9;
 
         let mut result = None;
-        let mut ofs = 0;
+        let mut reader = BinaryDataReader::new(image);
 
-        while image.read_u16_be(ofs)? != M_SOI {
-            ofs += 1;
-        }
+        while reader.read_u16_be()? != M_SOI {}
 
         loop {
-            let marker = image.read_u16_be(ofs)?;
+            let marker = reader.read_u16_be()?;
 
             if (marker & 0xFF00) != 0xFF00 {
                 return None;
             }
 
-            ofs += 2;
-
-            ofs += match marker {
-                M_SOI => 0,
+            match marker {
+                M_SOI => (),
                 M_SOF0 => {
-                    let w = image.read_u16_be(ofs + 3)? as i16;
-                    let h = image.read_u16_be(ofs + 5)? as i16;
+                    let pos = reader.ofs;
+                    let len = reader.read_u16_be()? as usize;
+                    let _prec = reader.read_u8()?;
+                    let w = reader.read_u16_be()? as i16;
+                    let h = reader.read_u16_be()? as i16;
                     // Number of components
-                    let nc = image.read_u8(ofs + 7)?;
+                    let nc = reader.read_u8()?;
                     if (nc != 1) && (nc != 3) {
                         return None;
                     }
+                    // id of first component
+                    let _id1 = reader.read_u8()?;
                     // Sampling factor of the first component
-                    let c1 = image.read_u8(ofs + 9)?;
+                    let c1 = reader.read_u8()?;
                     if (c1 != 0x11) && (c1 != 0x21) & (c1 != 0x22) {
                         return None;
                     };
@@ -171,14 +185,19 @@ impl JpegInfo {
                         mcu_height,
                     });
 
-                    image.read_u16_be(ofs)?
+                    reader.ofs = pos + len;
                 }
-                M_DRI => 4,
+                M_DRI => {
+                    reader.skip(4);
+                }
                 M_EOI => return None,
-                M_RST0..=M_RST7 => 0,
+                M_RST0..=M_RST7 => (),
                 M_SOS => break,
-                _ => image.read_u16_be(ofs)?,
-            } as usize;
+                _ => {
+                    let len = reader.read_u16_be()? as usize;
+                    reader.skip(len);
+                }
+            }
         }
 
         result
