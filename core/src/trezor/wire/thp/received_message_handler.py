@@ -5,7 +5,7 @@ from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH
 from trezor import log, loop, protobuf, utils
 from trezor.enums import FailureType
-from trezor.messages import ThpCreateNewSession
+from trezor.messages import GetFeatures, ThpCreateNewSession
 from trezor.wire import message_handler
 from trezor.wire.protocol_common import MessageWithType
 from trezor.wire.thp import ack_handler, thp_messages
@@ -354,5 +354,9 @@ async def _handle_channel_message(
 
 def _is_channel_message(message) -> bool:
     if __debug__:
-        return ThpCreateNewSession.is_type_of(message) or LoadDevice.is_type_of(message)
-    return ThpCreateNewSession.is_type_of(message)
+        return (
+            ThpCreateNewSession.is_type_of(message)
+            or GetFeatures.is_type_of(message)
+            or LoadDevice.is_type_of(message)
+        )
+    return ThpCreateNewSession.is_type_of(message) or GetFeatures.is_type_of(message)
