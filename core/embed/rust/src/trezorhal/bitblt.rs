@@ -184,7 +184,7 @@ impl ffi::gfx_bitblt_t {
 /// Rectangle filling operation.
 pub trait BitBltFill {
     fn bitblt_fill(&mut self, r: Rect, clip: Rect, color: Color, alpha: u8) -> bool;
-    #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
+    #[cfg(feature = "new_rendering")]
     fn display_fill(&mut self, r: Rect, clip: Rect, color: Color, alpha: u8);
 }
 
@@ -208,7 +208,7 @@ impl BitBltFill for Bitmap<'_> {
     }
 
     /// Fills a rectangle on the display with the specified color.
-    #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
+    #[cfg(feature = "new_rendering")]
     fn display_fill(&mut self, r: Rect, clip: Rect, color: Color, alpha: u8) {
         let Some(blt_op) = (unsafe { ffi::gfx_bitblt_t::fill_op(self, r, clip, color, alpha) })
         else {
@@ -221,7 +221,7 @@ impl BitBltFill for Bitmap<'_> {
 pub trait BitBltCopy {
     fn bitblt_copy(&mut self, src: &BitmapView, r: Rect, clip: Rect) -> bool;
     fn bitblt_blend(&mut self, src: &BitmapView, r: Rect, clip: Rect) -> bool;
-    #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
+    #[cfg(feature = "new_rendering")]
     fn display_copy(&mut self, src: &BitmapView, r: Rect, clip: Rect);
 }
 
@@ -289,7 +289,7 @@ impl BitBltCopy for Bitmap<'_> {
         true
     }
 
-    #[cfg(all(not(feature = "xframebuffer"), feature = "new_rendering"))]
+    #[cfg(feature = "new_rendering")]
     fn display_copy(&mut self, src: &BitmapView, r: Rect, clip: Rect) {
         let Some(blt_op) = (unsafe { ffi::gfx_bitblt_t::copy_op(self, src, r, clip) }) else {
             return;
