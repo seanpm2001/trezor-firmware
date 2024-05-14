@@ -1,44 +1,51 @@
 from typing import TYPE_CHECKING
 
 from trezor import log, loop
-from trezor.enums import FailureType
-from trezor.messages import Failure, ThpCreateNewSession, ThpNewSession
+from trezor.enums import ButtonRequestType, FailureType
+from trezor.messages import (
+    ButtonAck,
+    ButtonRequest,
+    Failure,
+    ThpCreateNewSession,
+    ThpNewSession,
+)
+from trezor.wire.context import call
 from trezor.wire.errors import ActionCancelled, DataError
 from trezor.wire.thp import SessionState
 
 if TYPE_CHECKING:
-    from trezor.wire.thp import ChannelContext
+    from trezor.wire.thp.session_context import ManagementSessionContext
 
 
 async def create_new_session(
-    channel: ChannelContext, message: ThpCreateNewSession
+    management_session: ManagementSessionContext, message: ThpCreateNewSession
 ) -> ThpNewSession | Failure:
     from trezor.wire.thp.session_manager import create_new_session
 
     from apps.common.seed import derive_and_store_roots
 
-    session = create_new_session(channel)
+    new_session = create_new_session(management_session.channel_ctx)
     try:
-        await derive_and_store_roots(session, message)
+        await derive_and_store_roots(new_session, message)
     except DataError as e:
         return Failure(code=FailureType.DataError, message=e.message)
     except ActionCancelled as e:
         return Failure(code=FailureType.ActionCancelled, message=e.message)
     # TODO handle other errors
 
-    session.set_session_state(SessionState.ALLOCATED)
-    channel.sessions[session.session_id] = session
-    loop.schedule(session.handle())
-    new_session_id: int = session.session_id
+    new_session.set_session_state(SessionState.ALLOCATED)
+    management_session.channel_ctx.sessions[new_session.session_id] = new_session
+    loop.schedule(new_session.handle())
+    new_session_id: int = new_session.session_id
     # await get_seed() TODO
 
     if __debug__:
         log.debug(
             __name__,
-            "create_new_session - new session created. Passphrase: %s, Session id: %d",
+            "create_new_session - new session created. Passphrase: %s, Session id: %d\n%s",
             message.passphrase if message.passphrase is not None else "",
-            session.session_id,
+            new_session.session_id,
+            str(management_session.channel_ctx.sessions),
         )
-        print(channel.sessions)
 
     return ThpNewSession(new_session_id=new_session_id)

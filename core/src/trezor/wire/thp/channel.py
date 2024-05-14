@@ -4,9 +4,17 @@ from typing import TYPE_CHECKING  # pyright:ignore[reportShadowedImports]
 from storage.cache_thp import TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
-from trezor.wire.thp import interface_manager, received_message_handler
 
-from . import ChannelState, checksum, control_byte, crypto, memory_manager
+from . import (
+    ChannelState,
+    checksum,
+    control_byte,
+    crypto,
+    interface_manager,
+    memory_manager,
+    received_message_handler,
+    session_manager,
+)
 from . import thp_session as THP
 from .checksum import CHECKSUM_LENGTH
 from .thp_messages import ENCRYPTED_TRANSPORT, ERROR, InitHeader
@@ -25,10 +33,8 @@ if TYPE_CHECKING:
     from trezorio import WireInterface
     from typing import TypeVar, overload
 
-    from . import ChannelContext, PairingContext
-    from .session_context import SessionContext
-else:
-    ChannelContext = object
+    from . import PairingContext
+    from .session_context import GenericSessionContext
 
 
 class Channel:
@@ -43,10 +49,11 @@ class Channel:
         self.buffer: utils.BufferType
         self.channel_id: bytes = channel_cache.channel_id
         self.selected_pairing_methods = []
-        self.sessions: dict[int, SessionContext] = {}
+        self.sessions: dict[int, GenericSessionContext] = {}
         self.waiting_for_ack_timeout: loop.spawn | None = None
         self.write_task_spawn: loop.spawn | None = None
         self.connection_context: PairingContext | None = None
+        self._create_management_session()
 
     # ACCESS TO CHANNEL_DATA
     def get_channel_id_int(self) -> int:
@@ -67,6 +74,11 @@ class Channel:
         self.buffer = buffer
         if __debug__:
             log.debug(__name__, "set_buffer: %s", type(self.buffer))
+
+    def _create_management_session(self) -> None:
+        session = session_manager.create_new_management_session(self)
+        self.sessions[session.session_id] = session
+        loop.schedule(session.handle())
 
     # CALLED BY THP_MAIN_LOOP
 

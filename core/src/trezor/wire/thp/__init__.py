@@ -3,13 +3,13 @@ from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 if TYPE_CHECKING:
     from enum import IntEnum
     from trezorio import WireInterface
-    from typing import Protocol, TypeVar, overload
+    from typing import List, Protocol, TypeVar, overload
 
     from storage.cache_thp import ChannelCache
     from trezor import loop, protobuf, utils
     from trezor.enums import FailureType
     from trezor.wire.thp.pairing_context import PairingContext
-    from trezor.wire.thp.session_context import SessionContext
+    from trezor.wire.thp.session_context import GenericSessionContext
 
     T = TypeVar("T")
 
@@ -18,8 +18,8 @@ if TYPE_CHECKING:
         iface: WireInterface
         channel_id: bytes
         channel_cache: ChannelCache
-        selected_pairing_methods = []  # TODO add type
-        sessions: dict[int, SessionContext]
+        selected_pairing_methods: List[int] = []  # TODO add type
+        sessions: dict[int, GenericSessionContext]
         waiting_for_ack_timeout: loop.spawn | None
         write_task_spawn: loop.spawn | None
         connection_context: PairingContext | None
@@ -73,6 +73,7 @@ class ChannelState(IntEnum):
 class SessionState(IntEnum):
     UNALLOCATED = 0
     ALLOCATED = 1
+    MANAGEMENT = 2
 
 
 class WireInterfaceType(IntEnum):

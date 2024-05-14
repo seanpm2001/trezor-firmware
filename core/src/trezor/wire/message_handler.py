@@ -21,6 +21,7 @@ if TYPE_CHECKING:
     HandlerTask = Coroutine[Any, Any, protobuf.MessageType]
     Handler = Callable[[Msg], HandlerTask]
     LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
+    HandlerFinder = Callable[[Any, Any], Handler | None]
 
 
 # If set to False protobuf messages marked with "experimental_message" option are rejected.
@@ -57,7 +58,10 @@ if __debug__:
 
 
 async def handle_single_message(
-    ctx: context.Context, msg: protocol_common.MessageWithType, use_workflow: bool
+    ctx: context.Context,
+    msg: protocol_common.MessageWithType,
+    use_workflow: bool,
+    special_handler_finder: HandlerFinder | None = None,
 ) -> protocol_common.MessageWithType | None:
     """Handle a message that was loaded from USB by the caller.
 
@@ -98,7 +102,12 @@ async def handle_single_message(
     res_msg: protobuf.MessageType | None = None
 
     # We need to find a handler for this message type.  Should not raise.
-    handler = find_handler(ctx.iface, msg.type)  # pylint: disable=assignment-from-none
+    if special_handler_finder is not None:
+        handler: Handler | None = special_handler_finder(ctx.iface, msg.type)
+    else:
+        handler: Handler | None = find_handler(  # pylint: disable=assignment-from-none
+            ctx.iface, msg.type
+        )
 
     if handler is None:
         # If no handler is found, we can skip decoding and directly
@@ -175,7 +184,7 @@ def _find_handler_placeholder(iface: WireInterface, msg_type: int) -> Handler | 
     return None
 
 
-find_handler = _find_handler_placeholder
+find_handler: HandlerFinder = _find_handler_placeholder
 AVOID_RESTARTING_FOR: Container[int] = ()
 
 
