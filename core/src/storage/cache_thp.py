@@ -27,6 +27,7 @@ BROADCAST_CHANNEL_ID = const(65535)
 KEY_LENGTH = const(32)
 TAG_LENGTH = const(16)
 _UNALLOCATED_STATE = const(0)
+MANAGEMENT_SESSION_ID = const(0)
 
 
 class ConnectionCache(DataCache):
@@ -157,13 +158,18 @@ def get_all_allocated_channels() -> list[ChannelCache]:
 
 
 def get_all_allocated_sessions() -> list[SessionThpCache]:
+    if __debug__:
+        from trezor.utils import get_bytes_as_str
     _list: list[SessionThpCache] = []
     for session in _SESSIONS:
         if _get_session_state(session) != _UNALLOCATED_STATE:
             _list.append(session)
             if __debug__:
                 log.debug(
-                    __name__, "session %s is not in UNALLOCATED state", str(session)
+                    __name__,
+                    "session with channel_id: %s and session_id: %s is in ALLOCATED state",
+                    get_bytes_as_str(session.channel_id),
+                    get_bytes_as_str(session.session_id),
                 )
         elif __debug__:
             log.debug(__name__, "session %s is in UNALLOCATED state", str(session))

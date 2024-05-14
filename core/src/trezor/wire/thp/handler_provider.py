@@ -8,13 +8,13 @@ from apps.base import get_features
 from apps.thp import create_session
 
 if TYPE_CHECKING:
+    from trezorio import WireInterface
     from typing import Any, Callable, Coroutine
 
     from trezor.messages import Features, GetFeatures, LoadDevice
 
-    from . import ChannelContext
-
-    pass
+    from .. import Handler
+    from .session_context import ManagementSessionContext
 
 
 def get_handler_for_channel_message(
@@ -29,7 +29,7 @@ def get_handler_for_channel_message(
             from apps.debug.load_device import load_device
 
             def wrapper(
-                channel: ChannelContext, msg: LoadDevice
+                channel: ManagementSessionContext, msg: LoadDevice
             ) -> Coroutine[Any, Any, protobuf.MessageType]:
                 return load_device(msg)
 
@@ -37,5 +37,18 @@ def get_handler_for_channel_message(
     raise UnexpectedMessage("There is no handler available for this message")
 
 
-async def handle_GetFeatures(ctx: ChannelContext, msg: GetFeatures) -> Features:
+async def handle_GetFeatures(
+    ctx: ManagementSessionContext, msg: GetFeatures
+) -> Features:
     return get_features()
+
+
+def get_handler_finder_for_message(ctx: ManagementSessionContext):
+    def finder(iface: WireInterface, msg_type: int) -> Handler | None:
+        def handler_wrap(msg: protobuf.MessageType):
+            handler = get_handler_for_channel_message(msg)
+            return handler(ctx, msg)
+
+        return handler_wrap
+
+    return finder

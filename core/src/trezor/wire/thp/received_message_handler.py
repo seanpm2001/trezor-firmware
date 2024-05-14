@@ -260,9 +260,6 @@ async def _handle_state_ENCRYPTED_TRANSPORT(
 
     ctx.decrypt_buffer(message_length)
     session_id, message_type = ustruct.unpack(">BH", ctx.buffer[INIT_DATA_OFFSET:])
-    if session_id == 0:
-        await _handle_channel_message(ctx, message_length, message_type)
-        return
     if session_id not in ctx.sessions:
         await ctx.write_error(FailureType.ThpUnallocatedSession, "Unallocated session")
         raise ThpError("Unalloacted session")

@@ -35,7 +35,7 @@ async def thp_main_loop(iface: WireInterface, is_debug_session=False):
     global _BUFFER
     CHANNELS = channel_manager.load_cached_channels(_BUFFER)
     for ch in CHANNELS.values():
-        ch.sessions = session_manager.load_cached_sessions(ch)
+        ch.sessions.update(session_manager.load_cached_sessions(ch))
 
     read = loop.wait(iface.iface_num() | io.POLL_READ)
 

@@ -3,7 +3,11 @@ from typing import TYPE_CHECKING
 from storage import cache_thp
 from trezor import loop
 
-from .session_context import SessionContext
+from .session_context import (
+    GenericSessionContext,
+    ManagementSessionContext,
+    SessionContext,
+)
 
 if __debug__:
     from trezor import log
@@ -17,10 +21,18 @@ def create_new_session(channel_ctx: ChannelContext) -> SessionContext:
     return SessionContext(channel_ctx, session_cache)
 
 
-def load_cached_sessions(channel_ctx: ChannelContext) -> dict[int, SessionContext]:
+def create_new_management_session(
+    channel_ctx: ChannelContext,
+) -> ManagementSessionContext:
+    return ManagementSessionContext(channel_ctx)
+
+
+def load_cached_sessions(
+    channel_ctx: ChannelContext,
+) -> dict[int, GenericSessionContext]:
     if __debug__:
         log.debug(__name__, "load_cached_sessions")
-    sessions: dict[int, SessionContext] = {}
+    sessions: dict[int, GenericSessionContext] = {}
     cached_sessions = cache_thp.get_all_allocated_sessions()
     if __debug__:
         log.debug(

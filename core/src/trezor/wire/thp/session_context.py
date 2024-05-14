@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
-from storage.cache_thp import SessionThpCache
+from storage.cache_thp import MANAGEMENT_SESSION_ID, SessionThpCache
 from trezor import log, loop, protobuf, utils
 from trezor.wire import message_handler, protocol_common
 from trezor.wire.message_handler import AVOID_RESTARTING_FOR, failure
@@ -19,12 +19,16 @@ if TYPE_CHECKING:
 
     from storage.cache_common import DataCache
 
+    from ..message_handler import HandlerFinder
     from . import ChannelContext
 
     pass
 
 _EXIT_LOOP = True
 _REPEAT_LOOP = False
+
+if __debug__:
+    from trezor.utils import get_bytes_as_str
 
 
 class UnexpectedMessageWithType(Exception):
@@ -39,19 +43,13 @@ class UnexpectedMessageWithType(Exception):
         self.msg = msg
 
 
-class SessionContext(Context):
-    def __init__(
-        self, channel_ctx: ChannelContext, session_cache: SessionThpCache
-    ) -> None:
-        if channel_ctx.channel_id != session_cache.channel_id:
-            raise Exception(
-                "The session has different channel id than the provided channel context!"
-            )
+class GenericSessionContext(Context):
+    def __init__(self, channel_ctx: ChannelContext, session_id: int) -> None:
         super().__init__(channel_ctx.iface, channel_ctx.channel_id)
-        self.channel_ctx = channel_ctx
-        self.session_cache = session_cache
-        self.session_id = int.from_bytes(session_cache.session_id, "big")
+        self.channel_ctx: ChannelContext = channel_ctx
+        self.session_id: int = session_id
         self.incoming_message = loop.chan()
+        self.special_handler_finder: HandlerFinder | None = None
 
     async def handle(self, is_debug_session: bool = False) -> None:
         if __debug__:
@@ -73,7 +71,12 @@ class SessionContext(Context):
                     log.exception(__name__, exc)
 
     def _handle_debug(self, is_debug_session: bool) -> None:
-        log.debug(__name__, "handle - start (session_id: %d)", self.session_id)
+        log.debug(
+            __name__,
+            "handle - start (channel_id (bytes): %s, session_id: %d)",
+            get_bytes_as_str(self.channel_id),
+            self.session_id,
+        )
         if is_debug_session:
             import apps.debug
 
@@ -96,7 +99,10 @@ class SessionContext(Context):
 
         try:
             next_message = await message_handler.handle_single_message(
-                self, message, use_workflow=not is_debug_session
+                self,
+                message,
+                use_workflow=not is_debug_session,
+                special_handler_finder=self.special_handler_finder,
             )
         except Exception as exc:
             # Log and ignore. The session handler can only exit explicitly in the
@@ -155,6 +161,33 @@ class SessionContext(Context):
 
     async def write(self, msg: protobuf.MessageType) -> None:
         return await self.channel_ctx.write(msg, self.session_id)
+
+    def get_session_state(self) -> SessionState: ...
+
+
+class ManagementSessionContext(GenericSessionContext):
+    def __init__(self, channel_ctx: ChannelContext) -> None:
+        super().__init__(channel_ctx, MANAGEMENT_SESSION_ID)
+        from trezor.wire.thp.handler_provider import get_handler_finder_for_message
+
+        finder = get_handler_finder_for_message(self)
+        self.special_handler_finder = finder
+
+    def get_session_state(self) -> SessionState:
+        return SessionState.MANAGEMENT
+
+
+class SessionContext(GenericSessionContext):
+    def __init__(
+        self, channel_ctx: ChannelContext, session_cache: SessionThpCache
+    ) -> None:
+        if channel_ctx.channel_id != session_cache.channel_id:
+            raise Exception(
+                "The session has different channel id than the provided channel context!"
+            )
+        session_id = int.from_bytes(session_cache.session_id, "big")
+        super().__init__(channel_ctx, session_id)
+        self.session_cache = session_cache
 
     # ACCESS TO SESSION DATA
 
