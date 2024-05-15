@@ -2550,25 +2550,25 @@ impl ::protobuf::reflect::ProtobufValue for ThpNfcUnidirectionalTag {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
-// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpNfcUnideirectionalSecret)
+// @@protoc_insertion_point(message:hw.trezor.messages.thp.ThpNfcUnidirectionalSecret)
 #[derive(PartialEq,Clone,Default,Debug)]
-pub struct ThpNfcUnideirectionalSecret {
+pub struct ThpNfcUnidirectionalSecret {
     // message fields
-    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpNfcUnideirectionalSecret.secret)
+    // @@protoc_insertion_point(field:hw.trezor.messages.thp.ThpNfcUnidirectionalSecret.secret)
     pub secret: ::std::option::Option<::std::vec::Vec<u8>>,
     // special fields
-    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpNfcUnideirectionalSecret.special_fields)
+    // @@protoc_insertion_point(special_field:hw.trezor.messages.thp.ThpNfcUnidirectionalSecret.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
 }
 
-impl<'a> ::std::default::Default for &'a ThpNfcUnideirectionalSecret {
-    fn default() -> &'a ThpNfcUnideirectionalSecret {
-        <ThpNfcUnideirectionalSecret as ::protobuf::Message>::default_instance()
+impl<'a> ::std::default::Default for &'a ThpNfcUnidirectionalSecret {
+    fn default() -> &'a ThpNfcUnidirectionalSecret {
+        <ThpNfcUnidirectionalSecret as ::protobuf::Message>::default_instance()
     }
 }
 
-impl ThpNfcUnideirectionalSecret {
-    pub fn new() -> ThpNfcUnideirectionalSecret {
+impl ThpNfcUnidirectionalSecret {
+    pub fn new() -> ThpNfcUnidirectionalSecret {
         ::std::default::Default::default()
     }
 
@@ -2613,19 +2613,19 @@ impl ThpNfcUnideirectionalSecret {
         let mut oneofs = ::std::vec::Vec::with_capacity(0);
         fields.push(::protobuf::reflect::rt::v2::make_option_accessor::<_, _>(
             "secret",
-            |m: &ThpNfcUnideirectionalSecret| { &m.secret },
-            |m: &mut ThpNfcUnideirectionalSecret| { &mut m.secret },
+            |m: &ThpNfcUnidirectionalSecret| { &m.secret },
+            |m: &mut ThpNfcUnidirectionalSecret| { &mut m.secret },
         ));
-        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpNfcUnideirectionalSecret>(
-            "ThpNfcUnideirectionalSecret",
+        ::protobuf::reflect::GeneratedMessageDescriptorData::new_2::<ThpNfcUnidirectionalSecret>(
+            "ThpNfcUnidirectionalSecret",
             fields,
             oneofs,
         )
     }
 }
 
-impl ::protobuf::Message for ThpNfcUnideirectionalSecret {
-    const NAME: &'static str = "ThpNfcUnideirectionalSecret";
+impl ::protobuf::Message for ThpNfcUnidirectionalSecret {
+    const NAME: &'static str = "ThpNfcUnidirectionalSecret";
 
     fn is_initialized(&self) -> bool {
         true
@@ -2673,8 +2673,8 @@ impl ::protobuf::Message for ThpNfcUnideirectionalSecret {
         &mut self.special_fields
     }
 
-    fn new() -> ThpNfcUnideirectionalSecret {
-        ThpNfcUnideirectionalSecret::new()
+    fn new() -> ThpNfcUnidirectionalSecret {
+        ThpNfcUnidirectionalSecret::new()
     }
 
     fn clear(&mut self) {
@@ -2682,8 +2682,8 @@ impl ::protobuf::Message for ThpNfcUnideirectionalSecret {
         self.special_fields.clear();
     }
 
-    fn default_instance() -> &'static ThpNfcUnideirectionalSecret {
-        static instance: ThpNfcUnideirectionalSecret = ThpNfcUnideirectionalSecret {
+    fn default_instance() -> &'static ThpNfcUnidirectionalSecret {
+        static instance: ThpNfcUnidirectionalSecret = ThpNfcUnidirectionalSecret {
             secret: ::std::option::Option::None,
             special_fields: ::protobuf::SpecialFields::new(),
         };
@@ -2691,20 +2691,20 @@ impl ::protobuf::Message for ThpNfcUnideirectionalSecret {
     }
 }
 
-impl ::protobuf::MessageFull for ThpNfcUnideirectionalSecret {
+impl ::protobuf::MessageFull for ThpNfcUnidirectionalSecret {
     fn descriptor() -> ::protobuf::reflect::MessageDescriptor {
         static descriptor: ::protobuf::rt::Lazy<::protobuf::reflect::MessageDescriptor> = ::protobuf::rt::Lazy::new();
-        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpNfcUnideirectionalSecret").unwrap()).clone()
+        descriptor.get(|| file_descriptor().message_by_package_relative_name("ThpNfcUnidirectionalSecret").unwrap()).clone()
     }
 }
 
-impl ::std::fmt::Display for ThpNfcUnideirectionalSecret {
+impl ::std::fmt::Display for ThpNfcUnidirectionalSecret {
     fn fmt(&self, f: &mut ::std::fmt::Formatter<'_>) -> ::std::fmt::Result {
         ::protobuf::text_format::fmt(self, f)
     }
 }
 
-impl ::protobuf::reflect::ProtobufValue for ThpNfcUnideirectionalSecret {
+impl ::protobuf::reflect::ProtobufValue for ThpNfcUnidirectionalSecret {
     type RuntimeType = ::protobuf::reflect::rt::RuntimeTypeMessage<Self>;
 }
 
@@ -3388,17 +3388,17 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"\x20\n\x0cThp\
     QrCodeTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\")\n\x0fThpQrCod\
     eSecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\x06secret\"+\n\x17ThpN\
-    fcUnidirectionalTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\"5\n\
-    \x1bThpNfcUnideirectionalSecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0c\
-    R\x06secret\"D\n\x14ThpCredentialRequest\x12,\n\x12host_static_pubkey\
-    \x18\x01\x20\x01(\x0cR\x10hostStaticPubkey\"i\n\x15ThpCredentialResponse\
-    \x120\n\x14trezor_static_pubkey\x18\x01\x20\x01(\x0cR\x12trezorStaticPub\
-    key\x12\x1e\n\ncredential\x18\x02\x20\x01(\x0cR\ncredential\"\x0f\n\rThp\
-    EndRequest\"\x10\n\x0eThpEndResponse*\x8b\x01\n\x10ThpPairingMethod\x12\
-    \x1a\n\x16PairingMethod_NoMethod\x10\x01\x12\x1b\n\x17PairingMethod_Code\
-    Entry\x10\x02\x12\x18\n\x14PairingMethod_QrCode\x10\x03\x12$\n\x20Pairin\
-    gMethod_NFC_Unidirectional\x10\x04B7\n#com.satoshilabs.trezor.lib.protob\
-    ufB\x10TrezorMessageThp\
+    fcUnidirectionalTag\x12\x10\n\x03tag\x18\x01\x20\x01(\x0cR\x03tag\"4\n\
+    \x1aThpNfcUnidirectionalSecret\x12\x16\n\x06secret\x18\x01\x20\x01(\x0cR\
+    \x06secret\"D\n\x14ThpCredentialRequest\x12,\n\x12host_static_pubkey\x18\
+    \x01\x20\x01(\x0cR\x10hostStaticPubkey\"i\n\x15ThpCredentialResponse\x12\
+    0\n\x14trezor_static_pubkey\x18\x01\x20\x01(\x0cR\x12trezorStaticPubkey\
+    \x12\x1e\n\ncredential\x18\x02\x20\x01(\x0cR\ncredential\"\x0f\n\rThpEnd\
+    Request\"\x10\n\x0eThpEndResponse*\x8b\x01\n\x10ThpPairingMethod\x12\x1a\
+    \n\x16PairingMethod_NoMethod\x10\x01\x12\x1b\n\x17PairingMethod_CodeEntr\
+    y\x10\x02\x12\x18\n\x14PairingMethod_QrCode\x10\x03\x12$\n\x20PairingMet\
+    hod_NFC_Unidirectional\x10\x04B7\n#com.satoshilabs.trezor.lib.protobufB\
+    \x10TrezorMessageThp\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file
@@ -3432,7 +3432,7 @@ pub fn file_descriptor() -> &'static ::protobuf::reflect::FileDescriptor {
             messages.push(ThpQrCodeTag::generated_message_descriptor_data());
             messages.push(ThpQrCodeSecret::generated_message_descriptor_data());
             messages.push(ThpNfcUnidirectionalTag::generated_message_descriptor_data());
-            messages.push(ThpNfcUnideirectionalSecret::generated_message_descriptor_data());
+            messages.push(ThpNfcUnidirectionalSecret::generated_message_descriptor_data());
             messages.push(ThpCredentialRequest::generated_message_descriptor_data());
             messages.push(ThpCredentialResponse::generated_message_descriptor_data());
             messages.push(ThpEndRequest::generated_message_descriptor_data());

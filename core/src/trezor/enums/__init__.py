@@ -281,7 +281,7 @@ if TYPE_CHECKING:
         ThpQrCodeTag = 1024
         ThpQrCodeSecret = 1025
         ThpNfcUnidirectionalTag = 1032
-        ThpNfcUnideirectionalSecret = 1033
+        ThpNfcUnidirectionalSecret = 1033
 
     class FailureType(IntEnum):
         UnexpectedMessage = 1

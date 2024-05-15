@@ -283,15 +283,13 @@ async def _handle_state_ENCRYPTED_TRANSPORT(
 
 
 async def _handle_pairing(ctx: ChannelContext, message_length: int) -> None:
-
     from .pairing_context import PairingContext
 
     if ctx.connection_context is None:
         ctx.connection_context = PairingContext(ctx)
-
         loop.schedule(ctx.connection_context.handle())
-    ctx.decrypt_buffer(message_length)
 
+    ctx.decrypt_buffer(message_length)
     message_type = ustruct.unpack(
         ">H", ctx.buffer[INIT_DATA_OFFSET + SESSION_ID_LENGTH :]
     )[0]
@@ -308,9 +306,6 @@ async def _handle_pairing(ctx: ChannelContext, message_length: int) -> None:
             ],
         )
     )
-    # 1. Check that message is expected with respect to the current state
-    # 2. Handle the message
-    pass
 
 
 def _should_have_ctrl_byte_encrypted_transport(ctx: ChannelContext) -> bool:
@@ -350,10 +345,11 @@ async def _handle_channel_message(
 
 
 def _is_channel_message(message) -> bool:
+    channel_messages = [ThpCreateNewSession, GetFeatures]
     if __debug__:
-        return (
-            ThpCreateNewSession.is_type_of(message)
-            or GetFeatures.is_type_of(message)
-            or LoadDevice.is_type_of(message)
-        )
-    return ThpCreateNewSession.is_type_of(message) or GetFeatures.is_type_of(message)
+        channel_messages.append(LoadDevice)
+
+    for channel_message in channel_messages:
+        if channel_message.is_type_of(message):
+            return True
+    return False

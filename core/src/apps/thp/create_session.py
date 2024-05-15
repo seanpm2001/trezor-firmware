@@ -1,15 +1,8 @@
 from typing import TYPE_CHECKING
 
 from trezor import log, loop
-from trezor.enums import ButtonRequestType, FailureType
-from trezor.messages import (
-    ButtonAck,
-    ButtonRequest,
-    Failure,
-    ThpCreateNewSession,
-    ThpNewSession,
-)
-from trezor.wire.context import call
+from trezor.enums import FailureType
+from trezor.messages import Failure, ThpCreateNewSession, ThpNewSession
 from trezor.wire.errors import ActionCancelled, DataError
 from trezor.wire.thp import SessionState
 

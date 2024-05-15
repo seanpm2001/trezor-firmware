@@ -99,7 +99,7 @@ trezor_message_impl! {
     ThpQrCodeTag => MessageType_ThpQrCodeTag,
     ThpQrCodeSecret => MessageType_ThpQrCodeSecret,
     ThpNfcUnidirectionalTag => MessageType_ThpNfcUnidirectionalTag,
-    ThpNfcUnideirectionalSecret => MessageType_ThpNfcUnideirectionalSecret,
+    ThpNfcUnidirectionalSecret => MessageType_ThpNfcUnidirectionalSecret,
 }
 
 #[cfg(feature = "binance")]
