@@ -12,6 +12,7 @@ if TYPE_CHECKING:
     from typing import Container
 
     from . import ChannelContext
+    from .cpace import Cpace
 
     pass
 
@@ -19,11 +20,32 @@ if __debug__:
     from trezor import log
 
 
+class PairingDisplayData:
+    def __init__(self) -> None:
+        self.display_code_entry: bool = False
+        self.display_qr_code: bool = False
+        self.display_nfc_unidirectional: bool = False
+        self.code_code_entry: int | None = None
+        self.code_qr_code: bytes | None = None
+        self.code_nfc_unidirectional: bytes | None = None
+
+    def show(self):
+        print(
+            "TODO should show screen on Trezor with respect to selected pairing methods"
+        )
+
+
 class PairingContext(Context):
     def __init__(self, channel_ctx: ChannelContext) -> None:
         super().__init__(channel_ctx.iface, channel_ctx.channel_id)
         self.channel_ctx = channel_ctx
         self.incoming_message = loop.chan()
+        self.secret: bytes = (
+            b"\xBA\xDA\x55\xBA\xDA\x55\xBA\xDA\x55\xBA\xDA\x55\xDE\xAD\xBE\xEF"  # TODO generate randomly
+        )
+
+        self.display_data: PairingDisplayData = PairingDisplayData()
+        self.cpace: Cpace
 
     async def handle(self, is_debug_session: bool = False) -> None:
         if __debug__:
@@ -163,7 +185,6 @@ async def handle_pairing_request_message(
             # Spawn a workflow around the task. This ensures that concurrent
             # workflows are shut down.
             res_msg = await workflow.spawn(context.with_context(pairing_ctx, task))
-            pass  # TODO
         else:
             # For debug messages, ignore workflow processing and just await
             # results of the handler.

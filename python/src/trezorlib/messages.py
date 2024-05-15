@@ -289,7 +289,7 @@ class MessageType(IntEnum):
     ThpQrCodeTag = 1024
     ThpQrCodeSecret = 1025
     ThpNfcUnidirectionalTag = 1032
-    ThpNfcUnideirectionalSecret = 1033
+    ThpNfcUnidirectionalSecret = 1033
 
 
 class FailureType(IntEnum):
@@ -7979,7 +7979,7 @@ class ThpNfcUnidirectionalTag(protobuf.MessageType):
         self.tag = tag
 
 
-class ThpNfcUnideirectionalSecret(protobuf.MessageType):
+class ThpNfcUnidirectionalSecret(protobuf.MessageType):
     MESSAGE_WIRE_TYPE = 1033
     FIELDS = {
         1: protobuf.Field("secret", "bytes", repeated=False, required=False, default=None),

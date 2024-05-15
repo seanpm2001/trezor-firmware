@@ -548,8 +548,8 @@ pub enum MessageType {
     MessageType_ThpQrCodeSecret = 1025,
     // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpNfcUnidirectionalTag)
     MessageType_ThpNfcUnidirectionalTag = 1032,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpNfcUnideirectionalSecret)
-    MessageType_ThpNfcUnideirectionalSecret = 1033,
+    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpNfcUnidirectionalSecret)
+    MessageType_ThpNfcUnidirectionalSecret = 1033,
 }
 
 impl ::protobuf::Enum for MessageType {
@@ -821,7 +821,7 @@ impl ::protobuf::Enum for MessageType {
             1024 => ::std::option::Option::Some(MessageType::MessageType_ThpQrCodeTag),
             1025 => ::std::option::Option::Some(MessageType::MessageType_ThpQrCodeSecret),
             1032 => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnidirectionalTag),
-            1033 => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnideirectionalSecret),
+            1033 => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnidirectionalSecret),
             _ => ::std::option::Option::None
         }
     }
@@ -1088,7 +1088,7 @@ impl ::protobuf::Enum for MessageType {
             "MessageType_ThpQrCodeTag" => ::std::option::Option::Some(MessageType::MessageType_ThpQrCodeTag),
             "MessageType_ThpQrCodeSecret" => ::std::option::Option::Some(MessageType::MessageType_ThpQrCodeSecret),
             "MessageType_ThpNfcUnidirectionalTag" => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnidirectionalTag),
-            "MessageType_ThpNfcUnideirectionalSecret" => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnideirectionalSecret),
+            "MessageType_ThpNfcUnidirectionalSecret" => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnidirectionalSecret),
             _ => ::std::option::Option::None
         }
     }
@@ -1354,7 +1354,7 @@ impl ::protobuf::Enum for MessageType {
         MessageType::MessageType_ThpQrCodeTag,
         MessageType::MessageType_ThpQrCodeSecret,
         MessageType::MessageType_ThpNfcUnidirectionalTag,
-        MessageType::MessageType_ThpNfcUnideirectionalSecret,
+        MessageType::MessageType_ThpNfcUnidirectionalSecret,
     ];
 }
 
@@ -1626,7 +1626,7 @@ impl ::protobuf::EnumFull for MessageType {
             MessageType::MessageType_ThpQrCodeTag => 257,
             MessageType::MessageType_ThpQrCodeSecret => 258,
             MessageType::MessageType_ThpNfcUnidirectionalTag => 259,
-            MessageType::MessageType_ThpNfcUnideirectionalSecret => 260,
+            MessageType::MessageType_ThpNfcUnidirectionalSecret => 260,
         };
         Self::enum_descriptor().value_by_index(index)
     }
@@ -1684,7 +1684,7 @@ pub mod exts {
 
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0emessages.proto\x12\x12hw.trezor.messages\x1a\x20google/protobuf/de\
-    scriptor.proto*\x81[\n\x0bMessageType\x12(\n\x16MessageType_Initialize\
+    scriptor.proto*\x80[\n\x0bMessageType\x12(\n\x16MessageType_Initialize\
     \x10\0\x1a\x0c\x80\xa6\x1d\x01\xb0\xb5\x18\x01\x90\xb5\x18\x01\x12\x1e\n\
     \x10MessageType_Ping\x10\x01\x1a\x08\x80\xa6\x1d\x01\x90\xb5\x18\x01\x12\
     %\n\x13MessageType_Success\x10\x02\x1a\x0c\x80\xa6\x1d\x01\xa8\xb5\x18\
@@ -1981,8 +1981,8 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ype_ThpQrCodeTag\x10\x80\x08\x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x12\
     *\n\x1bMessageType_ThpQrCodeSecret\x10\x81\x08\x1a\x08\x80\xa6\x1d\x01\
     \xe0\xb5\x18\x01\x122\n#MessageType_ThpNfcUnidirectionalTag\x10\x88\x08\
-    \x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x126\n'MessageType_ThpNfcUnidei\
-    rectionalSecret\x10\x89\x08\x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x1a\
+    \x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x125\n&MessageType_ThpNfcUnidir\
+    ectionalSecret\x10\x89\x08\x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x1a\
     \x04\xc8\xf3\x18\x01\"\x04\x08Z\x10\\\"\x04\x08r\x10z\"\x06\x08\xdb\x01\
     \x10\xdb\x01\"\x06\x08\xe0\x01\x10\xe0\x01\"\x06\x08\xac\x02\x10\xb0\x02\
     \"\x06\x08\xb5\x02\x10\xb8\x02:<\n\x07wire_in\x18\xd2\x86\x03\x20\x01(\

@@ -114,7 +114,7 @@ ThpCodeEntrySecret = 1021
 ThpQrCodeTag = 1024
 ThpQrCodeSecret = 1025
 ThpNfcUnidirectionalTag = 1032
-ThpNfcUnideirectionalSecret = 1033
+ThpNfcUnidirectionalSecret = 1033
 if not utils.BITCOIN_ONLY:
     SetU2FCounter = 63
     GetNextU2FCounter = 80

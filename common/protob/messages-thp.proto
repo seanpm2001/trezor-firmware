@@ -142,7 +142,7 @@ message ThpQrCodeSecret {
 
 /**
  * Request: User selected Unidirectional NFC pairing option. Host sends an Unidirectional NFC Tag.
- * @next ThpNfcUnideirectionalSecret
+ * @next ThpNfcUnidirectionalSecret
  */
 message ThpNfcUnidirectionalTag {
     optional bytes tag = 1;       // SHA-256 of shared secret
@@ -153,7 +153,7 @@ message ThpNfcUnidirectionalTag {
  * @next ThpCredentialRequest
  * @next ThpEndRequest
  */
-message ThpNfcUnideirectionalSecret {
+message ThpNfcUnidirectionalSecret {
     optional bytes secret = 1;    // Trezor's secret
 }
 

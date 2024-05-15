@@ -286,10 +286,11 @@ async def _handle_pairing(ctx: ChannelContext, message_length: int) -> None:
 
     from .pairing_context import PairingContext
 
-    if ctx.connection_context is None:
-        ctx.connection_context = PairingContext(ctx)
+    if ctx.connection_context is not None:
+        del ctx.connection_context
 
-        loop.schedule(ctx.connection_context.handle())
+    ctx.connection_context = PairingContext(ctx)
+    loop.schedule(ctx.connection_context.handle())
     ctx.decrypt_buffer(message_length)
 
     message_type = ustruct.unpack(
@@ -350,10 +351,11 @@ async def _handle_channel_message(
 
 
 def _is_channel_message(message) -> bool:
+    channel_messages = [ThpCreateNewSession, GetFeatures]
     if __debug__:
-        return (
-            ThpCreateNewSession.is_type_of(message)
-            or GetFeatures.is_type_of(message)
-            or LoadDevice.is_type_of(message)
-        )
-    return ThpCreateNewSession.is_type_of(message) or GetFeatures.is_type_of(message)
+        channel_messages.append(LoadDevice)
+
+    for channel_message in channel_messages:
+        if channel_message.is_type_of(message):
+            return True
+    return False

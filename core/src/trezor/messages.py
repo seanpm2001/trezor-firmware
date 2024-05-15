@@ -6340,7 +6340,7 @@ if TYPE_CHECKING:
         def is_type_of(cls, msg: Any) -> TypeGuard["ThpNfcUnidirectionalTag"]:
             return isinstance(msg, cls)
 
-    class ThpNfcUnideirectionalSecret(protobuf.MessageType):
+    class ThpNfcUnidirectionalSecret(protobuf.MessageType):
         secret: "bytes | None"
 
         def __init__(
@@ -6351,7 +6351,7 @@ if TYPE_CHECKING:
             pass
 
         @classmethod
-        def is_type_of(cls, msg: Any) -> TypeGuard["ThpNfcUnideirectionalSecret"]:
+        def is_type_of(cls, msg: Any) -> TypeGuard["ThpNfcUnidirectionalSecret"]:
             return isinstance(msg, cls)
 
     class ThpCredentialRequest(protobuf.MessageType):
