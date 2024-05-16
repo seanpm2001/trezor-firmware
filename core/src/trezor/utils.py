@@ -32,8 +32,6 @@ from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
 DISABLE_ANIMATION = 0
 
-USE_THP = True  # TODO move elsewhere, probably to core/embed/trezorhal/...
-
 if __debug__:
     if EMULATOR:
         import uos  # pyright: ignore[reportMissingModuleSource]
