@@ -1,11 +1,20 @@
 from common import *
 
-from trezor import io
+from apps.thp import pairing
+from trezor.enums import ThpPairingMethod, MessageType
+from trezor.wire.errors import UnexpectedMessage
+from trezor.wire.protocol_common import MessageWithId
+from trezor.wire.thp.pairing_context import PairingContext
+from trezor.messages import (
+    ThpEndRequest,
+    ThpNfcUnidirectionalTag,
+    ThpStartPairingRequest,
+)
+from trezor import io, protobuf
 from trezor.loop import wait
 from trezor.wire import thp_v1
-from trezor.wire.thp import channel
+from trezor.wire.thp import interface_manager
 from storage import cache_thp
-from ubinascii import hexlify
 from trezor.wire.thp import ChannelState
 
 
@@ -38,7 +47,7 @@ class TestTrezorHostProtocol(unittest.TestCase):
         self.interface = MockHID(0xDEADBEEF)
         buffer = bytearray(64)
         thp_v1.set_buffer(buffer)
-        channel._decode_iface = dummy_decode_iface
+        interface_manager.decode_iface = dummy_decode_iface
 
     def test_simple(self):
         self.assertTrue(True)
@@ -65,6 +74,43 @@ class TestTrezorHostProtocol(unittest.TestCase):
 
     def test_channel_default_state_is_TH1(self):
         self.assertEqual(thp_v1.CHANNELS[4660].get_channel_state(), ChannelState.TH1)
+
+    def test_pairing(self):
+        channel = thp_v1.CHANNELS[4660]
+        channel.selected_pairing_methods = [
+            ThpPairingMethod.PairingMethod_NFC_Unidirectional,
+            ThpPairingMethod.PairingMethod_QrCode,
+        ]
+        pairing_ctx = PairingContext(channel)
+        request_message = ThpStartPairingRequest()
+        with self.assertRaises(UnexpectedMessage) as e:
+            pairing.handle_pairing_request(pairing_ctx, request_message)
+        print(e.value.message)
+        channel.set_channel_state(ChannelState.TP1)
+        gen = pairing.handle_pairing_request(pairing_ctx, request_message)
+        gen.send(None)
+
+        # tag_qrc = b"\x55\xdf\x6c\xba\x0b\xe9\x5e\xd1\x4b\x78\x61\xec\xfa\x07\x9b\x5d\x37\x60\xd8\x79\x9c\xd7\x89\xb4\x22\xc1\x6f\x39\xde\x8f\x3b\xc3"
+        tag_nfc = b"\x8f\xf0\xfa\x37\x0a\x5b\xdb\x29\x32\x21\xd8\x2f\x95\xdd\xb6\xb8\xee\xfd\x28\x6f\x56\x9f\xa9\x0b\x64\x8c\xfc\x62\x46\x5a\xdd\xd0"
+        session_id = bytearray(b"\x00")
+
+        # msg = ThpQrCodeTag(tag=tag_qrc)
+        msg = ThpNfcUnidirectionalTag(tag=tag_nfc)
+        buffer: bytearray = bytearray(protobuf.encoded_length(msg))
+        protobuf.encode(buffer, msg)
+        qr_code_tag = MessageWithId(
+            MessageType.ThpNfcUnidirectionalTag, buffer, session_id
+        )
+        gen.send(qr_code_tag)
+
+        msg = ThpEndRequest()
+
+        buffer: bytearray = bytearray(protobuf.encoded_length(msg))
+        protobuf.encode(buffer, msg)
+        end_request = MessageWithId(1012, buffer, session_id)
+        with self.assertRaises(StopIteration) as e:
+            gen.send(end_request)
+        print("response message:", e.value.value.MESSAGE_NAME)
 
 
 if __name__ == "__main__":
