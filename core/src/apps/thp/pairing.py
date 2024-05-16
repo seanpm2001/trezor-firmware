@@ -212,6 +212,9 @@ async def _handle_code_entry_tag(
 
     expected_tag = sha256(ctx.cpace.shared_secret).digest()
     if expected_tag != message.tag:
+        print(
+            "expected code entry tag:", hexlify(expected_tag).decode()
+        )  # TODO remove after testing
         raise ThpError("Unexpected Entry Code Tag")
 
     return await _handle_secret_reveal(
@@ -229,7 +232,9 @@ async def _handle_qr_code_tag(
         assert isinstance(message, ThpQrCodeTag)
     expected_tag = sha256(ctx.display_data.code_qr_code).digest()
     if expected_tag != message.tag:
-
+        print(
+            "expected qr code tag:", hexlify(expected_tag).decode()
+        )  # TODO remove after testing
         raise ThpError("Unexpected QR Code Tag")
 
     return await _handle_secret_reveal(
@@ -248,6 +253,9 @@ async def _handle_nfc_unidirectional_tag(
 
     expected_tag = sha256(ctx.display_data.code_nfc_unidirectional).digest()
     if expected_tag != message.tag:
+        print(
+            "expected nfc tag:", hexlify(expected_tag).decode()
+        )  # TODO remove after testing
         raise ThpError("Unexpected NFC Unidirectional Tag")
 
     return await _handle_secret_reveal(
