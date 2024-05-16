@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from ubinascii import hexlify
 
 from trezor import protobuf
 from trezor.crypto.hashlib import sha256
@@ -87,7 +88,7 @@ async def handle_pairing_request(
         raise UnexpectedMessage("Unexpected message")
 
     await _prepare_pairing(ctx)
-    ctx.display_data.show()
+    await ctx.display_data.show()
 
     ctx.channel_ctx.set_channel_state(ChannelState.TP3)
     response = await ctx.call_any(
@@ -136,7 +137,6 @@ async def _handle_code_entry_is_included(ctx: PairingContext) -> None:
     ctx.display_data.code_code_entry = (
         int.from_bytes(code_code_entry_hash, "big") % 1000000
     )
-    print("code_code_entry", ctx.display_data.code_code_entry)
     ctx.display_data.display_code_entry = True
 
 

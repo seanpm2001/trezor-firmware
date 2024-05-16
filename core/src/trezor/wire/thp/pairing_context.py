@@ -1,8 +1,13 @@
 from typing import TYPE_CHECKING
+from ubinascii import hexlify
 
+import trezorui2
 from trezor import loop, protobuf, workflow
+from trezor.enums import ButtonRequestType
+from trezor.ui.layouts.common import button_request
+from trezor.ui.layouts.tt import RustLayout
 from trezor.wire import context, message_handler, protocol_common
-from trezor.wire.context import UnexpectedMessageWithId
+from trezor.wire.context import UnexpectedMessageWithId, wait
 from trezor.wire.errors import ActionCancelled
 from trezor.wire.protocol_common import Context, MessageWithType
 
@@ -29,10 +34,39 @@ class PairingDisplayData:
         self.code_qr_code: bytes | None = None
         self.code_nfc_unidirectional: bytes | None = None
 
-    def show(self):
-        print(
-            "TODO should show screen on Trezor with respect to selected pairing methods"
+    async def show(self):
+        print("___DISPLAY QR CODE and CODE ENTRY - TEST___")
+        await button_request(
+            "show_pairing_methods", ButtonRequestType.Other, 1  # TODO change
         )
+        await wait(
+            RustLayout(
+                trezorui2.show_address_details(  # noqa
+                    qr_title="Scan QR code to pair",
+                    address=self._get_code_qr_code_str(),
+                    case_sensitive=True,
+                    details_title="",
+                    account="Code to rewrite:\n" + self._get_code_code_entry_str(),
+                    path="",
+                    xpubs=[],
+                )
+            )
+        )
+
+    def _get_code_code_entry_str(self) -> str:
+        if self.display_code_entry and self.code_code_entry is not None:
+            code_str = str(self.code_code_entry)
+            print("code_code_entry:", code_str)
+
+            return code_str[:3] + " " + code_str[3:]
+        return "NOT ALLOWED"
+
+    def _get_code_qr_code_str(self) -> str:
+        if self.display_qr_code and self.code_qr_code is not None:
+            code_str = (hexlify(self.code_qr_code)).decode("utf-8")
+            print("code_qr_code_hexlified:", code_str)
+            return code_str
+        return "QR CODE IS NOT SUPPOSED TO BE DISPLAYED!!!!"
 
 
 class PairingContext(Context):
