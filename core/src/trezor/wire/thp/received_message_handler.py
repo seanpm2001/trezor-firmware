@@ -1,3 +1,4 @@
+from trezor.wire.errors import DataError
 import ustruct  # pyright: ignore[reportMissingModuleSource]
 from typing import TYPE_CHECKING
 
@@ -10,6 +11,7 @@ from trezor.wire import message_handler
 from trezor.wire.protocol_common import MessageWithType
 from trezor.wire.thp import ack_handler, thp_messages
 from trezor.wire.thp.checksum import CHECKSUM_LENGTH
+from trezor.wire.thp.credential_manager import validate_credential
 from trezor.wire.thp.crypto import PUBKEY_LENGTH
 from trezor.wire.thp.thp_messages import (
     ACK_MESSAGE,
@@ -237,9 +239,22 @@ async def _handle_state_TH2(
             utils.get_bytes_as_str(host_encrypted_static_pubkey),
             utils.get_bytes_as_str(handshake_completion_request_noise_payload),
         )
+    host_static_pubkey = host_encrypted_static_pubkey  # TODO add decoding
+    DUMMY_CRED_AUTH_KEY = b"\x00"  # TODO
 
-    # TODO add credential recognition
-    paired: bool = False  # TODO should be output from credential check
+    paired: bool = False
+
+    if noise_payload.host_pairing_credential is not None:
+        try:  # TODO change try-except for something better
+            paired = validate_credential(
+                DUMMY_CRED_AUTH_KEY,
+                noise_payload.host_pairing_credential,
+                host_static_pubkey,
+            )
+        except DataError as e:
+            if __debug__:
+                log.exception(__name__, e)
+            pass
 
     # send hanshake completion response
     await ctx.write_handshake_message(

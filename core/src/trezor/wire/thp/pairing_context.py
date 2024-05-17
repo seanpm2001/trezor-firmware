@@ -80,6 +80,7 @@ class PairingContext(Context):
 
         self.display_data: PairingDisplayData = PairingDisplayData()
         self.cpace: Cpace
+        self.host_name: str
 
     async def handle(self, is_debug_session: bool = False) -> None:
         if __debug__:

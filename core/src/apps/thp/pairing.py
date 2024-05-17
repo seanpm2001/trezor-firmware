@@ -11,6 +11,7 @@ from trezor.messages import (
     ThpCodeEntryCpaceTrezor,
     ThpCodeEntrySecret,
     ThpCodeEntryTag,
+    ThpCredentialMetadata,
     ThpCredentialRequest,
     ThpCredentialResponse,
     ThpEndRequest,
@@ -24,10 +25,9 @@ from trezor.messages import (
 )
 from trezor.wire.errors import UnexpectedMessage
 from trezor.wire.thp import ChannelState
+from trezor.wire.thp.credential_manager import issue_credential
 from trezor.wire.thp.pairing_context import PairingContext
 from trezor.wire.thp.thp_session import ThpError
-
-# TODO implement the following handlers
 
 if __debug__:
     from trezor import log
@@ -38,7 +38,7 @@ if TYPE_CHECKING:
     P = ParamSpec("P")
     FuncWithContext = Callable[Concatenate[PairingContext, P], Any]
 
-
+#
 # Helpers - decorators
 
 
@@ -76,6 +76,7 @@ def check_method_is_allowed(
     return decorator
 
 
+#
 # Pairing handlers
 
 
@@ -86,6 +87,8 @@ async def handle_pairing_request(
 
     if not ThpStartPairingRequest.is_type_of(message):
         raise UnexpectedMessage("Unexpected message")
+
+    ctx.host_name = message.host_name or ""
 
     await _prepare_pairing(ctx)
     await ctx.display_data.show()
@@ -124,15 +127,16 @@ async def _handle_code_entry_is_included(ctx: PairingContext) -> None:
     )
     ctx.channel_ctx.set_channel_state(ChannelState.TP2)
 
-    _check_code_entry_challenge_message_is_valid(challenge_message)
+    if not ThpCodeEntryChallenge.is_type_of(challenge_message):
+        raise UnexpectedMessage("Unexpected message")
 
-    if TYPE_CHECKING:
-        assert isinstance(challenge_message, ThpCodeEntryChallenge)
+    if challenge_message.challenge is None:
+        raise Exception("Invalid message")
 
-    # response.challenge is not None as it is checked within _check_code_entry_challenge_message
     code_code_entry_hash = sha256(
         challenge_message.challenge
-        or b"" + ctx.secret + bytes("PairingMethod_CodeEntry", "utf-8")
+        + ctx.secret
+        + bytes("PairingMethod_CodeEntry", "utf-8")
     ).digest()  # TODO add handshake hash
     ctx.display_data.code_code_entry = (
         int.from_bytes(code_code_entry_hash, "big") % 1000000
@@ -281,9 +285,24 @@ async def _handle_secret_reveal(
 async def _handle_credential_request(
     ctx: PairingContext, message: protobuf.MessageType
 ) -> protobuf.MessageType:
+    ctx.secret
+
+    if not ThpCredentialRequest.is_type_of(message):
+        raise UnexpectedMessage("Unexpected message")
+    if message.host_static_pubkey is None:
+        raise Exception("Invalid message")  # TODO change failure type
+
+    DUMMY_CRED_AUTH_KEY = b"\x00"  # TODO
+    DUMMY_TREZOR_STATIC_PUBKEY = b"\x00"  # TODO
+    credential_metadata = ThpCredentialMetadata(host_name=ctx.host_name)
+    credential = issue_credential(
+        DUMMY_CRED_AUTH_KEY, message.host_static_pubkey, credential_metadata
+    )
 
     return await ctx.call_any(
-        ThpCredentialResponse(),  # TODO provide public key and credential
+        ThpCredentialResponse(
+            trezor_static_pubkey=DUMMY_TREZOR_STATIC_PUBKEY, credential=credential
+        ),
         MessageType.ThpCredentialRequest,
         MessageType.ThpEndRequest,
     )
@@ -302,15 +321,6 @@ async def _handle_end_request(
 
 #
 # Helpers - checkers
-
-
-def _check_code_entry_challenge_message_is_valid(
-    message: protobuf.MessageType,
-):
-    if not ThpCodeEntryChallenge.is_type_of(message):
-        raise UnexpectedMessage("Unexpected message")
-    if message.challenge is None:
-        raise Exception("Invalid message")  # TODO change failure type
 
 
 def _check_state(ctx: PairingContext, *allowed_states: ChannelState) -> None:
