@@ -6,7 +6,11 @@ from trezor.messages import (
     ThpPairingCredential,
 )
 from trezor.wire import message_handler
-from ubinascii import hexlify
+
+if __debug__:
+    from ubinascii import hexlify
+
+    from trezor import log
 
 
 def issue_credential(
@@ -20,8 +24,11 @@ def issue_credential(
     )
     authenticated_credential_data = _encode_message_into_new_buffer(proto_msg)
     mac = hmac(hmac.SHA256, cred_auth_key, authenticated_credential_data).digest()
+
     proto_msg = ThpPairingCredential(cred_metadata=credential_metadata, mac=mac)
     credential_raw = _encode_message_into_new_buffer(proto_msg)
+    if __debug__:
+        log.debug(__name__, "credential raw: %s", hexlify(credential_raw).decode())
     return credential_raw
 
 
@@ -31,8 +38,13 @@ def validate_credential(
     host_static_pubkey: bytes,
 ) -> bool:
     expected_type = protobuf.type_for_name("ThpPairingCredential")
-    print("Expected type:", expected_type)
-    print("Encoded message", hexlify(encoded_pairing_credential_message).decode())
+    if __debug__:
+        log.debug(__name__, "Expected type: %s", str(expected_type))
+        log.debug(
+            __name__,
+            "Encoded message %s",
+            hexlify(encoded_pairing_credential_message).decode(),
+        )
     credential = message_handler.wrap_protobuf_load(
         encoded_pairing_credential_message, expected_type
     )
