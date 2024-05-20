@@ -1,4 +1,3 @@
-from trezor.wire.errors import DataError
 import ustruct  # pyright: ignore[reportMissingModuleSource]
 from typing import TYPE_CHECKING
 
@@ -7,27 +6,29 @@ from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH
 from trezor import log, loop, protobuf, utils
 from trezor.enums import FailureType
 from trezor.messages import GetFeatures, ThpCreateNewSession
-from trezor.wire import message_handler
-from trezor.wire.protocol_common import MessageWithType
-from trezor.wire.thp import ack_handler, thp_messages
-from trezor.wire.thp.checksum import CHECKSUM_LENGTH
-from trezor.wire.thp.credential_manager import validate_credential
-from trezor.wire.thp.crypto import PUBKEY_LENGTH
-from trezor.wire.thp.thp_messages import (
+
+from .. import message_handler
+from ..errors import DataError
+from ..protocol_common import MessageWithType
+from . import (
+    ChannelState,
+    SessionState,
+    ack_handler,
+    checksum,
+    control_byte,
+    is_channel_state_pairing,
+    thp_messages,
+)
+from . import thp_session as THP
+from .checksum import CHECKSUM_LENGTH
+from .credential_manager import validate_credential
+from .crypto import PUBKEY_LENGTH
+from .thp_messages import (
     ACK_MESSAGE,
     HANDSHAKE_COMP_RES,
     HANDSHAKE_INIT_RES,
     InitHeader,
 )
-
-from . import (
-    ChannelState,
-    SessionState,
-    checksum,
-    control_byte,
-    is_channel_state_pairing,
-)
-from . import thp_session as THP
 from .thp_session import ThpError
 from .writer import INIT_DATA_OFFSET, MESSAGE_TYPE_LENGTH, write_payload_to_wire
 
