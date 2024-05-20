@@ -9,6 +9,7 @@ from trezor.messages import (
     ThpCodeEntryChallenge,
     ThpCodeEntryCpaceHost,
     ThpCodeEntryTag,
+    ThpCredentialRequest,
     ThpEndRequest,
     ThpStartPairingRequest,
 )
@@ -136,6 +137,15 @@ class TestTrezorHostProtocol(unittest.TestCase):
         user_message = MessageWithId(MessageType.ThpCodeEntryTag, buffer, session_id)
         gen.send(user_message)
 
+        host_static_pubkey = b"\x00\x11\x22\x33\x44\x55\x66\x77\x00\x11\x22\x33\x44\x55\x66\x77\x00\x11\x22\x33\x44\x55\x66\x77\x00\x11\x22\x33\x44\x55\x66\x77\x00\x11\x22\x33\x44\x55\x66\x77\x00\x11\x22\x33\x44\x55\x66\x77"
+        msg = ThpCredentialRequest(host_static_pubkey=host_static_pubkey)
+        buffer: bytearray = bytearray(protobuf.encoded_length(msg))
+        protobuf.encode(buffer, msg)
+        credential_request = MessageWithId(
+            MessageType.ThpCredentialRequest, buffer, session_id
+        )
+        gen.send(credential_request)
+
         msg = ThpEndRequest()
 
         buffer: bytearray = bytearray(protobuf.encoded_length(msg))
@@ -148,3 +158,6 @@ class TestTrezorHostProtocol(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# trezor.wire.thp.credential_manager DEBUG credential raw: 0a020a001220fd9ad35963ea06ebfea46590388503d8b78353b6b762b08c96832fbe2ff03a9f
