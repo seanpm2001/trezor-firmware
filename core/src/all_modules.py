@@ -279,6 +279,8 @@ apps.common.address_type
 import apps.common.address_type
 apps.common.authorization
 import apps.common.authorization
+apps.common.backup
+import apps.common.backup
 apps.common.cbor
 import apps.common.cbor
 apps.common.coininfo
