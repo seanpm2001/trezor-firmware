@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 from ubinascii import hexlify
 
-from trezor import protobuf
+from trezor import loop, protobuf
 from trezor.crypto.hashlib import sha256
-from trezor.enums import MessageType, ThpPairingMethod
+from trezor.enums import ButtonRequestType, MessageType, ThpPairingMethod
 from trezor.messages import (
     ThpCodeEntryChallenge,
     ThpCodeEntryCommitment,
@@ -18,12 +18,12 @@ from trezor.messages import (
     ThpEndResponse,
     ThpNfcUnidirectionalSecret,
     ThpNfcUnidirectionalTag,
-    ThpPairingPreparationsFinished,
     ThpQrCodeSecret,
     ThpQrCodeTag,
     ThpStartPairingRequest,
 )
-from trezor.wire.errors import UnexpectedMessage
+from trezor.ui.layouts.common import button_request
+from trezor.wire.errors import ActionCancelled, UnexpectedMessage
 from trezor.wire.thp import ChannelState
 from trezor.wire.thp.credential_manager import issue_credential
 from trezor.wire.thp.pairing_context import PairingContext
@@ -33,7 +33,7 @@ if __debug__:
     from trezor import log
 
 if TYPE_CHECKING:
-    from typing import Any, Callable, Concatenate, ParamSpec, Tuple
+    from typing import Any, Callable, Concatenate, Container, ParamSpec, Tuple
 
     P = ParamSpec("P")
     FuncWithContext = Callable[Concatenate[PairingContext, P], Any]
@@ -91,12 +91,9 @@ async def handle_pairing_request(
     ctx.host_name = message.host_name or ""
 
     await _prepare_pairing(ctx)
-    await ctx.display_data.show()
-
     ctx.channel_ctx.set_channel_state(ChannelState.TP3)
-    response = await ctx.call_any(
-        ThpPairingPreparationsFinished(), *_get_possible_pairing_methods(ctx)
-    )
+    response = await show_display_data(ctx, _get_possible_pairing_methods(ctx))
+
     # TODO disable NFC (if enabled)
     response = await _handle_different_pairing_methods(ctx, response)
 
@@ -116,6 +113,25 @@ async def _prepare_pairing(ctx: PairingContext) -> None:
 
     if _is_method_included(ctx, ThpPairingMethod.PairingMethod_NFC_Unidirectional):
         _handle_nfc_unidirectional_is_included(ctx)
+
+
+async def show_display_data(ctx: PairingContext, expected_types: Container[int] = ()):
+    print("___DISPLAY QR CODE and CODE ENTRY - TEST___")
+    await button_request(
+        "show_pairing_methods", ButtonRequestType.Other, 1  # TODO change
+    )
+
+    read_task = ctx.read(expected_types)
+    cancel_task = ctx.display_data.get_display_layout()
+    race = loop.race(read_task, cancel_task)
+    result = await race
+
+    if read_task in race.finished:
+        return result
+    if cancel_task in race.finished:
+        raise ActionCancelled
+    else:
+        return Exception("Should not happen")  # TODO
 
 
 @check_state_and_log(ChannelState.TP1)

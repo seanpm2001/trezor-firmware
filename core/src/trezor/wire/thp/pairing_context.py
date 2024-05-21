@@ -3,11 +3,9 @@ from ubinascii import hexlify
 
 import trezorui2
 from trezor import loop, protobuf, workflow
-from trezor.enums import ButtonRequestType
-from trezor.ui.layouts.common import button_request
 from trezor.ui.layouts.tt import RustLayout
 from trezor.wire import context, message_handler, protocol_common
-from trezor.wire.context import UnexpectedMessageWithId, wait
+from trezor.wire.context import UnexpectedMessageWithId
 from trezor.wire.errors import ActionCancelled
 from trezor.wire.protocol_common import Context, MessageWithType
 
@@ -34,22 +32,16 @@ class PairingDisplayData:
         self.code_qr_code: bytes | None = None
         self.code_nfc_unidirectional: bytes | None = None
 
-    async def show(self):
-        print("___DISPLAY QR CODE and CODE ENTRY - TEST___")
-        await button_request(
-            "show_pairing_methods", ButtonRequestType.Other, 1  # TODO change
-        )
-        await wait(
-            RustLayout(
-                trezorui2.show_address_details(  # noqa
-                    qr_title="Scan QR code to pair",
-                    address=self._get_code_qr_code_str(),
-                    case_sensitive=True,
-                    details_title="",
-                    account="Code to rewrite:\n" + self._get_code_code_entry_str(),
-                    path="",
-                    xpubs=[],
-                )
+    def get_display_layout(self) -> RustLayout:
+        return RustLayout(
+            trezorui2.show_address_details(  # noqa
+                qr_title="Scan QR code to pair",
+                address=self._get_code_qr_code_str(),
+                case_sensitive=True,
+                details_title="",
+                account="Code to rewrite:\n" + self._get_code_code_entry_str(),
+                path="",
+                xpubs=[],
             )
         )
 
