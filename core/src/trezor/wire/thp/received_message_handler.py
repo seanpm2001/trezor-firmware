@@ -69,7 +69,7 @@ async def handle_received_message(
         raise ThpError("Message is not encrypted. Ignoring")
 
     # 2: Handle message with unexpected sequential bit
-    if seq_bit != ABP.sync_get_receive_expected_seq_bit(ctx.channel_cache):
+    if seq_bit != ABP.get_expected_receive_seq_bit(ctx.channel_cache):
         if __debug__:
             log.debug(__name__, "Received message with an unexpected sequential bit")
         await _send_ack(ctx, ack_bit=seq_bit)
@@ -78,7 +78,7 @@ async def handle_received_message(
     # 3: Send ACK in response
     await _send_ack(ctx, ack_bit=seq_bit)
 
-    ABP.sync_set_receive_expected_seq_bit(ctx.channel_cache, 1 - seq_bit)
+    ABP.set_expected_receive_seq_bit(ctx.channel_cache, 1 - seq_bit)
 
     await _handle_message_to_app_or_channel(
         ctx, payload_length, message_length, ctrl_byte
@@ -127,7 +127,7 @@ async def _handle_ack(ctx: Channel, ack_bit: int):
         if __debug__:
             log.debug(__name__, 'Closed "waiting for ack" task')
 
-    ABP.sync_set_can_send_message(ctx.channel_cache, True)
+    ABP.set_sending_allowed(ctx.channel_cache, True)
 
     if ctx.write_task_spawn is not None:
         if __debug__:

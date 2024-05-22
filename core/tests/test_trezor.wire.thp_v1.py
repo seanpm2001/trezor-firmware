@@ -66,7 +66,7 @@ def printBytes(a):
 
 
 def getPlaintext() -> bytes:
-    if ABP.sync_get_receive_expected_seq_bit(THP.get_active_session()) == 1:
+    if ABP.get_expected_receive_seq_bit(THP.get_active_session()) == 1:
         return PLAINTEXT_1
     return PLAINTEXT_0
 
