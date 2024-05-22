@@ -308,12 +308,9 @@ async def _handle_credential_request(
     if message.host_static_pubkey is None:
         raise Exception("Invalid message")  # TODO change failure type
 
-    DUMMY_CRED_AUTH_KEY = b"\x00"  # TODO
     DUMMY_TREZOR_STATIC_PUBKEY = b"\x00"  # TODO
     credential_metadata = ThpCredentialMetadata(host_name=ctx.host_name)
-    credential = issue_credential(
-        DUMMY_CRED_AUTH_KEY, message.host_static_pubkey, credential_metadata
-    )
+    credential = issue_credential(message.host_static_pubkey, credential_metadata)
 
     return await ctx.call_any(
         ThpCredentialResponse(

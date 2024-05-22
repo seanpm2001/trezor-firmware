@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from trezor import protobuf
 from trezor.crypto import hmac
 from trezor.messages import (
@@ -7,6 +9,10 @@ from trezor.messages import (
 )
 from trezor.wire import message_handler
 
+if TYPE_CHECKING:
+    from apps.common.paths import Slip21Path
+
+
 if __debug__:
     from ubinascii import hexlify
 
@@ -14,19 +20,24 @@ if __debug__:
 
 
 def derive_cred_auth_key() -> bytes:
+    """
+    Derive current credential authentication mac-ing key.
+    """
     from storage.device import get_cred_auth_key_counter, get_thp_secret
 
-    # derive the key using SLIP-21 https://github.com/satoshilabs/slips/blob/master/slip-0021.md
+    from apps.common.seed import Slip21Node
+
+    # Derive the key using SLIP-21 https://github.com/satoshilabs/slips/blob/master/slip-0021.md,
     # the derivation path is m/"Credential authentication key"/(counter 4-byte BE)
 
-    S = get_thp_secret()
-    m = hmac(hmac.SHA512, key=b"Symmetric key seed", message=S).digest()
+    thp_secret = get_thp_secret()
     label = b"Credential authentication key"
-    cred_auth_node = hmac(hmac.SHA512, key=m[0:32], message=b"\x00" + label).digest()
     counter = get_cred_auth_key_counter()
-    cred_auth_key = hmac(
-        hmac.SHA512, key=cred_auth_node[0:32], message=b"\x00" + counter
-    ).digest()[32:64]
+    path: Slip21Path = [label, counter]
+
+    symmetric_key_node: Slip21Node = Slip21Node(thp_secret)
+    symmetric_key_node.derive_path(path)
+    cred_auth_key = symmetric_key_node.key()
 
     return cred_auth_key
 
@@ -38,6 +49,31 @@ def invalidate_cred_auth_key() -> None:
 
 
 def issue_credential(
+    host_static_pubkey: bytes,
+    credential_metadata: ThpCredentialMetadata,
+) -> bytes:
+    """
+    Issue a pairing credential binded to the provided host static public key
+    and credential metadata.
+    """
+    return _issue_credential(
+        derive_cred_auth_key(), host_static_pubkey, credential_metadata
+    )
+
+
+def validate_credential(
+    encoded_pairing_credential_message: bytes,
+    host_static_pubkey: bytes,
+) -> bool:
+    """
+    Validate a pairing credential binded to the provided host static public key.
+    """
+    return _validate_credential(
+        derive_cred_auth_key(), encoded_pairing_credential_message, host_static_pubkey
+    )
+
+
+def _issue_credential(
     cred_auth_key: bytes,
     host_static_pubkey: bytes,
     credential_metadata: ThpCredentialMetadata,
@@ -56,7 +92,7 @@ def issue_credential(
     return credential_raw
 
 
-def validate_credential(
+def _validate_credential(
     cred_auth_key: bytes,
     encoded_pairing_credential_message: bytes,
     host_static_pubkey: bytes,

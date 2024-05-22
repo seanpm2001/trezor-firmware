@@ -241,14 +241,12 @@ async def _handle_state_TH2(
             utils.get_bytes_as_str(handshake_completion_request_noise_payload),
         )
     host_static_pubkey = host_encrypted_static_pubkey  # TODO add decoding
-    DUMMY_CRED_AUTH_KEY = b"\x00"  # TODO
 
     paired: bool = False
 
     if noise_payload.host_pairing_credential is not None:
         try:  # TODO change try-except for something better
             paired = validate_credential(
-                DUMMY_CRED_AUTH_KEY,
                 noise_payload.host_pairing_credential,
                 host_static_pubkey,
             )
