@@ -56,17 +56,19 @@ async def handle_received_message(
     _check_checksum(message_length, message_buffer)
 
     # Synchronization process
-    sync_bit = (ctrl_byte & 0x10) >> 4
+    seq_bit = (ctrl_byte & 0x10) >> 4
+    ack_bit = (ctrl_byte & 0x08) >> 3
     if __debug__:
         log.debug(
             __name__,
-            "handle_completed_message - sync bit of message: %d",
-            sync_bit,
+            "handle_completed_message - seq bit of message: %d, ack bit of message: %d",
+            seq_bit,
+            ack_bit,
         )
 
     # 1: Handle ACKs
     if control_byte.is_ack(ctrl_byte):
-        await _handle_ack(ctx, sync_bit)
+        await _handle_ack(ctx, ack_bit)
         return
 
     if _should_have_ctrl_byte_encrypted_transport(
@@ -74,29 +76,27 @@ async def handle_received_message(
     ) and not control_byte.is_encrypted_transport(ctrl_byte):
         raise ThpError("Message is not encrypted. Ignoring")
 
-    # 2: Handle message with unexpected synchronization bit
-    if sync_bit != THP.sync_get_receive_expected_bit(ctx.channel_cache):
+    # 2: Handle message with unexpected sequential bit
+    if seq_bit != THP.sync_get_receive_expected_seq_bit(ctx.channel_cache):
         if __debug__:
-            log.debug(
-                __name__, "Received message with an unexpected synchronization bit"
-            )
-        await _send_ack(ctx, sync_bit)
-        raise ThpError("Received message with an unexpected synchronization bit")
+            log.debug(__name__, "Received message with an unexpected sequential bit")
+        await _send_ack(ctx, ack_bit=seq_bit)
+        raise ThpError("Received message with an unexpected sequential bit")
 
     # 3: Send ACK in response
-    await _send_ack(ctx, sync_bit)
+    await _send_ack(ctx, ack_bit=seq_bit)
 
-    THP.sync_set_receive_expected_bit(ctx.channel_cache, 1 - sync_bit)
+    THP.sync_set_receive_expected_seq_bit(ctx.channel_cache, 1 - seq_bit)
 
     await _handle_message_to_app_or_channel(
-        ctx, payload_length, message_length, ctrl_byte, sync_bit
+        ctx, payload_length, message_length, ctrl_byte
     )
     if __debug__:
         log.debug(__name__, "handle_received_message - end")
 
 
 async def _send_ack(ctx: ChannelContext, ack_bit: int) -> None:
-    ctrl_byte = control_byte.add_sync_bit_to_ctrl_byte(ACK_MESSAGE, ack_bit)
+    ctrl_byte = control_byte.add_ack_bit_to_ctrl_byte(ACK_MESSAGE, ack_bit)
     header = InitHeader(ctrl_byte, ctx.get_channel_id_int(), CHECKSUM_LENGTH)
     chksum = checksum.compute(header.to_bytes())
     if __debug__:
@@ -124,8 +124,8 @@ def _check_checksum(message_length: int, message_buffer: utils.BufferType):
 # TEST THIS
 
 
-async def _handle_ack(ctx: ChannelContext, sync_bit: int):
-    if not ack_handler.is_ack_valid(ctx.channel_cache, sync_bit):
+async def _handle_ack(ctx: ChannelContext, ack_bit: int):
+    if not ack_handler.is_ack_valid(ctx.channel_cache, ack_bit):
         return
     # ACK is expected and it has correct sync bit
     if __debug__:
@@ -151,7 +151,6 @@ async def _handle_message_to_app_or_channel(
     payload_length: int,
     message_length: int,
     ctrl_byte: int,
-    sync_bit: int,
 ) -> None:
     state = ctx.get_channel_state()
     if __debug__:
@@ -162,13 +161,11 @@ async def _handle_message_to_app_or_channel(
         return
 
     if state is ChannelState.TH1:
-        await _handle_state_TH1(
-            ctx, payload_length, message_length, ctrl_byte, sync_bit
-        )
+        await _handle_state_TH1(ctx, payload_length, message_length, ctrl_byte)
         return
 
     if state is ChannelState.TH2:
-        await _handle_state_TH2(ctx, message_length, ctrl_byte, sync_bit)
+        await _handle_state_TH2(ctx, message_length, ctrl_byte)
         return
 
     if is_channel_state_pairing(state):
@@ -183,7 +180,6 @@ async def _handle_state_TH1(
     payload_length: int,
     message_length: int,
     ctrl_byte: int,
-    sync_bit: int,
 ) -> None:
     if __debug__:
         log.debug(__name__, "handle_state_TH1")
@@ -205,7 +201,7 @@ async def _handle_state_TH1(
 
 
 async def _handle_state_TH2(
-    ctx: ChannelContext, message_length: int, ctrl_byte: int, sync_bit: int
+    ctx: ChannelContext, message_length: int, ctrl_byte: int
 ) -> None:
     if __debug__:
         log.debug(__name__, "handle_state_TH2")

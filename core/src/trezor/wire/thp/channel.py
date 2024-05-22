@@ -244,8 +244,8 @@ class Channel:
         if __debug__:
             log.debug(__name__, "write_encrypted_payload_loop")
         payload_len = len(payload) + CHECKSUM_LENGTH
-        sync_bit = THP.sync_get_send_bit(self.channel_cache)
-        ctrl_byte = control_byte.add_sync_bit_to_ctrl_byte(ctrl_byte, sync_bit)
+        sync_bit = THP.sync_get_send_seq_bit(self.channel_cache)
+        ctrl_byte = control_byte.add_seq_bit_to_ctrl_byte(ctrl_byte, sync_bit)
         header = InitHeader(ctrl_byte, self.get_channel_id_int(), payload_len)
         chksum = checksum.compute(header.to_bytes() + payload)
         payload = payload + chksum
@@ -256,7 +256,7 @@ class Channel:
                     __name__,
                     "write_encrypted_payload_loop - loop start, sync_bit: %d, sync_send_bit: %d",
                     (header.ctrl_byte & 0x10) >> 4,
-                    THP.sync_get_send_bit(self.channel_cache),
+                    THP.sync_get_send_seq_bit(self.channel_cache),
                 )
             await write_payload_to_wire(self.iface, header, payload)
             self.waiting_for_ack_timeout = loop.spawn(self._wait_for_ack())
@@ -271,7 +271,7 @@ class Channel:
             except loop.TaskClosed:
                 break
 
-        THP.sync_set_send_bit_to_opposite(self.channel_cache)
+        THP.sync_set_send_seq_bit_to_opposite(self.channel_cache)
 
         # Let the main loop be restarted and clear loop, if there is no other
         # workflow and the state is ENCRYPTED_TRANSPORT

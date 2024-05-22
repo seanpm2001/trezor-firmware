@@ -24,7 +24,7 @@ def _is_ack_expected(cache: SessionThpCache | ChannelCache) -> bool:
 def _has_ack_correct_sync_bit(
     cache: SessionThpCache | ChannelCache, sync_bit: int
 ) -> bool:
-    is_correct: bool = THP.sync_get_send_bit(cache) == sync_bit
+    is_correct: bool = THP.sync_get_send_seq_bit(cache) == sync_bit
     if __debug__ and not is_correct:
         log.debug(__name__, "Received ACK message with wrong sync bit")
     return is_correct

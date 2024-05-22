@@ -52,11 +52,11 @@ def sync_can_send_message(cache: SessionThpCache | ChannelCache) -> bool:
     return cache.sync & 0x80 == 0x80
 
 
-def sync_get_receive_expected_bit(cache: SessionThpCache | ChannelCache) -> int:
+def sync_get_receive_expected_seq_bit(cache: SessionThpCache | ChannelCache) -> int:
     return (cache.sync & 0x40) >> 6
 
 
-def sync_get_send_bit(cache: SessionThpCache | ChannelCache) -> int:
+def sync_get_send_seq_bit(cache: SessionThpCache | ChannelCache) -> int:
     return (cache.sync & 0x20) >> 5
 
 
@@ -68,11 +68,11 @@ def sync_set_can_send_message(
         cache.sync |= 0x80
 
 
-def sync_set_receive_expected_bit(
+def sync_set_receive_expected_seq_bit(
     cache: SessionThpCache | ChannelCache, bit: int
 ) -> None:
     if __debug__:
-        log.debug(__name__, "Set sync receive expected bit to %d", bit)
+        log.debug(__name__, "Set sync receive expected seq bit to %d", bit)
     if bit not in (0, 1):
         raise ThpError("Unexpected receive sync bit")
 
@@ -82,8 +82,8 @@ def sync_set_receive_expected_bit(
         cache.sync |= 0x40
 
 
-def sync_set_send_bit_to_opposite(cache: SessionThpCache | ChannelCache) -> None:
-    _sync_set_send_bit(cache=cache, bit=1 - sync_get_send_bit(cache))
+def sync_set_send_seq_bit_to_opposite(cache: SessionThpCache | ChannelCache) -> None:
+    _sync_set_send_seq_bit(cache=cache, bit=1 - sync_get_send_seq_bit(cache))
 
 
 def set_session_state(session: SessionThpCache, new_state: SessionState):
@@ -94,11 +94,11 @@ def _get_id(iface: WireInterface, cid: int) -> bytes:
     return ustruct.pack(">HH", iface.iface_num(), cid)
 
 
-def _sync_set_send_bit(cache: SessionThpCache | ChannelCache, bit: int) -> None:
+def _sync_set_send_seq_bit(cache: SessionThpCache | ChannelCache, bit: int) -> None:
     if bit not in (0, 1):
-        raise ThpError("Unexpected send sync bit")
+        raise ThpError("Unexpected send seq bit")
     if __debug__:
-        log.debug(__name__, "setting sync send bit to %d", bit)
+        log.debug(__name__, "setting sync send seq bit to %d", bit)
     # set third bit to "bit" value
     cache.sync &= 0xDF
     if bit:

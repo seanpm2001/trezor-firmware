@@ -14,6 +14,10 @@ HANDSHAKE_COMP_REQ = 0x02
 HANDSHAKE_COMP_RES = 0x03
 ENCRYPTED_TRANSPORT = 0x04
 
+CONTINUATION_PACKET_MASK = 0x80
+ACK_MASK = 0xF7
+DATA_MASK = 0xE7
+
 ACK_MESSAGE = 0x20
 ERROR = 0x42
 CHANNEL_ALLOCATION_REQ = 0x40
@@ -67,7 +71,7 @@ _ENCODED_PROTOBUF_DEVICE_PROPERTIES = (
     b"\x0a\x04\x54\x33\x57\x31\x10\x05\x18\x00\x20\x01\x28\x01\x28\x02"
 )
 
-_ERROR_UNALLOCATED_SESSION = (
+_ERROR_UNALLOCATED_CHANNEL = (
     b"\x55\x4e\x41\x4c\x4c\x4f\x43\x41\x54\x45\x44\x5f\x53\x45\x53\x53\x49\x4f\x4e"
 )
 
@@ -82,7 +86,7 @@ def get_channel_allocation_response(nonce: bytes, new_cid: bytes) -> bytes:
 
 
 def get_error_unallocated_channel() -> bytes:
-    return _ERROR_UNALLOCATED_SESSION
+    return _ERROR_UNALLOCATED_CHANNEL
 
 
 def get_handshake_init_response() -> bytes:
