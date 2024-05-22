@@ -1,3 +1,4 @@
+from trezor.wire.thp import ThpError
 from trezor.wire.thp.thp_messages import (
     ACK_MASK,
     ACK_MESSAGE,
@@ -8,7 +9,6 @@ from trezor.wire.thp.thp_messages import (
     HANDSHAKE_COMP_REQ,
     HANDSHAKE_INIT_REQ,
 )
-from trezor.wire.thp.thp_session import ThpError
 
 
 def add_seq_bit_to_ctrl_byte(ctrl_byte: int, seq_bit: int) -> int:

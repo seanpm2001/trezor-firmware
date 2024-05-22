@@ -5,8 +5,9 @@ from storage.cache_thp import TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
 
+from . import ChannelState, ThpError
+from . import alternating_bit_protocol as ABP
 from . import (
-    ChannelState,
     checksum,
     control_byte,
     crypto,
@@ -15,10 +16,8 @@ from . import (
     received_message_handler,
     session_manager,
 )
-from . import thp_session as THP
 from .checksum import CHECKSUM_LENGTH
 from .thp_messages import ENCRYPTED_TRANSPORT, ERROR, InitHeader
-from .thp_session import ThpError
 from .writer import (
     CONT_DATA_OFFSET,
     INIT_DATA_OFFSET,
@@ -236,7 +235,7 @@ class Channel:
 
     def _prepare_write(self) -> None:
         # TODO add condition that disallows to write when can_send_message is false
-        THP.sync_set_can_send_message(self.channel_cache, False)
+        ABP.sync_set_can_send_message(self.channel_cache, False)
 
     async def _write_encrypted_payload_loop(
         self, ctrl_byte: int, payload: bytes
@@ -244,7 +243,7 @@ class Channel:
         if __debug__:
             log.debug(__name__, "write_encrypted_payload_loop")
         payload_len = len(payload) + CHECKSUM_LENGTH
-        sync_bit = THP.sync_get_send_seq_bit(self.channel_cache)
+        sync_bit = ABP.sync_get_send_seq_bit(self.channel_cache)
         ctrl_byte = control_byte.add_seq_bit_to_ctrl_byte(ctrl_byte, sync_bit)
         header = InitHeader(ctrl_byte, self.get_channel_id_int(), payload_len)
         chksum = checksum.compute(header.to_bytes() + payload)
@@ -256,12 +255,12 @@ class Channel:
                     __name__,
                     "write_encrypted_payload_loop - loop start, sync_bit: %d, sync_send_bit: %d",
                     (header.ctrl_byte & 0x10) >> 4,
-                    THP.sync_get_send_seq_bit(self.channel_cache),
+                    ABP.sync_get_send_seq_bit(self.channel_cache),
                 )
             await write_payload_to_wire(self.iface, header, payload)
             self.waiting_for_ack_timeout = loop.spawn(self._wait_for_ack())
             try:
-                if THP.sync_can_send_message(self.channel_cache):
+                if ABP.sync_can_send_message(self.channel_cache):
                     # TODO This can happen when ack is received before the message was sent,
                     # but after it was scheduled to be sent (i.e. ACK was already expected)
                     # This case should be removed or improved upon before production.
@@ -271,7 +270,7 @@ class Channel:
             except loop.TaskClosed:
                 break
 
-        THP.sync_set_send_seq_bit_to_opposite(self.channel_cache)
+        ABP.sync_set_send_seq_bit_to_opposite(self.channel_cache)
 
         # Let the main loop be restarted and clear loop, if there is no other
         # workflow and the state is ENCRYPTED_TRANSPORT

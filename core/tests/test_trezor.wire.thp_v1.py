@@ -1,5 +1,7 @@
 from common import *
 from storage.cache_thp import BROADCAST_CHANNEL_ID
+import trezor.wire.thp
+from trezor.wire.thp import alternating_bit_protocol as ABP
 from trezor.wire.thp.writer import REPORT_LENGTH
 from ubinascii import hexlify
 import ustruct
@@ -64,13 +66,9 @@ def printBytes(a):
 
 
 def getPlaintext() -> bytes:
-    if THP.sync_get_receive_expected_seq_bit(THP.get_active_session()) == 1:
+    if ABP.sync_get_receive_expected_seq_bit(THP.get_active_session()) == 1:
         return PLAINTEXT_1
     return PLAINTEXT_0
-
-
-def getCid() -> int:
-    return THP.get_cid(THP.get_active_session())
 
 
 # This test suite is an adaptation of test_trezor.wire.codec_v1
@@ -331,7 +329,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         # it is different from codec_v1 as it does not allow big enough messages
         # to raise MemoryError in this test
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
-        with self.assertRaises(thp_v1.ThpError) as e:
+        with self.assertRaises(trezor.wire.thp.ThpError) as e:
             query = gen.send(packet)
 
         self.assertEqual(e.value.args[0], "Message too large")

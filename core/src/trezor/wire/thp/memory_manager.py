@@ -3,9 +3,8 @@ from trezor import log, protobuf, utils
 from trezor.enums import FailureType, MessageType
 from trezor.messages import Failure
 
-from . import ChannelState
+from . import ChannelState, ThpError
 from .checksum import CHECKSUM_LENGTH
-from .thp_session import ThpError
 from .writer import (
     INIT_DATA_OFFSET,
     MAX_PAYLOAD_LEN,

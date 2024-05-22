@@ -24,10 +24,9 @@ from trezor.messages import (
 )
 from trezor.ui.layouts.common import button_request
 from trezor.wire.errors import ActionCancelled, UnexpectedMessage
-from trezor.wire.thp import ChannelState
+from trezor.wire.thp import ChannelState, ThpError
 from trezor.wire.thp.credential_manager import issue_credential
 from trezor.wire.thp.pairing_context import PairingContext
-from trezor.wire.thp.thp_session import ThpError
 
 if __debug__:
     from trezor import log

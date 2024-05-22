@@ -1,4 +1,11 @@
-from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
+from typing import TYPE_CHECKING
+
+from trezor.wire.protocol_common import WireError
+
+
+class ThpError(WireError):
+    pass
+
 
 if TYPE_CHECKING:
     from enum import IntEnum

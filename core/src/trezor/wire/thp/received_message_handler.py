@@ -10,16 +10,9 @@ from trezor.messages import GetFeatures, ThpCreateNewSession
 from .. import message_handler
 from ..errors import DataError
 from ..protocol_common import MessageWithType
-from . import (
-    ChannelState,
-    SessionState,
-    ack_handler,
-    checksum,
-    control_byte,
-    is_channel_state_pairing,
-    thp_messages,
-)
-from . import thp_session as THP
+from . import ChannelState, SessionState, ThpError
+from . import alternating_bit_protocol as ABP
+from . import checksum, control_byte, is_channel_state_pairing, thp_messages
 from .checksum import CHECKSUM_LENGTH
 from .credential_manager import validate_credential
 from .crypto import PUBKEY_LENGTH
@@ -29,7 +22,6 @@ from .thp_messages import (
     HANDSHAKE_INIT_RES,
     InitHeader,
 )
-from .thp_session import ThpError
 from .writer import INIT_DATA_OFFSET, MESSAGE_TYPE_LENGTH, write_payload_to_wire
 
 if TYPE_CHECKING:
@@ -77,7 +69,7 @@ async def handle_received_message(
         raise ThpError("Message is not encrypted. Ignoring")
 
     # 2: Handle message with unexpected sequential bit
-    if seq_bit != THP.sync_get_receive_expected_seq_bit(ctx.channel_cache):
+    if seq_bit != ABP.sync_get_receive_expected_seq_bit(ctx.channel_cache):
         if __debug__:
             log.debug(__name__, "Received message with an unexpected sequential bit")
         await _send_ack(ctx, ack_bit=seq_bit)
@@ -86,7 +78,7 @@ async def handle_received_message(
     # 3: Send ACK in response
     await _send_ack(ctx, ack_bit=seq_bit)
 
-    THP.sync_set_receive_expected_seq_bit(ctx.channel_cache, 1 - seq_bit)
+    ABP.sync_set_receive_expected_seq_bit(ctx.channel_cache, 1 - seq_bit)
 
     await _handle_message_to_app_or_channel(
         ctx, payload_length, message_length, ctrl_byte
@@ -125,7 +117,7 @@ def _check_checksum(message_length: int, message_buffer: utils.BufferType):
 
 
 async def _handle_ack(ctx: ChannelContext, ack_bit: int):
-    if not ack_handler.is_ack_valid(ctx.channel_cache, ack_bit):
+    if not ABP.is_ack_valid(ctx.channel_cache, ack_bit):
         return
     # ACK is expected and it has correct sync bit
     if __debug__:
@@ -135,7 +127,7 @@ async def _handle_ack(ctx: ChannelContext, ack_bit: int):
         if __debug__:
             log.debug(__name__, 'Closed "waiting for ack" task')
 
-    THP.sync_set_can_send_message(ctx.channel_cache, True)
+    ABP.sync_set_can_send_message(ctx.channel_cache, True)
 
     if ctx.write_task_spawn is not None:
         if __debug__:

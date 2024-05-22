@@ -221,8 +221,8 @@ trezor.wire.protocol_common
 import trezor.wire.protocol_common
 trezor.wire.thp
 import trezor.wire.thp
-trezor.wire.thp.ack_handler
-import trezor.wire.thp.ack_handler
+trezor.wire.thp.alternating_bit_protocol
+import trezor.wire.thp.alternating_bit_protocol
 trezor.wire.thp.channel
 import trezor.wire.thp.channel
 trezor.wire.thp.channel_manager
@@ -255,8 +255,6 @@ trezor.wire.thp.session_manager
 import trezor.wire.thp.session_manager
 trezor.wire.thp.thp_messages
 import trezor.wire.thp.thp_messages
-trezor.wire.thp.thp_session
-import trezor.wire.thp.thp_session
 trezor.wire.thp.writer
 import trezor.wire.thp.writer
 trezor.wire.thp_v1

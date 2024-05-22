@@ -6,11 +6,17 @@ from storage.cache_thp import BROADCAST_CHANNEL_ID
 from trezor import io, log, loop, utils
 
 from .protocol_common import MessageWithId
-from .thp import ChannelState, channel_manager, checksum, session_manager, thp_messages
+from .thp import (
+    ChannelState,
+    ThpError,
+    channel_manager,
+    checksum,
+    session_manager,
+    thp_messages,
+)
 from .thp.channel import Channel
 from .thp.checksum import CHECKSUM_LENGTH
 from .thp.thp_messages import CHANNEL_ALLOCATION_REQ, CODEC_V1, InitHeader
-from .thp.thp_session import ThpError
 from .thp.writer import MAX_PAYLOAD_LEN, REPORT_LENGTH, write_payload_to_wire
 
 if TYPE_CHECKING:

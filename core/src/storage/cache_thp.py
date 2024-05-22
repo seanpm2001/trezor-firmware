@@ -84,7 +84,6 @@ class SessionThpCache(ConnectionCache):
                 96,  # APP_CARDANO_ICARUS_TREZOR_SECRET
                 1,  # APP_MONERO_LIVE_REFRESH
             )
-        self.sync = 0x80  # can_send_bit | sync_receive_bit | sync_send_bit | rfu(5)
         super().__init__()
 
     def clear(self) -> None:
