@@ -13,22 +13,22 @@ if __debug__:
     from trezor import log
 
 if TYPE_CHECKING:
-    from . import ChannelContext
+    from .channel import Channel
 
 
-def create_new_session(channel_ctx: ChannelContext) -> SessionContext:
+def create_new_session(channel_ctx: Channel) -> SessionContext:
     session_cache = cache_thp.get_new_session(channel_ctx.channel_cache)
     return SessionContext(channel_ctx, session_cache)
 
 
 def create_new_management_session(
-    channel_ctx: ChannelContext,
+    channel_ctx: Channel,
 ) -> ManagementSessionContext:
     return ManagementSessionContext(channel_ctx)
 
 
 def load_cached_sessions(
-    channel_ctx: ChannelContext,
+    channel_ctx: Channel,
 ) -> dict[int, GenericSessionContext]:
     if __debug__:
         log.debug(__name__, "load_cached_sessions")

@@ -9,46 +9,6 @@ class ThpError(WireError):
 
 if TYPE_CHECKING:
     from enum import IntEnum
-    from trezorio import WireInterface
-    from typing import List, Protocol, TypeVar
-
-    from storage.cache_thp import ChannelCache
-    from trezor import loop, protobuf, utils
-    from trezor.enums import FailureType
-    from trezor.wire.thp.pairing_context import PairingContext
-    from trezor.wire.thp.session_context import GenericSessionContext
-
-    T = TypeVar("T")
-
-    class ChannelContext(Protocol):
-        buffer: utils.BufferType
-        iface: WireInterface
-        channel_id: bytes
-        channel_cache: ChannelCache
-        selected_pairing_methods: List[int] = []  # TODO add type
-        sessions: dict[int, GenericSessionContext]
-        waiting_for_ack_timeout: loop.spawn | None
-        write_task_spawn: loop.spawn | None
-        connection_context: PairingContext | None
-
-        def get_channel_state(self) -> int: ...
-
-        def set_channel_state(self, state: "ChannelState") -> None: ...
-
-        async def write(
-            self, msg: protobuf.MessageType, session_id: int = 0
-        ) -> None: ...
-
-        async def write_error(self, err_type: FailureType, message: str) -> None: ...
-
-        async def write_handshake_message(
-            self, ctrl_byte: int, payload: bytes
-        ) -> None: ...
-
-        def decrypt_buffer(self, message_length: int) -> None: ...
-
-        def get_channel_id_int(self) -> int: ...
-
 else:
     IntEnum = object
 

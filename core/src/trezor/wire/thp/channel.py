@@ -31,7 +31,7 @@ if __debug__:
 if TYPE_CHECKING:
     from trezorio import WireInterface
 
-    from . import PairingContext
+    from .pairing_context import PairingContext
     from .session_context import GenericSessionContext
 
 

@@ -14,7 +14,7 @@ from .session_context import UnexpectedMessageWithType
 if TYPE_CHECKING:
     from typing import Container
 
-    from . import ChannelContext
+    from .channel import Channel
     from .cpace import Cpace
 
     pass
@@ -62,7 +62,8 @@ class PairingDisplayData:
 
 
 class PairingContext(Context):
-    def __init__(self, channel_ctx: ChannelContext) -> None:
+
+    def __init__(self, channel_ctx: Channel) -> None:
         super().__init__(channel_ctx.iface, channel_ctx.channel_id)
         self.channel_ctx = channel_ctx
         self.incoming_message = loop.chan()

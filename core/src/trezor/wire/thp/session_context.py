@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
+from typing import TYPE_CHECKING
 
 from storage.cache_thp import MANAGEMENT_SESSION_ID, SessionThpCache
 from trezor import log, loop, protobuf, utils
@@ -9,18 +9,12 @@ from ..protocol_common import Context, MessageWithType
 from . import SessionState
 
 if TYPE_CHECKING:
-    from typing import (  # pyright: ignore[reportShadowedImports]
-        Any,
-        Awaitable,
-        Container,
-        TypeVar,
-        overload,
-    )
+    from typing import Any, Awaitable, Container, TypeVar, overload
 
     from storage.cache_common import DataCache
 
     from ..message_handler import HandlerFinder
-    from . import ChannelContext
+    from .channel import Channel
 
     pass
 
@@ -44,9 +38,10 @@ class UnexpectedMessageWithType(Exception):
 
 
 class GenericSessionContext(Context):
-    def __init__(self, channel_ctx: ChannelContext, session_id: int) -> None:
+
+    def __init__(self, channel_ctx: Channel, session_id: int) -> None:
         super().__init__(channel_ctx.iface, channel_ctx.channel_id)
-        self.channel_ctx: ChannelContext = channel_ctx
+        self.channel_ctx: Channel = channel_ctx
         self.session_id: int = session_id
         self.incoming_message = loop.chan()
         self.special_handler_finder: HandlerFinder | None = None
@@ -166,7 +161,8 @@ class GenericSessionContext(Context):
 
 
 class ManagementSessionContext(GenericSessionContext):
-    def __init__(self, channel_ctx: ChannelContext) -> None:
+
+    def __init__(self, channel_ctx: Channel) -> None:
         super().__init__(channel_ctx, MANAGEMENT_SESSION_ID)
         from trezor.wire.thp.handler_provider import get_handler_finder_for_message
 
@@ -178,9 +174,8 @@ class ManagementSessionContext(GenericSessionContext):
 
 
 class SessionContext(GenericSessionContext):
-    def __init__(
-        self, channel_ctx: ChannelContext, session_cache: SessionThpCache
-    ) -> None:
+
+    def __init__(self, channel_ctx: Channel, session_cache: SessionThpCache) -> None:
         if channel_ctx.channel_id != session_cache.channel_id:
             raise Exception(
                 "The session has different channel id than the provided channel context!"

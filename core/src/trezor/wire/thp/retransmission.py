@@ -1,15 +1,15 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from trezor.wire.thp import ChannelContext
+    from trezor.wire.thp.channel import Channel
 
 
 class Retransmission:
 
     def __init__(
-        self, channel_context: ChannelContext, ctrl_byte: int, payload: memoryview
+        self, channel_context: Channel, ctrl_byte: int, payload: memoryview
     ) -> None:
-        self.channel_context: ChannelContext = channel_context
+        self.channel_context: Channel = channel_context
         self.ctrl_byte: int = ctrl_byte
         self.payload: memoryview = payload
 

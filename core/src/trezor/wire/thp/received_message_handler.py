@@ -27,7 +27,7 @@ from .writer import INIT_DATA_OFFSET, MESSAGE_TYPE_LENGTH, write_payload_to_wire
 if TYPE_CHECKING:
     from trezor.messages import ThpHandshakeCompletionReqNoisePayload
 
-    from . import ChannelContext
+    from .channel import Channel
 
 if __debug__:
     from trezor.messages import LoadDevice
@@ -36,7 +36,7 @@ if __debug__:
 
 
 async def handle_received_message(
-    ctx: ChannelContext, message_buffer: utils.BufferType
+    ctx: Channel, message_buffer: utils.BufferType
 ) -> None:
     """Handle a message received from the channel."""
 
@@ -87,7 +87,7 @@ async def handle_received_message(
         log.debug(__name__, "handle_received_message - end")
 
 
-async def _send_ack(ctx: ChannelContext, ack_bit: int) -> None:
+async def _send_ack(ctx: Channel, ack_bit: int) -> None:
     ctrl_byte = control_byte.add_ack_bit_to_ctrl_byte(ACK_MESSAGE, ack_bit)
     header = InitHeader(ctrl_byte, ctx.get_channel_id_int(), CHECKSUM_LENGTH)
     chksum = checksum.compute(header.to_bytes())
@@ -116,7 +116,7 @@ def _check_checksum(message_length: int, message_buffer: utils.BufferType):
 # TEST THIS
 
 
-async def _handle_ack(ctx: ChannelContext, ack_bit: int):
+async def _handle_ack(ctx: Channel, ack_bit: int):
     if not ABP.is_ack_valid(ctx.channel_cache, ack_bit):
         return
     # ACK is expected and it has correct sync bit
@@ -139,7 +139,7 @@ async def _handle_ack(ctx: ChannelContext, ack_bit: int):
 
 
 async def _handle_message_to_app_or_channel(
-    ctx: ChannelContext,
+    ctx: Channel,
     payload_length: int,
     message_length: int,
     ctrl_byte: int,
@@ -168,7 +168,7 @@ async def _handle_message_to_app_or_channel(
 
 
 async def _handle_state_TH1(
-    ctx: ChannelContext,
+    ctx: Channel,
     payload_length: int,
     message_length: int,
     ctrl_byte: int,
@@ -192,9 +192,7 @@ async def _handle_state_TH1(
     return
 
 
-async def _handle_state_TH2(
-    ctx: ChannelContext, message_length: int, ctrl_byte: int
-) -> None:
+async def _handle_state_TH2(ctx: Channel, message_length: int, ctrl_byte: int) -> None:
     if __debug__:
         log.debug(__name__, "handle_state_TH2")
     if not control_byte.is_handshake_comp_req(ctrl_byte):
@@ -254,9 +252,7 @@ async def _handle_state_TH2(
         ctx.set_channel_state(ChannelState.TP1)
 
 
-async def _handle_state_ENCRYPTED_TRANSPORT(
-    ctx: ChannelContext, message_length: int
-) -> None:
+async def _handle_state_ENCRYPTED_TRANSPORT(ctx: Channel, message_length: int) -> None:
     if __debug__:
         log.debug(__name__, "handle_state_ENCRYPTED_TRANSPORT")
 
@@ -284,7 +280,7 @@ async def _handle_state_ENCRYPTED_TRANSPORT(
     )
 
 
-async def _handle_pairing(ctx: ChannelContext, message_length: int) -> None:
+async def _handle_pairing(ctx: Channel, message_length: int) -> None:
     from .pairing_context import PairingContext
 
     if ctx.connection_context is None:
@@ -310,7 +306,7 @@ async def _handle_pairing(ctx: ChannelContext, message_length: int) -> None:
     )
 
 
-def _should_have_ctrl_byte_encrypted_transport(ctx: ChannelContext) -> bool:
+def _should_have_ctrl_byte_encrypted_transport(ctx: Channel) -> bool:
     if ctx.get_channel_state() in [
         ChannelState.UNALLOCATED,
         ChannelState.TH1,
@@ -321,7 +317,7 @@ def _should_have_ctrl_byte_encrypted_transport(ctx: ChannelContext) -> bool:
 
 
 async def _handle_channel_message(
-    ctx: ChannelContext, message_length: int, message_type: int
+    ctx: Channel, message_length: int, message_type: int
 ) -> None:
     buf = ctx.buffer[
         INIT_DATA_OFFSET + 3 : message_length - CHECKSUM_LENGTH - TAG_LENGTH
