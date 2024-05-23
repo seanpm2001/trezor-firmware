@@ -15,7 +15,7 @@ def encrypt(
     payload_length: int = 0,
 ) -> bytes:
     """
-    Returns a 16-byte long encryption tag, the encryption itself is performed on the buffer provided.
+    Returns a 16-byte long encryption tag, the encryption is performed on the buffer provided (in place).
     """
     return DUMMY_TAG
 

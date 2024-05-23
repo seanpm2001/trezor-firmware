@@ -7,6 +7,10 @@ _PADDING = b"\x50\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x0
 
 
 class Cpace:
+    """
+    CPace, a balanced composable PAKE: https://datatracker.ietf.org/doc/draft-irtf-cfrg-cpace/
+    """
+
     def __init__(self, cpace_host_public_key: bytes) -> None:
         self.host_public_key: bytes = cpace_host_public_key
         self.trezor_private_key: bytes
@@ -14,6 +18,9 @@ class Cpace:
         self.shared_secret: bytes
 
     def generate_keys_and_secret(self, code_code_entry: bytes) -> None:
+        """
+        Generate ephemeral key pair and a shared secret using Elligator2 with X25519.
+        """
         pregenerator = sha512(_PREFIX + code_code_entry + _PADDING).digest()[
             :32
         ]  # TODO add handshake hash
