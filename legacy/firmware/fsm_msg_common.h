@@ -60,8 +60,11 @@ bool get_features(Features *resp) {
   resp->has_imported = config_getImported(&(resp->imported));
   resp->has_unlocked = true;
   resp->unlocked = session_isUnlocked();
-  resp->has_needs_backup = true;
-  config_getNeedsBackup(&(resp->needs_backup));
+  resp->has_backup_availability = true;
+  bool needs_backup = false;
+  config_getNeedsBackup(&needs_backup);
+  resp->backup_availability = needs_backup ? BackupAvailability_Required
+                                           : BackupAvailability_NotAvailable;
   resp->has_unfinished_backup = true;
   config_getUnfinishedBackup(&(resp->unfinished_backup));
   resp->has_no_backup = true;

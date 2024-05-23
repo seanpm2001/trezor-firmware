@@ -468,11 +468,16 @@ class HomescreenFormat(IntEnum):
     ToiG = 3
 
 
+class BackupAvailability(IntEnum):
+    NotAvailable = 0
+    Required = 1
+    Available = 2
+
+
 class RecoveryStatus(IntEnum):
-    NoRecovery = 0
-    InNormalRecovery = 1
-    InDryRunRecovery = 2
-    InUnlockRepeatedBackupRecovery = 3
+    Nothing = 0
+    Recovery = 1
+    Backup = 2
 
 
 class Capability(IntEnum):
@@ -3239,7 +3244,7 @@ class Features(protobuf.MessageType):
         16: protobuf.Field("unlocked", "bool", repeated=False, required=False, default=None),
         17: protobuf.Field("_passphrase_cached", "bool", repeated=False, required=False, default=None),
         18: protobuf.Field("firmware_present", "bool", repeated=False, required=False, default=None),
-        19: protobuf.Field("needs_backup", "bool", repeated=False, required=False, default=None),
+        19: protobuf.Field("backup_availability", "BackupAvailability", repeated=False, required=False, default=None),
         20: protobuf.Field("flags", "uint32", repeated=False, required=False, default=None),
         21: protobuf.Field("model", "string", repeated=False, required=False, default=None),
         22: protobuf.Field("fw_major", "uint32", repeated=False, required=False, default=None),
@@ -3271,6 +3276,7 @@ class Features(protobuf.MessageType):
         49: protobuf.Field("bootloader_locked", "bool", repeated=False, required=False, default=None),
         50: protobuf.Field("language_version_matches", "bool", repeated=False, required=False, default=True),
         51: protobuf.Field("unit_packaging", "uint32", repeated=False, required=False, default=None),
+        52: protobuf.Field("recovery_kind", "RecoveryKind", repeated=False, required=False, default=None),
     }
 
     def __init__(
@@ -3294,7 +3300,7 @@ class Features(protobuf.MessageType):
         unlocked: Optional["bool"] = None,
         _passphrase_cached: Optional["bool"] = None,
         firmware_present: Optional["bool"] = None,
-        needs_backup: Optional["bool"] = None,
+        backup_availability: Optional["BackupAvailability"] = None,
         flags: Optional["int"] = None,
         model: Optional["str"] = None,
         fw_major: Optional["int"] = None,
@@ -3325,6 +3331,7 @@ class Features(protobuf.MessageType):
         bootloader_locked: Optional["bool"] = None,
         language_version_matches: Optional["bool"] = True,
         unit_packaging: Optional["int"] = None,
+        recovery_kind: Optional["RecoveryKind"] = None,
     ) -> None:
         self.capabilities: Sequence["Capability"] = capabilities if capabilities is not None else []
         self.major_version = major_version
@@ -3344,7 +3351,7 @@ class Features(protobuf.MessageType):
         self.unlocked = unlocked
         self._passphrase_cached = _passphrase_cached
         self.firmware_present = firmware_present
-        self.needs_backup = needs_backup
+        self.backup_availability = backup_availability
         self.flags = flags
         self.model = model
         self.fw_major = fw_major
@@ -3375,6 +3382,7 @@ class Features(protobuf.MessageType):
         self.bootloader_locked = bootloader_locked
         self.language_version_matches = language_version_matches
         self.unit_packaging = unit_packaging
+        self.recovery_kind = recovery_kind
 
 
 class LockDevice(protobuf.MessageType):

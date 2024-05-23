@@ -31,7 +31,7 @@ from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
 from trezor.messages import Failure
 from trezor.wire import codec_v1, context
-from trezor.wire.errors import ActionCancelled, DataError, Error
+from trezor.wire.errors import ActionCancelled, DataError, Error, UnexpectedMessage
 
 # Import all errors into namespace, so that `wire.Error` is available from
 # other packages.
@@ -261,11 +261,12 @@ async def handle_session(
 
 def find_handler(iface: WireInterface, msg_type: int) -> Handler:
     import usb
+
     from apps import workflow_handlers
 
     handler = workflow_handlers.find_registered_handler(iface, msg_type)
     if handler is None:
-        raise context.UnexpectedMessage(msg="Unexpected message")
+        raise UnexpectedMessage("Unexpected message")
 
     if __debug__ and iface is usb.iface_debug:
         # no filtering allowed for debuglink

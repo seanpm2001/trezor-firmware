@@ -91,6 +91,8 @@ trezor.crypto.slip39
 import trezor.crypto.slip39
 trezor.enums.AmountUnit
 import trezor.enums.AmountUnit
+trezor.enums.BackupAvailability
+import trezor.enums.BackupAvailability
 trezor.enums.BackupType
 import trezor.enums.BackupType
 trezor.enums.BootCommand

@@ -61,7 +61,12 @@ def _language_version_matches() -> bool | None:
 def get_features() -> Features:
     import storage.recovery as storage_recovery
     from trezor import translations
-    from trezor.enums import Capability, RecoveryKind, RecoveryStatus
+    from trezor.enums import (
+        BackupAvailability,
+        Capability,
+        RecoveryKind,
+        RecoveryStatus,
+    )
     from trezor.messages import Features
     from trezor.ui import HEIGHT, WIDTH
 
@@ -150,20 +155,28 @@ def get_features() -> Features:
     if config.is_unlocked():
         # passphrase_protection is private, see #1807
         f.passphrase_protection = storage_device.is_passphrase_enabled()
-        f.needs_backup = storage_device.needs_backup()
+        if storage_device.needs_backup():
+            f.backup_availability = BackupAvailability.Required
+        elif storage_cache.get_bool(
+            storage_cache.APP_RECOVERY_REPEATED_BACKUP_UNLOCKED
+        ):
+            f.backup_availability = BackupAvailability.Available
+        else:
+            f.backup_availability = BackupAvailability.NotAvailable
         f.unfinished_backup = storage_device.unfinished_backup()
         f.no_backup = storage_device.no_backup()
         f.flags = storage_device.get_flags()
         if storage_recovery.is_in_progress():
             kind = storage_recovery.get_kind()
             if kind == RecoveryKind.NormalRecovery:
-                f.recovery_status = RecoveryStatus.InNormalRecovery
+                f.recovery_status = RecoveryStatus.Recovery
             elif kind == RecoveryKind.DryRun:
-                f.recovery_status = RecoveryStatus.InDryRunRecovery
+                f.recovery_status = RecoveryStatus.Recovery
             elif kind == RecoveryKind.UnlockRepeatedBackup:
-                f.recovery_status = RecoveryStatus.InUnlockRepeatedBackupRecovery
+                f.recovery_status = RecoveryStatus.Backup
+            f.recovery_kind = kind
         else:
-            f.recovery_status = RecoveryStatus.NoRecovery
+            f.recovery_status = RecoveryStatus.Nothing
         f.backup_type = mnemonic.get_type()
 
         # Only some models are capable of SD card

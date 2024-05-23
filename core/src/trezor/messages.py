@@ -17,6 +17,7 @@ def __getattr__(name: str) -> Any:
 if TYPE_CHECKING:
     from typing import TypeGuard
     from trezor.enums import AmountUnit  # noqa: F401
+    from trezor.enums import BackupAvailability  # noqa: F401
     from trezor.enums import BackupType  # noqa: F401
     from trezor.enums import BinanceOrderSide  # noqa: F401
     from trezor.enums import BinanceOrderType  # noqa: F401
@@ -2133,7 +2134,7 @@ if TYPE_CHECKING:
         imported: "bool | None"
         unlocked: "bool | None"
         firmware_present: "bool | None"
-        needs_backup: "bool | None"
+        backup_availability: "BackupAvailability | None"
         flags: "int | None"
         model: "str | None"
         fw_major: "int | None"
@@ -2165,6 +2166,7 @@ if TYPE_CHECKING:
         bootloader_locked: "bool | None"
         language_version_matches: "bool"
         unit_packaging: "int | None"
+        recovery_kind: "RecoveryKind | None"
 
         def __init__(
             self,
@@ -2186,7 +2188,7 @@ if TYPE_CHECKING:
             imported: "bool | None" = None,
             unlocked: "bool | None" = None,
             firmware_present: "bool | None" = None,
-            needs_backup: "bool | None" = None,
+            backup_availability: "BackupAvailability | None" = None,
             flags: "int | None" = None,
             model: "str | None" = None,
             fw_major: "int | None" = None,
@@ -2217,6 +2219,7 @@ if TYPE_CHECKING:
             bootloader_locked: "bool | None" = None,
             language_version_matches: "bool | None" = None,
             unit_packaging: "int | None" = None,
+            recovery_kind: "RecoveryKind | None" = None,
         ) -> None:
             pass
 

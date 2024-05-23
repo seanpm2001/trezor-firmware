@@ -78,7 +78,7 @@ message Features {
     optional bool unlocked = 16;                // is the device unlocked? called "pin_cached" previously
     optional bool _passphrase_cached = 17 [deprecated=true]; // is passphrase already cached in session?
     optional bool firmware_present = 18;        // is valid firmware loaded?
-    optional bool needs_backup = 19;            // does storage need backup? (equals to Storage.needs_backup)
+    optional BackupAvailability backup_availability = 19;  // does storage need backup? is repeated backup unlocked?
     optional uint32 flags = 20;                 // device flags (equals to Storage.flags)
     optional string model = 21;                 // device hardware model
     optional uint32 fw_major = 22;              // reported firmware version if in bootloader mode
@@ -88,7 +88,7 @@ message Features {
     // optional bytes fw_vendor_keys = 26;      // obsoleted, use fw_vendor
     optional bool unfinished_backup = 27;       // report unfinished backup (equals to Storage.unfinished_backup)
     optional bool no_backup = 28;               // report no backup (equals to Storage.no_backup)
-    optional RecoveryStatus recovery_status = 29;  // whether or not we are in recovery mode and of what kind
+    optional RecoveryStatus recovery_status = 29;  // whether or not we are in recovery mode
     repeated Capability capabilities = 30;      // list of supported capabilities
     optional BackupType backup_type = 31;       // type of device backup (BIP-39 / SLIP-39 basic / SLIP-39 advanced)
     optional bool sd_card_present = 32;         // is SD card present
@@ -104,19 +104,25 @@ message Features {
     optional HomescreenFormat homescreen_format = 42;   // format of the homescreen, 1 = TOIf, 2 = jpg, 3 = TOIG
     optional bool hide_passphrase_from_host = 43;   // should we hide the passphrase when it comes from host?
     optional string internal_model = 44;        // internal model name
-    optional uint32 unit_color = 45;          // color of the unit/device
-    optional bool unit_btconly = 46;          // unit/device is intended as bitcoin only
-    optional uint32 homescreen_width = 47;         // homescreen width in pixels
-    optional uint32 homescreen_height = 48;         // homescreen height in pixels
+    optional uint32 unit_color = 45;            // color of the unit/device
+    optional bool unit_btconly = 46;            // unit/device is intended as bitcoin only
+    optional uint32 homescreen_width = 47;      // homescreen width in pixels
+    optional uint32 homescreen_height = 48;     // homescreen height in pixels
     optional bool bootloader_locked = 49;       // bootloader is locked
     optional bool language_version_matches = 50 [default=true];  // translation blob version matches firmware version
-    optional uint32 unit_packaging = 51;      // unit/device packaging version
+    optional uint32 unit_packaging = 51;        // unit/device packaging version
+    optional RecoveryDevice.RecoveryKind recovery_kind = 52;
+
+    enum BackupAvailability {
+        NotAvailable = 0;
+        Required = 1;
+        Available = 2;
+    }
 
     enum RecoveryStatus {
-        NoRecovery = 0;
-        InNormalRecovery = 1;
-        InDryRunRecovery = 2;
-        InUnlockRepeatedBackupRecovery = 3;
+        Nothing = 0;
+        Recovery = 1;
+        Backup = 2;
     }
 
     enum Capability {

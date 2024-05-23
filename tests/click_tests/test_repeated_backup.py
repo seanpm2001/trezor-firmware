@@ -95,9 +95,9 @@ def test_repeated_backup(
     features = device_handler.features()
     assert features.backup_type is messages.BackupType.Slip39_Basic
     assert features.initialized is True
-    assert features.needs_backup is False
+    assert features.backup_availability == messages.BackupAvailability.NotAvailable
     assert features.no_backup is False
-    assert features.recovery_status == messages.RecoveryStatus.NoRecovery
+    assert features.recovery_status == messages.RecoveryStatus.Nothing
 
     # run recovery to unlock backup
     device_handler.run(
@@ -125,12 +125,9 @@ def test_repeated_backup(
     features = device_handler.features()
     assert features.backup_type is messages.BackupType.Slip39_Basic
     assert features.initialized is True
-    assert features.needs_backup is False
+    assert features.backup_availability == messages.BackupAvailability.Available
     assert features.no_backup is False
-    assert (
-        features.recovery_status
-        == messages.RecoveryStatus.InUnlockRepeatedBackupRecovery
-    )
+    assert features.recovery_status == messages.RecoveryStatus.Backup
 
     # at this point, the backup is unlocked...
 
@@ -171,9 +168,9 @@ def test_repeated_backup(
     features = device_handler.features()
     assert features.backup_type is messages.BackupType.Slip39_Basic
     assert features.initialized is True
-    assert features.needs_backup is False
+    assert features.backup_availability == messages.BackupAvailability.NotAvailable
     assert features.no_backup is False
-    assert features.recovery_status == messages.RecoveryStatus.NoRecovery
+    assert features.recovery_status == messages.RecoveryStatus.Nothing
 
     # try to unlock backup again...
     device_handler.run(
@@ -199,12 +196,9 @@ def test_repeated_backup(
     features = device_handler.features()
     assert features.backup_type is messages.BackupType.Slip39_Basic
     assert features.initialized is True
-    assert features.needs_backup is False
+    assert features.backup_availability == messages.BackupAvailability.Available
     assert features.no_backup is False
-    assert (
-        features.recovery_status
-        == messages.RecoveryStatus.InUnlockRepeatedBackupRecovery
-    )
+    assert features.recovery_status == messages.RecoveryStatus.Backup
 
     # but if we cancel the backup at this point...
     reset.cancel_backup(debug)
@@ -213,6 +207,6 @@ def test_repeated_backup(
     features = device_handler.features()
     assert features.backup_type is messages.BackupType.Slip39_Basic
     assert features.initialized is True
-    assert features.needs_backup is False
+    assert features.backup_availability == messages.BackupAvailability.NotAvailable
     assert features.no_backup is False
-    assert features.recovery_status == messages.RecoveryStatus.NoRecovery
+    assert features.recovery_status == messages.RecoveryStatus.Nothing
