@@ -42,8 +42,8 @@ _EXPERIMENTAL_FEATURES     = const(0x15)  # bool (0x01 or empty)
 _HIDE_PASSPHRASE_FROM_HOST = const(0x16)  # bool (0x01 or empty)
 
 if USE_THP:
-    _THP_SECRET                = const(0x17)  # bytes
-    _CRED_AUTH_KEY_COUNTER     = const(0x18)  # bytes
+    _DEVICE_SECRET         = const(0x17)  # bytes
+    _CRED_AUTH_KEY_COUNTER = const(0x18)  # bytes
 
 if utils.USE_THP:
     _DEVICE_SECRET         = const(0x17)  # bytes

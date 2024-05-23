@@ -23,14 +23,14 @@ def derive_cred_auth_key() -> bytes:
     """
     Derive current credential authentication mac-ing key.
     """
-    from storage.device import get_cred_auth_key_counter, get_thp_secret
+    from storage.device import get_cred_auth_key_counter, get_device_secret
 
     from apps.common.seed import Slip21Node
 
     # Derive the key using SLIP-21 https://github.com/satoshilabs/slips/blob/master/slip-0021.md,
     # the derivation path is m/"Credential authentication key"/(counter 4-byte BE)
 
-    thp_secret = get_thp_secret()
+    thp_secret = get_device_secret()
     label = b"Credential authentication key"
     counter = get_cred_auth_key_counter()
     path: Slip21Path = [label, counter]
