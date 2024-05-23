@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from storage import common
 from trezor import utils
 from storage.cache_common import STORAGE_DEVICE_EXPERIMENTAL_FEATURES
+from trezor.utils import USE_THP
 from trezor.wire import context
 
 from apps.common import cache
@@ -39,8 +40,10 @@ INITIALIZED                = const(0x13)  # bool (0x01 or empty)
 _SAFETY_CHECK_LEVEL        = const(0x14)  # int
 _EXPERIMENTAL_FEATURES     = const(0x15)  # bool (0x01 or empty)
 _HIDE_PASSPHRASE_FROM_HOST = const(0x16)  # bool (0x01 or empty)
-_THP_SECRET                = const(0x17)  # bytes
-_CRED_AUTH_KEY_COUNTER     = const(0x18)  # bytes
+
+if USE_THP:
+    _THP_SECRET                = const(0x17)  # bytes
+    _CRED_AUTH_KEY_COUNTER     = const(0x18)  # bytes
 
 if utils.USE_THP:
     _DEVICE_SECRET         = const(0x17)  # bytes
