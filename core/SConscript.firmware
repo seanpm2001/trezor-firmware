@@ -652,7 +652,8 @@ if FROZEN:
     else:
         raise ValueError('Unknown layout')
 
-    SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'trezor/wire/thp/*.py'))
+    if THP:
+        SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'trezor/wire/thp/*.py'))
     SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'trezor/wire/*.py'))
 
     SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'storage/*.py',
@@ -744,7 +745,8 @@ if FROZEN:
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/tezos/*.py'))
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'trezor/enums/Tezos*.py'))
 
-        SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/thp/*.py'))
+        if THP:
+            SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/thp/*.py'))
 
         SOURCE_PY.extend(Glob(SOURCE_PY_DIR + 'apps/zcash/*.py'))
 
