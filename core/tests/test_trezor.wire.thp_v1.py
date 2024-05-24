@@ -6,15 +6,16 @@ from trezor.wire.thp.writer import REPORT_LENGTH
 from ubinascii import hexlify
 import ustruct
 
-from trezor import io, utils
+from trezor import io, log, utils
 from trezor.loop import wait
 from trezor.utils import chunks
 from trezor.wire import thp_v1
 from trezor.wire.protocol_common import MessageWithId
-import trezor.wire.thp.thp_session as THP
 from trezor.wire.thp import checksum
 from trezor.wire.thp.checksum import CHECKSUM_LENGTH
 
+# Disable log.debug for the test
+log.debug = lambda name, msg, *args: None
 
 class MockHID:
     def __init__(self, num):
@@ -218,8 +219,8 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
     def _roundtrip(self):
         message_payload = bytes(range(256))
         message = MessageWithId(
-            MESSAGE_TYPE, message_payload, THP._get_id(self.interface, COMMON_CID)
-        )
+            MESSAGE_TYPE, message_payload, 1
+        )  # TODO use different session id
         gen = thp_v1.deprecated_write_message(self.interface, message)
         # exhaust the iterator:
         # (XXX we can only do this because the iterator is only accepting None and returns None)

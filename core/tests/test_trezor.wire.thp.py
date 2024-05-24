@@ -13,7 +13,7 @@ from trezor.messages import (
     ThpEndRequest,
     ThpStartPairingRequest,
 )
-from trezor import io, protobuf
+from trezor import io, config, log, protobuf
 from trezor.loop import wait
 from trezor.wire import thp_v1
 from trezor.wire.thp import interface_manager
@@ -23,6 +23,8 @@ from trezor.crypto import elligator2
 from trezor.crypto.curve import curve25519
 
 
+# Disable log.debug for the test
+log.debug = lambda name, msg, *args: None
 class MockHID:
     def __init__(self, num):
         self.num = num
@@ -81,6 +83,8 @@ class TestTrezorHostProtocol(unittest.TestCase):
         self.assertEqual(thp_v1.CHANNELS[4660].get_channel_state(), ChannelState.TH1)
 
     def test_pairing(self):
+        config.init()
+        config.wipe()
         channel = thp_v1.CHANNELS[4660]
         channel.selected_pairing_methods = [
             ThpPairingMethod.PairingMethod_CodeEntry,
@@ -96,6 +100,10 @@ class TestTrezorHostProtocol(unittest.TestCase):
         gen = pairing.handle_pairing_request(pairing_ctx, request_message)
         gen.send(None)
 
+        async def _dummy(ctx: PairingContext, expected_types):
+            return await ctx.read([1018, 1024])
+
+        pairing.show_display_data = _dummy
         session_id = bytearray(b"\x00")
 
         msg_code_entry = ThpCodeEntryChallenge(challenge=b"\x12\x34")
@@ -158,6 +166,3 @@ class TestTrezorHostProtocol(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
-
-# trezor.wire.thp.credential_manager DEBUG credential raw: 0a020a001220fd9ad35963ea06ebfea46590388503d8b78353b6b762b08c96832fbe2ff03a9f
