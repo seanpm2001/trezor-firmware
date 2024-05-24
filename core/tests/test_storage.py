@@ -3,6 +3,7 @@ from common import *  # isort:skip
 from storage import device
 from trezor import config, utils
 
+
 class TestConfig(unittest.TestCase):
 
     def setUp(self):
