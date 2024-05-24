@@ -13,15 +13,9 @@ if TYPE_CHECKING:
     from apps.common.paths import Slip21Path
 
 
-if __debug__:
-    from ubinascii import hexlify
-
-    from trezor import log
-
-
 def derive_cred_auth_key() -> bytes:
     """
-    Derive current credential authentication mac-ing key.
+    Derive current credential authentication mac-ing key from device secret.
     """
     from storage.device import get_cred_auth_key_counter, get_device_secret
 
@@ -87,8 +81,6 @@ def _issue_credential(
 
     proto_msg = ThpPairingCredential(cred_metadata=credential_metadata, mac=mac)
     credential_raw = _encode_message_into_new_buffer(proto_msg)
-    if __debug__:
-        log.debug(__name__, "credential raw: %s", hexlify(credential_raw).decode())
     return credential_raw
 
 
@@ -98,13 +90,6 @@ def _validate_credential(
     host_static_pubkey: bytes,
 ) -> bool:
     expected_type = protobuf.type_for_name("ThpPairingCredential")
-    if __debug__:
-        log.debug(__name__, "Expected type: %s", str(expected_type))
-        log.debug(
-            __name__,
-            "Encoded message %s",
-            hexlify(encoded_pairing_credential_message).decode(),
-        )
     credential = message_handler.wrap_protobuf_load(
         encoded_pairing_credential_message, expected_type
     )
