@@ -94,7 +94,7 @@ async def _send_ack(ctx: Channel, ack_bit: int) -> None:
     if __debug__:
         log.debug(
             __name__,
-            "Writing ACK message to a channel with id: %d, sync bit: %d",
+            "Writing ACK message to a channel with id: %d, ack_bit: %d",
             ctx.get_channel_id_int(),
             ack_bit,
         )
@@ -121,7 +121,7 @@ async def _handle_ack(ctx: Channel, ack_bit: int):
         return
     # ACK is expected and it has correct sync bit
     if __debug__:
-        log.debug(__name__, "Received ACK message with correct sync bit")
+        log.debug(__name__, "Received ACK message with correct ack bit")
     if ctx.waiting_for_ack_timeout is not None:
         ctx.waiting_for_ack_timeout.close()
         if __debug__:

@@ -253,8 +253,9 @@ class Channel:
             if __debug__:
                 log.debug(
                     __name__,
-                    "write_encrypted_payload_loop - loop start, sync_bit: %d, sync_send_bit: %d",
+                    "write_encrypted_payload_loop - loop start, seq_bit: %d, ack_bit %d, send__seq_bit: %d",
                     (header.ctrl_byte & 0x10) >> 4,
+                    (header.ctrl_byte & 0x08) >> 3,
                     ABP.get_send_seq_bit(self.channel_cache),
                 )
             await write_payload_to_wire(self.iface, header, payload)

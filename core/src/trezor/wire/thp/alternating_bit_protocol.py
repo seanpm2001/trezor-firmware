@@ -28,7 +28,7 @@ def _is_ack_expected(cache: ChannelCache) -> bool:
 def _has_ack_correct_sync_bit(cache: ChannelCache, sync_bit: int) -> bool:
     is_correct: bool = get_send_seq_bit(cache) == sync_bit
     if __debug__ and not is_correct:
-        log.debug(__name__, "Received ACK message with wrong sync bit")
+        log.debug(__name__, "Received ACK message with wrong ack bit")
     return is_correct
 
 
