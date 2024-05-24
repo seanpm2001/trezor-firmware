@@ -102,7 +102,7 @@ def test_repeated_backup(
     # run recovery to unlock backup
     device_handler.run(
         device.recover,
-        recovery_kind=messages.RecoveryKind.UnlockRepeatedBackup,
+        type=messages.RecoveryType.UnlockRepeatedBackup,
     )
 
     recovery.confirm_recovery(debug, "recovery__title_unlock_repeated_backup")
@@ -175,7 +175,7 @@ def test_repeated_backup(
     # try to unlock backup again...
     device_handler.run(
         device.recover,
-        recovery_kind=messages.RecoveryKind.UnlockRepeatedBackup,
+        type=messages.RecoveryType.UnlockRepeatedBackup,
     )
 
     recovery.confirm_recovery(debug, "recovery__title_unlock_repeated_backup")

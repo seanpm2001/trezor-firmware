@@ -64,7 +64,7 @@ def get_features() -> Features:
     from trezor.enums import (
         BackupAvailability,
         Capability,
-        RecoveryKind,
+        RecoveryType,
         RecoveryStatus,
     )
     from trezor.messages import Features
@@ -167,14 +167,14 @@ def get_features() -> Features:
         f.no_backup = storage_device.no_backup()
         f.flags = storage_device.get_flags()
         if storage_recovery.is_in_progress():
-            kind = storage_recovery.get_kind()
-            if kind == RecoveryKind.NormalRecovery:
+            recovery_type = storage_recovery.get_type()
+            if recovery_type == RecoveryType.NormalRecovery:
                 f.recovery_status = RecoveryStatus.Recovery
-            elif kind == RecoveryKind.DryRun:
+            elif recovery_type == RecoveryType.DryRun:
                 f.recovery_status = RecoveryStatus.Recovery
-            elif kind == RecoveryKind.UnlockRepeatedBackup:
+            elif recovery_type == RecoveryType.UnlockRepeatedBackup:
                 f.recovery_status = RecoveryStatus.Backup
-            f.recovery_kind = kind
+            f.recovery_type = recovery_type
         else:
             f.recovery_status = RecoveryStatus.Nothing
         f.backup_type = mnemonic.get_type()

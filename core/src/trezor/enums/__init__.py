@@ -472,11 +472,11 @@ if TYPE_CHECKING:
         ENABLE = 1
         REFRESH = 2
 
-    class RecoveryDeviceType(IntEnum):
+    class RecoveryDeviceInputMethod(IntEnum):
         ScrambledWords = 0
         Matrix = 1
 
-    class RecoveryKind(IntEnum):
+    class RecoveryType(IntEnum):
         NormalRecovery = 0
         DryRun = 1
         UnlockRepeatedBackup = 2

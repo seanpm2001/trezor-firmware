@@ -373,7 +373,7 @@ def confirm_recovery(
     title: str,  # unused on TR
     description: str,
     button: str,
-    kind: int,  # RecoveryKind enum, passed as an int
+    recovery_type: int,  # RecoveryType enum, passed as an int
     info_button: bool,  # unused on TR
     show_info: bool,
 ) -> LayoutObj[UiResult]:
@@ -884,7 +884,7 @@ def confirm_recovery(
     title: str,
     description: str,
     button: str,
-    kind: int,  # RecoveryKind enum, passed as an int
+    recovery_type: int,  # RecoveryType enum, passed as an int
     info_button: bool = False,
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""

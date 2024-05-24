@@ -52,7 +52,7 @@ def test_repeated_backup(client: Client):
         )
         client.set_input_flow(IF.get())
         ret = device.recover(
-            client, recovery_kind=messages.RecoveryKind.UnlockRepeatedBackup
+            client, type=messages.RecoveryType.UnlockRepeatedBackup
         )
         assert ret == messages.Success(message="Backup unlocked")
 
@@ -94,7 +94,7 @@ def test_repeated_backup_cancel(client: Client):
         )
         client.set_input_flow(IF.get())
         ret = device.recover(
-            client, recovery_kind=messages.RecoveryKind.UnlockRepeatedBackup
+            client, type=messages.RecoveryType.UnlockRepeatedBackup
         )
         assert ret == messages.Success(message="Backup unlocked")
 

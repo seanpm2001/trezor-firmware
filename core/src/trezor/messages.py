@@ -54,9 +54,9 @@ if TYPE_CHECKING:
     from trezor.enums import NEMSupplyChangeType  # noqa: F401
     from trezor.enums import OutputScriptType  # noqa: F401
     from trezor.enums import PinMatrixRequestType  # noqa: F401
-    from trezor.enums import RecoveryDeviceType  # noqa: F401
-    from trezor.enums import RecoveryKind  # noqa: F401
+    from trezor.enums import RecoveryDeviceInputMethod  # noqa: F401
     from trezor.enums import RecoveryStatus  # noqa: F401
+    from trezor.enums import RecoveryType  # noqa: F401
     from trezor.enums import RequestType  # noqa: F401
     from trezor.enums import SafetyCheckLevel  # noqa: F401
     from trezor.enums import SdProtectOperationType  # noqa: F401
@@ -2166,7 +2166,7 @@ if TYPE_CHECKING:
         bootloader_locked: "bool | None"
         language_version_matches: "bool"
         unit_packaging: "int | None"
-        recovery_kind: "RecoveryKind | None"
+        recovery_type: "RecoveryType | None"
 
         def __init__(
             self,
@@ -2219,7 +2219,7 @@ if TYPE_CHECKING:
             bootloader_locked: "bool | None" = None,
             language_version_matches: "bool | None" = None,
             unit_packaging: "int | None" = None,
-            recovery_kind: "RecoveryKind | None" = None,
+            recovery_type: "RecoveryType | None" = None,
         ) -> None:
             pass
 
@@ -2599,9 +2599,9 @@ if TYPE_CHECKING:
         pin_protection: "bool | None"
         label: "str | None"
         enforce_wordlist: "bool | None"
-        type: "RecoveryDeviceType | None"
+        input_method: "RecoveryDeviceInputMethod | None"
         u2f_counter: "int | None"
-        kind: "RecoveryKind"
+        type: "RecoveryType"
 
         def __init__(
             self,
@@ -2611,9 +2611,9 @@ if TYPE_CHECKING:
             pin_protection: "bool | None" = None,
             label: "str | None" = None,
             enforce_wordlist: "bool | None" = None,
-            type: "RecoveryDeviceType | None" = None,
+            input_method: "RecoveryDeviceInputMethod | None" = None,
             u2f_counter: "int | None" = None,
-            kind: "RecoveryKind | None" = None,
+            type: "RecoveryType | None" = None,
         ) -> None:
             pass
 

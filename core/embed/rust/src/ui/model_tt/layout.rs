@@ -335,8 +335,8 @@ impl ComponentMsgObj for super::component::bl_confirm::Confirm<'_> {
     }
 }
 
-const RECOVERY_KIND_DRY_RUN: u32 = 1;
-const RECOVERY_KIND_UNLOCK_REPEATED_BACKUP: u32 = 2;
+const RECOVERY_TYPE_DRY_RUN: u32 = 1;
+const RECOVERY_TYPE_UNLOCK_REPEATED_BACKUP: u32 = 2;
 
 extern "C" fn new_confirm_action(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
@@ -1380,7 +1380,7 @@ extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
         let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
         let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let kind: u32 = kwargs.get(Qstr::MP_QSTR_kind)?.try_into()?;
+        let recovery_type: u32 = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
         let info_button: bool = kwargs.get_or(Qstr::MP_QSTR_info_button, false)?;
 
         let paragraphs = Paragraphs::new([
@@ -1389,9 +1389,9 @@ extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut
         ])
         .with_spacing(theme::RECOVERY_SPACING);
 
-        let notification = match kind {
-            RECOVERY_KIND_DRY_RUN => TR::recovery__title_dry_run.into(),
-            RECOVERY_KIND_UNLOCK_REPEATED_BACKUP => {
+        let notification = match recovery_type {
+            RECOVERY_TYPE_DRY_RUN => TR::recovery__title_dry_run.into(),
+            RECOVERY_TYPE_UNLOCK_REPEATED_BACKUP => {
                 TR::recovery__title_unlock_repeated_backup.into()
             }
             _ => TR::recovery__title.into(),
@@ -2044,7 +2044,7 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     title: str,
     ///     description: str,
     ///     button: str,
-    ///     kind: int,  # RecoveryKind enum, passed as an int
+    ///     recovery_type: int,  # RecoveryType enum, passed as an int
     ///     info_button: bool = False,
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""

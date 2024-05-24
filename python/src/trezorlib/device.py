@@ -157,11 +157,11 @@ def recover(
     label: Optional[str] = None,
     language: Optional[str] = None,
     input_callback: Optional[Callable] = None,
-    type: messages.RecoveryDeviceType = messages.RecoveryDeviceType.ScrambledWords,
+    input_method: messages.RecoveryDeviceInputMethod = messages.RecoveryDeviceInputMethod.ScrambledWords,
     dry_run: Optional[bool] = None,
     u2f_counter: Optional[int] = None,
     *,
-    recovery_kind: Optional[messages.RecoveryKind] = None,
+    type: Optional[messages.RecoveryType] = None,
 ) -> "MessageType":
     if language is not None:
         warnings.warn(
@@ -171,21 +171,21 @@ def recover(
 
     if dry_run is not None:
         warnings.warn(
-            "Use recovery_kind=RecoveryKind.DryRun instead!",
+            "Use type=RecoveryType.DryRun instead!",
             DeprecationWarning,
         )
 
-        if recovery_kind is not None:
+        if type is not None:
             raise ValueError(
-                "Cannot use both dry_run and recovery_kind simultaneously."
+                "Cannot use both dry_run and type simultaneously."
             )
         elif dry_run:
-            recovery_kind = messages.RecoveryKind.DryRun
+            type = messages.RecoveryType.DryRun
         else:
-            recovery_kind = messages.RecoveryKind.NormalRecovery
+            type = messages.RecoveryType.NormalRecovery
 
-    if recovery_kind is None:
-        recovery_kind = messages.RecoveryKind.NormalRecovery
+    if type is None:
+        type = messages.RecoveryType.NormalRecovery
 
     if client.features.model == "1" and input_callback is None:
         raise RuntimeError("Input callback required for Trezor One")
@@ -195,7 +195,7 @@ def recover(
 
     if (
         client.features.initialized
-        and recovery_kind == messages.RecoveryKind.NormalRecovery
+        and type == messages.RecoveryType.NormalRecovery
     ):
         raise RuntimeError(
             "Device already initialized. Call device.wipe() and try again."
@@ -205,10 +205,10 @@ def recover(
         u2f_counter = int(time.time())
 
     msg = messages.RecoveryDevice(
-        word_count=word_count, enforce_wordlist=True, type=type, kind=recovery_kind
+        word_count=word_count, enforce_wordlist=True, input_method=input_method, type=type
     )
 
-    if recovery_kind == messages.RecoveryKind.NormalRecovery:
+    if type == messages.RecoveryType.NormalRecovery:
         # set additional parameters
         msg.passphrase_protection = passphrase_protection
         msg.pin_protection = pin_protection

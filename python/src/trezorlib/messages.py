@@ -508,12 +508,12 @@ class SdProtectOperationType(IntEnum):
     REFRESH = 2
 
 
-class RecoveryDeviceType(IntEnum):
+class RecoveryDeviceInputMethod(IntEnum):
     ScrambledWords = 0
     Matrix = 1
 
 
-class RecoveryKind(IntEnum):
+class RecoveryType(IntEnum):
     NormalRecovery = 0
     DryRun = 1
     UnlockRepeatedBackup = 2
@@ -3276,7 +3276,7 @@ class Features(protobuf.MessageType):
         49: protobuf.Field("bootloader_locked", "bool", repeated=False, required=False, default=None),
         50: protobuf.Field("language_version_matches", "bool", repeated=False, required=False, default=True),
         51: protobuf.Field("unit_packaging", "uint32", repeated=False, required=False, default=None),
-        52: protobuf.Field("recovery_kind", "RecoveryKind", repeated=False, required=False, default=None),
+        52: protobuf.Field("recovery_type", "RecoveryType", repeated=False, required=False, default=None),
     }
 
     def __init__(
@@ -3331,7 +3331,7 @@ class Features(protobuf.MessageType):
         bootloader_locked: Optional["bool"] = None,
         language_version_matches: Optional["bool"] = True,
         unit_packaging: Optional["int"] = None,
-        recovery_kind: Optional["RecoveryKind"] = None,
+        recovery_type: Optional["RecoveryType"] = None,
     ) -> None:
         self.capabilities: Sequence["Capability"] = capabilities if capabilities is not None else []
         self.major_version = major_version
@@ -3382,7 +3382,7 @@ class Features(protobuf.MessageType):
         self.bootloader_locked = bootloader_locked
         self.language_version_matches = language_version_matches
         self.unit_packaging = unit_packaging
-        self.recovery_kind = recovery_kind
+        self.recovery_type = recovery_type
 
 
 class LockDevice(protobuf.MessageType):
@@ -3790,9 +3790,9 @@ class RecoveryDevice(protobuf.MessageType):
         4: protobuf.Field("language", "string", repeated=False, required=False, default=None),
         5: protobuf.Field("label", "string", repeated=False, required=False, default=None),
         6: protobuf.Field("enforce_wordlist", "bool", repeated=False, required=False, default=None),
-        8: protobuf.Field("type", "RecoveryDeviceType", repeated=False, required=False, default=None),
+        8: protobuf.Field("input_method", "RecoveryDeviceInputMethod", repeated=False, required=False, default=None),
         9: protobuf.Field("u2f_counter", "uint32", repeated=False, required=False, default=None),
-        10: protobuf.Field("kind", "RecoveryKind", repeated=False, required=False, default=RecoveryKind.NormalRecovery),
+        10: protobuf.Field("type", "RecoveryType", repeated=False, required=False, default=RecoveryType.NormalRecovery),
     }
 
     def __init__(
@@ -3804,9 +3804,9 @@ class RecoveryDevice(protobuf.MessageType):
         language: Optional["str"] = None,
         label: Optional["str"] = None,
         enforce_wordlist: Optional["bool"] = None,
-        type: Optional["RecoveryDeviceType"] = None,
+        input_method: Optional["RecoveryDeviceInputMethod"] = None,
         u2f_counter: Optional["int"] = None,
-        kind: Optional["RecoveryKind"] = RecoveryKind.NormalRecovery,
+        type: Optional["RecoveryType"] = RecoveryType.NormalRecovery,
     ) -> None:
         self.word_count = word_count
         self.passphrase_protection = passphrase_protection
@@ -3814,9 +3814,9 @@ class RecoveryDevice(protobuf.MessageType):
         self.language = language
         self.label = label
         self.enforce_wordlist = enforce_wordlist
-        self.type = type
+        self.input_method = input_method
         self.u2f_counter = u2f_counter
-        self.kind = kind
+        self.type = type
 
 
 class WordRequest(protobuf.MessageType):
