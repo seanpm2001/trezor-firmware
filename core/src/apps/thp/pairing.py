@@ -182,7 +182,7 @@ def _handle_nfc_unidirectional_is_included(ctx: PairingContext) -> None:
 @check_state_and_log(ChannelState.TP3)
 async def _handle_different_pairing_methods(
     ctx: PairingContext, response: protobuf.MessageType
-) -> protobuf.MessageType:  # TODO change
+) -> protobuf.MessageType:
     if ThpCodeEntryCpaceHost.is_type_of(response):
         return await _handle_code_entry_cpace(ctx, response)
     if ThpQrCodeTag.is_type_of(response):
