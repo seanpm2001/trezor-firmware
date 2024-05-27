@@ -152,15 +152,3 @@ def _reuse_existing_buffer(
     payload_length: int, existing_buffer: utils.BufferType
 ) -> utils.BufferType:
     return memoryview(existing_buffer)[:payload_length]
-
-
-async def deprecated_read_message(
-    iface: WireInterface, buffer: utils.BufferType
-) -> MessageWithId:
-    return MessageWithId(-1, b"\x00")
-
-
-async def deprecated_write_message(
-    iface: WireInterface, message: MessageWithId, is_retransmission: bool = False
-) -> None:
-    pass

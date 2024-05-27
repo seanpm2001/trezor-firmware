@@ -1,3 +1,4 @@
+from typing import TYPE_CHECKING
 from common import *
 from storage.cache_thp import BROADCAST_CHANNEL_ID
 import trezor.wire.thp
@@ -16,6 +17,9 @@ from trezor.wire.thp.checksum import CHECKSUM_LENGTH
 
 # Disable log.debug for the test
 log.debug = lambda name, msg, *args: None
+
+if TYPE_CHECKING:
+    from trezorio import WireInterface
 
 class MockHID:
     def __init__(self, num):
@@ -72,6 +76,18 @@ def getPlaintext() -> bytes:
     return PLAINTEXT_0
 
 
+async def deprecated_read_message(
+    iface: WireInterface, buffer: utils.BufferType
+) -> MessageWithId:
+    return MessageWithId(-1, b"\x00")
+
+
+async def deprecated_write_message(
+    iface: WireInterface, message: MessageWithId, is_retransmission: bool = False
+) -> None:
+    pass
+
+
 # This test suite is an adaptation of test_trezor.wire.codec_v1
 class TestWireTrezorHostProtocolV1(unittest.TestCase):
     def setUp(self):
@@ -95,7 +111,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         )
 
         buffer = bytearray(64)
-        gen = thp_v1.deprecated_read_message(self.interface, buffer)
+        gen = deprecated_read_message(self.interface, buffer)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
         gen.send(cid_req_message)
@@ -124,7 +140,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message = header + MESSAGE_TYPE_BYTES + chksum
 
         buffer = bytearray(64)
-        gen = thp_v1.deprecated_read_message(self.interface, buffer)
+        gen = deprecated_read_message(self.interface, buffer)
 
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
@@ -161,7 +177,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
             )
         ]
         buffer = bytearray(262)
-        gen = thp_v1.deprecated_read_message(self.interface, buffer)
+        gen = deprecated_read_message(self.interface, buffer)
         query = gen.send(None)
         for packet in packets:
             self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
@@ -201,7 +217,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         buffer = bytearray(1)
         self.assertTrue(len(buffer) <= len(packet))
 
-        gen = thp_v1.deprecated_read_message(self.interface, buffer)
+        gen = deprecated_read_message(self.interface, buffer)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
         gen.send(packet)
@@ -221,14 +237,14 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message = MessageWithId(
             MESSAGE_TYPE, message_payload, 1
         )  # TODO use different session id
-        gen = thp_v1.deprecated_write_message(self.interface, message)
+        gen = deprecated_write_message(self.interface, message)
         # exhaust the iterator:
         # (XXX we can only do this because the iterator is only accepting None and returns None)
         for query in gen:
             self.assertObjectEqual(query, self.interface.wait_object(io.POLL_WRITE))
 
         buffer = bytearray(1024)
-        gen = thp_v1.deprecated_read_message(self.interface, buffer)
+        gen = deprecated_read_message(self.interface, buffer)
         query = gen.send(None)
         for packet in self.interface.data:
             self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
@@ -246,7 +262,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message = MessageWithId(
             MESSAGE_TYPE, b"", THP._get_id(self.interface, COMMON_CID)
         )
-        gen = thp_v1.deprecated_write_message(self.interface, message)
+        gen = deprecated_write_message(self.interface, message)
 
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_WRITE))
@@ -269,7 +285,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         message = MessageWithId(
             MESSAGE_TYPE, message_payload, THP._get_id(self.interface, COMMON_CID)
         )
-        gen = thp_v1.deprecated_write_message(self.interface, message)
+        gen = deprecated_write_message(self.interface, message)
 
         header = make_header(
             PLAINTEXT_1,
@@ -322,7 +338,7 @@ class TestWireTrezorHostProtocolV1(unittest.TestCase):
         header = make_header(PLAINTEXT_1, COMMON_CID, message_size)
         packet = header + MESSAGE_TYPE_BYTES + (b"\x00" * INIT_MESSAGE_DATA_LENGTH)
         buffer = bytearray(65536)
-        gen = thp_v1.deprecated_read_message(self.interface, buffer)
+        gen = deprecated_read_message(self.interface, buffer)
 
         query = gen.send(None)
 
