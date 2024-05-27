@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING  # pyright:ignore[reportShadowedImports]
 from storage.cache_thp import TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
+from trezor.wire.thp.transmission_loop import TransmissionLoop
 
 from . import ChannelState, ThpError
 from . import alternating_bit_protocol as ABP
@@ -48,10 +49,10 @@ class Channel:
         self.channel_id: bytes = channel_cache.channel_id
         self.selected_pairing_methods = []
         self.sessions: dict[int, GenericSessionContext] = {}
-        self.waiting_for_ack_timeout: loop.spawn | None = None
         self.write_task_spawn: loop.spawn | None = None
         self.connection_context: PairingContext | None = None
         self._create_management_session()
+        self.transmission_loop: TransmissionLoop | None = None
 
     # ACCESS TO CHANNEL_DATA
     def get_channel_id_int(self) -> int:
@@ -249,27 +250,8 @@ class Channel:
         chksum = checksum.compute(header.to_bytes() + payload)
         payload = payload + chksum
 
-        while True:
-            if __debug__:
-                log.debug(
-                    __name__,
-                    "write_encrypted_payload_loop - loop start, seq_bit: %d, ack_bit %d, send__seq_bit: %d",
-                    (header.ctrl_byte & 0x10) >> 4,
-                    (header.ctrl_byte & 0x08) >> 3,
-                    ABP.get_send_seq_bit(self.channel_cache),
-                )
-            await write_payload_to_wire(self.iface, header, payload)
-            self.waiting_for_ack_timeout = loop.spawn(self._wait_for_ack())
-            try:
-                if ABP.is_sending_allowed(self.channel_cache):
-                    # TODO This can happen when ack is received before the message was sent,
-                    # but after it was scheduled to be sent (i.e. ACK was already expected)
-                    # This case should be removed or improved upon before production.
-                    break
-                else:
-                    await self.waiting_for_ack_timeout
-            except loop.TaskClosed:
-                break
+        self.transmission_loop = TransmissionLoop(self, header, payload)
+        await self.transmission_loop.start()
 
         ABP.set_send_seq_bit_to_opposite(self.channel_cache)
 
@@ -284,6 +266,3 @@ class Channel:
         return (
             not workflow.tasks
         ) and self.get_channel_state() is ChannelState.ENCRYPTED_TRANSPORT
-
-    async def _wait_for_ack(self) -> None:
-        await loop.sleep(1000)

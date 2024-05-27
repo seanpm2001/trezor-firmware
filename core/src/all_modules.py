@@ -247,14 +247,14 @@ trezor.wire.thp.pairing_context
 import trezor.wire.thp.pairing_context
 trezor.wire.thp.received_message_handler
 import trezor.wire.thp.received_message_handler
-trezor.wire.thp.retransmission
-import trezor.wire.thp.retransmission
 trezor.wire.thp.session_context
 import trezor.wire.thp.session_context
 trezor.wire.thp.session_manager
 import trezor.wire.thp.session_manager
 trezor.wire.thp.thp_messages
 import trezor.wire.thp.thp_messages
+trezor.wire.thp.transmission_loop
+import trezor.wire.thp.transmission_loop
 trezor.wire.thp.writer
 import trezor.wire.thp.writer
 trezor.wire.thp_v1

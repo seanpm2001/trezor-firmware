@@ -122,10 +122,10 @@ async def _handle_ack(ctx: Channel, ack_bit: int):
     # ACK is expected and it has correct sync bit
     if __debug__:
         log.debug(__name__, "Received ACK message with correct ack bit")
-    if ctx.waiting_for_ack_timeout is not None:
-        ctx.waiting_for_ack_timeout.close()
+    if ctx.transmission_loop is not None:
+        ctx.transmission_loop.stop_immediately()
         if __debug__:
-            log.debug(__name__, 'Closed "waiting for ack" task')
+            log.debug(__name__, "Stopped transmission loop")
 
     ABP.set_sending_allowed(ctx.channel_cache, True)
 
