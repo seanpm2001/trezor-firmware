@@ -51,8 +51,9 @@ class Channel:
         self.sessions: dict[int, GenericSessionContext] = {}
         self.write_task_spawn: loop.spawn | None = None
         self.connection_context: PairingContext | None = None
-        self._create_management_session()
         self.transmission_loop: TransmissionLoop | None = None
+
+        self._create_management_session()
 
     # ACCESS TO CHANNEL_DATA
     def get_channel_id_int(self) -> int:
