@@ -15,19 +15,19 @@ if TYPE_CHECKING:
 
 
 async def write_payload_to_wire(
-    iface: WireInterface, header: InitHeader, payload: bytes
+    iface: WireInterface, header: InitHeader, transport_payload_with_crc: bytes
 ):
     if __debug__:
         log.debug(__name__, "write_payload_to_wire")
     # prepare the report buffer with header data
-    payload_len = len(payload)
+    payload_len = len(transport_payload_with_crc)
 
     # prepare the report buffer with header data
     report = bytearray(REPORT_LENGTH)
     header.pack_to_buffer(report)
 
     # write initial report
-    nwritten = utils.memcpy(report, INIT_DATA_OFFSET, payload, 0)
+    nwritten = utils.memcpy(report, INIT_DATA_OFFSET, transport_payload_with_crc, 0)
 
     await _write_report_to_wire(iface, report)
 
@@ -41,7 +41,9 @@ async def write_payload_to_wire(
             report = bytearray(REPORT_LENGTH)
             header.pack_to_cont_buffer(report)
 
-        nwritten += utils.memcpy(report, CONT_DATA_OFFSET, payload, nwritten)
+        nwritten += utils.memcpy(
+            report, CONT_DATA_OFFSET, transport_payload_with_crc, nwritten
+        )
         await _write_report_to_wire(iface, report)
 
 
