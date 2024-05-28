@@ -325,7 +325,7 @@ async def _handle_end_request(
     ctx: PairingContext, message: protobuf.MessageType
 ) -> ThpEndResponse:
     if not ThpEndRequest.is_type_of(message):
-        raise UnexpectedMessage("Unexcpected message")
+        raise UnexpectedMessage("Unexpected message")
 
     ctx.channel_ctx.set_channel_state(ChannelState.ENCRYPTED_TRANSPORT)
     return ThpEndResponse()

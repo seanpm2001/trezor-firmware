@@ -39,9 +39,9 @@ class UnexpectedMessageWithType(Exception):
 
 class GenericSessionContext(Context):
 
-    def __init__(self, channel_ctx: Channel, session_id: int) -> None:
-        super().__init__(channel_ctx.iface, channel_ctx.channel_id)
-        self.channel_ctx: Channel = channel_ctx
+    def __init__(self, channel: Channel, session_id: int) -> None:
+        super().__init__(channel.iface, channel.channel_id)
+        self.channel: Channel = channel
         self.session_id: int = session_id
         self.incoming_message = loop.chan()
         self.special_handler_finder: HandlerFinder | None = None
@@ -155,7 +155,7 @@ class GenericSessionContext(Context):
         return message_handler.wrap_protobuf_load(message.data, expected_type)
 
     async def write(self, msg: protobuf.MessageType) -> None:
-        return await self.channel_ctx.write(msg, self.session_id)
+        return await self.channel.write(msg, self.session_id)
 
     def get_session_state(self) -> SessionState: ...
 
