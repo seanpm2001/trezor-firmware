@@ -3,11 +3,9 @@ from typing import TYPE_CHECKING
 
 from storage import cache_thp
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH
-from trezor import log, loop, protobuf, utils
+from trezor import log, loop, utils
 from trezor.enums import FailureType
-from trezor.messages import GetFeatures, ThpCreateNewSession
 
-from .. import message_handler
 from ..errors import DataError
 from ..protocol_common import MessageWithType
 from . import ChannelState, SessionState, ThpError
@@ -30,8 +28,6 @@ if TYPE_CHECKING:
     from .channel import Channel
 
 if __debug__:
-    from trezor.messages import LoadDevice
-
     from . import state_to_str
 
 
