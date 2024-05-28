@@ -134,7 +134,7 @@ async def _handle_ack(ctx: Channel, ack_bit: int):
             log.debug(__name__, 'Control to "write_encrypted_payload_loop" task')
         await ctx.write_task_spawn
         # Note that no the write_task_spawn could result in loop.clear(),
-        # which will result in terminations of this function - any code after
+        # which will result in termination of this function - any code after
         # this await might not be executed
 
 
