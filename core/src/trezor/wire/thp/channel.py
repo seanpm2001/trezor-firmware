@@ -17,7 +17,7 @@ from . import (
     session_manager,
 )
 from .checksum import CHECKSUM_LENGTH
-from .thp_messages import ENCRYPTED_TRANSPORT, ERROR, InitHeader
+from .thp_messages import ENCRYPTED_TRANSPORT, ERROR, PacketHeader
 from .writer import (
     CONT_DATA_OFFSET,
     INIT_DATA_OFFSET,
@@ -196,7 +196,7 @@ class Channel:
             memoryview(self.buffer), err_type, message
         )
         data_length = MESSAGE_TYPE_LENGTH + msg_size
-        header: InitHeader = InitHeader(
+        header: PacketHeader = PacketHeader(
             ERROR, self.get_channel_id_int(), data_length + CHECKSUM_LENGTH
         )
         await write_payload_to_wire_and_add_checksum(
@@ -239,7 +239,7 @@ class Channel:
         payload_len = len(payload) + CHECKSUM_LENGTH
         sync_bit = ABP.get_send_seq_bit(self.channel_cache)
         ctrl_byte = control_byte.add_seq_bit_to_ctrl_byte(ctrl_byte, sync_bit)
-        header = InitHeader(ctrl_byte, self.get_channel_id_int(), payload_len)
+        header = PacketHeader(ctrl_byte, self.get_channel_id_int(), payload_len)
         self.transmission_loop = TransmissionLoop(self, header, payload)
         await self.transmission_loop.start()
 

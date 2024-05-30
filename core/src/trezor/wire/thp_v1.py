@@ -16,7 +16,7 @@ from .thp import (
 )
 from .thp.channel import Channel
 from .thp.checksum import CHECKSUM_LENGTH
-from .thp.thp_messages import CHANNEL_ALLOCATION_REQ, CODEC_V1, InitHeader
+from .thp.thp_messages import CHANNEL_ALLOCATION_REQ, CODEC_V1, PacketHeader
 from .thp.writer import (
     MAX_PAYLOAD_LEN,
     REPORT_LENGTH,
@@ -88,7 +88,7 @@ async def _handle_broadcast(
         log.debug(__name__, "Received valid message on broadcast channel ")
 
     length, nonce = ustruct.unpack(">H8s", packet[3:])
-    header = InitHeader(ctrl_byte, BROADCAST_CHANNEL_ID, length)
+    header = PacketHeader(ctrl_byte, BROADCAST_CHANNEL_ID, length)
     payload = _get_buffer_for_payload(length, packet[5:], _MAX_CID_REQ_PAYLOAD_LENGTH)
 
     if not checksum.is_valid(payload[-4:], header.to_bytes() + payload[:-4]):
@@ -101,7 +101,7 @@ async def _handle_broadcast(
     response_data = thp_messages.get_channel_allocation_response(
         nonce, new_channel.channel_id
     )
-    response_header = InitHeader.get_channel_allocation_response_header(
+    response_header = PacketHeader.get_channel_allocation_response_header(
         len(response_data) + CHECKSUM_LENGTH,
     )
     if __debug__:
@@ -127,7 +127,7 @@ async def _handle_allocated(
 
 async def _handle_unallocated(iface, cid) -> MessageWithId | None:
     data = thp_messages.get_error_unallocated_channel()
-    header = InitHeader.get_error_header(cid, len(data) + CHECKSUM_LENGTH)
+    header = PacketHeader.get_error_header(cid, len(data) + CHECKSUM_LENGTH)
     await write_payload_to_wire_and_add_checksum(iface, header, data)
 
 

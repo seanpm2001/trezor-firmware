@@ -18,7 +18,7 @@ from .thp_messages import (
     ACK_MESSAGE,
     HANDSHAKE_COMP_RES,
     HANDSHAKE_INIT_RES,
-    InitHeader,
+    PacketHeader,
 )
 from .writer import (
     INIT_DATA_OFFSET,
@@ -89,7 +89,7 @@ async def handle_received_message(
 
 async def _send_ack(ctx: Channel, ack_bit: int) -> None:
     ctrl_byte = control_byte.add_ack_bit_to_ctrl_byte(ACK_MESSAGE, ack_bit)
-    header = InitHeader(ctrl_byte, ctx.get_channel_id_int(), CHECKSUM_LENGTH)
+    header = PacketHeader(ctrl_byte, ctx.get_channel_id_int(), CHECKSUM_LENGTH)
     if __debug__:
         log.debug(
             __name__,

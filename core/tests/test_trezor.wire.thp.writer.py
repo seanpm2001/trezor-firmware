@@ -3,7 +3,7 @@ from trezor import utils
 
 if utils.USE_THP:
     from trezor.wire.thp import writer
-    from trezor.wire.thp.thp_messages import InitHeader, ENCRYPTED_TRANSPORT
+    from trezor.wire.thp.thp_messages import PacketHeader, ENCRYPTED_TRANSPORT
 
 if __debug__:
     # Disable log.debug for the test
@@ -87,7 +87,7 @@ class TestTrezorHostProtocolWriter(unittest.TestCase):
         self.interface = MockHID(0xDEADBEEF)
 
     def test_write_empty_payload(self):
-        header = InitHeader(ENCRYPTED_TRANSPORT, 4660, 4)
+        header = PacketHeader(ENCRYPTED_TRANSPORT, 4660, 4)
         gen = writer.write_payloads_to_wire(self.interface, header, (b"",))
 
         with self.assertRaises(StopIteration):
@@ -95,7 +95,7 @@ class TestTrezorHostProtocolWriter(unittest.TestCase):
         self.assertEqual(len(self.interface.data), 0)
 
     def test_write_short_payload(self):
-        header = InitHeader(ENCRYPTED_TRANSPORT, 4660, 5)
+        header = PacketHeader(ENCRYPTED_TRANSPORT, 4660, 5)
         data = b"\x07"
         gen = writer.write_payloads_to_wire(self.interface, header, (data,))
 
@@ -106,7 +106,7 @@ class TestTrezorHostProtocolWriter(unittest.TestCase):
 
     def test_write_longer_payload(self):
         data = bytearray(range(256))
-        header = InitHeader(ENCRYPTED_TRANSPORT, 4660, 256)
+        header = PacketHeader(ENCRYPTED_TRANSPORT, 4660, 256)
         gen = writer.write_payloads_to_wire(self.interface, header, (data,))
 
         for i in range(5):
@@ -120,7 +120,7 @@ class TestTrezorHostProtocolWriter(unittest.TestCase):
 
     def test_write_eight_longer_payloads(self):
         data = bytearray(range(256))
-        header = InitHeader(ENCRYPTED_TRANSPORT, 4660, 2048)
+        header = PacketHeader(ENCRYPTED_TRANSPORT, 4660, 2048)
         gen = writer.write_payloads_to_wire(
             self.interface, header, (data, data, data, data, data, data, data, data)
         )
@@ -135,7 +135,7 @@ class TestTrezorHostProtocolWriter(unittest.TestCase):
             )
 
     def test_write_empty_payload_with_checksum(self):
-        header = InitHeader(ENCRYPTED_TRANSPORT, 4660, 4)
+        header = PacketHeader(ENCRYPTED_TRANSPORT, 4660, 4)
         gen = writer.write_payload_to_wire_and_add_checksum(self.interface, header, b"")
 
         gen.send(None)
@@ -147,7 +147,7 @@ class TestTrezorHostProtocolWriter(unittest.TestCase):
 
     def test_write_longer_payload_with_checksum(self):
         data = bytearray(range(256))
-        header = InitHeader(ENCRYPTED_TRANSPORT, 4660, 256)
+        header = PacketHeader(ENCRYPTED_TRANSPORT, 4660, 256)
         gen = writer.write_payload_to_wire_and_add_checksum(
             self.interface, header, data
         )

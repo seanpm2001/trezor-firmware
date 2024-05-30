@@ -2,7 +2,7 @@ from micropython import const
 from typing import TYPE_CHECKING
 
 from trezor import loop
-from trezor.wire.thp.thp_messages import InitHeader
+from trezor.wire.thp.thp_messages import PacketHeader
 from trezor.wire.thp.writer import write_payload_to_wire_and_add_checksum
 
 if TYPE_CHECKING:
@@ -15,10 +15,10 @@ MIN_RETRANSMISSION_COUNT = const(2)
 class TransmissionLoop:
 
     def __init__(
-        self, channel: Channel, header: InitHeader, transport_payload: bytes
+        self, channel: Channel, header: PacketHeader, transport_payload: bytes
     ) -> None:
         self.channel: Channel = channel
-        self.header: InitHeader = header
+        self.header: PacketHeader = header
         self.transport_payload: bytes = transport_payload
         self.wait_task: loop.spawn | None = None
         self.min_retransmisson_count_achieved: bool = False

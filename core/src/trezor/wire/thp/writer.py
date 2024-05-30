@@ -3,7 +3,7 @@ from trezorcrypto import crc
 from typing import TYPE_CHECKING
 
 from trezor import io, log, loop, utils
-from trezor.wire.thp.thp_messages import InitHeader
+from trezor.wire.thp.thp_messages import PacketHeader
 
 INIT_DATA_OFFSET = const(5)
 CONT_DATA_OFFSET = const(3)
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 async def write_payload_to_wire_and_add_checksum(
-    iface: WireInterface, header: InitHeader, transport_payload: bytes
+    iface: WireInterface, header: PacketHeader, transport_payload: bytes
 ):
     header_checksum: int = crc.crc32(header.to_bytes())
     checksum: bytes = crc.crc32(transport_payload, header_checksum).to_bytes(
@@ -29,7 +29,7 @@ async def write_payload_to_wire_and_add_checksum(
 
 
 async def write_payloads_to_wire(
-    iface: WireInterface, header: InitHeader, data: Sequence[bytes]
+    iface: WireInterface, header: PacketHeader, data: Sequence[bytes]
 ):
     n_of_data = len(data)
     total_length = sum(len(item) for item in data)
@@ -38,7 +38,7 @@ async def write_payloads_to_wire(
     current_data_offset = 0
 
     report = bytearray(REPORT_LENGTH)
-    header.pack_to_buffer(report)
+    header.pack_to_init_buffer(report)
     report_offset: int = INIT_DATA_OFFSET
     report_number = 0
     nwritten = 0
