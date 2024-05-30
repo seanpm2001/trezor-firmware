@@ -1,4 +1,5 @@
 import ustruct  # pyright:ignore[reportMissingModuleSource]
+from micropython import const
 
 from storage.cache_thp import BROADCAST_CHANNEL_ID
 from trezor import protobuf
@@ -6,22 +7,22 @@ from trezor import protobuf
 from .. import message_handler
 from ..protocol_common import Message
 
-CODEC_V1 = 0x3F
-CONTINUATION_PACKET = 0x80
-HANDSHAKE_INIT_REQ = 0x00
-HANDSHAKE_INIT_RES = 0x01
-HANDSHAKE_COMP_REQ = 0x02
-HANDSHAKE_COMP_RES = 0x03
-ENCRYPTED_TRANSPORT = 0x04
+CODEC_V1 = const(0x3F)
+CONTINUATION_PACKET = const(0x80)
+HANDSHAKE_INIT_REQ = const(0x00)
+HANDSHAKE_INIT_RES = const(0x01)
+HANDSHAKE_COMP_REQ = const(0x02)
+HANDSHAKE_COMP_RES = const(0x03)
+ENCRYPTED_TRANSPORT = const(0x04)
 
-CONTINUATION_PACKET_MASK = 0x80
-ACK_MASK = 0xF7
-DATA_MASK = 0xE7
+CONTINUATION_PACKET_MASK = const(0x80)
+ACK_MASK = const(0xF7)
+DATA_MASK = const(0xE7)
 
-ACK_MESSAGE = 0x20
-ERROR = 0x42
-CHANNEL_ALLOCATION_REQ = 0x40
-_CHANNEL_ALLOCATION_RES = 0x41
+ACK_MESSAGE = const(0x20)
+ERROR = const(0x42)
+CHANNEL_ALLOCATION_REQ = const(0x40)
+_CHANNEL_ALLOCATION_RES = const(0x41)
 
 TREZOR_STATE_UNPAIRED = b"\x00"
 TREZOR_STATE_PAIRED = b"\x01"
