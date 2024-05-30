@@ -234,6 +234,10 @@ async def _handle_code_entry_tag(
         print(
             "expected code entry tag:", hexlify(expected_tag).decode()
         )  # TODO remove after testing
+        print(
+            "expected code entry shared secret:",
+            hexlify(ctx.cpace.shared_secret).decode(),
+        )  # TODO remove after testing
         raise ThpError("Unexpected Entry Code Tag")
 
     return await _handle_secret_reveal(
