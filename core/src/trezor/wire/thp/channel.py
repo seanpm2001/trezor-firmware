@@ -9,7 +9,6 @@ from trezor.wire.thp.transmission_loop import TransmissionLoop
 from . import ChannelState, ThpError
 from . import alternating_bit_protocol as ABP
 from . import (
-    checksum,
     control_byte,
     crypto,
     interface_manager,
@@ -23,7 +22,7 @@ from .writer import (
     CONT_DATA_OFFSET,
     INIT_DATA_OFFSET,
     MESSAGE_TYPE_LENGTH,
-    write_payload_to_wire,
+    write_payload_to_wire_and_add_checksum,
 )
 
 if __debug__:
@@ -163,8 +162,6 @@ class Channel:
             utils.memcpy(new_buffer, 0, buffer, 0)
             buffer = new_buffer
         tag = crypto.encrypt(
-            b"\x00",
-            b"\x00",
             buffer,
             0,
             noise_payload_len,
@@ -202,13 +199,8 @@ class Channel:
         header: InitHeader = InitHeader(
             ERROR, self.get_channel_id_int(), data_length + CHECKSUM_LENGTH
         )
-        chksum = checksum.compute(
-            header.to_bytes() + memoryview(self.buffer[:data_length])
-        )
-
-        utils.memcpy(self.buffer, data_length, chksum, 0)
-        await write_payload_to_wire(
-            self.iface, header, memoryview(self.buffer[: data_length + CHECKSUM_LENGTH])
+        await write_payload_to_wire_and_add_checksum(
+            self.iface, header, memoryview(self.buffer[:data_length])
         )
 
     async def write_and_encrypt(self, payload: bytes) -> None:
@@ -248,9 +240,6 @@ class Channel:
         sync_bit = ABP.get_send_seq_bit(self.channel_cache)
         ctrl_byte = control_byte.add_seq_bit_to_ctrl_byte(ctrl_byte, sync_bit)
         header = InitHeader(ctrl_byte, self.get_channel_id_int(), payload_len)
-        chksum = checksum.compute(header.to_bytes() + payload)
-        payload = payload + chksum
-
         self.transmission_loop = TransmissionLoop(self, header, payload)
         await self.transmission_loop.start()
 

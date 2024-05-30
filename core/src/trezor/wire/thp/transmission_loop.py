@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from trezor import loop
 from trezor.wire.thp.thp_messages import InitHeader
-from trezor.wire.thp.writer import write_payload_to_wire
+from trezor.wire.thp.writer import write_payload_to_wire_and_add_checksum
 
 if TYPE_CHECKING:
     from trezor.wire.thp.channel import Channel
@@ -14,10 +14,12 @@ MIN_RETRANSMISSION_COUNT = const(2)
 
 class TransmissionLoop:
 
-    def __init__(self, channel: Channel, header: InitHeader, payload: bytes) -> None:
+    def __init__(
+        self, channel: Channel, header: InitHeader, transport_payload: bytes
+    ) -> None:
         self.channel: Channel = channel
         self.header: InitHeader = header
-        self.payload: bytes = payload
+        self.transport_payload: bytes = transport_payload
         self.wait_task: loop.spawn | None = None
         self.min_retransmisson_count_achieved: bool = False
 
@@ -26,7 +28,9 @@ class TransmissionLoop:
         for i in range(MAX_RETRANSMISSION_COUNT):
             if i >= MIN_RETRANSMISSION_COUNT:
                 self.min_retransmisson_count_achieved = True
-            await write_payload_to_wire(self.channel.iface, self.header, self.payload)
+            await write_payload_to_wire_and_add_checksum(
+                self.channel.iface, self.header, self.transport_payload
+            )
             self.wait_task = loop.spawn(self._wait(i))
             try:
                 await self.wait_task

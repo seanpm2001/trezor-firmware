@@ -17,7 +17,11 @@ from .thp import (
 from .thp.channel import Channel
 from .thp.checksum import CHECKSUM_LENGTH
 from .thp.thp_messages import CHANNEL_ALLOCATION_REQ, CODEC_V1, InitHeader
-from .thp.writer import MAX_PAYLOAD_LEN, REPORT_LENGTH, write_payload_to_wire
+from .thp.writer import (
+    MAX_PAYLOAD_LEN,
+    REPORT_LENGTH,
+    write_payload_to_wire_and_add_checksum,
+)
 
 if TYPE_CHECKING:
     from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
@@ -100,11 +104,10 @@ async def _handle_broadcast(
     response_header = InitHeader.get_channel_allocation_response_header(
         len(response_data) + CHECKSUM_LENGTH,
     )
-    chksum = checksum.compute(response_header.to_bytes() + response_data)
     if __debug__:
         log.debug(__name__, "New channel allocated with id %d", cid)
 
-    await write_payload_to_wire(iface, response_header, response_data + chksum)
+    await write_payload_to_wire_and_add_checksum(iface, response_header, response_data)
 
 
 async def _handle_allocated(
@@ -125,8 +128,7 @@ async def _handle_allocated(
 async def _handle_unallocated(iface, cid) -> MessageWithId | None:
     data = thp_messages.get_error_unallocated_channel()
     header = InitHeader.get_error_header(cid, len(data) + CHECKSUM_LENGTH)
-    chksum = checksum.compute(header.to_bytes() + data)
-    await write_payload_to_wire(iface, header, data + chksum)
+    await write_payload_to_wire_and_add_checksum(iface, header, data)
 
 
 def _get_buffer_for_payload(

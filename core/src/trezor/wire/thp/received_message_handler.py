@@ -20,7 +20,11 @@ from .thp_messages import (
     HANDSHAKE_INIT_RES,
     InitHeader,
 )
-from .writer import INIT_DATA_OFFSET, MESSAGE_TYPE_LENGTH, write_payload_to_wire
+from .writer import (
+    INIT_DATA_OFFSET,
+    MESSAGE_TYPE_LENGTH,
+    write_payload_to_wire_and_add_checksum,
+)
 
 if TYPE_CHECKING:
     from trezor.messages import ThpHandshakeCompletionReqNoisePayload
@@ -86,7 +90,6 @@ async def handle_received_message(
 async def _send_ack(ctx: Channel, ack_bit: int) -> None:
     ctrl_byte = control_byte.add_ack_bit_to_ctrl_byte(ACK_MESSAGE, ack_bit)
     header = InitHeader(ctrl_byte, ctx.get_channel_id_int(), CHECKSUM_LENGTH)
-    chksum = checksum.compute(header.to_bytes())
     if __debug__:
         log.debug(
             __name__,
@@ -94,7 +97,7 @@ async def _send_ack(ctx: Channel, ack_bit: int) -> None:
             ctx.get_channel_id_int(),
             ack_bit,
         )
-    await write_payload_to_wire(ctx.iface, header, chksum)
+    await write_payload_to_wire_and_add_checksum(ctx.iface, header, b"")
 
 
 def _check_checksum(message_length: int, message_buffer: utils.BufferType):
