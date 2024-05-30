@@ -1,5 +1,5 @@
-from typing import TYPE_CHECKING
 from common import *
+from typing import TYPE_CHECKING
 from storage.cache_thp import BROADCAST_CHANNEL_ID
 import trezor.wire.thp
 from trezor.wire.thp import alternating_bit_protocol as ABP
