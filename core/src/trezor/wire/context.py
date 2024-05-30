@@ -163,17 +163,6 @@ class CodecContext(Context):
             memoryview(buffer)[:msg_size],
         )
 
-    async def call(
-        self,
-        msg: protobuf.MessageType,
-        expected_type: type[LoadedMessageType],
-    ) -> LoadedMessageType:
-        assert expected_type.MESSAGE_WIRE_TYPE is not None
-
-        await self.write(msg)
-        del msg
-        return await self.read((expected_type.MESSAGE_WIRE_TYPE,), expected_type)
-
     # ACCESS TO CACHE
     @property
     def cache(self) -> DataCache:

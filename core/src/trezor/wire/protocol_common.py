@@ -72,6 +72,17 @@ class Context:
 
     async def write(self, msg: protobuf.MessageType) -> None: ...
 
+    async def call(
+        self,
+        msg: protobuf.MessageType,
+        expected_type: type[LoadedMessageType],
+    ) -> LoadedMessageType:
+        assert expected_type.MESSAGE_WIRE_TYPE is not None
+
+        await self.write(msg)
+        del msg
+        return await self.read((expected_type.MESSAGE_WIRE_TYPE,), expected_type)
+
     @property
     def cache(self) -> DataCache: ...
 
