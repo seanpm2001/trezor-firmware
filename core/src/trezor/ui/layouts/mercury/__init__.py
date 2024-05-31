@@ -48,7 +48,7 @@ class RustLayout(ui.Layout):
         assert msg is None
 
     def _paint(self) -> None:
-        import storage.cache as storage_cache
+        import storage.cache_common as storage_cache
 
         painted = self.layout.paint()
 
