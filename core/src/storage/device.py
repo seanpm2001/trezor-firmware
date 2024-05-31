@@ -2,7 +2,6 @@ from micropython import const
 from typing import TYPE_CHECKING
 
 from storage import common
-from trezor import utils
 from storage.cache_common import STORAGE_DEVICE_EXPERIMENTAL_FEATURES
 from trezor import utils
 from trezor.wire import context
