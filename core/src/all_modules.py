@@ -233,8 +233,6 @@ trezor.wire.thp.control_byte
 import trezor.wire.thp.control_byte
 trezor.wire.thp.cpace
 import trezor.wire.thp.cpace
-trezor.wire.thp.credential_manager
-import trezor.wire.thp.credential_manager
 trezor.wire.thp.crypto
 import trezor.wire.thp.crypto
 trezor.wire.thp.handler_provider
@@ -435,6 +433,8 @@ apps.thp
 import apps.thp
 apps.thp.create_session
 import apps.thp.create_session
+apps.thp.credential_manager
+import apps.thp.credential_manager
 apps.thp.pairing
 import apps.thp.pairing
 apps.workflow_handlers

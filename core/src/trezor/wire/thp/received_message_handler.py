@@ -6,13 +6,14 @@ from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH
 from trezor import log, loop, utils
 from trezor.enums import FailureType
 
+from apps.thp.credential_manager import validate_credential
+
 from ..errors import DataError
 from ..protocol_common import MessageWithType
 from . import ChannelState, SessionState, ThpError
 from . import alternating_bit_protocol as ABP
 from . import checksum, control_byte, is_channel_state_pairing, thp_messages
 from .checksum import CHECKSUM_LENGTH
-from .credential_manager import validate_credential
 from .crypto import PUBKEY_LENGTH
 from .thp_messages import (
     ACK_MESSAGE,
