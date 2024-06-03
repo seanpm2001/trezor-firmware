@@ -1,4 +1,4 @@
-import ustruct  # pyright:ignore[reportMissingModuleSource]
+import ustruct
 from micropython import const
 
 from storage.cache_thp import BROADCAST_CHANNEL_ID

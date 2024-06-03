@@ -1,4 +1,4 @@
-import ustruct  # pyright: ignore[reportMissingModuleSource]
+import ustruct
 from typing import TYPE_CHECKING
 
 from storage import cache_thp

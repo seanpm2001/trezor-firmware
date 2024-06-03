@@ -6,7 +6,7 @@ _MOCK_INTERFACE_HID = b"\x00"
 _WIRE_INTERFACE_USB = b"\x01"
 
 if TYPE_CHECKING:
-    from trezorio import WireInterface  # pyright:ignore[reportMissingImports]
+    from trezorio import WireInterface
 
 
 def decode_iface(cached_iface: bytes) -> WireInterface:

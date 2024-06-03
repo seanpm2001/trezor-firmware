@@ -1,5 +1,5 @@
-import ustruct  # pyright: ignore[reportMissingModuleSource]
-from typing import TYPE_CHECKING  # pyright:ignore[reportShadowedImports]
+import ustruct
+from typing import TYPE_CHECKING
 
 from storage.cache_thp import TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils, workflow

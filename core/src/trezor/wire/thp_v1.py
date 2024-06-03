@@ -1,6 +1,6 @@
-import ustruct  # pyright: ignore[reportMissingModuleSource]
-from micropython import const  # pyright: ignore[reportMissingModuleSource]
-from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
+import ustruct
+from micropython import const
+from typing import TYPE_CHECKING
 
 from storage.cache_thp import BROADCAST_CHANNEL_ID
 from trezor import io, log, loop, utils
@@ -24,7 +24,7 @@ from .thp.writer import (
 )
 
 if TYPE_CHECKING:
-    from trezorio import WireInterface  # pyright: ignore[reportMissingImports]
+    from trezorio import WireInterface
 
 _MAX_CID_REQ_PAYLOAD_LENGTH = const(12)  # TODO set to reasonable value
 
