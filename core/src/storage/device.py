@@ -44,10 +44,6 @@ if utils.USE_THP:
     _DEVICE_SECRET         = const(0x17)  # bytes
     _CRED_AUTH_KEY_COUNTER = const(0x18)  # bytes
 
-if utils.USE_THP:
-    _DEVICE_SECRET         = const(0x17)  # bytes
-    _CRED_AUTH_KEY_COUNTER = const(0x18)  # bytes
-
 SAFETY_CHECK_LEVEL_STRICT  : Literal[0] = const(0)
 SAFETY_CHECK_LEVEL_PROMPT  : Literal[1] = const(1)
 _DEFAULT_SAFETY_CHECK_LEVEL = SAFETY_CHECK_LEVEL_STRICT
