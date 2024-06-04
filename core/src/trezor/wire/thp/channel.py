@@ -97,7 +97,7 @@ class Channel:
             self.is_cont_packet_expected = True
         else:
             raise ThpError(
-                "Read more bytes than is the expected length of the message, this should not happen!"
+                "Read more bytes than is the expected length of the message!"
             )
 
     async def _handle_received_packet(self, packet: utils.BufferType) -> None:
@@ -112,7 +112,8 @@ class Channel:
             log.debug(__name__, "handle_init_packet")
         ctrl_byte, _, payload_length = ustruct.unpack(">BHH", packet)
         self.expected_payload_length = payload_length
-        packet_payload = packet[5:]
+        packet_payload = memoryview(packet)[INIT_DATA_OFFSET:]
+
         # If the channel does not "own" the buffer lock, decrypt first packet
         # TODO do it only when needed!
         if control_byte.is_encrypted_transport(ctrl_byte):
@@ -143,8 +144,6 @@ class Channel:
         return payload_buffer
 
     def decrypt_buffer(self, message_length: int) -> None:
-        if not isinstance(self.buffer, bytearray):
-            self.buffer = bytearray(self.buffer)
         crypto.decrypt(
             b"\x00",
             b"\x00",
@@ -212,7 +211,7 @@ class Channel:
         payload_length = payload_length + TAG_LENGTH
 
         if self.write_task_spawn is not None:
-            self.write_task_spawn.close()  # UPS TODO migh break something
+            self.write_task_spawn.close()  # UPS TODO might break something
             print("\nCLOSED\n")
         self._prepare_write()
         self.write_task_spawn = loop.spawn(

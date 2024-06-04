@@ -106,7 +106,7 @@ def _check_checksum(message_length: int, message_buffer: utils.BufferType):
         log.debug(__name__, "check_checksum")
     if not checksum.is_valid(
         checksum=message_buffer[message_length - CHECKSUM_LENGTH : message_length],
-        data=message_buffer[: message_length - CHECKSUM_LENGTH],
+        data=memoryview(message_buffer)[: message_length - CHECKSUM_LENGTH],
     ):
         if __debug__:
             log.debug(__name__, "Invalid checksum, ignoring message.")

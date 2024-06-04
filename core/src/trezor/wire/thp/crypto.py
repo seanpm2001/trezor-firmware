@@ -1,6 +1,7 @@
 from micropython import const
 from trezorcrypto import aesgcm, curve25519, hmac
 
+from trezor import utils
 from trezor.crypto.hashlib import sha256
 
 DUMMY_TAG = b"\xA0\xA1\xA2\xA3\xA4\xA5\xA6\xA7\xA8\xA9\xB0\xB1\xB2\xB3\xB4\xB5"
@@ -13,7 +14,7 @@ PUBKEY_LENGTH = const(32)
 def encrypt(
     # key: bytes,
     # nonce: bytes,
-    buffer: bytearray,
+    buffer: utils.BufferType,
     init_offset: int = 0,
     payload_length: int = 0,
 ) -> bytes:
@@ -28,7 +29,7 @@ def encrypt(
 def decrypt(
     key: bytes,
     nonce: bytes,
-    buffer: bytearray,
+    buffer: utils.BufferType,
     init_offset: int = 0,
     payload_length: int = 0,
 ) -> None:
