@@ -1,15 +1,20 @@
 use crate::{
-    error,
+    error::{self, Error},
+    micropython::obj::Obj,
     time::Instant,
     ui::{
         animation::Animation,
         component::{Component, Event, EventCtx, Swipe, SwipeDirection},
+        display::Color,
         flow::{base::Decision, FlowMsg, FlowState, FlowStore, SwipableResult},
         geometry::Rect,
-        shape::Renderer,
+        layout::obj::ObjComponent,
+        shape::{render_on_display, Renderer},
         util,
     },
 };
+
+use super::store::{ConcreteRenderer, DynRenderer, FlowStore2};
 
 /// Given a state enum and a corresponding FlowStore, create a Component that
 /// implements a swipe navigation between the states with animated transitions.
@@ -17,11 +22,11 @@ use crate::{
 /// If a swipe is detected:
 /// - currently active component is asked to handle the event,
 /// - if it can't then FlowState::handle_swipe is consulted.
-pub struct SwipeFlow<Q, S> {
+pub struct SwipeFlow<Q> {
     /// Current state.
     state: Q,
     /// FlowStore with all screens/components.
-    store: S,
+    store: FlowStore2,
     /// `Transition::None` when state transition animation is in not progress.
     transition: Transition<Q>,
     /// Swipe detector.
@@ -44,8 +49,8 @@ enum Transition<Q> {
     None,
 }
 
-impl<Q: FlowState, S: FlowStore> SwipeFlow<Q, S> {
-    pub fn new(init: Q, store: S) -> Result<Self, error::Error> {
+impl<Q: FlowState> SwipeFlow<Q> {
+    pub fn new(init: Q, store: FlowStore2) -> Result<Self, error::Error> {
         Ok(Self {
             state: init,
             store,
@@ -80,7 +85,7 @@ impl<Q: FlowState, S: FlowStore> SwipeFlow<Q, S> {
         ctx.request_paint();
     }
 
-    fn render_state<'s>(&'s self, state: Q, target: &mut impl Renderer<'s>) {
+    fn render_state<'s>(&'s self, state: Q, target: &mut ConcreteRenderer<'_, 's, '_>) {
         self.store.render(state.index(), target)
     }
 
@@ -89,7 +94,7 @@ impl<Q: FlowState, S: FlowStore> SwipeFlow<Q, S> {
         prev_state: &Q,
         animation: &Animation<f32>,
         direction: &SwipeDirection,
-        target: &mut impl Renderer<'s>,
+        target: &mut ConcreteRenderer<'_, 's, '_>,
     ) {
         util::render_slide(
             |target| self.render_state(*prev_state, target),
@@ -153,17 +158,8 @@ impl<Q: FlowState, S: FlowStore> SwipeFlow<Q, S> {
             Decision::Nothing
         }
     }
-}
 
-impl<Q: FlowState, S: FlowStore> Component for SwipeFlow<Q, S> {
-    type Msg = FlowMsg;
-
-    fn place(&mut self, bounds: Rect) -> Rect {
-        self.swipe.place(bounds);
-        self.store.place(bounds)
-    }
-
-    fn event(&mut self, ctx: &mut EventCtx, event: Event) -> Option<Self::Msg> {
+    fn event(&mut self, ctx: &mut EventCtx, event: Event) -> Option<FlowMsg> {
         if !matches!(self.transition, Transition::None) {
             return self.handle_transition(ctx, event);
         }
@@ -188,7 +184,7 @@ impl<Q: FlowState, S: FlowStore> Component for SwipeFlow<Q, S> {
 
     fn paint(&mut self) {}
 
-    fn render<'s>(&'s self, target: &mut impl Renderer<'s>) {
+    fn render<'s>(&'s self, target: &mut ConcreteRenderer<'_, 's, '_>) {
         match &self.transition {
             Transition::None | Transition::Internal => self.render_state(self.state, target),
             Transition::External {
@@ -200,26 +196,35 @@ impl<Q: FlowState, S: FlowStore> Component for SwipeFlow<Q, S> {
     }
 }
 
-#[cfg(feature = "ui_debug")]
-impl<Q: FlowState, S: FlowStore> crate::trace::Trace for SwipeFlow<Q, S> {
-    fn trace(&self, t: &mut dyn crate::trace::Tracer) {
-        self.store.trace(self.state.index(), t)
+impl<Q: FlowState> ObjComponent for SwipeFlow<Q> {
+    fn obj_place(&mut self, bounds: Rect) -> Rect {
+        self.swipe.place(bounds);
+        self.store.place(bounds)
     }
-}
 
-#[cfg(feature = "micropython")]
-impl<Q: FlowState, S: FlowStore> crate::ui::layout::obj::ComponentMsgObj for SwipeFlow<Q, S> {
-    fn msg_try_into_obj(
-        &self,
-        msg: Self::Msg,
-    ) -> Result<crate::micropython::obj::Obj, error::Error> {
-        match msg {
-            FlowMsg::Confirmed => Ok(crate::ui::layout::result::CONFIRMED.as_obj()),
-            FlowMsg::Cancelled => Ok(crate::ui::layout::result::CANCELLED.as_obj()),
-            FlowMsg::Info => Ok(crate::ui::layout::result::INFO.as_obj()),
-            FlowMsg::Choice(i) => {
+    fn obj_event(&mut self, ctx: &mut EventCtx, event: Event) -> Result<Obj, Error> {
+        match self.event(ctx, event) {
+            None => Ok(Obj::const_none()),
+            Some(FlowMsg::Confirmed) => Ok(crate::ui::layout::result::CONFIRMED.as_obj()),
+            Some(FlowMsg::Cancelled) => Ok(crate::ui::layout::result::CANCELLED.as_obj()),
+            Some(FlowMsg::Info) => Ok(crate::ui::layout::result::INFO.as_obj()),
+            Some(FlowMsg::Choice(i)) => {
                 Ok((crate::ui::layout::result::CONFIRMED.as_obj(), i.try_into()?).try_into()?)
             }
         }
+    }
+
+    fn obj_paint(&mut self) -> bool {
+        render_on_display(None, Some(Color::black()), |target| {
+            self.render(target);
+        });
+        true
+    }
+}
+
+#[cfg(feature = "ui_debug")]
+impl<Q: FlowState> crate::trace::Trace for SwipeFlow<Q> {
+    fn trace(&self, t: &mut dyn crate::trace::Tracer) {
+        self.store.trace(self.state.index(), t)
     }
 }

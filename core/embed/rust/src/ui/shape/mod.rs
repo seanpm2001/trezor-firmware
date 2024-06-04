@@ -33,7 +33,7 @@ pub use display::{render_on_canvas, render_on_display};
 pub use jpeg::JpegImage;
 pub use qrcode::QrImage;
 pub use rawimage::RawImage;
-pub use render::{DirectRenderer, ProgressiveRenderer, Renderer};
+pub use render::{DirectRenderer, ProgressiveRenderer, Renderer, ScopedRenderer};
 pub use text::Text;
 pub use toif::ToifImage;
 #[cfg(feature = "model_mercury")]

@@ -171,6 +171,6 @@ impl ConfirmSummary {
             .add(content_account)?
             .add(content_cancel_tap)?;
         let res = SwipeFlow::new(ConfirmSummary::Summary, store)?;
-        Ok(LayoutObj::new(res)?.into())
+        Ok(LayoutObj::new_from_objcomponent(res)?.into())
     }
 }

@@ -121,6 +121,6 @@ impl ShowShareWords {
             .add(content_confirm)?
             .add(content_check_backup_intro)?;
         let res = SwipeFlow::new(ShowShareWords::Instruction, store)?;
-        Ok(LayoutObj::new(res)?.into())
+        Ok(LayoutObj::new_from_objcomponent(res)?.into())
     }
 }

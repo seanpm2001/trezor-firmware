@@ -134,9 +134,13 @@ impl LayoutObj {
         // Let's wrap the root component into a `Root` to maintain the top-level
         // invalidation logic.
         let wrapped_root = Root::new(root);
+        Self::new_from_objcomponent(wrapped_root)
+    }
+
+    pub fn new_from_objcomponent(root: impl ObjComponent) -> Result<Gc<Self>, Error> {
         // SAFETY: We are coercing GC-allocated sized ptr into an unsized one.
         let root =
-            unsafe { Gc::from_raw(Gc::into_raw(Gc::new(wrapped_root)?) as *mut dyn ObjComponent) };
+            unsafe { Gc::from_raw(Gc::into_raw(Gc::new(root)?) as *mut dyn ObjComponent) };
 
         // SAFETY: This is a Python object and hase a base as first element
         unsafe {

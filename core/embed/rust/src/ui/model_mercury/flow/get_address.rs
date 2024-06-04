@@ -265,6 +265,6 @@ impl GetAddress {
             .add(content_cancel_info)?
             .add(content_cancel_tap)?;
         let res = SwipeFlow::new(GetAddress::Address, store)?;
-        Ok(LayoutObj::new(res)?.into())
+        Ok(LayoutObj::new_from_objcomponent(res)?.into())
     }
 }

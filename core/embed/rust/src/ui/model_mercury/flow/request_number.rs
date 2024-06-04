@@ -143,6 +143,6 @@ impl RequestNumber {
             .add(content_menu)?
             .add(content_info)?;
         let res = SwipeFlow::new(RequestNumber::Number, store)?;
-        Ok(LayoutObj::new(res)?.into())
+        Ok(LayoutObj::new_from_objcomponent(res)?.into())
     }
 }

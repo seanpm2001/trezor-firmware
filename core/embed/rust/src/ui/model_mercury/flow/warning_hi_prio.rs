@@ -121,6 +121,6 @@ impl WarningHiPrio {
             .add(content_menu)?
             .add(content_cancelled)?;
         let res = SwipeFlow::new(WarningHiPrio::Message, store)?;
-        Ok(LayoutObj::new(res)?.into())
+        Ok(LayoutObj::new_from_objcomponent(res)?.into())
     }
 }

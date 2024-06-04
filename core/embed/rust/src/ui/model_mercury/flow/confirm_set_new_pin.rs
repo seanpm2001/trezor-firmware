@@ -140,6 +140,6 @@ impl SetNewPin {
             .add(content_cancel_intro)?
             .add(content_cancel_confirm)?;
         let res = SwipeFlow::new(SetNewPin::Intro, store)?;
-        Ok(LayoutObj::new(res)?.into())
+        Ok(LayoutObj::new_from_objcomponent(res)?.into())
     }
 }

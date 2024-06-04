@@ -145,6 +145,6 @@ impl PromptBackup {
             .add(content_skip_intro)?
             .add(content_skip_confirm)?;
         let res = SwipeFlow::new(PromptBackup::Intro, store)?;
-        Ok(LayoutObj::new(res)?.into())
+        Ok(LayoutObj::new_from_objcomponent(res)?.into())
     }
 }
