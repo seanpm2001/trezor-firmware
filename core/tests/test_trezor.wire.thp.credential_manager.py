@@ -36,8 +36,8 @@ class TestTrezorHostProtocolCredentialManager(unittest.TestCase):
         self.assertNotEqual(key1, key2)
 
     def test_credentials(self):
-        DUMMY_KEY_1 = "\x00\x00"
-        DUMMY_KEY_2 = "\xff\xff"
+        DUMMY_KEY_1 = b"\x00\x00"
+        DUMMY_KEY_2 = b"\xff\xff"
         HOST_NAME_1 = "host_name"
         HOST_NAME_2 = "different host_name"
 
