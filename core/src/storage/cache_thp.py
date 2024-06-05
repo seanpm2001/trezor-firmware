@@ -45,13 +45,17 @@ class ConnectionCache(DataCache):
 class ChannelCache(ConnectionCache):
     def __init__(self) -> None:
         self.host_ephemeral_pubkey = bytearray(KEY_LENGTH)
-        self.enc_key = bytearray(KEY_LENGTH)
-        self.dec_key = bytearray(KEY_LENGTH)
         self.state = bytearray(_CHANNEL_STATE_LENGTH)
         self.iface = bytearray(1)  # TODO add decoding
         self.sync = 0x80  # can_send_bit | sync_receive_bit | sync_send_bit | rfu(5)
         self.session_id_counter = 0x00
-        self.fields = ()
+        self.fields = (
+            32,  # CHANNEL_HANDSHAKE_HASH
+            32,  # CHANNEL_KEY_RECEIVE
+            32,  # CHANNEL_KEY_SEND
+            8,  # CHANNEL_NONCE_RECEIVE
+            8,  # CHANNEL_NONCE_SEND
+        )
         super().__init__()
 
     def clear(self) -> None:
