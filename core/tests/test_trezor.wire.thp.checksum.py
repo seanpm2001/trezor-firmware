@@ -17,21 +17,21 @@ class TestTrezorHostProtocolChecksum(unittest.TestCase):
             b"\x19\x0A\x55\xAD",
         ),
         (
-            bytes("a", "ASCII"),
+            bytes("a", "ascii"),
             b"\xE8\xB7\xBE\x43",
         ),
         (
-            bytes("abc", "ASCII"),
+            bytes("abc", "ascii"),
             b"\x35\x24\x41\xC2",
         ),
         (
-            bytes("123456789", "ASCII"),
+            bytes("123456789", "ascii"),
             b"\xCB\xF4\x39\x26",
         ),
         (
             bytes(
                 "12345678901234567890123456789012345678901234567890123456789012345678901234567890",
-                "ASCII",
+                "ascii",
             ),
             b"\x7C\xA9\x4A\x72",
         ),
@@ -58,21 +58,21 @@ class TestTrezorHostProtocolChecksum(unittest.TestCase):
             b"\x19\x0A\x55\xAE",
         ),
         (
-            bytes("A", "ASCII"),
+            bytes("A", "ascii"),
             b"\xE8\xB7\xBE\x43",
         ),
         (
-            bytes("abc ", "ASCII"),
+            bytes("abc ", "ascii"),
             b"\x35\x24\x41\xC2",
         ),
         (
-            bytes("1234567890", "ASCII"),
+            bytes("1234567890", "ascii"),
             b"\xCB\xF4\x39\x26",
         ),
         (
             bytes(
                 "1234567890123456789012345678901234567890123456789012345678901234567890123456789",
-                "ASCII",
+                "ascii",
             ),
             b"\x7C\xA9\x4A\x72",
         ),
