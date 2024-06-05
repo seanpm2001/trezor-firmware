@@ -1,7 +1,13 @@
 import ustruct
 from typing import TYPE_CHECKING
 
-from storage import cache_thp
+from storage.cache_common import (
+    CHANNEL_HANDSHAKE_HASH,
+    CHANNEL_KEY_RECEIVE,
+    CHANNEL_KEY_SEND,
+    CHANNEL_NONCE_RECEIVE,
+    CHANNEL_NONCE_SEND,
+)
 from storage.cache_thp import KEY_LENGTH, SESSION_ID_LENGTH, TAG_LENGTH
 from trezor import log, loop, utils
 from trezor.enums import FailureType
@@ -14,7 +20,7 @@ from . import ChannelState, SessionState, ThpError
 from . import alternating_bit_protocol as ABP
 from . import checksum, control_byte, is_channel_state_pairing, thp_messages
 from .checksum import CHECKSUM_LENGTH
-from .crypto import PUBKEY_LENGTH
+from .crypto import PUBKEY_LENGTH, Handshake
 from .thp_messages import (
     ACK_MESSAGE,
     HANDSHAKE_COMP_RES,
@@ -179,12 +185,19 @@ async def _handle_state_TH1(
         raise ThpError("Message received is not a handshake init request!")
     if not payload_length == PUBKEY_LENGTH + CHECKSUM_LENGTH:
         raise ThpError("Message received is not a valid handshake init request!")
-    host_ephemeral_key = bytearray(
+
+    ctx.handshake = Handshake()
+
+    host_ephemeral_pubkey = bytearray(
         ctx.buffer[INIT_DATA_OFFSET : message_length - CHECKSUM_LENGTH]
     )
-    cache_thp.set_channel_host_ephemeral_key(ctx.channel_cache, host_ephemeral_key)
+    trezor_ephemeral_pubkey, encrypted_trezor_static_pubkey, tag = (
+        ctx.handshake._handle_th1_crypto(b"", host_ephemeral_pubkey)
+    )
+    print(trezor_ephemeral_pubkey, encrypted_trezor_static_pubkey, tag)  # TODO remove
+    # cache_thp.set_channel_host_ephemeral_key(ctx.channel_cache, host_ephemeral_key)
 
-    # send handshake init response message
+    # send handshake init response message TODO add proper data
     await ctx.write_handshake_message(
         HANDSHAKE_INIT_RES, thp_messages.get_handshake_init_response()
     )
@@ -197,6 +210,9 @@ async def _handle_state_TH2(ctx: Channel, message_length: int, ctrl_byte: int) -
         log.debug(__name__, "handle_state_TH2")
     if not control_byte.is_handshake_comp_req(ctrl_byte):
         raise ThpError("Message received is not a handshake completion request!")
+    if ctx.handshake is None:
+        raise Exception("Handshake object is not prepared. Retry handshake.")
+
     host_encrypted_static_pubkey = ctx.buffer[
         INIT_DATA_OFFSET : INIT_DATA_OFFSET + KEY_LENGTH + TAG_LENGTH
     ]
@@ -215,6 +231,17 @@ async def _handle_state_TH2(ctx: Channel, message_length: int, ctrl_byte: int) -
         0,
         "ThpHandshakeCompletionReqNoisePayload",
     )
+    ctx.handshake._handle_thp2_crypto(
+        host_encrypted_static_pubkey, handshake_completion_request_noise_payload
+    )
+
+    ctx.channel_cache.set(CHANNEL_KEY_RECEIVE, ctx.handshake.key_receive)
+    ctx.channel_cache.set(CHANNEL_KEY_SEND, ctx.handshake.key_send)
+    ctx.channel_cache.set(CHANNEL_HANDSHAKE_HASH, ctx.handshake.h)
+    ctx.channel_cache.set_int(CHANNEL_NONCE_RECEIVE, 0)
+    ctx.channel_cache.set_int(CHANNEL_NONCE_SEND, 1)
+    ctx.handshake = None
+
     if TYPE_CHECKING:
         assert ThpHandshakeCompletionReqNoisePayload.is_type_of(noise_payload)
     for i in noise_payload.pairing_methods:
@@ -257,7 +284,9 @@ async def _handle_state_ENCRYPTED_TRANSPORT(ctx: Channel, message_length: int) -
         log.debug(__name__, "handle_state_ENCRYPTED_TRANSPORT")
 
     ctx.decrypt_buffer(message_length)
-    session_id, message_type = ustruct.unpack(">BH", ctx.buffer[INIT_DATA_OFFSET:])
+    session_id, message_type = ustruct.unpack(
+        ">BH", memoryview(ctx.buffer)[INIT_DATA_OFFSET:]
+    )
     if session_id not in ctx.sessions:
         await ctx.write_error(FailureType.ThpUnallocatedSession, "Unallocated session")
         raise ThpError("Unalloacted session")

@@ -1,6 +1,13 @@
 import ustruct
 from typing import TYPE_CHECKING
 
+from storage.cache_common import (
+    CHANNEL_HANDSHAKE_HASH,
+    CHANNEL_KEY_RECEIVE,
+    CHANNEL_KEY_SEND,
+    CHANNEL_NONCE_RECEIVE,
+    CHANNEL_NONCE_SEND,
+)
 from storage.cache_thp import TAG_LENGTH, ChannelCache
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
@@ -51,6 +58,7 @@ class Channel:
         self.write_task_spawn: loop.spawn | None = None
         self.connection_context: PairingContext | None = None
         self.transmission_loop: TransmissionLoop | None = None
+        self.handshake: crypto.Handshake | None = None
 
         self._create_management_session()
 
@@ -138,33 +146,64 @@ class Channel:
             raise ThpError("Continuation packet is not expected, ignoring")
         await self._buffer_packet_data(self.buffer, packet, CONT_DATA_OFFSET)
 
-    def _decrypt_single_packet_payload(self, payload: bytes) -> bytearray:
-        payload_buffer = bytearray(payload)
-        crypto.decrypt(b"\x00", b"\x00", payload_buffer, INIT_DATA_OFFSET, len(payload))
-        return payload_buffer
+    def _decrypt_single_packet_payload(
+        self, payload: utils.BufferType
+    ) -> utils.BufferType:
+        # crypto.decrypt(b"\x00", b"\x00", payload_buffer, INIT_DATA_OFFSET, len(payload))
+        return payload
 
     def decrypt_buffer(self, message_length: int) -> None:
-        crypto.decrypt(
-            b"\x00",
-            b"\x00",
-            self.buffer,
-            INIT_DATA_OFFSET,
-            message_length - INIT_DATA_OFFSET - CHECKSUM_LENGTH,
-        )
+        noise_buffer = memoryview(self.buffer)[
+            INIT_DATA_OFFSET : INIT_DATA_OFFSET + message_length
+        ]
+        tag = self.buffer[
+            INIT_DATA_OFFSET
+            + message_length : INIT_DATA_OFFSET
+            + message_length
+            + TAG_LENGTH
+        ]
+        if utils.DISABLE_ENCRYPTION:
+            is_tag_valid = tag == crypto.DUMMY_TAG
+        else:
+            key_receive = self.channel_cache.get(CHANNEL_KEY_RECEIVE)
+            nonce_receive = self.channel_cache.get_int(CHANNEL_NONCE_RECEIVE)
+            auth_data = self.channel_cache.get(CHANNEL_HANDSHAKE_HASH)
 
-    def _encrypt(self, buffer: bytearray, noise_payload_len: int) -> None:
+            if key_receive is None:
+                raise Exception("KEY_RECEIVE is not initialized")
+            if nonce_receive is None:
+                raise Exception("NONCE_RECEIVE is not initialized")
+            if auth_data is None:
+                raise Exception("HANDSHAKE_HASH is not initialized")
+            is_tag_valid = crypto.dec(
+                noise_buffer, tag, key_receive, nonce_receive, auth_data
+            )
+        if __debug__:
+            log.debug(__name__, "Is decrypted tag valid? %s", str(is_tag_valid))
+
+    def _encrypt(self, buffer: utils.BufferType, noise_payload_len: int) -> None:
         if __debug__:
             log.debug(__name__, "encrypt")
-        min_required_length = noise_payload_len + TAG_LENGTH + CHECKSUM_LENGTH
-        if len(buffer) < min_required_length or not isinstance(buffer, bytearray):
-            new_buffer = bytearray(min_required_length)
-            utils.memcpy(new_buffer, 0, buffer, 0)
-            buffer = new_buffer
-        tag = crypto.encrypt(
-            buffer,
-            0,
-            noise_payload_len,
-        )
+        assert len(buffer) >= noise_payload_len + TAG_LENGTH + CHECKSUM_LENGTH
+
+        noise_buffer = memoryview(buffer)[0:noise_payload_len]
+
+        if utils.DISABLE_ENCRYPTION:
+            tag = crypto.DUMMY_TAG
+        else:
+            key_send = self.channel_cache.get(CHANNEL_KEY_SEND)
+            nonce_send = self.channel_cache.get_int(CHANNEL_NONCE_SEND)
+            auth_data = self.channel_cache.get(CHANNEL_HANDSHAKE_HASH)
+
+            if key_send is None:
+                raise Exception("KEY_SEND is not initialized")
+            if nonce_send is None:
+                raise Exception("NONCE_SEND is not initialized")
+            if auth_data is None:
+                raise Exception("HANDSHAKE_HASH is not initialized")
+
+            tag = crypto.enc(noise_buffer, key_send, nonce_send, auth_data)
+
         buffer[noise_payload_len : noise_payload_len + TAG_LENGTH] = tag
 
     async def _buffer_packet_data(
