@@ -32,6 +32,8 @@ from typing import TYPE_CHECKING  # pyright: ignore[reportShadowedImports]
 
 DISABLE_ANIMATION = 0
 
+DISABLE_ENCRYPTION: bool = True
+
 if __debug__:
     if EMULATOR:
         import uos  # pyright: ignore[reportMissingModuleSource]
