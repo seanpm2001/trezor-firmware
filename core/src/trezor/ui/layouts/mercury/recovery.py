@@ -71,30 +71,24 @@ async def show_remaining_shares(
             pages.append((title, words))
 
     await raise_if_not_confirmed(
-        interact(
-            RustLayout(trezorui2.show_remaining_shares(pages=pages)),
-            "show_shares",
-            ButtonRequestType.Other,
-        )
+        trezorui2.show_remaining_shares(pages=pages),
+        "show_shares",
+        ButtonRequestType.Other,
     )
 
 
 async def show_group_share_success(share_index: int, group_index: int) -> None:
     await raise_if_not_confirmed(
-        interact(
-            RustLayout(
-                trezorui2.show_group_share_success(
-                    lines=[
-                        TR.recovery__you_have_entered,
-                        TR.recovery__share_num_template.format(share_index + 1),
-                        TR.words__from,
-                        TR.recovery__group_num_template.format(group_index + 1),
-                    ],
-                )
-            ),
-            "share_success",
-            ButtonRequestType.Other,
-        )
+        trezorui2.show_group_share_success(
+            lines=[
+                TR.recovery__you_have_entered,
+                TR.recovery__share_num_template.format(share_index + 1),
+                TR.words__from,
+                TR.recovery__group_num_template.format(group_index + 1),
+            ],
+        ),
+        "share_success",
+        ButtonRequestType.Other,
     )
 
 

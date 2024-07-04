@@ -106,13 +106,11 @@ async def slip39_show_checklist(
 ) -> None:
     items = _slip_39_checklist_items(step, advanced, count, threshold)
     result = await interact(
-        RustLayout(
-            trezorui2.show_checklist(
-                title=TR.reset__title_shamir_backup,
-                button=TR.buttons__continue,
-                active=step,
-                items=items,
-            )
+        trezorui2.show_checklist(
+            title=TR.reset__title_shamir_backup,
+            button=TR.buttons__continue,
+            active=step,
+            items=items,
         ),
         "slip39_checklist",
         ButtonRequestType.ResetDevice,
@@ -301,25 +299,21 @@ async def show_intro_backup(single_share: bool, num_of_words: int | None) -> Non
         description = TR.backup__info_multi_share_backup
 
     await interact(
-        RustLayout(
-            trezorui2.show_info(
-                title=TR.backup__title_create_wallet_backup, description=description
-            )
+        trezorui2.show_info(
+            title=TR.backup__title_create_wallet_backup, description=description
         ),
-        "backup_warning",
+        "backup_intro",
         ButtonRequestType.ResetDevice,
     )
 
 
 async def show_warning_backup() -> None:
     result = await interact(
-        RustLayout(
-            trezorui2.show_warning(
-                title=TR.words__important,
-                value=TR.reset__never_make_digital_copy,
-                button="",
-                allow_cancel=False,
-            )
+        trezorui2.show_warning(
+            title=TR.words__important,
+            value=TR.reset__never_make_digital_copy,
+            button="",
+            allow_cancel=False,
         ),
         "backup_warning",
         ButtonRequestType.ResetDevice,
@@ -342,20 +336,16 @@ async def show_reset_warning(
     button: str | None = None,
     br_code: ButtonRequestType = ButtonRequestType.Warning,
 ) -> None:
-    await raise_if_not_confirmed(
-        interact(
-            RustLayout(
-                trezorui2.show_warning(
-                    title=subheader or "",
-                    description=content,
-                    value="",
-                    button="",
-                    allow_cancel=False,
-                )
-            ),
-            br_name,
-            br_code,
-        )
+    await interact(
+        trezorui2.show_warning(
+            title=subheader or "",
+            description=content,
+            value="",
+            button="",
+            allow_cancel=False,
+        ),
+        br_name,
+        br_code,
     )
 
 

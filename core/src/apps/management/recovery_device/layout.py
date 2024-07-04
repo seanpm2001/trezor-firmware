@@ -12,20 +12,18 @@ from trezor.ui.layouts.recovery import (  # noqa: F401
 from apps.common import backup_types
 
 if TYPE_CHECKING:
-    from typing import Callable
-
     from trezor.enums import BackupType
+    from trezor.ui.layouts.common import InfoFunc
 
 
 async def request_mnemonic(
     word_count: int, backup_type: BackupType | None
 ) -> str | None:
-    from trezor.ui.layouts.common import button_request
     from trezor.ui.layouts.recovery import request_word
 
     from . import word_validity
 
-    await button_request("mnemonic", code=ButtonRequestType.MnemonicInput)
+    send_button_request = True
 
     # Allowing to go back to previous words, therefore cannot use just loop over range(word_count)
     words: list[str] = [""] * word_count
@@ -40,8 +38,10 @@ async def request_mnemonic(
             i,
             word_count,
             is_slip39=backup_types.is_slip39_word_count(word_count),
+            send_button_request=send_button_request,
             prefill_word=words[i],
         )
+        send_button_request = False
 
         # User has decided to go back
         if not word:
@@ -122,7 +122,7 @@ async def homescreen_dialog(
     button_label: str,
     text: str,
     subtext: str | None = None,
-    info_func: Callable | None = None,
+    info_func: InfoFunc | None = None,
     show_info: bool = False,
 ) -> None:
     import storage.recovery as storage_recovery
