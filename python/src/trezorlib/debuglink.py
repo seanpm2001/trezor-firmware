@@ -1055,7 +1055,7 @@ class TrezorClientDebugLink(TrezorClient):
             return msg
 
     def set_input_flow(
-        self, input_flow: Generator[None, Optional[messages.ButtonRequest], None]
+        self, input_flow: Generator[None, Optional[messages.ButtonRequest], None] | None
     ) -> None:
         """Configure a sequence of input events for the current with-block.
 
@@ -1083,6 +1083,10 @@ class TrezorClientDebugLink(TrezorClient):
         """
         if not self.in_with_statement:
             raise RuntimeError("Must be called inside 'with' statement")
+        
+        if input_flow is None:
+            self.ui.input_flow = None
+            return
 
         if callable(input_flow):
             input_flow = input_flow()
