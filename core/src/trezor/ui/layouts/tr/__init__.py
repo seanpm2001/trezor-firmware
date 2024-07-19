@@ -714,28 +714,21 @@ async def confirm_value(
 
         send_button_request = True
         while True:
-            should_show_more_layout = RustLayout(
+            result = await interact(
                 trezorui2.confirm_with_info(
                     title=title,
                     items=((ui.NORMAL, value),),
                     button=verb or TR.buttons__confirm,
                     info_button=TR.buttons__info,
-                )
+                ),
+                br_name if send_button_request else None,
+                br_code,
             )
-
-            if send_button_request:
-                send_button_request = False
-                await button_request(
-                    br_name,
-                    br_code,
-                    should_show_more_layout.page_count(),
-                )
-
-            result = await should_show_more_layout
+            send_button_request = False
 
             if result is CONFIRMED:
                 return
-            if result is INFO:
+            elif result is INFO:
                 info_title, info_value = info_items_list[0]
                 await interact(
                     trezorui2.confirm_blob(
@@ -752,7 +745,8 @@ async def confirm_value(
                     raise_on_cancel=None,
                 )
                 continue
-            raise RuntimeError  # unexpected result, interact should have raised
+            else:
+                raise RuntimeError  # unexpected result, interact should have raised
 
 
 def confirm_total(
