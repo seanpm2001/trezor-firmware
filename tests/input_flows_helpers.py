@@ -189,7 +189,7 @@ class RecoveryFlow:
     def input_number_of_words(self, num_words: int) -> BRGeneratorType:
         br = yield
         assert br.code == B.MnemonicWordCount
-        assert br.name == "word_count"
+        assert br.name == "recovery_word_count"
         if self.client.model is models.T2B1:
             TR.assert_in(self.debug.read_layout().title(), "word_count__title")
         else:

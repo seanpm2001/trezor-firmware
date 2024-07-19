@@ -461,11 +461,11 @@ class InputFlowShowMultisigXPUBs(InputFlowBase):
 
         # Three xpub pages with the same testing logic
         for xpub_num in range(3):
-            expected_title = f"multisig xpub #{xpub_num + 1}\n" + (
-                "(yours)" if self.index == xpub_num else "(cosigner)"
+            expected_title = f"MULTISIG XPUB #{xpub_num + 1}\n" + (
+                "(Yours)" if self.index == xpub_num else "(Cosigner)"
             )
             layout = self.debug.swipe_left()
-            assert expected_title == layout.title().lower()
+            assert expected_title == layout.title()
             content = layout.text_content().replace(" ", "")
             assert self.xpubs[xpub_num] in content
 
@@ -498,7 +498,7 @@ class InputFlowShowMultisigXPUBs(InputFlowBase):
         # Three xpub pages with the same testing logic
         for xpub_num in range(3):
             expected_title = f"MULTISIG XPUB #{xpub_num + 1} " + (
-                "(YOURS)" if self.index == xpub_num else "(COSIGNER)"
+                "(Yours)" if self.index == xpub_num else "(Cosigner)"
             )
             layout = self.debug.press_right()
             assert expected_title in layout.title()
