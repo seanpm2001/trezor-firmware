@@ -1060,7 +1060,7 @@ def request_passphrase_on_device(max_len: int) -> Awaitable[str]:
         ButtonRequestType.PassphraseEntry,
         raise_on_cancel=ActionCancelled("Passphrase entry cancelled"),
     )
-    return result  # type: ignore ["UiResult" is incompatible with "str"]
+    return result  # type: ignore [Expression of type "Coroutine[Any, Any, str | UiResult]" is incompatible with return type "Awaitable[str]"]
 
 
 def request_pin_on_device(
@@ -1089,7 +1089,7 @@ def request_pin_on_device(
         ButtonRequestType.PinEntry,
         raise_on_cancel=PinCancelled,
     )
-    return result  # type: ignore ["UiResult" is incompatible with "str"]
+    return result  # type: ignore [Expression of type "Coroutine[Any, Any, str | UiResult]" is incompatible with return type "Awaitable[str]"]
 
 
 async def confirm_reenter_pin(is_wipe_code: bool = False) -> None:
