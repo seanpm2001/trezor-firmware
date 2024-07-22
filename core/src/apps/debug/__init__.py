@@ -35,7 +35,7 @@ if __debug__:
 
     layout_change_chan = loop.mailbox()
 
-    DEBUG_CONTEXT: context.Context | None = None
+    DEBUG_CONTEXT: context.CodecContext | None = None
 
     REFRESH_INDEX = 0
 
@@ -444,4 +444,4 @@ if __debug__:
     def boot() -> None:
         import usb
 
-        loop.schedule(handle_session(usb.iface_debug))#
+        loop.schedule(handle_session(usb.iface_debug))  #

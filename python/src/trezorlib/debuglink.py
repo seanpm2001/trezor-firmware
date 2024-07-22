@@ -447,10 +447,10 @@ class DebugLink:
         self.screen_text_file = file_path
 
     def open(self) -> None:
-        self.transport.begin_session()
+        self.transport.deprecated_begin_session()
 
     def close(self) -> None:
-        self.transport.end_session()
+        self.transport.deprecated_end_session()
 
     def _write(self, msg: protobuf.MessageType) -> None:
         if self.waiting_for_layout_change:
