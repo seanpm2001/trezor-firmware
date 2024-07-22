@@ -16,12 +16,13 @@
 
 import logging
 import struct
-from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional
+from typing import TYPE_CHECKING, Any, Dict, Iterable, Optional, Sequence, Tuple
 
 import requests
 
 from ..log import DUMP_PACKETS
 from . import DeviceIsBusy, MessagePayload, Transport, TransportException
+from .protocol import PROTOCOL_VERSION_1, PROTOCOL_VERSION_2
 
 if TYPE_CHECKING:
     from ..models import TrezorModel
@@ -32,6 +33,7 @@ TREZORD_HOST = "http://127.0.0.1:21325"
 TREZORD_ORIGIN_HEADER = {"Origin": "https://python.trezor.io"}
 
 TREZORD_VERSION_MODERN = (2, 0, 25)
+TREZORD_VERSION_THP_SUPPORT = (2, 0, 31)  # TODO add correct value
 
 CONNECTION = requests.Session()
 CONNECTION.headers.update(TREZORD_ORIGIN_HEADER)
@@ -53,10 +55,39 @@ def call_bridge(path: str, data: Optional[str] = None) -> requests.Response:
     return r
 
 
-def is_legacy_bridge() -> bool:
+def get_bridge_version() -> Tuple[int, ...]:
     config = call_bridge("configure").json()
-    version_tuple = tuple(map(int, config["version"].split(".")))
-    return version_tuple < TREZORD_VERSION_MODERN
+    return tuple(map(int, config["version"].split(".")))
+
+
+def is_legacy_bridge() -> bool:
+    return get_bridge_version() < TREZORD_VERSION_MODERN
+
+
+def supports_protocolV2() -> bool:
+    return get_bridge_version() >= TREZORD_VERSION_THP_SUPPORT
+
+
+def detect_protocol_version(transport: "BridgeTransport") -> int:
+    from .. import mapping, messages
+    from ..messages import FailureType
+
+    protocol_version = PROTOCOL_VERSION_1
+    request_type, request_data = mapping.DEFAULT_MAPPING.encode(messages.Initialize())
+    transport.deprecated_begin_session()
+    transport.write(request_type, request_data)
+    response_type, response_data = transport.read()
+    response = mapping.DEFAULT_MAPPING.decode(response_type, response_data)
+    transport.deprecated_begin_session()
+    if isinstance(response, messages.Failure):
+        if (
+            response.code == FailureType.UnexpectedMessage
+            and response.message == "Invalid protocol"
+        ):
+            LOG.debug("Protocol V2 detected")
+            protocol_version = PROTOCOL_VERSION_2
+
+    return protocol_version
 
 
 class BridgeHandle:
@@ -101,6 +132,23 @@ class BridgeHandleLegacy(BridgeHandle):
             return bytes.fromhex(data.text)
         finally:
             self.request = None
+
+
+def _is_transport_valid(transport: "BridgeTransport") -> bool:
+    is_valid = (
+        supports_protocolV2()
+        or detect_protocol_version(transport) == PROTOCOL_VERSION_1
+    )
+    if not is_valid:
+        LOG.warning("Detected unsupported Bridge transport!")
+    return is_valid
+
+
+def filter_invalid_bridge_transports(
+    transports: Iterable["BridgeTransport"],
+) -> Sequence["BridgeTransport"]:
+    """Filters out invalid bridge transports. Keeps only valid ones."""
+    return [t for t in transports if _is_transport_valid(t)]
 
 
 class BridgeTransport(Transport):
@@ -148,13 +196,16 @@ class BridgeTransport(Transport):
     ) -> Iterable["BridgeTransport"]:
         try:
             legacy = is_legacy_bridge()
-            return [
-                BridgeTransport(dev, legacy) for dev in call_bridge("enumerate").json()
-            ]
+            return filter_invalid_bridge_transports(
+                [
+                    BridgeTransport(dev, legacy)
+                    for dev in call_bridge("enumerate").json()
+                ]
+            )
         except Exception:
             return []
 
-    def begin_session(self) -> None:
+    def deprecated_begin_session(self) -> None:
         try:
             data = self._call("acquire/" + self.device["path"])
         except BridgeException as e:
@@ -163,7 +214,7 @@ class BridgeTransport(Transport):
             raise
         self.session = data.json()["session"]
 
-    def end_session(self) -> None:
+    def deprecated_end_session(self) -> None:
         if not self.session:
             return
         self._call("release")

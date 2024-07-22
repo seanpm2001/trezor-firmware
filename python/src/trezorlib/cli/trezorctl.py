@@ -388,7 +388,7 @@ def wait_for_emulator(obj: TrezorConnection, timeout: float) -> None:
         path = path.replace("udp:", "")
 
     start = time.monotonic()
-    UdpTransport(path).wait_until_ready(timeout)
+    UdpTransport(path, skip_protocol_detection=True).wait_until_ready(timeout)
     end = time.monotonic()
 
     LOG.info(f"Waited for {end - start:.3f} seconds")

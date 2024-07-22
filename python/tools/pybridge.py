@@ -116,11 +116,11 @@ class Transport:
             self.session.release()
 
         self.session = Session(self)
-        self.transport.begin_session()
+        self.transport.deprecated_begin_session()
         return self.session.id
 
     def release(self) -> None:
-        self.transport.end_session()
+        self.transport.deprecated_end_session()
         self.session = None
 
     def session_id(self) -> str | None:
