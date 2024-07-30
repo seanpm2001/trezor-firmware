@@ -3,6 +3,7 @@ use core::{
     convert::{TryFrom, TryInto},
     ops::{Deref, DerefMut},
 };
+#[cfg(feature = "touch")]
 use num_traits::{FromPrimitive, ToPrimitive};
 
 #[cfg(feature = "button")]
