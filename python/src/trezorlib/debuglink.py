@@ -1288,18 +1288,21 @@ class TrezorClientDebugLink(TrezorClient):
         # prompt, which is in TINY mode and does not respond to `Ping`.
         cancel_msg = mapping.DEFAULT_MAPPING.encode(messages.Cancel())
         self.transport.begin_session()
-        self.transport.write(*cancel_msg)
+        try:
+            self.transport.write(*cancel_msg)
 
-        message = "SYNC" + secrets.token_hex(8)
-        ping_msg = mapping.DEFAULT_MAPPING.encode(messages.Ping(message=message))
-        self.transport.write(*ping_msg)
-        resp = None
-        while resp != messages.Success(message=message):
-            msg_id, msg_bytes = self.transport.read()
-            try:
-                resp = mapping.DEFAULT_MAPPING.decode(msg_id, msg_bytes)
-            except Exception:
-                pass
+            message = "SYNC" + secrets.token_hex(8)
+            ping_msg = mapping.DEFAULT_MAPPING.encode(messages.Ping(message=message))
+            self.transport.write(*ping_msg)
+            resp = None
+            while resp != messages.Success(message=message):
+                msg_id, msg_bytes = self.transport.read()
+                try:
+                    resp = mapping.DEFAULT_MAPPING.decode(msg_id, msg_bytes)
+                except Exception:
+                    pass
+        finally:
+            self.transport.end_session()
 
     def mnemonic_callback(self, _) -> str:
         word, pos = self.debug.read_recovery_word()
