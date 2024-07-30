@@ -356,7 +356,7 @@ def show_reset_warning(
         trezorui2.show_warning(
             title=subheader or "",
             description=content,
-            button=button.upper(),
+            button=button,
             allow_cancel=False,
         ),
         br_name,

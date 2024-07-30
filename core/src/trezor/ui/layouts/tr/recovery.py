@@ -123,7 +123,7 @@ async def continue_recovery(
     homepage = trezorui2.confirm_recovery(
         title="",
         description=text,
-        button=button_label.upper(),
+        button=button_label,
         recovery_type=recovery_type,
         info_button=False,
         show_instructions=show_instructions,

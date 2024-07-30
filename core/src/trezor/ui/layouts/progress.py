@@ -29,13 +29,6 @@ def progress(
     if description is None:
         description = TR.progress__please_wait  # def_arg
 
-    if title is not None:
-        title = title.upper()
-    elif utils.MODEL != "T2B1":
-        # on TT, uppercase the description which ends up on top of the screen
-        # when no title is set
-        description = description.upper()
-
     return ui.ProgressLayout(
         layout=trezorui2.show_progress(
             description=description,

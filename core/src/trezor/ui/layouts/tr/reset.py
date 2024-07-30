@@ -85,7 +85,7 @@ async def select_word(
     while len(words) < 3:
         words.append(words[-1])
 
-    word_ordinal = format_ordinal(checked_index + 1).upper()
+    word_ordinal = format_ordinal(checked_index + 1)
     result = await interact(
         trezorui2.select_word(
             title="",

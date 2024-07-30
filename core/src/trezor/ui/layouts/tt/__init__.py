@@ -376,8 +376,8 @@ async def confirm_output(
 ) -> None:
     if title is not None:
         # TODO: handle translation:
-        if title.upper().startswith("CONFIRM "):
-            title = title[len("CONFIRM ") :]
+        # if title.upper().startswith("CONFIRM "):
+        #     title = title[len("CONFIRM ") :]
         amount_title = title
         recipient_title = title
     elif output_index is not None:

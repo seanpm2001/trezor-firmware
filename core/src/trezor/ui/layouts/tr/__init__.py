@@ -89,7 +89,7 @@ def confirm_action(
             title=title,
             action=action,
             description=description,
-                    subtitle=subtitle,
+            subtitle=subtitle,
             verb=verb,
             verb_cancel=verb_cancel,
             hold=hold,
@@ -162,7 +162,7 @@ async def prompt_backup() -> bool:
 
     result = await interact(
         trezorui2.confirm_action(
-            title=TR.backup__title_skip.upper(),
+            title=TR.backup__title_skip,
             action=None,
             description=TR.backup__want_to_skip,
             verb=TR.buttons__back_up,
@@ -283,7 +283,7 @@ async def show_address(
         # User pressed left cancel button, show mismatch dialogue.
         else:
             result = await interact(
-                trezorui2.show_mismatch(title=mismatch_title.upper()),
+                trezorui2.show_mismatch(title=mismatch_title),
                 None,
                 raise_on_cancel=None,
             )
@@ -732,7 +732,7 @@ async def confirm_value(
                 info_title, info_value = info_items_list[0]
                 await interact(
                     trezorui2.confirm_blob(
-                        title=info_title.upper(),
+                        title=info_title,
                         data=info_value,
                         description=description,
                         extra=None,
@@ -1115,7 +1115,7 @@ async def request_pin_on_device(
 
     result = await interact(
         trezorui2.request_pin(
-            prompt=prompt.upper(),
+            prompt=prompt,
             subprompt=subprompt,
             allow_cancel=allow_cancel,
             wrong_pin=wrong_pin,
