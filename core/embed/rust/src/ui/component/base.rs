@@ -390,6 +390,11 @@ pub struct TimerToken(u32);
 impl TimerToken {
     /// Value of an invalid (or missing) token.
     pub const INVALID: TimerToken = TimerToken(0);
+    /// Reserved value of the animation frame timer.
+    pub const ANIM_FRAME: TimerToken = TimerToken(1);
+
+    /// Starting token value
+    const STARTING_TOKEN: u32 = 2;
 
     pub const fn from_raw(raw: u32) -> Self {
         Self(raw)
@@ -398,15 +403,38 @@ impl TimerToken {
     pub const fn into_raw(self) -> u32 {
         self.0
     }
+
+    pub fn next_token() -> Self {
+        static mut NEXT_TOKEN: TimerToken = Self(TimerToken::STARTING_TOKEN);
+
+        // SAFETY: we are in single-threaded environment
+        let token = unsafe { NEXT_TOKEN };
+        let next = {
+            if token.0 == u32::MAX {
+                TimerToken(Self::STARTING_TOKEN)
+            } else {
+                TimerToken(token.0 + 1)
+            }
+        };
+        // SAFETY: we are in single-threaded environment
+        unsafe { NEXT_TOKEN = next };
+        token
+    }
 }
 
 #[cfg_attr(feature = "debug", derive(ufmt::derive::uDebug))]
-pub struct Timer(Option<TimerToken>);
+pub struct Timer {
+    token: TimerToken,
+    running: bool,
+}
 
 impl Timer {
     /// Create a new timer.
     pub const fn new() -> Self {
-        Self(None)
+        Self {
+            token: TimerToken::INVALID,
+            running: false,
+        }
     }
 
     /// Start this timer for a given duration.
@@ -414,8 +442,10 @@ impl Timer {
     /// Requests the internal timer token to be scheduled to `duration` from
     /// now. If the timer was already running, its token is rescheduled.
     pub fn start(&mut self, ctx: &mut EventCtx, duration: Duration) {
-        let token = self.0.get_or_insert_with(|| ctx.next_timer_token());
-        ctx.register_timer(*token, duration);
+        if self.token == TimerToken::INVALID {
+            self.token = TimerToken::next_token();
+        }
+        ctx.register_timer(self.token, duration);
     }
 
     /// Stop the timer.
@@ -424,7 +454,7 @@ impl Timer {
     /// means that _some_ scheduled task might keep running, but this timer
     /// will not trigger when that task expires.
     pub fn stop(&mut self) {
-        self.0 = None;
+        self.running = false;
     }
 
     /// Check if the timer has expired.
@@ -432,13 +462,12 @@ impl Timer {
     /// Returns `true` if the given event is a timer event and the token matches
     /// the internal token of this timer.
     pub fn is_expired(&self, event: Event) -> bool {
-        matches!(event, Event::Timer(token) if self.0 == Some(token))
+        matches!(event, Event::Timer(token) if self.running && self.token == token)
     }
 }
 
 pub struct EventCtx {
     timers: Vec<(TimerToken, Duration), { Self::MAX_TIMERS }>,
-    next_token: u32,
     place_requested: bool,
     paint_requested: bool,
     anim_frame_scheduled: bool,
@@ -457,17 +486,12 @@ impl EventCtx {
     /// How long into the future we should schedule the animation frame timer.
     const ANIM_FRAME_DURATION: Duration = Duration::from_millis(1);
 
-    // 0 == `TimerToken::INVALID`,
-    // 1 == `Self::ANIM_FRAME_TIMER`.
-    const STARTING_TIMER_TOKEN: u32 = 2;
-
     /// Maximum amount of timers requested in one event tick.
     const MAX_TIMERS: usize = 4;
 
     pub fn new() -> Self {
         Self {
             timers: Vec::new(),
-            next_token: Self::STARTING_TIMER_TOKEN,
             place_requested: false,
             paint_requested: false,
             anim_frame_scheduled: false,
@@ -572,10 +596,7 @@ impl EventCtx {
         #[cfg(feature = "ui_debug")]
         assert!(self.button_request.is_none());
         // replace self with a new instance, keeping only the fields we care about
-        *self = Self {
-            next_token: self.next_token,
-            ..Self::new()
-        }
+        *self = Self::new();
     }
 
     fn register_timer(&mut self, token: TimerToken, duration: Duration) {
@@ -585,18 +606,6 @@ impl EventCtx {
             #[cfg(feature = "ui_debug")]
             fatal_error!("Timer queue is full");
         }
-    }
-
-    fn next_timer_token(&mut self) -> TimerToken {
-        let token = TimerToken(self.next_token);
-        // We start again from the beginning if the token counter overflows. This would
-        // probably happen in case of a bug and a long-running session. Let's risk the
-        // collisions in such case.
-        self.next_token = self
-            .next_token
-            .checked_add(1)
-            .unwrap_or(Self::STARTING_TIMER_TOKEN);
-        token
     }
 
     pub fn set_transition_out(&mut self, attach_type: AttachType) {
