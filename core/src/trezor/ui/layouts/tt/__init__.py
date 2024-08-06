@@ -5,10 +5,10 @@ from trezor import TR, ui, utils
 from trezor.enums import ButtonRequestType
 from trezor.wire import ActionCancelled
 
-from ..common import interact, raise_if_not_confirmed
+from ..common import interact, raise_if_not_confirmed, with_info, draw_simple
 
 if TYPE_CHECKING:
-    from typing import Any, Awaitable, Iterable, NoReturn, Sequence
+    from typing import Awaitable, Iterable, NoReturn, Sequence
 
     from ..common import ExceptionType, PropertyType
 
@@ -18,24 +18,6 @@ BR_CODE_OTHER = ButtonRequestType.Other  # global_import_cache
 CONFIRMED = trezorui2.CONFIRMED
 CANCELLED = trezorui2.CANCELLED
 INFO = trezorui2.INFO
-
-
-if __debug__:
-    from trezor.utils import DISABLE_ANIMATION
-
-    trezorui2.disable_animation(bool(DISABLE_ANIMATION))
-
-
-def draw_simple(layout: trezorui2.LayoutObj[Any]) -> None:
-    # Simple drawing not supported for layouts that set timers.
-    def dummy_set_timer(token: int, duration: int) -> None:
-        raise RuntimeError
-
-    layout.attach_timer_fn(dummy_set_timer, None)
-    ui.backlight_fade(ui.BacklightLevels.DIM)
-    layout.paint()
-    ui.refresh()
-    ui.backlight_fade(ui.BacklightLevels.NORMAL)
 
 
 def confirm_action(
@@ -925,30 +907,6 @@ async def confirm_modify_output(
             continue
         else:
             return
-
-
-async def with_info(
-    main_layout: ui.LayoutObj[ui.UiResult],
-    info_layout: ui.LayoutObj[Any],
-    br_name: str,
-    br_code: ButtonRequestType,
-) -> None:
-    send_button_request = True
-
-    while True:
-        result = await interact(
-            main_layout, br_name if send_button_request else None, br_code
-        )
-        # raises on cancel
-        send_button_request = False
-
-        if result is CONFIRMED:
-            return
-        elif result is INFO:
-            await interact(info_layout, None, raise_on_cancel=None)
-            continue
-        else:
-            raise RuntimeError  # unexpected result
 
 
 def confirm_modify_fee(

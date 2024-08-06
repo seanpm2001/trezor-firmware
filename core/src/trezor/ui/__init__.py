@@ -1,22 +1,29 @@
 # pylint: disable=wrong-import-position
 import utime
+import trezorui2
 from micropython import const
 from trezorui import Display
 from typing import TYPE_CHECKING
 
-from trezor import io, loop, utils, workflow
-from trezorui2 import AttachType, BacklightLevels
+from trezor import io, log, loop, utils, workflow
+from trezor.messages import ButtonAck, ButtonRequest
+from trezor.wire import context
+from trezorui2 import BacklightLevels
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Generator, Generic, Iterator, TypeVar
 
-    from trezorui2 import LayoutObj, UiResult  # noqa: F401
+    from trezorui2 import AttachType, LayoutObj, UiResult  # noqa: F401
 
     T = TypeVar("T", covariant=True)
 
 else:
     T = 0
     Generic = {T: object}
+
+
+if __debug__:
+    trezorui2.disable_animation(bool(utils.DISABLE_ANIMATION))
 
 
 # all rendering is done through a singleton of `Display`
@@ -133,8 +140,6 @@ class Layout(Generic[T]):
     [docs/core/misc/layout-lifecycle.md] for details.
     """
 
-    BACKLIGHT_LEVEL = BacklightLevels.NORMAL
-
     if __debug__:
 
         @staticmethod
@@ -156,7 +161,10 @@ class Layout(Generic[T]):
         self.tasks: set[loop.Task] = set()
         self.timers: dict[int, loop.Task] = {}
         self.result_box = loop.mailbox()
+        self.button_request_box = loop.mailbox()
         self.transition_out: AttachType | None = None
+        self.backlight_level = BacklightLevels.NORMAL
+        self.context: context.Context | None = None
 
     def is_ready(self) -> bool:
         """True if the layout is in READY state."""
@@ -197,14 +205,17 @@ class Layout(Generic[T]):
         assert CURRENT_LAYOUT is None
         set_current_layout(self)
 
+        # save context
+        self.context = context.CURRENT_CONTEXT
+
         # attach a timer callback and paint self
-        self.layout.attach_timer_fn(self._set_timer, transition_in)
+        self._event(self.layout.attach_timer_fn, self._set_timer, transition_in)
+        # self.layout.attach_timer_fn(self._set_timer, transition_in)
         self._first_paint()
 
         # spawn all tasks
         for task in self.create_tasks():
-            self.tasks.add(task)
-            loop.schedule(task)
+            self._start_task(task)
 
     def stop(self, _kill_taker: bool = True) -> None:
         """Stop the layout, moving out of RUNNING state and unsetting self as the
@@ -247,6 +258,8 @@ class Layout(Generic[T]):
             self.start()
         # else we are (a) still running or (b) already stopped
         try:
+            if self.context is not None and self.result_box.is_empty():
+                self._start_task(self._handle_usb_iface())
             return await self.result_box
         finally:
             self.stop()
@@ -256,12 +269,37 @@ class Layout(Generic[T]):
         msg = self.layout.request_complete_repaint()
         assert msg is None
 
+    def _event(self, event_call: Callable[..., object], *args: Any) -> None:
+        """Process an event coming out of the Rust layout. Set is as a result and shut
+        down the layout if appropriate, do nothing otherwise."""
+        msg = event_call(*args)
+        self._emit_message(msg)
+        self._button_request()
+        if self.layout.paint():
+            refresh()
+
+    def _button_request(self) -> None:
+        """Process a button request coming out of the Rust layout."""
+        if __debug__ and not self.button_request_box.is_empty():
+            raise RuntimeError  # button request already pending
+
+        if self.context is None:
+            return
+
+        res = self.layout.button_request()
+        if res is None:
+            return
+
+        # in production, we don't want this to fail, hence replace=True
+        self.button_request_box.put(res, replace=True)
+
     def _paint(self) -> None:
         """Paint the layout and ensure that homescreen cache is properly invalidated."""
         import storage.cache as storage_cache
 
         painted = self.layout.paint()
-        refresh()
+        if painted:
+            refresh()
         if storage_cache.homescreen_shown is not None and painted:
             storage_cache.homescreen_shown = None
 
@@ -276,7 +314,7 @@ class Layout(Generic[T]):
         self._paint()
 
         # Turn the brightness on.
-        backlight_fade(self.BACKLIGHT_LEVEL)
+        backlight_fade(self.backlight_level)
 
     def _set_timer(self, token: int, duration: int) -> None:
         """Timer callback for Rust layouts."""
@@ -305,6 +343,13 @@ class Layout(Generic[T]):
         down the layout if appropriate, do nothing otherwise."""
         if msg is None:
             return
+        
+        # XXX DOES NOT WORK YET
+        if isinstance(msg, ButtonRequest):
+            # FIXME: special return value for "layout has changed"
+            # and the buttonrequest is an attribute on that value
+            from apps.debug import notify_layout_change
+            notify_layout_change(self)
 
         # when emitting a message, there should not be another one already waiting
         assert self.result_box.is_empty()
@@ -336,14 +381,60 @@ class Layout(Generic[T]):
                 # Using `yield` instead of `await` to avoid allocations.
                 event = yield touch
                 workflow.idle_timer.touch()
-                msg = event_call(*event)
-                self._emit_message(msg)
-                self.layout.paint()
-                refresh()
+                self._event(event_call, *event)
         except Shutdown:
             return
         finally:
             touch.close()
+
+    async def _handle_usb_iface(self) -> None:
+        if self.context is None:
+            return
+        read_and_raise = self.context.read(())
+        while True:
+            try:
+                br_code, br_name = await loop.race(
+                    read_and_raise, self.button_request_box
+                )
+
+                await self.context.call(
+                    ButtonRequest(
+                        code=br_code, pages=self.layout.page_count(), name=br_name
+                    ),
+                    ButtonAck,
+                )
+            except Exception:
+                print(self._trace(self.layout))
+                raise
+
+    def _task_finalizer(self, task: loop.Task, value: Any) -> None:
+        if value is None:
+            # all is good
+            if __debug__:
+                log.debug(__name__, "UI task exited by itself: %s", task)
+            return
+
+        if isinstance(value, GeneratorExit):
+            if __debug__:
+                log.debug(__name__, "UI task was stopped: %s", task)
+            return
+
+        if isinstance(value, BaseException):
+            if __debug__ and value.__class__.__name__ != "UnexpectedMessage":
+                log.error(
+                    __name__, "UI task died: %s (%s)", task, value.__class__.__name__
+                )
+            try:
+                self._emit_message(value)
+            except Shutdown:
+                pass
+
+        if __debug__:
+            log.error(__name__, "UI task returned non-None: %s (%s)", task, value)
+
+    def _start_task(self, task: loop.Task) -> None:
+        self.tasks.add(task)
+        loop.schedule(task, finalizer=self._task_finalizer)
 
     def __del__(self) -> None:
         self.layout.__del__()
@@ -379,8 +470,8 @@ class ProgressLayout:
 
         msg = self.layout.progress_event(value, description or "")
         assert msg is None
-        self.layout.paint()
-        refresh()
+        if self.layout.paint():
+            refresh()
 
     def start(self) -> None:
         global CURRENT_LAYOUT
@@ -392,9 +483,10 @@ class ProgressLayout:
         CURRENT_LAYOUT = self
 
         self.layout.request_complete_repaint()
-        self.layout.paint()
+        painted = self.layout.paint()
         backlight_fade(BacklightLevels.NONE)
-        refresh()
+        if painted:
+            refresh()
 
     def stop(self) -> None:
         global CURRENT_LAYOUT

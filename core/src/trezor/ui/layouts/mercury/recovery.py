@@ -1,42 +1,64 @@
 from typing import Callable, Iterable
 
 import trezorui2
-from trezor import TR
+from trezor import TR, ui
 from trezor.enums import ButtonRequestType, RecoveryType
 
 from ..common import interact
-from . import RustLayout, raise_if_not_confirmed
+from . import raise_if_not_confirmed
 
 CONFIRMED = trezorui2.CONFIRMED  # global_import_cache
 CANCELLED = trezorui2.CANCELLED  # global_import_cache
 INFO = trezorui2.INFO  # global_import_cache
 
 
+async def _is_confirmed_info(
+    dialog: ui.LayoutObj[ui.UiResult],
+    info_func: Callable,
+    br_name: str,
+    br_code: ButtonRequestType,
+) -> bool:
+    send_button_request = True
+    while True:
+        result = await interact(
+            dialog, br_name if send_button_request else None, br_code
+        )
+
+        if result is trezorui2.INFO:
+            await info_func()
+        else:
+            return result is CONFIRMED
+
+
 async def request_word_count(recovery_type: RecoveryType) -> int:
-    selector = RustLayout(trezorui2.select_word_count(recovery_type=recovery_type))
+    selector = trezorui2.select_word_count(recovery_type=recovery_type)
     count = await interact(selector, "word_count", ButtonRequestType.MnemonicWordCount)
     return int(count)
 
 
 async def request_word(
-    word_index: int, word_count: int, is_slip39: bool, prefill_word: str = ""
+    word_index: int,
+    word_count: int,
+    is_slip39: bool,
+    send_button_request: bool,
+    prefill_word: str = "",
 ) -> str:
     prompt = TR.recovery__word_x_of_y_template.format(word_index + 1, word_count)
     can_go_back = word_index > 0
     if is_slip39:
-        keyboard = RustLayout(
-            trezorui2.request_slip39(
-                prompt=prompt, prefill_word=prefill_word, can_go_back=can_go_back
-            )
+        keyboard = trezorui2.request_slip39(
+            prompt=prompt, prefill_word=prefill_word, can_go_back=can_go_back
         )
     else:
-        keyboard = RustLayout(
-            trezorui2.request_bip39(
-                prompt=prompt, prefill_word=prefill_word, can_go_back=can_go_back
-            )
+        keyboard = trezorui2.request_bip39(
+            prompt=prompt, prefill_word=prefill_word, can_go_back=can_go_back
         )
 
-    word: str = await keyboard
+    word: str = await interact(
+        keyboard,
+        "mnemonic" if send_button_request else None,
+        ButtonRequestType.MnemonicInput,
+    )
     return word
 
 
@@ -100,23 +122,29 @@ async def continue_recovery(
     recovery_type: RecoveryType,
     show_info: bool = False,
 ) -> bool:
-    # TODO: info_func should be changed to return data to be shown (and not show
-    # them) so that individual models can implement showing logic on their own.
-    # T3T1 should move the data to `flow_continue_recovery` and hide them
-    # in the context menu
+    if show_info:
+        # Show this just one-time
+        description = TR.recovery__enter_each_word
+    else:
+        description = subtext or ""
 
-    # NOTE: show_info can be understood as first screen before any shares
-    # NOTE: button request sent from the flow
-    homepage = RustLayout(
-        trezorui2.flow_continue_recovery(
-            first_screen=show_info,
-            recovery_type=recovery_type,
-            text=text,
-            subtext=subtext,
-        )
+    homepage = trezorui2.confirm_recovery(
+        title=text,
+        description=description,
+        button=button_label,
+        info_button=info_func is not None,
+        recovery_type=recovery_type,
     )
-    result = await homepage
-    return result is CONFIRMED
+
+    if info_func is not None:
+        return await _is_confirmed_info(
+            homepage, info_func, "recovery", ButtonRequestType.RecoveryHomepage
+        )
+    else:
+        result = await interact(
+            homepage, "recovery", ButtonRequestType.RecoveryHomepage
+        )
+        return result is CONFIRMED
 
 
 async def show_recovery_warning(
@@ -128,16 +156,12 @@ async def show_recovery_warning(
 ) -> None:
     button = button or TR.buttons__try_again  # def_arg
     await raise_if_not_confirmed(
-        interact(
-            RustLayout(
-                trezorui2.show_warning(
-                    title=content or TR.words__warning,
-                    value=subheader or "",
-                    button=button,
-                    description="",
-                )
-            ),
-            br_name,
-            br_code,
-        )
+        trezorui2.show_warning(
+            title=content or TR.words__warning,
+            value=subheader or "",
+            button=button,
+            description="",
+        ),
+        br_name,
+        br_code,
     )

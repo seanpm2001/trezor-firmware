@@ -28,11 +28,11 @@ async def confirm_fido(
 
         msg = confirm.touch_event(io.TOUCH_START, 220, 220)
         assert msg is None
-        confirm.paint()
-        ui.refresh()
+        if confirm.paint():
+            ui.refresh()
         msg = confirm.touch_event(io.TOUCH_END, 220, 220)
-        confirm.paint()
-        ui.refresh()
+        if confirm.paint():
+            ui.refresh()
         assert isinstance(msg, int)
         return msg
 

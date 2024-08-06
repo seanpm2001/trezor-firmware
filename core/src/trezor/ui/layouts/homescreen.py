@@ -15,10 +15,11 @@ class HomescreenBase(ui.Layout):
 
     def __init__(self, layout: Any) -> None:
         super().__init__(layout=layout)
+        self.context = None
 
     def _paint(self) -> None:
-        self.layout.paint()
-        ui.refresh()
+        if self.layout.paint():
+            ui.refresh()
 
     def _first_paint(self) -> None:
         if storage_cache.homescreen_shown is not self.RENDER_INDICATOR:
@@ -40,7 +41,7 @@ class Homescreen(HomescreenBase):
     ) -> None:
         level = 1
         if notification is not None:
-            notification = notification.rstrip("!")
+            notification = notification.rstrip("!")  # TODO handle TS5 that doesn't have it
             if notification == TR.homescreen__title_coinjoin_authorized:
                 level = 3
             elif notification == TR.homescreen__title_experimental_mode:
@@ -65,9 +66,7 @@ class Homescreen(HomescreenBase):
         usbcheck = loop.wait(io.USB_CHECK)
         while True:
             is_connected = await usbcheck
-            self.layout.usb_event(is_connected)
-            self.layout.paint()
-            ui.refresh()
+            self._event(self.layout.usb_event, is_connected)
 
     def create_tasks(self) -> Iterator[loop.Task]:
         yield from super().create_tasks()
@@ -76,7 +75,6 @@ class Homescreen(HomescreenBase):
 
 class Lockscreen(HomescreenBase):
     RENDER_INDICATOR = storage_cache.LOCKSCREEN_ON
-    BACKLIGHT_LEVEL = ui.BacklightLevels.LOW
 
     def __init__(
         self,
@@ -85,8 +83,9 @@ class Lockscreen(HomescreenBase):
         coinjoin_authorized: bool = False,
     ) -> None:
         self.bootscreen = bootscreen
+        self.backlight_level = ui.BacklightLevels.LOW
         if bootscreen:
-            self.BACKLIGHT_LEVEL = ui.BacklightLevels.NORMAL
+            self.backlight_level = ui.BacklightLevels.NORMAL
 
         skip = (
             not bootscreen and storage_cache.homescreen_shown is self.RENDER_INDICATOR

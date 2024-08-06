@@ -58,6 +58,9 @@ if __debug__:
     def wait_until_layout_is_running(tries: int | None = _DEADLOCK_WAIT_TRIES) -> Awaitable[None]:  # type: ignore [awaitable-is-generator]
         counter = 0
         while ui.CURRENT_LAYOUT is None:
+            # TODO modify this so that we can detect a Rust layout in transition:
+            # ui.CURRENT_LAYOUT is not None
+            # but something like layout.is_rust_ready_for_events() is False
             counter += 1
             if tries is not None and counter > tries:
                 raise wire.FirmwareError(
@@ -104,9 +107,9 @@ if __debug__:
 
     async def _layout_click(x: int, y: int, hold_ms: int = 0) -> None:
         assert isinstance(ui.CURRENT_LAYOUT, ui.Layout)
-        msg = ui.CURRENT_LAYOUT.layout.touch_event(io.TOUCH_START, x, y)
-        ui.CURRENT_LAYOUT._emit_message(msg)
-        ui.CURRENT_LAYOUT._paint()
+        ui.CURRENT_LAYOUT._event(
+            ui.CURRENT_LAYOUT.layout.touch_event, io.TOUCH_START, x, y
+        )
 
         if hold_ms:
             await loop.sleep(hold_ms)
@@ -114,9 +117,9 @@ if __debug__:
 
         if not isinstance(ui.CURRENT_LAYOUT, ui.Layout):
             return
-        msg = ui.CURRENT_LAYOUT.layout.touch_event(io.TOUCH_END, x, y)
-        ui.CURRENT_LAYOUT._emit_message(msg)
-        ui.CURRENT_LAYOUT._paint()
+        ui.CURRENT_LAYOUT._event(
+            ui.CURRENT_LAYOUT.layout.touch_event, io.TOUCH_END, x, y
+        )
 
     async def _layout_press_button(
         debug_btn: DebugPhysicalButton, hold_ms: int = 0
@@ -135,9 +138,9 @@ if __debug__:
 
         assert isinstance(ui.CURRENT_LAYOUT, ui.Layout)
         for btn in buttons:
-            msg = ui.CURRENT_LAYOUT.layout.button_event(io.BUTTON_PRESSED, btn)
-            ui.CURRENT_LAYOUT._emit_message(msg)
-            ui.CURRENT_LAYOUT._paint()
+            ui.CURRENT_LAYOUT._event(
+                ui.CURRENT_LAYOUT.layout.button_event, io.BUTTON_PRESSED, btn
+            )
 
         if hold_ms:
             await loop.sleep(hold_ms)
@@ -146,9 +149,9 @@ if __debug__:
         if not isinstance(ui.CURRENT_LAYOUT, ui.Layout):
             return
         for btn in buttons:
-            msg = ui.CURRENT_LAYOUT.layout.button_event(io.BUTTON_RELEASED, btn)
-            ui.CURRENT_LAYOUT._emit_message(msg)
-            ui.CURRENT_LAYOUT._paint()
+            ui.CURRENT_LAYOUT._event(
+                ui.CURRENT_LAYOUT.layout.button_event, io.BUTTON_RELEASED, btn
+            )
 
     if utils.USE_TOUCH:
 
@@ -169,9 +172,9 @@ if __debug__:
                 (io.TOUCH_MOVE, orig_x + 1 * off_x, orig_y + 1 * off_y),
                 (io.TOUCH_END, orig_x + 2 * off_x, orig_y + 2 * off_y),
             ):
-                msg = ui.CURRENT_LAYOUT.layout.touch_event(event, x, y)
-                ui.CURRENT_LAYOUT._emit_message(msg)
-                ui.CURRENT_LAYOUT._paint()
+                ui.CURRENT_LAYOUT._event(
+                    ui.CURRENT_LAYOUT.layout.touch_event, event, x, y
+                )
 
     elif utils.USE_BUTTON:
 
@@ -212,6 +215,10 @@ if __debug__:
 
         x = msg.x  # local_cache_attribute
         y = msg.y  # local_cache_attribute
+
+        # TODO
+        # if ui.CURRENT_LAYOUT is None:
+        #    await layout_change_chan
 
         await wait_until_layout_is_running()
         assert isinstance(ui.CURRENT_LAYOUT, ui.Layout)
@@ -278,6 +285,11 @@ if __debug__:
 
         # default behavior: msg.wait_layout == DebugWaitType.CURRENT_LAYOUT
         if not isinstance(ui.CURRENT_LAYOUT, ui.Layout):
+            # TODO
+            # if Rust layout is animating, we _could_ get an animation step here
+            # because the event which triggered the animation was "already processed"
+            # but the layout is still in the process of updating itself.
+            # We don't have a clear information that the layout is ready to "be read".
             return await return_layout_change(DEBUG_CONTEXT, detect_deadlock=True)
         else:
             return _state()
@@ -429,4 +441,4 @@ if __debug__:
     def boot() -> None:
         import usb
 
-        loop.schedule(handle_session(usb.iface_debug))
+        loop.schedule(handle_session(usb.iface_debug))#
