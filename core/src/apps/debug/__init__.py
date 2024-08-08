@@ -6,6 +6,7 @@ if not __debug__:
 if __debug__:
     from micropython import const
     from typing import TYPE_CHECKING
+    import utime
 
     import trezorui2
     from storage import debug as storage
@@ -39,7 +40,7 @@ if __debug__:
     REFRESH_INDEX = 0
 
     _DEADLOCK_WAIT_TRIES = const(5)
-    _DEADLOCK_SLEEP_MS = const(2000)
+    _DEADLOCK_SLEEP_MS = const(3000)
     _DEADLOCK_DETECT_SLEEP = loop.sleep(_DEADLOCK_SLEEP_MS)
 
     def screenshot() -> bool:
@@ -55,9 +56,11 @@ if __debug__:
     def notify_layout_change(layout: Layout | None) -> None:
         layout_change_chan.put(layout, replace=True)
 
-    def wait_until_layout_is_running(tries: int | None = _DEADLOCK_WAIT_TRIES) -> Awaitable[None]:  # type: ignore [awaitable-is-generator]
-        counter = 0
+    def wait_until_layout_is_running(timeout: int | None = _DEADLOCK_SLEEP_MS) -> Awaitable[None]:  # type: ignore [awaitable-is-generator]
+        start = utime.ticks_ms()
+        layout_change_chan.clear()
         while ui.CURRENT_LAYOUT is None:
+            yield layout_change_chan  # type: ignore [awaitable-is-generator]
             # TODO modify this so that we can detect a Rust layout in transition:
             # ui.CURRENT_LAYOUT is not None
             # but something like layout.is_rust_ready_for_events() is False

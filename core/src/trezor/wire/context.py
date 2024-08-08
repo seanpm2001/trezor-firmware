@@ -65,6 +65,8 @@ class Context:
         self.sid = sid
         self.buffer = buffer
 
+        self.reading = False
+
     def read_from_wire(self) -> Awaitable[codec_v1.Message]:
         """Read a whole message from the wire without parsing it."""
         return codec_v1.read_message(self.iface, self.buffer)
@@ -101,12 +103,27 @@ class Context:
                 expected_type.MESSAGE_NAME if expected_type else expected_types,
             )
 
-        # Load the full message into a buffer, parse out type and data payload
-        msg = await self.read_from_wire()
+        if self.reading:
+            raise RuntimeError("Cannot read while already reading")
+        try:
+            self.reading = True
+            # Load the full message into a buffer, parse out type and data payload
+            msg = await self.read_from_wire()
+        finally:
+            self.reading = False
 
         # If we got a message with unexpected type, raise the message via
         # `UnexpectedMessageError` and let the session handler deal with it.
         if msg.type not in expected_types:
+            if __debug__:
+                expected_type = protobuf.type_for_wire(msg.type)
+                log.debug(
+                    __name__,
+                    "%s:%x read: %s",
+                    self.iface.iface_num(),
+                    self.sid,
+                    expected_type.MESSAGE_NAME,
+                )
             raise UnexpectedMessage(msg)
 
         if expected_type is None:
@@ -170,21 +187,6 @@ class Context:
 
 
 CURRENT_CONTEXT: Context | None = None
-
-
-def wait(task: Awaitable[T]) -> Awaitable[T]:
-    """
-    Wait until the passed in task finishes, and return the result, while servicing the
-    wire context.
-
-    Used to make sure the device is responsive on USB while waiting for user
-    interaction. If a message is received before the task finishes, it raises an
-    `UnexpectedMessage` exception, returning control to the session handler.
-    """
-    if CURRENT_CONTEXT is None:
-        return task
-    else:
-        return loop.race(CURRENT_CONTEXT.read(()), task)
 
 
 async def call(

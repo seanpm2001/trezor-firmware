@@ -7,14 +7,18 @@
 static void _librust_qstrs(void) {
   MP_QSTR_;
   MP_QSTR_AttachType;
+  MP_QSTR_Attached;
   MP_QSTR_BacklightLevels;
   MP_QSTR_CANCELLED;
   MP_QSTR_CONFIRMED;
   MP_QSTR_DIM;
+  MP_QSTR_Done;
   MP_QSTR_INFO;
   MP_QSTR_INITIAL;
+  MP_QSTR_Initial;
   MP_QSTR_LOW;
   MP_QSTR_LayoutObj;
+  MP_QSTR_LayoutState;
   MP_QSTR_MAX;
   MP_QSTR_MESSAGE_NAME;
   MP_QSTR_MESSAGE_WIRE_TYPE;
@@ -28,6 +32,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_SWIPE_RIGHT;
   MP_QSTR_SWIPE_UP;
   MP_QSTR_TR;
+  MP_QSTR_Transitioning;
   MP_QSTR_TranslationsHeader;
   MP_QSTR___del__;
   MP_QSTR___dict__;
