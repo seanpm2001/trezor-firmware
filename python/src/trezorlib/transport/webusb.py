@@ -23,7 +23,7 @@ from typing import Iterable, List, Optional
 from ..log import DUMP_PACKETS
 from ..models import TREZORS, TrezorModel
 from . import UDEV_RULES_STR, DeviceIsBusy, TransportException
-from .protocol import Handle, ProtocolBasedTransport, ProtocolV1
+from .protocol import Protocol, ProtocolBasedTransport
 
 LOG = logging.getLogger(__name__)
 
@@ -102,6 +102,7 @@ class WebUsbTransport(ProtocolBasedTransport):
     def __init__(
         self,
         device: "usb1.USBDevice",
+        protocol: Optional[Protocol] = None,
         handle: Optional[WebUsbHandle] = None,
         debug: bool = False,
     ) -> None:
@@ -112,10 +113,9 @@ class WebUsbTransport(ProtocolBasedTransport):
         self.handle = handle
         self.debug = debug
 
-        super().__init__(protocol=ProtocolV1())
-
-    def get_handle(self) -> Handle:
-        return self.handle
+        if protocol is None:
+            protocol = self.get_protocol()
+        super().__init__(protocol)
 
     def get_path(self) -> str:
         return f"{self.PATH_PREFIX}:{dev_to_str(self.device)}"
@@ -158,7 +158,7 @@ class WebUsbTransport(ProtocolBasedTransport):
 
     def find_debug(self) -> "WebUsbTransport":
         # For v1 protocol, find debug USB interface for the same serial number
-        return WebUsbTransport(self.device, debug=True)
+        return WebUsbTransport(self.device, self.protocol, debug=True)
 
 
 def is_vendor_class(dev: "usb1.USBDevice") -> bool:

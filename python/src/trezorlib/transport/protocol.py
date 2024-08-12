@@ -16,10 +16,11 @@
 
 import logging
 import struct
-from typing import Callable, Tuple
+from typing import TYPE_CHECKING, Optional, Tuple, TypeVar
 
 from typing_extensions import Protocol as StructuralType
 
+from ..mapping import ProtobufMapping
 from . import MessagePayload, Transport
 
 REPLEN = 64
@@ -30,6 +31,9 @@ V2_BEGIN_SESSION = 0x03
 V2_END_SESSION = 0x04
 
 LOG = logging.getLogger(__name__)
+if TYPE_CHECKING:
+
+    T = TypeVar("T", bound="ProtocolBasedTransport")
 
 
 class Handle(StructuralType):
@@ -71,18 +75,42 @@ class Protocol:
     its messages.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, handle: Handle) -> None:
+        self.handle = handle
         self.session_counter = 0
 
-    def read(self, read_chunk: Callable[[], bytes]) -> MessagePayload:
+    def initialize_connection(
+        self,
+        mapping: "ProtobufMapping",
+        session_id: Optional[bytes] = None,
+        derive_caradano: Optional[bool] = None,
+    ):
         raise NotImplementedError
 
-    def write(
-        self,
-        message_type: int,
-        message_data: bytes,
-        write_chunk: Callable[[bytes], None],
-    ) -> None:
+    def start_session(self, passphrase: bytes) -> bytes:
+        raise NotImplementedError
+
+    def resume_session(self, session_id: bytes) -> bytes:
+        raise NotImplementedError
+
+    def end_session(self, session_id: bytes) -> bytes:
+        raise NotImplementedError
+
+    # XXX we might be able to remove this now that TrezorClient does session handling
+    def deprecated_begin_session(self) -> None:
+        if self.session_counter == 0:
+            self.handle.open()
+        self.session_counter += 1
+
+    def deprecated_end_session(self) -> None:
+        self.session_counter = max(self.session_counter - 1, 0)
+        if self.session_counter == 0:
+            self.handle.close()
+
+    def read(self) -> MessagePayload:
+        raise NotImplementedError
+
+    def write(self, message_type: int, message_data: bytes) -> None:
         raise NotImplementedError
 
 
@@ -95,30 +123,59 @@ class ProtocolBasedTransport(Transport):
 
     def __init__(self, protocol: Protocol) -> None:
         self.protocol = protocol
-        self.session_counter = 0
+        self.handle: Handle
 
     def write(self, message_type: int, message_data: bytes) -> None:
-        self.protocol.write(
-            message_type,
-            message_data,
-            self.get_handle().write_chunk,
-        )
+        self.protocol.write(message_type, message_data)
 
     def read(self) -> MessagePayload:
-        return self.protocol.read(self.get_handle().read_chunk)
+        return self.protocol.read()
 
-    def begin_session(self) -> None:
-        if self.session_counter == 0:
-            self.get_handle().open()
-        self.session_counter += 1
+    def initialize_connection(
+        self,
+        mapping: ProtobufMapping,
+        session_id: Optional[bytes] = None,
+        derive_cardano: Optional[bool] = None,
+    ):
+        return self.protocol.initialize_connection(mapping, session_id, derive_cardano)
 
-    def end_session(self) -> None:
-        self.session_counter = max(self.session_counter - 1, 0)
-        if self.session_counter == 0:
-            self.get_handle().close()
+    def start_session(self, passphrase: bytes) -> bytes:
+        return self.protocol.start_session(passphrase)
 
-    def get_handle(self) -> Handle:
-        raise NotImplementedError
+    def resume_session(self, session_id: bytes) -> bytes:
+        return self.protocol.resume_session(session_id)
+
+    def end_session(self, session_id: bytes) -> bytes:
+        return self.protocol.end_session(session_id)
+
+    def deprecated_begin_session(self) -> None:
+        self.protocol.deprecated_begin_session()
+
+    def deprecated_end_session(self) -> None:
+        self.protocol.deprecated_end_session()
+
+    def get_protocol(self) -> Protocol:
+        from .. import mapping, messages
+        from ..messages import FailureType
+
+        request_type, request_data = mapping.DEFAULT_MAPPING.encode(
+            messages.Initialize()
+        )
+        self.handle.open()
+        protocol = ProtocolV1(self.handle)
+        protocol.write(request_type, request_data)
+        response_type, response_data = protocol.read()
+        response = mapping.DEFAULT_MAPPING.decode(response_type, response_data)
+        self.handle.close()
+        if isinstance(response, messages.Failure):
+            if (
+                response.code == FailureType.UnexpectedMessage
+                and response.message == "Invalid protocol"
+            ):
+                LOG.debug("Protocol V2 detected")
+                protocol = ProtocolV2(self.handle)
+
+        return protocol
 
 
 class ProtocolV1(Protocol):
@@ -128,12 +185,24 @@ class ProtocolV1(Protocol):
 
     HEADER_LEN = struct.calcsize(">HL")
 
-    def write(
+    def initialize_connection(
         self,
-        message_type: int,
-        message_data: bytes,
-        write_chunk: Callable[[bytes], None],
-    ) -> None:
+        mapping: "ProtobufMapping",
+        session_id: Optional[bytes] = None,
+        derive_caradano: Optional[bool] = None,
+    ):
+        from .. import messages
+
+        msg = messages.Initialize(
+            session_id=session_id,
+            derive_cardano=derive_caradano,
+        )
+        msg_type, msg_data = mapping.encode(msg)
+        self.write(msg_type, msg_data)
+        (resp_type, resp_data) = self.read()
+        return mapping.decode(resp_type, resp_data)
+
+    def write(self, message_type: int, message_data: bytes) -> None:
         header = struct.pack(">HL", message_type, len(message_data))
         buffer = bytearray(b"##" + header + message_data)
 
@@ -141,23 +210,23 @@ class ProtocolV1(Protocol):
             # Report ID, data padded to 63 bytes
             chunk = b"?" + buffer[: REPLEN - 1]
             chunk = chunk.ljust(REPLEN, b"\x00")
-            write_chunk(chunk)
+            self.handle.write_chunk(chunk)
             buffer = buffer[63:]
 
-    def read(self, read_chunk: Callable[[], bytes]) -> MessagePayload:
+    def read(self) -> MessagePayload:
         buffer = bytearray()
         # Read header with first part of message data
-        msg_type, datalen, first_chunk = self.read_first(read_chunk)
+        msg_type, datalen, first_chunk = self.read_first()
         buffer.extend(first_chunk)
 
         # Read the rest of the message
         while len(buffer) < datalen:
-            buffer.extend(self.read_next(read_chunk))
+            buffer.extend(self.read_next())
 
         return msg_type, buffer[:datalen]
 
-    def read_first(self, read_chunk: Callable[[], bytes]) -> Tuple[int, int, bytes]:
-        chunk = read_chunk()
+    def read_first(self) -> Tuple[int, int, bytes]:
+        chunk = self.handle.read_chunk()
         if chunk[:3] != b"?##":
             raise RuntimeError("Unexpected magic characters")
         try:
@@ -168,8 +237,13 @@ class ProtocolV1(Protocol):
         data = chunk[3 + self.HEADER_LEN :]
         return msg_type, datalen, data
 
-    def read_next(self, read_chunk: Callable[[], bytes]) -> bytes:
-        chunk = read_chunk()
+    def read_next(self) -> bytes:
+        chunk = self.handle.read_chunk()
         if chunk[:1] != b"?":
             raise RuntimeError("Unexpected magic characters")
         return chunk[1:]
+
+
+class ProtocolV2(Protocol):
+    def __init__(self, handle: Handle) -> None:
+        super().__init__(handle)

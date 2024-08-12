@@ -65,11 +65,11 @@ def send_bytes(
         raise click.ClickException("Invalid hex data.") from e
 
     transport = obj.get_transport()
-    transport.begin_session()
+    transport.deprecated_begin_session()
     transport.write(message_type, message_data)
 
     response_type, response_data = transport.read()
-    transport.end_session()
+    transport.deprecated_end_session()
 
     click.echo(f"Response type: {response_type}")
     click.echo(f"Response data: {response_data.hex()}")

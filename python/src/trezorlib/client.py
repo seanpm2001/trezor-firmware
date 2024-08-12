@@ -137,14 +137,14 @@ class TrezorClient(Generic[UI]):
 
     def open(self) -> None:
         if self.session_counter == 0:
-            self.transport.begin_session()
+            self.transport.deprecated_begin_session()
         self.session_counter += 1
 
     def close(self) -> None:
         self.session_counter = max(self.session_counter - 1, 0)
         if self.session_counter == 0:
             # TODO call EndSession here?
-            self.transport.end_session()
+            self.transport.deprecated_end_session()
 
     def cancel(self) -> None:
         self._raw_write(messages.Cancel())
@@ -352,11 +352,10 @@ class TrezorClient(Generic[UI]):
         elif session_id is not None:
             self.session_id = session_id
 
-        resp = self.call_raw(
-            messages.Initialize(
-                session_id=self.session_id,
-                derive_cardano=derive_cardano,
-            )
+        resp = self.transport.initialize_connection(
+            mapping=self.mapping,
+            session_id=session_id,
+            derive_cardano=derive_cardano,
         )
         if isinstance(resp, messages.Failure):
             # can happen if `derive_cardano` does not match the current session

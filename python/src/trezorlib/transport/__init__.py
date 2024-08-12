@@ -27,6 +27,7 @@ from typing import (
 )
 
 from ..exceptions import TrezorException
+from ..mapping import ProtobufMapping
 
 if TYPE_CHECKING:
     from ..models import TrezorModel
@@ -78,10 +79,27 @@ class Transport:
     def get_path(self) -> str:
         raise NotImplementedError
 
-    def begin_session(self) -> None:
+    def initialize_connection(
+        self,
+        mapping: "ProtobufMapping",
+        session_id: Optional[bytes] = None,
+        derive_cardano: Optional[bool] = None,
+    ):
         raise NotImplementedError
 
-    def end_session(self) -> None:
+    def start_session(self, passphrase: bytes) -> bytes:
+        raise NotImplementedError
+
+    def resume_session(self, session_id: bytes) -> bytes:
+        raise NotImplementedError
+
+    def end_session(self, session_id: bytes) -> bytes:
+        raise NotImplementedError
+
+    def deprecated_begin_session(self) -> None:
+        raise NotImplementedError
+
+    def deprecated_end_session(self) -> None:
         raise NotImplementedError
 
     def read(self) -> MessagePayload:
@@ -102,11 +120,11 @@ class Transport:
     @classmethod
     def find_by_path(cls: Type["T"], path: str, prefix_search: bool = False) -> "T":
         for device in cls.enumerate():
-            if (
-                path is None
-                or device.get_path() == path
-                or (prefix_search and device.get_path().startswith(path))
-            ):
+
+            if device.get_path() == path:
+                return device
+
+            if prefix_search and device.get_path().startswith(path):
                 return device
 
         raise TransportException(f"{cls.PATH_PREFIX} device not found: {path}")
