@@ -22,6 +22,7 @@ import requests
 
 from ..log import DUMP_PACKETS
 from . import DeviceIsBusy, MessagePayload, Transport, TransportException
+from .protocol import PROTOCOL_VERSION_1, PROTOCOL_VERSION_2
 
 if TYPE_CHECKING:
     from ..models import TrezorModel
@@ -34,8 +35,6 @@ TREZORD_ORIGIN_HEADER = {"Origin": "https://python.trezor.io"}
 TREZORD_VERSION_MODERN = (2, 0, 25)
 TREZORD_VERSION_THP_SUPPORT = (2, 0, 31)  # TODO add correct value
 
-PROTOCOL_VERSION_1 = 1
-PROTOCOL_VERSION_2 = 2
 CONNECTION = requests.Session()
 CONNECTION.headers.update(TREZORD_ORIGIN_HEADER)
 

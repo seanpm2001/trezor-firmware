@@ -21,7 +21,7 @@ from typing import TYPE_CHECKING, Iterable, Optional, Tuple
 
 from ..log import DUMP_PACKETS
 from . import TransportException
-from .protocol import Protocol, ProtocolBasedTransport, ProtocolV1
+from .protocol import PROTOCOL_VERSION_1, Protocol, ProtocolBasedTransport
 
 if TYPE_CHECKING:
     from ..models import TrezorModel
@@ -103,7 +103,7 @@ class UdpTransport(ProtocolBasedTransport):
         if protocol is None and not skip_protocol_detection:
             protocol = self.get_protocol()
         elif protocol is None:
-            protocol = ProtocolV1(self.handle)
+            protocol = self.get_protocol(version=PROTOCOL_VERSION_1)
 
         super().__init__(protocol)
 
