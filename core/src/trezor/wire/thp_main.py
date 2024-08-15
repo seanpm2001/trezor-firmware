@@ -76,6 +76,8 @@ async def _handle_codec_v1(iface: WireInterface, packet):
     # If the received packet is not initial codec_v1 packet, do not send error message
     if not packet[1:3] == b"##":
         return
+    if __debug__:
+        log.debug(__name__, "Received codec_v1 message, returning error")
     error_message = thp_messages.get_codec_v1_error_message()
     await writer.write_packet_to_wire(iface, error_message)
 
