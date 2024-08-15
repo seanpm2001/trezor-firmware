@@ -72,8 +72,6 @@ class PacketHeader:
         return cls(_CHANNEL_ALLOCATION_RES, BROADCAST_CHANNEL_ID, length)
 
 
-_ENCODED_DEVICE_PROPERTIES: bytes | None = None
-
 _DEFAULT_ENABLED_PAIRING_METHODS = [
     ThpPairingMethod.CodeEntry,
     ThpPairingMethod.QrCode,
