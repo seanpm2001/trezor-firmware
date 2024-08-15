@@ -217,7 +217,7 @@ async def _handle_state_TH1(
     )
     trezor_ephemeral_pubkey, encrypted_trezor_static_pubkey, tag = (
         ctx.handshake.handle_th1_crypto(
-            thp_messages.get_encoded_device_properties(), host_ephemeral_pubkey
+            thp_messages.get_encoded_device_properties(ctx.iface), host_ephemeral_pubkey
         )
     )
 
@@ -229,7 +229,7 @@ async def _handle_state_TH1(
         )
         log.debug(
             __name__,
-            "trezor masked static pubkey: %s",
+            "encrypted trezor masked static pubkey: %s",
             hexlify(encrypted_trezor_static_pubkey).decode(),
         )
         log.debug(__name__, "tag: %s", hexlify(tag))

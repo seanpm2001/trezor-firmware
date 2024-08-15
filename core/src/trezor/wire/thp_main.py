@@ -102,7 +102,7 @@ async def _handle_broadcast(
     _CHANNELS[cid] = new_channel
 
     response_data = thp_messages.get_channel_allocation_response(
-        nonce, new_channel.channel_id
+        nonce, new_channel.channel_id, iface
     )
     response_header = PacketHeader.get_channel_allocation_response_header(
         len(response_data) + CHECKSUM_LENGTH,

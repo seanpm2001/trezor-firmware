@@ -48,7 +48,7 @@ class PacketHeader:
     def to_bytes(self) -> bytes:
         return ustruct.pack(self.format_str_init, self.ctrl_byte, self.cid, self.length)
 
-    def pack_to_init_buffer(self, buffer, buffer_offset=0) -> None:
+    def pack_to_init_buffer(self, buffer: bytearray, buffer_offset: int = 0) -> None:
         ustruct.pack_into(
             self.format_str_init,
             buffer,
@@ -58,17 +58,17 @@ class PacketHeader:
             self.length,
         )
 
-    def pack_to_cont_buffer(self, buffer, buffer_offset=0) -> None:
+    def pack_to_cont_buffer(self, buffer: bytearray, buffer_offset: int = 0) -> None:
         ustruct.pack_into(
             self.format_str_cont, buffer, buffer_offset, CONTINUATION_PACKET, self.cid
         )
 
     @classmethod
-    def get_error_header(cls, cid, length):
+    def get_error_header(cls, cid: int, length: int):
         return cls(_ERROR, cid, length)
 
     @classmethod
-    def get_channel_allocation_response_header(cls, length):
+    def get_channel_allocation_response_header(cls, length: int):
         return cls(_CHANNEL_ALLOCATION_RES, BROADCAST_CHANNEL_ID, length)
 
 
@@ -92,7 +92,7 @@ def get_enabled_pairing_methods(
     return l
 
 
-def _get_device_properties(iface: WireInterface | None = None) -> ThpDeviceProperties:
+def _get_device_properties(iface: WireInterface) -> ThpDeviceProperties:
     # TODO define model variants
     return ThpDeviceProperties(
         pairing_methods=get_enabled_pairing_methods(iface),
@@ -103,18 +103,18 @@ def _get_device_properties(iface: WireInterface | None = None) -> ThpDevicePrope
     )
 
 
-def get_encoded_device_properties() -> bytes:
-    global _ENCODED_DEVICE_PROPERTIES
-    if _ENCODED_DEVICE_PROPERTIES is None:
-        props = _get_device_properties()
-        length = protobuf.encoded_length(props)
-        _ENCODED_DEVICE_PROPERTIES = bytearray(length)
-        protobuf.encode(_ENCODED_DEVICE_PROPERTIES, props)
-    return _ENCODED_DEVICE_PROPERTIES
+def get_encoded_device_properties(iface: WireInterface) -> bytes:
+    props = _get_device_properties(iface)
+    length = protobuf.encoded_length(props)
+    encoded_properties = bytearray(length)
+    protobuf.encode(encoded_properties, props)
+    return encoded_properties
 
 
-def get_channel_allocation_response(nonce: bytes, new_cid: bytes) -> bytes:
-    props_msg = get_encoded_device_properties()
+def get_channel_allocation_response(
+    nonce: bytes, new_cid: bytes, iface: WireInterface
+) -> bytes:
+    props_msg = get_encoded_device_properties(iface)
     return nonce + new_cid + props_msg
 
 
