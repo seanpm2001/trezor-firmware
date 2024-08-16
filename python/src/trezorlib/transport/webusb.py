@@ -139,6 +139,11 @@ class WebUsbTransport(ProtocolBasedTransport):
                 continue
             if not is_vendor_class(dev):
                 continue
+            if usb_reset:
+                handle = dev.open()
+                handle.resetDevice()
+                handle.close()
+                continue
             try:
                 # workaround for issue #223:
                 # on certain combinations of Windows USB drivers and libusb versions,
@@ -149,11 +154,6 @@ class WebUsbTransport(ProtocolBasedTransport):
                 devices.append(WebUsbTransport(dev))
             except usb1.USBErrorNotSupported:
                 pass
-            except usb1.USBErrorPipe:
-                if usb_reset:
-                    handle = dev.open()
-                    handle.resetDevice()
-                    handle.close()
         return devices
 
     def find_debug(self) -> "WebUsbTransport":
