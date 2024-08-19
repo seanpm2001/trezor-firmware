@@ -206,12 +206,21 @@ if __debug__:
         m.passphrase_protection = passphrase.is_enabled()
         m.reset_entropy = storage.reset_internal_entropy
 
-        if utils.USE_THP:
-            from trezor.wire.context import get_context
-            from trezor.wire.thp.pairing_context import PairingContext
+        channel_id = msg.thp_channel_id
+        if utils.USE_THP and channel_id is not None:
 
-            ctx = get_context()
-            if isinstance(ctx, PairingContext):
+            from trezor.wire.thp.channel import Channel
+            from trezor.wire.thp.pairing_context import PairingContext
+            from trezor.wire.thp_main import _CHANNELS
+
+            channel: Channel | None = None
+            ctx: PairingContext | None = None
+            try:
+                channel = _CHANNELS[channel_id]
+                ctx = channel.connection_context
+            except KeyError:
+                pass
+            if ctx is not None and isinstance(ctx, PairingContext):
                 m.thp_pairing_secret = ctx.secret
                 m.thp_pairing_code_entry_code = ctx.display_data.code_code_entry
 

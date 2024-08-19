@@ -2832,6 +2832,7 @@ if TYPE_CHECKING:
         wait_word_list: "bool | None"
         wait_word_pos: "bool | None"
         wait_layout: "bool | None"
+        thp_channel_id: "int | None"
 
         def __init__(
             self,
@@ -2839,6 +2840,7 @@ if TYPE_CHECKING:
             wait_word_list: "bool | None" = None,
             wait_word_pos: "bool | None" = None,
             wait_layout: "bool | None" = None,
+            thp_channel_id: "int | None" = None,
         ) -> None:
             pass
 
