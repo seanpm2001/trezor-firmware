@@ -32,9 +32,7 @@ def select_buffer(
         # TODO use small buffer
     try:
         # TODO for now, we create a new big buffer every time. It should be changed
-        buffer: utils.BufferType = _get_buffer_for_message(
-            payload_length, channel_buffer
-        )
+        buffer: utils.BufferType = _get_buffer_for_read(payload_length, channel_buffer)
         return buffer
     except Exception as e:
         if __debug__:
@@ -50,8 +48,7 @@ def get_write_buffer(
     required_min_size = payload_size + CHECKSUM_LENGTH + TAG_LENGTH
 
     if required_min_size > len(buffer):
-        # message is too big, we need to allocate a new buffer
-        return bytearray(required_min_size)
+        return _get_buffer_for_write(required_min_size, buffer)
     return buffer
 
 
@@ -96,14 +93,14 @@ def _encode_message_into_buffer(
     protobuf.encode(memoryview(buffer[buffer_offset:]), message)
 
 
-def _get_buffer_for_message(
+def _get_buffer_for_read(
     payload_length: int, existing_buffer: utils.BufferType, max_length=MAX_PAYLOAD_LEN
 ) -> utils.BufferType:
     length = payload_length + INIT_HEADER_LENGTH
     if __debug__:
         log.debug(
             __name__,
-            "get_buffer_for_message - length: %d, %s %s",
+            "get_buffer_for_read - length: %d, %s %s",
             length,
             "existing buffer type:",
             type(existing_buffer),
@@ -112,13 +109,59 @@ def _get_buffer_for_message(
         raise ThpError("Message too large")
 
     if length > len(existing_buffer):
-        # allocate a new buffer to fit the message
+        if __debug__:
+            log.debug(__name__, "Allocating a new buffer")
+
+        from ..thp_main import get_raw_read_buffer
+
+        if length > len(get_raw_read_buffer()):
+            raise ThpError("Message is too large")
+
         try:
-            payload: utils.BufferType = bytearray(length)
+            payload: utils.BufferType = memoryview(get_raw_read_buffer())[:length]
         except MemoryError:
-            payload = bytearray(PACKET_LENGTH)
-            raise ThpError("Message too large")
+            payload = memoryview(get_raw_read_buffer())[:PACKET_LENGTH]
+            raise ThpError("Message is too large")
         return payload
 
     # reuse a part of the supplied buffer
+    if __debug__:
+        log.debug(__name__, "Reusing already allocated buffer")
+    return memoryview(existing_buffer)[:length]
+
+
+def _get_buffer_for_write(
+    payload_length: int, existing_buffer: utils.BufferType, max_length=MAX_PAYLOAD_LEN
+) -> utils.BufferType:
+    length = payload_length + INIT_HEADER_LENGTH
+    if __debug__:
+        log.debug(
+            __name__,
+            "get_buffer_for_write - length: %d, %s %s",
+            length,
+            "existing buffer type:",
+            type(existing_buffer),
+        )
+    if length > max_length:
+        raise ThpError("Message too large")
+
+    if length > len(existing_buffer):
+        if __debug__:
+            log.debug(__name__, "Creating a new write buffer from raw write buffer")
+
+        from ..thp_main import get_raw_write_buffer
+
+        if length > len(get_raw_write_buffer()):
+            raise ThpError("Message is too large")
+
+        try:
+            payload: utils.BufferType = memoryview(get_raw_write_buffer())[:length]
+        except MemoryError:
+            payload = memoryview(get_raw_write_buffer())[:PACKET_LENGTH]
+            raise ThpError("Message is too large")
+        return payload
+
+    # reuse a part of the supplied buffer
+    if __debug__:
+        log.debug(__name__, "Reusing already allocated buffer")
     return memoryview(existing_buffer)[:length]

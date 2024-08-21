@@ -92,7 +92,7 @@ class TestTrezorHostProtocol(unittest.TestCase):
     def setUp(self):
         self.interface = MockHID(0xDEADBEEF)
         buffer = bytearray(64)
-        thp_main.set_buffer(buffer)
+        thp_main.set_read_buffer(buffer)
         interface_manager.decode_iface = thp_common.dummy_decode_iface
 
     def test_codec_message(self):

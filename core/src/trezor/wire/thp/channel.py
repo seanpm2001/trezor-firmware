@@ -333,9 +333,6 @@ class Channel:
 
     async def write_and_encrypt(self, payload: bytes) -> None:
         payload_length = len(payload)
-
-        if not isinstance(self.buffer, bytearray):
-            self.buffer = bytearray(self.buffer)
         self._encrypt(self.buffer, payload_length)
         payload_length = payload_length + TAG_LENGTH
 

@@ -54,6 +54,8 @@ def wrap_protobuf_load(
 _PROTOBUF_BUFFER_SIZE = const(8192)
 
 WIRE_BUFFER = bytearray(_PROTOBUF_BUFFER_SIZE)
+if utils.USE_THP:
+    WIRE_BUFFER_2 = bytearray(_PROTOBUF_BUFFER_SIZE)
 
 if __debug__:
     PROTOBUF_BUFFER_SIZE_DEBUG = 1024
