@@ -206,8 +206,8 @@ if __debug__:
         m.passphrase_protection = passphrase.is_enabled()
         m.reset_entropy = storage.reset_internal_entropy
 
-        channel_id = msg.thp_channel_id
-        if utils.USE_THP and channel_id is not None:
+        if utils.USE_THP and msg.thp_channel_id is not None:
+            channel_id = int.from_bytes(msg.thp_channel_id, "big")
 
             from trezor.wire.thp.channel import Channel
             from trezor.wire.thp.pairing_context import PairingContext

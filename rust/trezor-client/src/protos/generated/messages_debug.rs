@@ -1129,7 +1129,7 @@ pub struct DebugLinkGetState {
     // @@protoc_insertion_point(field:hw.trezor.messages.debug.DebugLinkGetState.wait_layout)
     pub wait_layout: ::std::option::Option<bool>,
     // @@protoc_insertion_point(field:hw.trezor.messages.debug.DebugLinkGetState.thp_channel_id)
-    pub thp_channel_id: ::std::option::Option<u32>,
+    pub thp_channel_id: ::std::option::Option<::std::vec::Vec<u8>>,
     // special fields
     // @@protoc_insertion_point(special_field:hw.trezor.messages.debug.DebugLinkGetState.special_fields)
     pub special_fields: ::protobuf::SpecialFields,
@@ -1203,10 +1203,13 @@ impl DebugLinkGetState {
         self.wait_layout = ::std::option::Option::Some(v);
     }
 
-    // optional uint32 thp_channel_id = 4;
+    // optional bytes thp_channel_id = 4;
 
-    pub fn thp_channel_id(&self) -> u32 {
-        self.thp_channel_id.unwrap_or(0)
+    pub fn thp_channel_id(&self) -> &[u8] {
+        match self.thp_channel_id.as_ref() {
+            Some(v) => v,
+            None => &[],
+        }
     }
 
     pub fn clear_thp_channel_id(&mut self) {
@@ -1218,8 +1221,22 @@ impl DebugLinkGetState {
     }
 
     // Param is passed by value, moved
-    pub fn set_thp_channel_id(&mut self, v: u32) {
+    pub fn set_thp_channel_id(&mut self, v: ::std::vec::Vec<u8>) {
         self.thp_channel_id = ::std::option::Option::Some(v);
+    }
+
+    // Mutable pointer to the field.
+    // If field is not initialized, it is initialized with default value first.
+    pub fn mut_thp_channel_id(&mut self) -> &mut ::std::vec::Vec<u8> {
+        if self.thp_channel_id.is_none() {
+            self.thp_channel_id = ::std::option::Option::Some(::std::vec::Vec::new());
+        }
+        self.thp_channel_id.as_mut().unwrap()
+    }
+
+    // Take field
+    pub fn take_thp_channel_id(&mut self) -> ::std::vec::Vec<u8> {
+        self.thp_channel_id.take().unwrap_or_else(|| ::std::vec::Vec::new())
     }
 
     fn generated_message_descriptor_data() -> ::protobuf::reflect::GeneratedMessageDescriptorData {
@@ -1272,8 +1289,8 @@ impl ::protobuf::Message for DebugLinkGetState {
                 24 => {
                     self.wait_layout = ::std::option::Option::Some(is.read_bool()?);
                 },
-                32 => {
-                    self.thp_channel_id = ::std::option::Option::Some(is.read_uint32()?);
+                34 => {
+                    self.thp_channel_id = ::std::option::Option::Some(is.read_bytes()?);
                 },
                 tag => {
                     ::protobuf::rt::read_unknown_or_skip_group(tag, is, self.special_fields.mut_unknown_fields())?;
@@ -1296,8 +1313,8 @@ impl ::protobuf::Message for DebugLinkGetState {
         if let Some(v) = self.wait_layout {
             my_size += 1 + 1;
         }
-        if let Some(v) = self.thp_channel_id {
-            my_size += ::protobuf::rt::uint32_size(4, v);
+        if let Some(v) = self.thp_channel_id.as_ref() {
+            my_size += ::protobuf::rt::bytes_size(4, &v);
         }
         my_size += ::protobuf::rt::unknown_fields_size(self.special_fields.unknown_fields());
         self.special_fields.cached_size().set(my_size as u32);
@@ -1314,8 +1331,8 @@ impl ::protobuf::Message for DebugLinkGetState {
         if let Some(v) = self.wait_layout {
             os.write_bool(3, v)?;
         }
-        if let Some(v) = self.thp_channel_id {
-            os.write_uint32(4, v)?;
+        if let Some(v) = self.thp_channel_id.as_ref() {
+            os.write_bytes(4, v)?;
         }
         os.write_unknown_fields(self.special_fields.unknown_fields())?;
         ::std::result::Result::Ok(())
@@ -3709,22 +3726,22 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     ate\x12$\n\x0ewait_word_list\x18\x01\x20\x01(\x08R\x0cwaitWordList\x12\"\
     \n\rwait_word_pos\x18\x02\x20\x01(\x08R\x0bwaitWordPos\x12\x1f\n\x0bwait\
     _layout\x18\x03\x20\x01(\x08R\nwaitLayout\x12$\n\x0ethp_channel_id\x18\
-    \x04\x20\x01(\rR\x0cthpChannelId\"\x83\x05\n\x0eDebugLinkState\x12\x16\n\
-    \x06layout\x18\x01\x20\x01(\x0cR\x06layout\x12\x10\n\x03pin\x18\x02\x20\
-    \x01(\tR\x03pin\x12\x16\n\x06matrix\x18\x03\x20\x01(\tR\x06matrix\x12'\n\
-    \x0fmnemonic_secret\x18\x04\x20\x01(\x0cR\x0emnemonicSecret\x129\n\x04no\
-    de\x18\x05\x20\x01(\x0b2%.hw.trezor.messages.common.HDNodeTypeR\x04node\
-    \x123\n\x15passphrase_protection\x18\x06\x20\x01(\x08R\x14passphraseProt\
-    ection\x12\x1d\n\nreset_word\x18\x07\x20\x01(\tR\tresetWord\x12#\n\rrese\
-    t_entropy\x18\x08\x20\x01(\x0cR\x0cresetEntropy\x12,\n\x12recovery_fake_\
-    word\x18\t\x20\x01(\tR\x10recoveryFakeWord\x12*\n\x11recovery_word_pos\
-    \x18\n\x20\x01(\rR\x0frecoveryWordPos\x12$\n\x0ereset_word_pos\x18\x0b\
-    \x20\x01(\rR\x0cresetWordPos\x12N\n\rmnemonic_type\x18\x0c\x20\x01(\x0e2\
-    ).hw.trezor.messages.management.BackupTypeR\x0cmnemonicType\x12\x16\n\
-    \x06tokens\x18\r\x20\x03(\tR\x06tokens\x12<\n\x1bthp_pairing_code_entry_\
-    code\x18\x0e\x20\x01(\rR\x17thpPairingCodeEntryCode\x12,\n\x12thp_pairin\
-    g_secret\x18\x0f\x20\x01(\x0cR\x10thpPairingSecret\"\x0f\n\rDebugLinkSto\
-    p\"P\n\x0cDebugLinkLog\x12\x14\n\x05level\x18\x01\x20\x01(\rR\x05level\
+    \x04\x20\x01(\x0cR\x0cthpChannelId\"\x83\x05\n\x0eDebugLinkState\x12\x16\
+    \n\x06layout\x18\x01\x20\x01(\x0cR\x06layout\x12\x10\n\x03pin\x18\x02\
+    \x20\x01(\tR\x03pin\x12\x16\n\x06matrix\x18\x03\x20\x01(\tR\x06matrix\
+    \x12'\n\x0fmnemonic_secret\x18\x04\x20\x01(\x0cR\x0emnemonicSecret\x129\
+    \n\x04node\x18\x05\x20\x01(\x0b2%.hw.trezor.messages.common.HDNodeTypeR\
+    \x04node\x123\n\x15passphrase_protection\x18\x06\x20\x01(\x08R\x14passph\
+    raseProtection\x12\x1d\n\nreset_word\x18\x07\x20\x01(\tR\tresetWord\x12#\
+    \n\rreset_entropy\x18\x08\x20\x01(\x0cR\x0cresetEntropy\x12,\n\x12recove\
+    ry_fake_word\x18\t\x20\x01(\tR\x10recoveryFakeWord\x12*\n\x11recovery_wo\
+    rd_pos\x18\n\x20\x01(\rR\x0frecoveryWordPos\x12$\n\x0ereset_word_pos\x18\
+    \x0b\x20\x01(\rR\x0cresetWordPos\x12N\n\rmnemonic_type\x18\x0c\x20\x01(\
+    \x0e2).hw.trezor.messages.management.BackupTypeR\x0cmnemonicType\x12\x16\
+    \n\x06tokens\x18\r\x20\x03(\tR\x06tokens\x12<\n\x1bthp_pairing_code_entr\
+    y_code\x18\x0e\x20\x01(\rR\x17thpPairingCodeEntryCode\x12,\n\x12thp_pair\
+    ing_secret\x18\x0f\x20\x01(\x0cR\x10thpPairingSecret\"\x0f\n\rDebugLinkS\
+    top\"P\n\x0cDebugLinkLog\x12\x14\n\x05level\x18\x01\x20\x01(\rR\x05level\
     \x12\x16\n\x06bucket\x18\x02\x20\x01(\tR\x06bucket\x12\x12\n\x04text\x18\
     \x03\x20\x01(\tR\x04text\"G\n\x13DebugLinkMemoryRead\x12\x18\n\x07addres\
     s\x18\x01\x20\x01(\rR\x07address\x12\x16\n\x06length\x18\x02\x20\x01(\rR\
