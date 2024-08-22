@@ -11,6 +11,7 @@ from trezor.wire.protocol_common import Context, Message
 
 if TYPE_CHECKING:
     from typing import Container
+    from trezor import ui
 
     from .channel import Channel
     from .cpace import Cpace
@@ -28,7 +29,9 @@ class PairingDisplayData:
         self.code_qr_code: bytes | None = None
         self.code_nfc_unidirectional: bytes | None = None
 
-    def get_display_layout(self):
+    def get_display_layout(self) -> ui.Layout:
+        from trezor import ui
+
         # TODO have different layouts when there is only QR code or only Code Entry
         qr_str = ""
         code_str = ""
@@ -37,14 +40,16 @@ class PairingDisplayData:
         if self.code_code_entry is not None:
             code_str = self._get_code_code_entry_str()
 
-        return trezorui2.show_address_details(  # noqa
-            qr_title="Scan QR code to pair",
-            address=qr_str,
-            case_sensitive=True,
-            details_title="",
-            account="Code to rewrite:\n" + code_str,
-            path="",
-            xpubs=[],
+        return ui.Layout(
+            trezorui2.show_address_details(  # noqa
+                qr_title="Scan QR code to pair",
+                address=qr_str,
+                case_sensitive=True,
+                details_title="",
+                account="Code to rewrite:\n" + code_str,
+                path="",
+                xpubs=[],
+            )
         )
 
     def _get_code_code_entry_str(self) -> str:

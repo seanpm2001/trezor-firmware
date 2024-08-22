@@ -138,19 +138,17 @@ async def _prepare_pairing(ctx: PairingContext) -> None:
 
 
 async def show_display_data(ctx: PairingContext, expected_types: Container[int] = ()):
+    from trezorui2 import CANCELLED
 
     read_task = ctx.read(expected_types)
     cancel_task = ctx.display_data.get_display_layout()
-    race = loop.race(read_task, cancel_task)
+    race = loop.race(read_task, cancel_task.get_result())
     result = await race
 
-    if read_task in race.finished:
-        return result
-    if cancel_task in race.finished:
+    if result is CANCELLED:
         raise ActionCancelled
-    else:
-        return Exception("Should not happen")  # TODO what to do here?
 
+    return result
 
 @check_state_and_log(ChannelState.TP1)
 async def _handle_code_entry_is_included(ctx: PairingContext) -> None:
