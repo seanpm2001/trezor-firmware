@@ -286,7 +286,7 @@ if __debug__:
         thp_pairing_secret: bytes | None = None
         thp_pairing_code_entry_code: bytes | None = None
         if utils.USE_THP and msg.thp_channel_id is not None:
-            channel_id = msg.thp_channel_id
+            channel_id = int.from_bytes(msg.thp_channel_id, "big")
 
             from trezor.wire.thp.channel import Channel
             from trezor.wire.thp.pairing_context import PairingContext
