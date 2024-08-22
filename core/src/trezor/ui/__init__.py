@@ -344,14 +344,6 @@ class Layout(Generic[T]):
         if msg is None:
             return
 
-        # XXX DOES NOT WORK YET
-        if isinstance(msg, ButtonRequest):
-            # FIXME: special return value for "layout has changed"
-            # and the buttonrequest is an attribute on that value
-            from apps.debug import notify_layout_change
-
-            notify_layout_change(self)
-
         # when emitting a message, there should not be another one already waiting
         assert self.result_box.is_empty()
 
