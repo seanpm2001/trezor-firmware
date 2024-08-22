@@ -97,7 +97,9 @@ def test_reset_slip39_basic(
         raise RuntimeError("not a supported combination")
 
     # confirm checklist
-    TR.assert_in(debug.read_layout().text_content(), "reset__slip39_checklist_write_down")
+    TR.assert_in(
+        debug.read_layout().text_content(), "reset__slip39_checklist_write_down"
+    )
     reset.confirm_read(debug)
 
     # confirm backup warning

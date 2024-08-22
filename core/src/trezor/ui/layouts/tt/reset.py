@@ -6,7 +6,6 @@ from trezor.enums import ButtonRequestType
 
 from ..common import interact, raise_if_not_confirmed
 
-
 CONFIRMED = trezorui2.CONFIRMED  # global_import_cache
 
 
@@ -233,7 +232,7 @@ def slip39_prompt_threshold(
     )
 
 
-def slip39_prompt_number_of_shares(group_id: int | None = None) -> Awaitable[int]:
+def slip39_prompt_number_of_shares(num_words: int, group_id: int | None = None) -> int:
     count = 5
     min_count = 1
     max_count = 16

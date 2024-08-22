@@ -62,7 +62,9 @@ def tap_to_confirm(debug: "DebugLink") -> LayoutContent | None:
     elif debug.model in (models.T2B1,):
         return debug.read_layout()  # type: ignore
     elif debug.model in (models.T3T1,):
-        return debug.click(buttons.TAP_TO_CONFIRM, )
+        return debug.click(
+            buttons.TAP_TO_CONFIRM,
+        )
     else:
         raise RuntimeError("Unknown model")
 
@@ -120,11 +122,15 @@ def navigate_to_action_and_press(
 
 def unlock_gesture(debug: "DebugLink") -> LayoutContent | None:
     if debug.model in (models.T2T1,):
-        return debug.click(buttons.OK, )  # type: ignore
+        return debug.click(
+            buttons.OK,
+        )  # type: ignore
     elif debug.model in (models.T2B1,):
         return debug.press_right()  # type: ignore
     elif debug.model in (models.T3T1,):
-        return debug.click(buttons.TAP_TO_CONFIRM, )  # type: ignore
+        return debug.click(
+            buttons.TAP_TO_CONFIRM,
+        )  # type: ignore
     else:
         raise RuntimeError("Unknown model")
 

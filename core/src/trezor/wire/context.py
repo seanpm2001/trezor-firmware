@@ -90,6 +90,8 @@ class CodecContext(Context):
             self, expected_types: Container[int], expected_type: type[LoadedMessageType]
         ) -> LoadedMessageType: ...
 
+    reading: bool = False
+
     async def read(
         self,
         expected_types: Container[int],

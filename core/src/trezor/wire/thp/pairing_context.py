@@ -4,7 +4,6 @@ from ubinascii import hexlify
 import trezorui2
 from trezor import loop, protobuf, workflow
 from trezor.crypto import random
-from trezor.ui.layouts.tt import RustLayout
 from trezor.wire import context, message_handler, protocol_common
 from trezor.wire.context import UnexpectedMessageException
 from trezor.wire.errors import ActionCancelled, SilentError
@@ -29,7 +28,7 @@ class PairingDisplayData:
         self.code_qr_code: bytes | None = None
         self.code_nfc_unidirectional: bytes | None = None
 
-    def get_display_layout(self) -> RustLayout:
+    def get_display_layout(self):
         # TODO have different layouts when there is only QR code or only Code Entry
         qr_str = ""
         code_str = ""
@@ -38,16 +37,14 @@ class PairingDisplayData:
         if self.code_code_entry is not None:
             code_str = self._get_code_code_entry_str()
 
-        return RustLayout(
-            trezorui2.show_address_details(  # noqa
-                qr_title="Scan QR code to pair",
-                address=qr_str,
-                case_sensitive=True,
-                details_title="",
-                account="Code to rewrite:\n" + code_str,
-                path="",
-                xpubs=[],
-            )
+        return trezorui2.show_address_details(  # noqa
+            qr_title="Scan QR code to pair",
+            address=qr_str,
+            case_sensitive=True,
+            details_title="",
+            account="Code to rewrite:\n" + code_str,
+            path="",
+            xpubs=[],
         )
 
     def _get_code_code_entry_str(self) -> str:
