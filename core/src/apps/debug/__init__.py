@@ -254,7 +254,9 @@ if __debug__:
         # If no exception was raised, the layout did not shut down. That means that it
         # just updated itself. The update is already live for the caller to retrieve.
 
-    def _state() -> DebugLinkState:
+    def _state(
+        thp_pairing_secret: bytes | None, thp_pairing_code_entry_code: int | None
+    ) -> DebugLinkState:
         from trezor.messages import DebugLinkState
 
         from apps.common import mnemonic, passphrase
@@ -273,13 +275,36 @@ if __debug__:
             passphrase_protection=passphrase.is_enabled(),
             reset_entropy=storage.reset_internal_entropy,
             tokens=tokens,
+            thp_pairing_code_entry_code=thp_pairing_code_entry_code,
+            thp_pairing_secret=thp_pairing_secret,
         )
 
     async def dispatch_DebugLinkGetState(
         msg: DebugLinkGetState,
     ) -> DebugLinkState | None:
+
+        thp_pairing_secret: bytes | None = None
+        thp_pairing_code_entry_code: bytes | None = None
+        if utils.USE_THP and msg.thp_channel_id is not None:
+            channel_id = msg.thp_channel_id
+
+            from trezor.wire.thp.channel import Channel
+            from trezor.wire.thp.pairing_context import PairingContext
+            from trezor.wire.thp_main import _CHANNELS
+
+            channel: Channel | None = None
+            ctx: PairingContext | None = None
+            try:
+                channel = _CHANNELS[channel_id]
+                ctx = channel.connection_context
+            except KeyError:
+                pass
+            if ctx is not None and isinstance(ctx, PairingContext):
+                thp_pairing_secret = ctx.secret
+                thp_pairing_code_entry_code = ctx.display_data.code_code_entry
+
         if msg.wait_layout == DebugWaitType.IMMEDIATE:
-            return _state()
+            return _state(thp_pairing_secret, thp_pairing_code_entry_code)
 
         assert DEBUG_CONTEXT is not None
         if msg.wait_layout == DebugWaitType.NEXT_LAYOUT:
@@ -295,7 +320,7 @@ if __debug__:
             # We don't have a clear information that the layout is ready to "be read".
             return await return_layout_change(DEBUG_CONTEXT, detect_deadlock=True)
         else:
-            return _state()
+            return _state(thp_pairing_secret, thp_pairing_code_entry_code)
 
     async def dispatch_DebugLinkRecordScreen(msg: DebugLinkRecordScreen) -> Success:
         if msg.target_directory:
