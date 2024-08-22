@@ -5,7 +5,7 @@ from trezor import TR, ui, utils
 from trezor.enums import ButtonRequestType
 from trezor.wire import ActionCancelled
 
-from ..common import interact, raise_if_not_confirmed, draw_simple
+from ..common import draw_simple, interact, raise_if_not_confirmed
 
 if TYPE_CHECKING:
     from typing import Any, Awaitable, Iterable, NoReturn, Sequence

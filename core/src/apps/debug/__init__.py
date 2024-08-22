@@ -1,12 +1,14 @@
+from trezor.wire import message_handler
+
 if not __debug__:
     from trezor.utils import halt
 
     halt("debug mode inactive")
 
 if __debug__:
+    import utime
     from micropython import const
     from typing import TYPE_CHECKING
-    import utime
 
     import trezorui2
     from storage import debug as storage
@@ -35,7 +37,7 @@ if __debug__:
 
     layout_change_chan = loop.mailbox()
 
-    DEBUG_CONTEXT: context.CodecContext | None = None
+    DEBUG_CONTEXT: context.Context | None = None
 
     REFRESH_INDEX = 0
 
@@ -371,7 +373,7 @@ if __debug__:
 
         global DEBUG_CONTEXT
 
-        DEBUG_CONTEXT = ctx = context.Context(iface, 0, WIRE_BUFFER_DEBUG)
+        DEBUG_CONTEXT = ctx = context.CodecContext(iface, WIRE_BUFFER_DEBUG)
 
         if storage.layout_watcher:
             try:
@@ -396,14 +398,13 @@ if __debug__:
                     msg_type = f"{msg.type} - unknown message type"
                 log.debug(
                     __name__,
-                    "%s:%x receive: <%s>",
+                    "%s receive: <%s>",
                     ctx.iface.iface_num(),
-                    ctx.sid,
                     msg_type,
                 )
 
                 if msg.type not in WORKFLOW_HANDLERS:
-                    await ctx.write(wire.unexpected_message())
+                    await ctx.write(message_handler.unexpected_message())
                     continue
 
                 elif req_type is None:
@@ -414,7 +415,7 @@ if __debug__:
                     await ctx.write(Success())
                     continue
 
-                req_msg = wire.wrap_protobuf_load(msg.data, req_type)
+                req_msg = message_handler.wrap_protobuf_load(msg.data, req_type)
                 try:
                     res_msg = await WORKFLOW_HANDLERS[msg.type](req_msg)
                 except Exception as exc:

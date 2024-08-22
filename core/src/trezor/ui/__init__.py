@@ -1,10 +1,10 @@
 # pylint: disable=wrong-import-position
 import utime
-import trezorui2
 from micropython import const
 from trezorui import Display
 from typing import TYPE_CHECKING
 
+import trezorui2
 from trezor import io, log, loop, utils, workflow
 from trezor.messages import ButtonAck, ButtonRequest
 from trezor.wire import context
@@ -295,7 +295,7 @@ class Layout(Generic[T]):
 
     def _paint(self) -> None:
         """Paint the layout and ensure that homescreen cache is properly invalidated."""
-        import storage.cache as storage_cache
+        import storage.cache_common as storage_cache
 
         painted = self.layout.paint()
         if painted:
@@ -343,12 +343,13 @@ class Layout(Generic[T]):
         down the layout if appropriate, do nothing otherwise."""
         if msg is None:
             return
-        
+
         # XXX DOES NOT WORK YET
         if isinstance(msg, ButtonRequest):
             # FIXME: special return value for "layout has changed"
             # and the buttonrequest is an attribute on that value
             from apps.debug import notify_layout_change
+
             notify_layout_change(self)
 
         # when emitting a message, there should not be another one already waiting

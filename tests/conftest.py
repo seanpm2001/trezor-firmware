@@ -429,7 +429,6 @@ def pytest_configure(config: "Config") -> None:
     IdMaker._idval_from_value = idval_from_value
 
 
-
 def pytest_runtest_setup(item: pytest.Item) -> None:
     """Called for each test item (class, individual tests).
 

@@ -468,7 +468,9 @@ class EthereumFlow:
         if self.client.model in (models.T2T1, models.T3T1):
             # confirm intro
             if info:
-                self.debug.click(buttons.CORNER_BUTTON, )
+                self.debug.click(
+                    buttons.CORNER_BUTTON,
+                )
                 TR.assert_equals_multiple(
                     self.debug.read_layout().title(),
                     [

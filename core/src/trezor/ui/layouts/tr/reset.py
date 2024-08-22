@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import TYPE_CHECKING
 
 import trezorui2
 from trezor import TR

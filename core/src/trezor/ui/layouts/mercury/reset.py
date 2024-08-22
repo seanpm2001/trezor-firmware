@@ -8,7 +8,6 @@ from trezor.wire import ActionCancelled
 from ..common import interact
 from . import raise_if_not_confirmed, show_success
 
-
 CONFIRMED = trezorui2.CONFIRMED  # global_import_cache
 
 
