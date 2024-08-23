@@ -2815,13 +2815,13 @@ if TYPE_CHECKING:
 
     class DebugLinkGetState(protobuf.MessageType):
         wait_layout: "DebugWaitType"
-        thp_channel_id: "bytes | None"
+        thp_channel_id: "int | None"
 
         def __init__(
             self,
             *,
             wait_layout: "DebugWaitType | None" = None,
-            thp_channel_id: "bytes | None" = None,
+            thp_channel_id: "int | None" = None,
         ) -> None:
             pass
 
