@@ -57,7 +57,7 @@ def raise_if_not_confirmed(
     exc: ExceptionType = ActionCancelled,
 ) -> Awaitable[None]:
     action = interact(layout_obj, br_name, br_code, exc)
-    return action  # type: ignore [Type cannot be assigned to type "None"]
+    return action
 
 
 async def with_info(

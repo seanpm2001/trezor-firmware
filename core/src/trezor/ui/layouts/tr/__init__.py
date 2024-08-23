@@ -1157,7 +1157,7 @@ def pin_mismatch_popup(is_wipe_code: bool = False) -> Awaitable[None]:
         TR.buttons__check_again,
         BR_CODE_OTHER,
     )
-    return layout  # type: ignore [Type cannot be assigned to type "None"]
+    return layout
 
 
 def wipe_code_same_as_pin_popup() -> Awaitable[None]:
