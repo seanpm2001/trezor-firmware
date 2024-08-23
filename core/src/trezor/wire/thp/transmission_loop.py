@@ -8,8 +8,8 @@ from trezor.wire.thp.writer import write_payload_to_wire_and_add_checksum
 if TYPE_CHECKING:
     from trezor.wire.thp.channel import Channel
 
-MAX_RETRANSMISSION_COUNT = const(50)
-MIN_RETRANSMISSION_COUNT = const(2)
+MAX_RETRANSMISSION_COUNT = const(1)
+MIN_RETRANSMISSION_COUNT = const(1)
 
 
 class TransmissionLoop:

@@ -93,16 +93,16 @@ async def handle_received_message(
         raise ThpError("Message is not encrypted. Ignoring")
 
     # 2: Handle message with unexpected sequential bit
-    if seq_bit != ABP.get_expected_receive_seq_bit(ctx.channel_cache):
-        if __debug__:
-            log.debug(__name__, "Received message with an unexpected sequential bit")
-        await _send_ack(ctx, ack_bit=seq_bit)
-        raise ThpError("Received message with an unexpected sequential bit")
+    # if seq_bit != ABP.get_expected_receive_seq_bit(ctx.channel_cache):
+    #     if __debug__:
+    #         log.debug(__name__, "Received message with an unexpected sequential bit")
+    #     await _send_ack(ctx, ack_bit=seq_bit)
+    #     raise ThpError("Received message with an unexpected sequential bit")
 
-    # 3: Send ACK in response
-    await _send_ack(ctx, ack_bit=seq_bit)
+    # # 3: Send ACK in response
+    # await _send_ack(ctx, ack_bit=seq_bit)
 
-    ABP.set_expected_receive_seq_bit(ctx.channel_cache, 1 - seq_bit)
+    # ABP.set_expected_receive_seq_bit(ctx.channel_cache, 1 - seq_bit)
 
     try:
         await _handle_message_to_app_or_channel(
