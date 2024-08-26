@@ -5,7 +5,7 @@ from trezor.ui.layouts import confirm_action, show_error_and_raise
 from trezor.utils import sd_hotswap_enabled
 
 if TYPE_CHECKING:
-    from trezor.ui.layouts.common import ProgressLayout
+    from trezor.ui import ProgressLayout
 
 
 class SdCardUnavailable(wire.ProcessError):
