@@ -134,7 +134,7 @@ class PairingContext(Context):
 
             except Exception as exc:
                 # Log and try again. The session handler can only exit explicitly via
-                # loop.clear() above.
+                # loop.clear() above. # TODO not updated comments
                 if __debug__:
                     log.exception(__name__, exc)
 

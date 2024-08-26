@@ -91,6 +91,10 @@ if utils.USE_THP:
                     # This is not done for the debug session because the snapshot taken
                     # in a debug session would clear modules which are in use by the
                     # workflow running on wire.
+                    if __debug__:
+                        log.debug(
+                            __name__, "utils.unimport_end(modules) and loop.clear()"
+                        )
                     utils.unimport_end(modules)
                     loop.clear()
                     return
@@ -154,6 +158,8 @@ async def handle_session(iface: WireInterface, is_debug_session: bool = False) -
 
                 if not do_not_restart:
                     # Let the session be restarted from `main`.
+                    if __debug__:
+                        log.debug(__name__, "loop.clear()")
                     loop.clear()
                     return  # pylint: disable=lost-exception
 
