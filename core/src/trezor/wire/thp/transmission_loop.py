@@ -31,12 +31,12 @@ class TransmissionLoop:
             await write_payload_to_wire_and_add_checksum(
                 self.channel.iface, self.header, self.transport_payload
             )
-            self.wait_task = loop.spawn(self._wait(i))
-            try:
-                await self.wait_task
-            except loop.TaskClosed:
-                self.wait_task = None
-                break
+            # self.wait_task = loop.spawn(self._wait(i))
+            # try:
+            #    await self.wait_task
+            # except loop.TaskClosed:
+            #    self.wait_task = None
+            #    break
 
     def stop_immediately(self):
         if self.wait_task is not None:
