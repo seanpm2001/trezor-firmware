@@ -42,12 +42,10 @@ class GenericSessionContext(Context):
         take = self.incoming_message.take()
         next_message: Message | None = None
 
-        # Take a mark of modules that are imported at this point, so we can
-        # roll back and un-import any others.
-        # TODO modules = utils.unimport_begin()
         while True:
             try:
                 if await self._handle_message(take, next_message, is_debug_session):
+                    loop.schedule(self.handle())
                     return
             except UnexpectedMessageException as unexpected:
                 # The workflow was interrupted by an unexpected message. We need to
