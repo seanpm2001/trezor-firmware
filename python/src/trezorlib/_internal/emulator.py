@@ -102,7 +102,7 @@ class Emulator:
         return os.environ.copy()
 
     def _get_transport(self) -> UdpTransport:
-        return UdpTransport(f"127.0.0.1:{self.port}")
+        return UdpTransport(f"127.0.0.1:{self.port}", skip_protocol_detection=True)
 
     def wait_until_ready(self, timeout: float = EMULATOR_WAIT_TIME) -> None:
         assert self.process is not None, "Emulator not started"

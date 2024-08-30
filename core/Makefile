@@ -287,7 +287,7 @@ build_unix: templates ## build unix port
 	$(SCONS) CFLAGS="$(CFLAGS)" $(UNIX_BUILD_DIR)/trezor-emu-core $(UNIX_PORT_OPTS) \
 		TREZOR_MODEL="$(TREZOR_MODEL)" CMAKELISTS="$(CMAKELISTS)" THP="$(THP)" \
 		PYOPT="0" BITCOIN_ONLY="$(BITCOIN_ONLY)" TREZOR_EMULATOR_ASAN="$(ADDRESS_SANITIZER)" \
-		NEW_RENDERING="$(NEW_RENDERING)"
+		NEW_RENDERING="$(NEW_RENDERING)" TREZOR_MEMPERF="$(TREZOR_MEMPERF)"
 
 build_unix_frozen: templates build_cross ## build unix port with frozen modules
 	$(SCONS) CFLAGS="$(CFLAGS)" $(UNIX_BUILD_DIR)/trezor-emu-core $(UNIX_PORT_OPTS) \

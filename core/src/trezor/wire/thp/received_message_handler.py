@@ -64,6 +64,9 @@ async def handle_received_message(
 
     if __debug__:
         log.debug(__name__, "handle_received_message")
+        import micropython
+        micropython.mem_info()
+        print(micropython.alloc_count())
     ctrl_byte, _, payload_length = ustruct.unpack(">BHH", message_buffer)
     message_length = payload_length + INIT_HEADER_LENGTH
 
