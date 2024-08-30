@@ -150,6 +150,7 @@ async def show_display_data(ctx: PairingContext, expected_types: Container[int] 
 
     return result
 
+
 @check_state_and_log(ChannelState.TP1)
 async def _handle_code_entry_is_included(ctx: PairingContext) -> None:
     commitment = sha256(ctx.secret).digest()

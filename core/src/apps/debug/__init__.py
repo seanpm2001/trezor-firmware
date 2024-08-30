@@ -255,7 +255,8 @@ if __debug__:
         # just updated itself. The update is already live for the caller to retrieve.
 
     def _state(
-        thp_pairing_secret: bytes | None, thp_pairing_code_entry_code: int | None
+        thp_pairing_secret: bytes | None = None,
+        thp_pairing_code_entry_code: int | None = None,
     ) -> DebugLinkState:
         from trezor.messages import DebugLinkState
 
@@ -284,7 +285,7 @@ if __debug__:
     ) -> DebugLinkState | None:
 
         thp_pairing_secret: bytes | None = None
-        thp_pairing_code_entry_code: bytes | None = None
+        thp_pairing_code_entry_code: int | None = None
         if utils.USE_THP and msg.thp_channel_id is not None:
             channel_id = int.from_bytes(msg.thp_channel_id, "big")
 

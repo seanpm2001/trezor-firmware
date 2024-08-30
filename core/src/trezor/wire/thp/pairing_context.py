@@ -11,6 +11,7 @@ from trezor.wire.protocol_common import Context, Message
 
 if TYPE_CHECKING:
     from typing import Container
+
     from trezor import ui
 
     from .channel import Channel
