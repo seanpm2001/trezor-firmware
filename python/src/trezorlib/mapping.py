@@ -63,9 +63,10 @@ class ProtobufMapping:
         wire_type = self.class_to_type_override.get(type(msg), msg.MESSAGE_WIRE_TYPE)
         if wire_type is None:
             raise ValueError("Cannot encode class without wire type")
-
+        print("wire type", wire_type)
         buf = io.BytesIO()
         protobuf.dump_message(buf, msg)
+        print("test")
         return wire_type, buf.getvalue()
 
     def encode_without_wire_type(self, msg: protobuf.MessageType) -> bytes:

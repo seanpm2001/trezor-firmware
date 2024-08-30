@@ -297,6 +297,7 @@ def session(
             return f(client, *args, **kwargs)
         finally:
             client.close()
+            print("wrap end")
 
     return wrapped_f
 

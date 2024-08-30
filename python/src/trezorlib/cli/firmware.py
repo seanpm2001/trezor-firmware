@@ -653,6 +653,7 @@ def update(
     against downloaded firmware fingerprint. Otherwise fingerprint is checked
     against data.trezor.io information, if available.
     """
+    print("client context")
     with obj.client_context() as client:
         if sum(bool(x) for x in (filename, url, version)) > 1:
             click.echo("You can use only one of: filename, url, version.")

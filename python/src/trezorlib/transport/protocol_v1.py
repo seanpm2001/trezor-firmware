@@ -70,3 +70,6 @@ class ProtocolV1(Protocol):
         if chunk[:1] != b"?":
             raise RuntimeError("Unexpected magic characters")
         return chunk[1:]
+
+    def end_session(self, session_id: bytes) -> None:
+        return super().end_session(session_id)

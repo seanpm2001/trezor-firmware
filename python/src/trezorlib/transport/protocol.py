@@ -95,7 +95,7 @@ class Protocol:
     def resume_session(self, session_id: bytes) -> bytes:
         raise NotImplementedError
 
-    def end_session(self, session_id: bytes) -> bytes:
+    def end_session(self, session_id: bytes) -> None:
         raise NotImplementedError
 
     # XXX we might be able to remove this now that TrezorClient does session handling
@@ -147,7 +147,7 @@ class ProtocolBasedTransport(Transport):
     def resume_session(self, session_id: bytes) -> bytes:
         return self.protocol.resume_session(session_id)
 
-    def end_session(self, session_id: bytes) -> bytes:
+    def end_session(self, session_id: bytes) -> None:
         return self.protocol.end_session(session_id)
 
     def deprecated_begin_session(self) -> None:

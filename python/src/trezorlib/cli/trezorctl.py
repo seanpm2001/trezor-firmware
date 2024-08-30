@@ -291,6 +291,7 @@ def list_devices(no_resolve: bool) -> Optional[Iterable["Transport"]]:
             client = TrezorClient(transport, ui=ui.ClickUI())
             description = format_device_name(client.features)
             client.end_session()
+            print("after end session")
         except DeviceIsBusy:
             description = "Device is in use by another process"
         except Exception:

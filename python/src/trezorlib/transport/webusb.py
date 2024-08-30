@@ -69,7 +69,9 @@ class WebUsbHandle:
         self.handle = None
 
     def write_chunk(self, chunk: bytes) -> None:
+        print("ti")
         assert self.handle is not None
+        print("te")
         if len(chunk) != 64:
             raise TransportException(f"Unexpected chunk size: {len(chunk)}")
         LOG.log(DUMP_PACKETS, f"writing packet: {chunk.hex()}")

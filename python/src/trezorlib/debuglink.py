@@ -48,7 +48,7 @@ from .client import TrezorClient
 from .exceptions import TrezorFailure
 from .log import DUMP_BYTES
 from .messages import DebugWaitType
-from .tools import expect, session
+from .tools import expect
 
 if TYPE_CHECKING:
     from typing_extensions import Protocol
@@ -1086,7 +1086,7 @@ class TrezorClientDebugLink(TrezorClient):
         """
         if not self.in_with_statement:
             raise RuntimeError("Must be called inside 'with' statement")
-        
+
         if input_flow is None:
             self.ui.input_flow = None
             return
@@ -1287,7 +1287,7 @@ class TrezorClientDebugLink(TrezorClient):
         # Start by canceling whatever is on screen. This will work to cancel T1 PIN
         # prompt, which is in TINY mode and does not respond to `Ping`.
         cancel_msg = mapping.DEFAULT_MAPPING.encode(messages.Cancel())
-        self.transport.begin_session()
+        self.transport.deprecated_begin_session()
         try:
             self.transport.write(*cancel_msg)
 
@@ -1302,7 +1302,7 @@ class TrezorClientDebugLink(TrezorClient):
                 except Exception:
                     pass
         finally:
-            self.transport.end_session()
+            self.transport.end_session(self.session_id or b"")
 
     def mnemonic_callback(self, _) -> str:
         word, pos = self.debug.read_recovery_word()

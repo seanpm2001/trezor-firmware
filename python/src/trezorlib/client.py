@@ -134,11 +134,23 @@ class TrezorClient(Generic[UI]):
         self.session_id = session_id
         if _init_device:
             self.init_device(session_id=session_id, derive_cardano=derive_cardano)
+        self.resume_session()
 
     def open(self) -> None:
         if self.session_counter == 0:
+            session_id = self.transport.resume_session(b"")
+            if self.session_id != session_id:
+                print("Failed to resume session, allocated a new session")
+                self.session_id = session_id
             self.transport.deprecated_begin_session()
         self.session_counter += 1
+
+    def resume_session(self) -> None:
+        print("resume session")
+        new_id = self.transport.resume_session(self.session_id or b"")
+        if self.session_id != new_id:
+            print("Failed to resume session, allocated a new session")
+            self.session_id = new_id
 
     def close(self) -> None:
         self.session_counter = max(self.session_counter - 1, 0)
@@ -151,8 +163,13 @@ class TrezorClient(Generic[UI]):
 
     def call_raw(self, msg: "MessageType") -> "MessageType":
         __tracebackhide__ = True  # for pytest # pylint: disable=W0612
+        print("self.call_raw-start")
+
         self._raw_write(msg)
-        return self._raw_read()
+        print("self.call_raw-after write")
+        x = self._raw_read()
+        print("self.call_raw-end")
+        return x
 
     def _raw_write(self, msg: "MessageType") -> None:
         __tracebackhide__ = True  # for pytest # pylint: disable=W0612
@@ -169,7 +186,9 @@ class TrezorClient(Generic[UI]):
 
     def _raw_read(self) -> "MessageType":
         __tracebackhide__ = True  # for pytest # pylint: disable=W0612
+        print("raw read - start")
         msg_type, msg_bytes = self.transport.read()
+        print("type/data", msg_type, msg_bytes)
         LOG.log(
             DUMP_BYTES,
             f"received type {msg_type} ({len(msg_bytes)} bytes): {msg_bytes.hex()}",
@@ -253,6 +272,7 @@ class TrezorClient(Generic[UI]):
 
     @session
     def call(self, msg: "MessageType") -> "MessageType":
+        print("self.call-start")
         self.check_firmware_version()
         resp = self.call_raw(msg)
         while True:
@@ -263,10 +283,13 @@ class TrezorClient(Generic[UI]):
             elif isinstance(resp, messages.ButtonRequest):
                 resp = self._callback_button(resp)
             elif isinstance(resp, messages.Failure):
+                print("self.call-failure")
+
                 if resp.code == messages.FailureType.ActionCancelled:
                     raise exceptions.Cancelled
                 raise exceptions.TrezorFailure(resp)
             else:
+                print("self.call-end")
                 return resp
 
     def _refresh_features(self, features: messages.Features) -> None:
@@ -311,7 +334,7 @@ class TrezorClient(Generic[UI]):
         self._refresh_features(resp)
         return resp
 
-    @session
+    # @session
     def init_device(
         self,
         *,
@@ -352,11 +375,14 @@ class TrezorClient(Generic[UI]):
         elif session_id is not None:
             self.session_id = session_id
 
+        print("before init conn")
+
         resp = self.transport.initialize_connection(
             mapping=self.mapping,
             session_id=session_id,
             derive_cardano=derive_cardano,
         )
+        print("here")
         if isinstance(resp, messages.Failure):
             # can happen if `derive_cardano` does not match the current session
             raise exceptions.TrezorFailure(resp)
@@ -377,6 +403,7 @@ class TrezorClient(Generic[UI]):
         # exchange happens.
         reported_session_id = resp.session_id
         self._refresh_features(resp)
+        print("there:", reported_session_id)
         return reported_session_id
 
     def is_outdated(self) -> bool:
@@ -467,14 +494,19 @@ class TrezorClient(Generic[UI]):
         This is a no-op in bootloader mode, as it does not support session management.
         """
         # since: 2.3.4, 1.9.4
+        print("end session")
         try:
             if not self.features.bootloader_mode:
-                self.call(messages.EndSession())
+                self.transport.end_session(self.session_id or b"")
+                # self.call(messages.EndSession())
         except exceptions.TrezorFailure:
             # A failure most likely means that the FW version does not support
             # the EndSession call. We ignore the failure and clear the local session_id.
             # The client-side end result is identical.
             pass
+        except ValueError as e:
+            print(e)
+            print(e.args)
         self.session_id = None
 
     @session
