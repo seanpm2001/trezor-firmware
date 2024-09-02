@@ -273,6 +273,13 @@ async def _handle_qr_code_tag(
         print(
             "expected qr code tag:", hexlify(expected_tag).decode()
         )  # TODO remove after testing
+        print(
+            "expected code qr code tag:",
+            hexlify(ctx.display_data.code_qr_code).decode(),
+        )  # TODO remove after testing
+        print(
+            "expected secret:", hexlify(ctx.secret).decode()
+        )  # TODO remove after testing
         raise ThpError("Unexpected QR Code Tag")
 
     return await _handle_secret_reveal(
