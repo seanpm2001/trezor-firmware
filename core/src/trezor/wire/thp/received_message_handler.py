@@ -47,6 +47,8 @@ from .writer import (
 )
 
 if TYPE_CHECKING:
+    from typing import Awaitable
+
     from trezor.messages import ThpHandshakeCompletionReqNoisePayload
 
     from .channel import Channel
@@ -68,7 +70,9 @@ async def handle_received_message(
             import micropython
 
             micropython.mem_info()
-            print("Allocation count:", micropython.alloc_count())
+            print(
+                "Allocation count:", micropython.alloc_count()  # type: ignore ["alloc_count" is not a known attribute of module "micropython"]
+            )
         except AttributeError:
             print("To show allocation count, create the build with TREZOR_MEMPERF=1")
     ctrl_byte, _, payload_length = ustruct.unpack(">BHH", message_buffer)
@@ -117,7 +121,7 @@ async def handle_received_message(
         )
     except ThpUnallocatedSessionError as e:
         error_message = Failure(code=FailureType.ThpUnallocatedSession)
-        await ctx.write(error_message, e.session_id)
+        ctx.write(error_message, e.session_id)
     except ThpDecryptionError:
         await ctx.write_error(ThpErrorType.DECRYPTION_FAILED)
         ctx.clear()
@@ -128,7 +132,7 @@ async def handle_received_message(
         log.debug(__name__, "handle_received_message - end")
 
 
-async def _send_ack(ctx: Channel, ack_bit: int) -> None:
+def _send_ack(ctx: Channel, ack_bit: int) -> Awaitable[None]:
     ctrl_byte = control_byte.add_ack_bit_to_ctrl_byte(ACK_MESSAGE, ack_bit)
     header = PacketHeader(ctrl_byte, ctx.get_channel_id_int(), CHECKSUM_LENGTH)
     if __debug__:
@@ -138,7 +142,7 @@ async def _send_ack(ctx: Channel, ack_bit: int) -> None:
             ctx.get_channel_id_int(),
             ack_bit,
         )
-    await write_payload_to_wire_and_add_checksum(ctx.iface, header, b"")
+    return write_payload_to_wire_and_add_checksum(ctx.iface, header, b"")
 
 
 def _check_checksum(message_length: int, message_buffer: utils.BufferType):
@@ -175,31 +179,27 @@ async def _handle_ack(ctx: Channel, ack_bit: int):
         # this await might not be executed
 
 
-async def _handle_message_to_app_or_channel(
+def _handle_message_to_app_or_channel(
     ctx: Channel,
     payload_length: int,
     message_length: int,
     ctrl_byte: int,
-) -> None:
+) -> Awaitable[None]:
     state = ctx.get_channel_state()
     if __debug__:
         log.debug(__name__, "state: %s", state_to_str(state))
 
     if state is ChannelState.ENCRYPTED_TRANSPORT:
-        await _handle_state_ENCRYPTED_TRANSPORT(ctx, message_length)
-        return
+        return _handle_state_ENCRYPTED_TRANSPORT(ctx, message_length)
 
     if state is ChannelState.TH1:
-        await _handle_state_TH1(ctx, payload_length, message_length, ctrl_byte)
-        return
+        return _handle_state_TH1(ctx, payload_length, message_length, ctrl_byte)
 
     if state is ChannelState.TH2:
-        await _handle_state_TH2(ctx, message_length, ctrl_byte)
-        return
+        return _handle_state_TH2(ctx, message_length, ctrl_byte)
 
     if is_channel_state_pairing(state):
-        await _handle_pairing(ctx, message_length)
-        return
+        return _handle_pairing(ctx, message_length)
 
     raise ThpError("Unimplemented channel state")
 
@@ -244,7 +244,7 @@ async def _handle_state_TH1(
     payload = trezor_ephemeral_pubkey + encrypted_trezor_static_pubkey + tag
 
     # send handshake init response message
-    await ctx.write_handshake_message(HANDSHAKE_INIT_RES, payload)
+    ctx.write_handshake_message(HANDSHAKE_INIT_RES, payload)
     ctx.set_channel_state(ChannelState.TH2)
     return
 
@@ -323,7 +323,7 @@ async def _handle_state_TH2(ctx: Channel, message_length: int, ctrl_byte: int) -
     if paired:
         trezor_state = thp_messages.TREZOR_STATE_PAIRED
     # send hanshake completion response
-    await ctx.write_handshake_message(
+    ctx.write_handshake_message(
         HANDSHAKE_COMP_RES,
         ctx.handshake.get_handshake_completion_response(trezor_state),
     )

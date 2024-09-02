@@ -268,6 +268,7 @@ async def _handle_qr_code_tag(
 ) -> protobuf.MessageType:
     if TYPE_CHECKING:
         assert isinstance(message, ThpQrCodeTag)
+    assert ctx.display_data.code_qr_code is not None
     expected_tag = sha256(ctx.display_data.code_qr_code).digest()
     if expected_tag != message.tag:
         print(

@@ -14,18 +14,18 @@ MESSAGE_TYPE_LENGTH = const(2)
 
 if TYPE_CHECKING:
     from trezorio import WireInterface
-    from typing import Sequence
+    from typing import Awaitable, Sequence
 
 
-async def write_payload_to_wire_and_add_checksum(
+def write_payload_to_wire_and_add_checksum(
     iface: WireInterface, header: PacketHeader, transport_payload: bytes
-):
+) -> Awaitable[None]:
     header_checksum: int = crc.crc32(header.to_bytes())
     checksum: bytes = crc.crc32(transport_payload, header_checksum).to_bytes(
         CHECKSUM_LENGTH, "big"
     )
     data = (transport_payload, checksum)
-    await write_payloads_to_wire(iface, header, data)
+    return write_payloads_to_wire(iface, header, data)
 
 
 async def write_payloads_to_wire(
@@ -67,7 +67,16 @@ async def write_payloads_to_wire(
                 raise Exception("Should not happen!!!")
         packet_number += 1
         packet_offset = CONT_HEADER_LENGTH
-        await write_packet_to_wire(iface, packet)
+
+        # write packet to wire (in-lined)
+        if __debug__:
+            log.debug(
+                __name__, "write_packet_to_wire: %s", utils.get_bytes_as_str(packet)
+            )
+        written_by_iface: int = 0
+        while written_by_iface < len(packet):
+            await loop.wait(iface.iface_num() | io.POLL_WRITE)
+            written_by_iface = iface.write(packet)
 
 
 async def write_packet_to_wire(iface: WireInterface, packet: bytes) -> None:
@@ -77,6 +86,6 @@ async def write_packet_to_wire(iface: WireInterface, packet: bytes) -> None:
             log.debug(
                 __name__, "write_packet_to_wire: %s", utils.get_bytes_as_str(packet)
             )
-        n = iface.write(packet)
-        if n == len(packet):
+        n_written = iface.write(packet)
+        if n_written == len(packet):
             return

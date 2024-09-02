@@ -37,6 +37,7 @@ if __debug__:
 
 if TYPE_CHECKING:
     from trezorio import WireInterface
+    from typing import Awaitable
 
     from .pairing_context import PairingContext
     from .session_context import GenericSessionContext
@@ -113,7 +114,7 @@ class Channel:
 
     # CALLED BY THP_MAIN_LOOP
 
-    async def receive_packet(self, packet: utils.BufferType):
+    def receive_packet(self, packet: utils.BufferType) -> Awaitable[None] | None:
         if __debug__:
             log.debug(
                 __name__,
@@ -121,7 +122,7 @@ class Channel:
                 utils.get_bytes_as_str(self.channel_id),
             )
 
-        await self._handle_received_packet(packet)
+        self._handle_received_packet(packet)
 
         if __debug__:
             log.debug(
@@ -133,7 +134,7 @@ class Channel:
 
         if self.expected_payload_length + INIT_HEADER_LENGTH == self.bytes_read:
             self._finish_message()
-            await received_message_handler.handle_received_message(self, self.buffer)
+            return received_message_handler.handle_received_message(self, self.buffer)
         elif self.expected_payload_length + INIT_HEADER_LENGTH > self.bytes_read:
             self.is_cont_packet_expected = True
         else:
@@ -141,14 +142,13 @@ class Channel:
                 "Read more bytes than is the expected length of the message!"
             )
 
-    async def _handle_received_packet(self, packet: utils.BufferType) -> None:
+    def _handle_received_packet(self, packet: utils.BufferType) -> None:
         ctrl_byte = packet[0]
         if control_byte.is_continuation(ctrl_byte):
-            await self._handle_cont_packet(packet)
-        else:
-            await self._handle_init_packet(packet)
+            return self._handle_cont_packet(packet)
+        return self._handle_init_packet(packet)
 
-    async def _handle_init_packet(self, packet: utils.BufferType) -> None:
+    def _handle_init_packet(self, packet: utils.BufferType) -> None:
         if __debug__:
             log.debug(
                 __name__,
@@ -175,7 +175,6 @@ class Channel:
             packet_payload,
             payload_length,
         )
-        await self._buffer_packet_data(self.buffer, packet, 0)
 
         if __debug__:
             log.debug(
@@ -190,8 +189,9 @@ class Channel:
                 utils.get_bytes_as_str(self.channel_id),
                 len(self.buffer),
             )
+        return self._buffer_packet_data(self.buffer, packet, 0)
 
-    async def _handle_cont_packet(self, packet: utils.BufferType) -> None:
+    def _handle_cont_packet(self, packet: utils.BufferType) -> None:
         if __debug__:
             log.debug(
                 __name__,
@@ -200,7 +200,7 @@ class Channel:
             )
         if not self.is_cont_packet_expected:
             raise ThpError("Continuation packet is not expected, ignoring")
-        await self._buffer_packet_data(self.buffer, packet, CONT_HEADER_LENGTH)
+        return self._buffer_packet_data(self.buffer, packet, CONT_HEADER_LENGTH)
 
     def _decrypt_single_packet_payload(
         self, payload: utils.BufferType
@@ -297,7 +297,7 @@ class Channel:
 
         buffer[noise_payload_len : noise_payload_len + TAG_LENGTH] = tag
 
-    async def _buffer_packet_data(
+    def _buffer_packet_data(
         self, payload_buffer: utils.BufferType, packet: utils.BufferType, offset: int
     ):
         self.bytes_read += utils.memcpy(payload_buffer, self.bytes_read, packet, offset)
@@ -309,7 +309,7 @@ class Channel:
 
     # CALLED BY WORKFLOW / SESSION CONTEXT
 
-    async def write(self, msg: protobuf.MessageType, session_id: int = 0) -> None:
+    def write(self, msg: protobuf.MessageType, session_id: int = 0) -> None:
         if __debug__ and utils.EMULATOR:
             log.debug(
                 __name__,
@@ -323,15 +323,15 @@ class Channel:
         noise_payload_len = memory_manager.encode_into_buffer(
             self.buffer, msg, session_id
         )
-        await self.write_and_encrypt(self.buffer[:noise_payload_len])
+        return self.write_and_encrypt(self.buffer[:noise_payload_len])
 
-    async def write_error(self, err_type: int):
+    def write_error(self, err_type: int) -> Awaitable[None]:
         msg_data = err_type.to_bytes(1, "big")
         length = len(msg_data) + CHECKSUM_LENGTH
         header = PacketHeader.get_error_header(self.get_channel_id_int(), length)
-        await write_payload_to_wire_and_add_checksum(self.iface, header, msg_data)
+        return write_payload_to_wire_and_add_checksum(self.iface, header, msg_data)
 
-    async def write_and_encrypt(self, payload: bytes) -> None:
+    def write_and_encrypt(self, payload: bytes) -> None:
         payload_length = len(payload)
         self._encrypt(self.buffer, payload_length)
         payload_length = payload_length + TAG_LENGTH
@@ -346,7 +346,7 @@ class Channel:
             )
         )
 
-    async def write_handshake_message(self, ctrl_byte: int, payload: bytes) -> None:
+    def write_handshake_message(self, ctrl_byte: int, payload: bytes) -> None:
         self._prepare_write()
         self.write_task_spawn = loop.spawn(
             self._write_encrypted_payload_loop(ctrl_byte, payload)
