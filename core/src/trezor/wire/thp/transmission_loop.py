@@ -43,17 +43,9 @@ class TransmissionLoop:
             self.wait_task.close()
         self.wait_task = None
 
-    async def stop_after_min_retransmission(self):
-        while not self.min_retransmisson_count_achieved and self.wait_task is not None:
-            await self._short_wait()
-        self.stop_immediately()
-
     async def _wait(self, counter: int = 0) -> None:
         timeout_ms = round(10200 - 1010000 / (counter + 100))
         await loop.sleep(timeout_ms)
-
-    async def _short_wait(self):
-        loop.wait(50)
 
     def __del__(self):
         self.stop_immediately()
