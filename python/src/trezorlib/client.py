@@ -146,7 +146,6 @@ class TrezorClient(Generic[UI]):
         self.session_counter += 1
 
     def resume_session(self) -> None:
-        print("resume session")
         new_id = self.transport.resume_session(self.session_id or b"")
         if self.session_id != new_id:
             print("Failed to resume session, allocated a new session")
@@ -163,12 +162,9 @@ class TrezorClient(Generic[UI]):
 
     def call_raw(self, msg: "MessageType") -> "MessageType":
         __tracebackhide__ = True  # for pytest # pylint: disable=W0612
-        print("self.call_raw-start")
 
         self._raw_write(msg)
-        print("self.call_raw-after write")
         x = self._raw_read()
-        print("self.call_raw-end")
         return x
 
     def _raw_write(self, msg: "MessageType") -> None:
@@ -186,7 +182,6 @@ class TrezorClient(Generic[UI]):
 
     def _raw_read(self) -> "MessageType":
         __tracebackhide__ = True  # for pytest # pylint: disable=W0612
-        print("raw read - start")
         msg_type, msg_bytes = self.transport.read()
         print("type/data", msg_type, msg_bytes)
         LOG.log(
@@ -272,7 +267,6 @@ class TrezorClient(Generic[UI]):
 
     @session
     def call(self, msg: "MessageType") -> "MessageType":
-        print("self.call-start")
         self.check_firmware_version()
         resp = self.call_raw(msg)
         while True:
@@ -334,7 +328,6 @@ class TrezorClient(Generic[UI]):
         self._refresh_features(resp)
         return resp
 
-    # @session
     def init_device(
         self,
         *,

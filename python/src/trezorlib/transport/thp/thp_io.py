@@ -22,22 +22,16 @@ def write_payload_to_wire_and_add_checksum(
     chksum: bytes = checksum.compute(header.to_bytes_init() + transport_payload)
     data = transport_payload + chksum
     write_payload_to_wire(handle, header, data)
-    print("WOO")
 
 
 def write_payload_to_wire(
     handle: Handle, header: PacketHeader, transport_payload: bytes
 ):
-    print("tttt")
     handle.open()
     buffer = bytearray(transport_payload)
     chunk = header.to_bytes_init() + buffer[: PACKET_LENGTH - INIT_HEADER_LENGTH]
-    print("x")
     chunk = chunk.ljust(PACKET_LENGTH, b"\x00")
-    print("y")
-    print(hexlify(chunk))
     handle.write_chunk(chunk)
-    print("fgh")
 
     buffer = buffer[PACKET_LENGTH - INIT_HEADER_LENGTH :]
     while buffer:
