@@ -4095,7 +4095,8 @@ class DebugLinkState(protobuf.MessageType):
         12: protobuf.Field("mnemonic_type", "BackupType", repeated=False, required=False, default=None),
         13: protobuf.Field("tokens", "string", repeated=True, required=False, default=None),
         14: protobuf.Field("thp_pairing_code_entry_code", "uint32", repeated=False, required=False, default=None),
-        15: protobuf.Field("thp_pairing_secret", "bytes", repeated=False, required=False, default=None),
+        15: protobuf.Field("thp_pairing_code_qr_code", "bytes", repeated=False, required=False, default=None),
+        16: protobuf.Field("thp_pairing_code_nfc_unidirectional", "bytes", repeated=False, required=False, default=None),
     }
 
     def __init__(
@@ -4115,7 +4116,8 @@ class DebugLinkState(protobuf.MessageType):
         reset_word_pos: Optional["int"] = None,
         mnemonic_type: Optional["BackupType"] = None,
         thp_pairing_code_entry_code: Optional["int"] = None,
-        thp_pairing_secret: Optional["bytes"] = None,
+        thp_pairing_code_qr_code: Optional["bytes"] = None,
+        thp_pairing_code_nfc_unidirectional: Optional["bytes"] = None,
     ) -> None:
         self.tokens: Sequence["str"] = tokens if tokens is not None else []
         self.layout = layout
@@ -4131,7 +4133,8 @@ class DebugLinkState(protobuf.MessageType):
         self.reset_word_pos = reset_word_pos
         self.mnemonic_type = mnemonic_type
         self.thp_pairing_code_entry_code = thp_pairing_code_entry_code
-        self.thp_pairing_secret = thp_pairing_secret
+        self.thp_pairing_code_qr_code = thp_pairing_code_qr_code
+        self.thp_pairing_code_nfc_unidirectional = thp_pairing_code_nfc_unidirectional
 
 
 class DebugLinkStop(protobuf.MessageType):

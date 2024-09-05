@@ -2844,7 +2844,8 @@ if TYPE_CHECKING:
         mnemonic_type: "BackupType | None"
         tokens: "list[str]"
         thp_pairing_code_entry_code: "int | None"
-        thp_pairing_secret: "bytes | None"
+        thp_pairing_code_qr_code: "bytes | None"
+        thp_pairing_code_nfc_unidirectional: "bytes | None"
 
         def __init__(
             self,
@@ -2863,7 +2864,8 @@ if TYPE_CHECKING:
             reset_word_pos: "int | None" = None,
             mnemonic_type: "BackupType | None" = None,
             thp_pairing_code_entry_code: "int | None" = None,
-            thp_pairing_secret: "bytes | None" = None,
+            thp_pairing_code_qr_code: "bytes | None" = None,
+            thp_pairing_code_nfc_unidirectional: "bytes | None" = None,
         ) -> None:
             pass
 

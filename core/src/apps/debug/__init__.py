@@ -255,8 +255,9 @@ if __debug__:
         # just updated itself. The update is already live for the caller to retrieve.
 
     def _state(
-        thp_pairing_secret: bytes | None = None,
         thp_pairing_code_entry_code: int | None = None,
+        thp_pairing_code_qr_code: bytes | None = None,
+        thp_pairing_code_nfc_unidirectional: bytes | None = None,
     ) -> DebugLinkState:
         from trezor.messages import DebugLinkState
 
@@ -277,15 +278,17 @@ if __debug__:
             reset_entropy=storage.reset_internal_entropy,
             tokens=tokens,
             thp_pairing_code_entry_code=thp_pairing_code_entry_code,
-            thp_pairing_secret=thp_pairing_secret,
+            thp_pairing_code_qr_code=thp_pairing_code_qr_code,
+            thp_pairing_code_nfc_unidirectional=thp_pairing_code_nfc_unidirectional,
         )
 
     async def dispatch_DebugLinkGetState(
         msg: DebugLinkGetState,
     ) -> DebugLinkState | None:
 
-        thp_pairing_secret: bytes | None = None
         thp_pairing_code_entry_code: int | None = None
+        thp_pairing_code_qr_code: bytes | None = None
+        thp_pairing_code_nfc_unidirectional: bytes | None = None
         if utils.USE_THP and msg.thp_channel_id is not None:
             channel_id = int.from_bytes(msg.thp_channel_id, "big")
 
@@ -301,11 +304,18 @@ if __debug__:
             except KeyError:
                 pass
             if ctx is not None and isinstance(ctx, PairingContext):
-                thp_pairing_secret = ctx.secret
                 thp_pairing_code_entry_code = ctx.display_data.code_code_entry
+                thp_pairing_code_qr_code = ctx.display_data.code_qr_code
+                thp_pairing_code_nfc_unidirectional = (
+                    ctx.display_data.code_nfc_unidirectional
+                )
 
         if msg.wait_layout == DebugWaitType.IMMEDIATE:
-            return _state(thp_pairing_secret, thp_pairing_code_entry_code)
+            return _state(
+                thp_pairing_code_entry_code,
+                thp_pairing_code_qr_code,
+                thp_pairing_code_nfc_unidirectional,
+            )
 
         assert DEBUG_CONTEXT is not None
         if msg.wait_layout == DebugWaitType.NEXT_LAYOUT:
@@ -321,7 +331,11 @@ if __debug__:
             # We don't have a clear information that the layout is ready to "be read".
             return await return_layout_change(DEBUG_CONTEXT, detect_deadlock=True)
         else:
-            return _state(thp_pairing_secret, thp_pairing_code_entry_code)
+            return _state(
+                thp_pairing_code_entry_code,
+                thp_pairing_code_qr_code,
+                thp_pairing_code_nfc_unidirectional,
+            )
 
     async def dispatch_DebugLinkRecordScreen(msg: DebugLinkRecordScreen) -> Success:
         if msg.target_directory:
