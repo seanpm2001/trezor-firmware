@@ -42,6 +42,8 @@ impl FlowState for HomescreenFlow {
             (Self::Homescreen, FlowMsg::Confirmed) => self.return_msg(FlowMsg::Confirmed),
             (Self::Homescreen, FlowMsg::Cancelled) => self.return_msg(FlowMsg::Cancelled),
             (Self::Menu, FlowMsg::Cancelled) => Self::Homescreen.swipe_right(),
+            (Self::Menu, FlowMsg::Choice(0)) => self.return_msg(FlowMsg::Choice(0)),
+            (Self::Menu, FlowMsg::Choice(1)) => self.return_msg(FlowMsg::Choice(1)),
             _ => self.do_nothing(),
         }
     }
@@ -58,8 +60,9 @@ impl HomescreenFlow {
         let label = label.unwrap_or_else(|| model::FULL_NAME.into());
         let notification = notification.map(|w| (w, notification_level));
 
-        let content_menu =
-            VerticalMenu::empty().item(theme::ICON_CHEVRON_RIGHT, "Set brightness".into());
+        let content_menu = VerticalMenu::empty()
+            .item(theme::ICON_CHEVRON_RIGHT, "Set brightness".into())
+            .item(theme::ICON_CHEVRON_RIGHT, "Change PIN".into());
         let content_menu = Frame::left_aligned("".into(), content_menu)
             .with_cancel_button()
             .with_swipe(SwipeDirection::Down, SwipeSettings::default())
