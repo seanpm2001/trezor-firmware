@@ -15,6 +15,7 @@ from ...mapping import ProtobufMapping
 from ..thp import checksum, curve25519, thp_io
 from ..thp.checksum import CHECKSUM_LENGTH
 from ..thp.packet_header import PacketHeader
+from . import control_byte
 from .channel_data import ChannelData
 from .protocol_and_channel import Channel, ProtocolAndChannel
 from .transport import NewTransport
@@ -77,25 +78,19 @@ class ProtocolV2(ProtocolAndChannel):
 
     def write(self, session_id: int, msg: t.Any) -> None:
         msg_type, msg_data = self.mapping.encode(msg)
-        self._encrypt_and_write(session_id, msg_type, msg_data, 7)  # TODO add ctrl_byte
+        self._encrypt_and_write(session_id, msg_type, msg_data)
 
     def update_features(self) -> None:
         message = messages.GetFeatures()
         message_type, message_data = self.mapping.encode(message)
 
         self.session_id: int = 0
-        self._encrypt_and_write(
-            MANAGEMENT_SESSION_ID,
-            message_type,
-            message_data,
-            0x14,  # TODO update control byte
-        )
+        self._encrypt_and_write(MANAGEMENT_SESSION_ID, message_type, message_data)
         _ = self._read_until_valid_crc_check()  # TODO check ACK
         session_id, msg_type, msg_data = self.read_and_decrypt()
         features = self.mapping.decode(msg_type, msg_data)
         assert isinstance(features, messages.Features)
         self.features = features
-        self._send_ack_2()
 
     def _establish_new_channel(self) -> None:
         self.sync_bit_send = 0
@@ -134,7 +129,7 @@ class ProtocolV2(ProtocolAndChannel):
 
         # Read handshake init response
         header, payload = self._read_until_valid_crc_check()
-        self._send_ack_1()
+        self._send_ack_0()
 
         if not header.is_handshake_init_response():
             print("Received message is not a valid handshake init response message")
@@ -218,7 +213,7 @@ class ProtocolV2(ProtocolAndChannel):
         header, _ = self._read_until_valid_crc_check()
         if not header.is_handshake_comp_response():
             print("Received message is not a valid handshake completion response")
-        self._send_ack_2()
+        self._send_ack_1()
 
         self.key_request, self.key_response = _hkdf(ck, b"")
         self.nonce_request = 0
@@ -238,19 +233,17 @@ class ProtocolV2(ProtocolAndChannel):
         # Read
         _, msg_type, msg_data = self.read_and_decrypt()
         maaa = self.mapping.decode(msg_type, msg_data)
-        self._send_ack_1()
 
         assert isinstance(maaa, messages.ThpEndResponse)
         self.has_valid_channel = True
 
-    def _get_control_byte(self) -> bytes:
-        return b"\x42"
-
-    def _send_ack_1(self):
+    def _send_ack_0(self):
+        LOG.debug("sending ack 0")
         header = PacketHeader(0x20, self.channel_id, 4)
         thp_io.write_payload_to_wire_and_add_checksum(self.transport, header, b"")
 
-    def _send_ack_2(self):
+    def _send_ack_1(self):
+        LOG.debug("sending ack 1")
         header = PacketHeader(0x28, self.channel_id, 4)
         thp_io.write_payload_to_wire_and_add_checksum(self.transport, header, b"")
 
@@ -259,10 +252,14 @@ class ProtocolV2(ProtocolAndChannel):
         session_id: int,
         message_type: int,
         message_data: bytes,
-        ctrl_byte: int = 0x04,
+        ctrl_byte: int | None = None,
     ) -> None:
         assert self.key_request is not None
         aes_ctx = AESGCM(self.key_request)
+
+        if ctrl_byte is None:
+            ctrl_byte = control_byte.add_seq_bit_to_ctrl_byte(0x04, self.sync_bit_send)
+            self.sync_bit_send = 1 - self.sync_bit_send
 
         sid = session_id.to_bytes(1, "big")
         msg_type = message_type.to_bytes(2, "big")
@@ -282,6 +279,18 @@ class ProtocolV2(ProtocolAndChannel):
         header, raw_payload = self._read_until_valid_crc_check()
         if not header.is_encrypted_transport():
             print("Trying to decrypt not encrypted message!")
+
+        if not control_byte.is_ack(header.ctrl_byte):
+            LOG.debug(
+                "--> Get sequence bit %d %s %s",
+                control_byte.get_seq_bit(header.ctrl_byte),
+                "from control byte",
+                hexlify(header.ctrl_byte.to_bytes(1, "big")).decode(),
+            )
+            if control_byte.get_seq_bit(header.ctrl_byte):
+                self._send_ack_1()
+            else:
+                self._send_ack_0()
         aes_ctx = AESGCM(self.key_response)
         nonce = _get_iv_from_nonce(self.nonce_response)
         self.nonce_response += 1

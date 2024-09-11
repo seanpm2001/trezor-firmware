@@ -291,6 +291,7 @@ def list_devices(no_resolve: bool) -> Optional[Iterable["NewTransport"]]:
         try:
             client = NewTrezorClient(transport)
             session = client.get_management_session()
+
             description = format_device_name(session.features)
             # client.end_session()
         except DeviceIsBusy:

@@ -56,7 +56,8 @@ class SessionV2(Session):
     def new(
         cls, client: NewTrezorClient, passphrase: str, derive_cardano: bool
     ) -> SessionV2:
-        assert isinstance(client.protocol, ProtocolV1)
+
+        assert isinstance(client.protocol, ProtocolV2)
         session = SessionV2(client, b"\x00")
         new_session: ThpNewSession = session.call(
             ThpCreateNewSession(passphrase=passphrase, derive_cardano=derive_cardano)
