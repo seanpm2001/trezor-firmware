@@ -14,6 +14,8 @@ LOG = logging.getLogger(__name__)
 
 
 class NewTrezorClient:
+    management_session: Session | None = None
+
     def __init__(
         self,
         transport: NewTransport,
@@ -26,10 +28,8 @@ class NewTrezorClient:
             self.mapping = mapping.DEFAULT_MAPPING
         else:
             self.mapping = protobuf_mapping
-        print("test B")
 
         if protocol is None:
-            print("test C")
             self.protocol = self._get_protocol()
         else:
             self.protocol = protocol
@@ -40,13 +40,28 @@ class NewTrezorClient:
     ) -> NewTrezorClient: ...
 
     def get_session(
-        self, passphrase: str = "", derive_cardano: bool = False
+        self,
+        passphrase: str = "",
+        derive_cardano: bool = False,
+        management_session: bool = False,
     ) -> Session:
         if isinstance(self.protocol, ProtocolV1):
             return SessionV1.new(self, passphrase, derive_cardano)
         if isinstance(self.protocol, ProtocolV2):
             return SessionV2.new(self, passphrase, derive_cardano)
         raise NotImplementedError  # TODO
+
+    def get_management_session(self):
+        if self.management_session is not None:
+            return self.management_session
+
+        if isinstance(self.protocol, ProtocolV1):
+            self.management_session = SessionV1.new(self, "", False)
+        elif isinstance(self.protocol, ProtocolV2):
+            self.management_session = SessionV2(self, b"\x00")
+
+        assert self.management_session is not None
+        return self.management_session
 
     def resume_session(self, session_id: bytes) -> Session:
         raise NotImplementedError  # TODO
@@ -66,7 +81,6 @@ class NewTrezorClient:
         response = protocol.read()
         self.transport.close()
         if isinstance(response, messages.Failure):
-            print("test F1")
             if (
                 response.code == FailureType.UnexpectedMessage
                 and response.message == "Invalid protocol"

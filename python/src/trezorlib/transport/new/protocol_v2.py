@@ -54,6 +54,7 @@ class ProtocolV2(ProtocolAndChannel):
     sync_bit_send: int
     sync_bit_receive: int
     has_valid_channel: bool = False
+    features: messages.Features
 
     def __init__(
         self,
@@ -67,6 +68,7 @@ class ProtocolV2(ProtocolAndChannel):
     def get_channel(self) -> ProtocolV2:
         if not self.has_valid_channel:
             self._establish_new_channel()
+            self.update_features()
         return self
 
     def read(self, session_id: int) -> t.Any:
@@ -77,7 +79,25 @@ class ProtocolV2(ProtocolAndChannel):
         msg_type, msg_data = self.mapping.encode(msg)
         self._encrypt_and_write(session_id, msg_type, msg_data, 7)  # TODO add ctrl_byte
 
-    def _establish_new_channel(self):
+    def update_features(self) -> None:
+        message = messages.GetFeatures()
+        message_type, message_data = self.mapping.encode(message)
+
+        self.session_id: int = 0
+        self._encrypt_and_write(
+            MANAGEMENT_SESSION_ID,
+            message_type,
+            message_data,
+            0x14,  # TODO update control byte
+        )
+        _ = self._read_until_valid_crc_check()  # TODO check ACK
+        session_id, msg_type, msg_data = self.read_and_decrypt()
+        features = self.mapping.decode(msg_type, msg_data)
+        assert isinstance(features, messages.Features)
+        self.features = features
+        self._send_ack_2()
+
+    def _establish_new_channel(self) -> None:
         self.sync_bit_send = 0
         self.sync_bit_receive = 0
         # Send channel allocation request
@@ -124,7 +144,7 @@ class ProtocolV2(ProtocolAndChannel):
         noise_tag = payload[80:96]
 
         # TODO check noise tag
-        print("noise_tag: ", hexlify(noise_tag).decode())
+        LOG.debug("noise_tag: %s", hexlify(noise_tag).decode())
 
         # Prepare and send handshake completion request
         PROTOCOL_NAME = b"Noise_XX_25519_AESGCM_SHA256\x00\x00\x00\x00"
@@ -143,7 +163,6 @@ class ProtocolV2(ProtocolAndChannel):
             trezor_masked_static_pubkey = aes_ctx.decrypt(
                 IV_1, encrypted_trezor_static_pubkey, h
             )
-            # print("masked_key", hexlify(trezor_masked_static_pubkey).decode())
         except Exception as e:
             print(type(e))  # TODO how to handle potential exceptions? Q for Matejcik
         h = _sha256_of_two(h, encrypted_trezor_static_pubkey)
@@ -259,7 +278,7 @@ class ProtocolV2(ProtocolAndChannel):
             self.transport, header, encrypted_message
         )
 
-    def read_and_decrypt(self) -> t.Tuple[bytes, int, bytes]:
+    def read_and_decrypt(self) -> t.Tuple[int, int, bytes]:
         header, raw_payload = self._read_until_valid_crc_check()
         if not header.is_encrypted_transport():
             print("Trying to decrypt not encrypted message!")
@@ -272,7 +291,7 @@ class ProtocolV2(ProtocolAndChannel):
         message_type = message[1:3]
         message_data = message[3:]
         return (
-            int.to_bytes(session_id, 1, "big"),
+            session_id,
             int.from_bytes(message_type, "big"),
             message_data,
         )

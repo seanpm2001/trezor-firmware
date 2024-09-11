@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import io
+import logging
 from types import ModuleType
 from typing import Dict, Optional, Tuple, Type, TypeVar
 
@@ -25,6 +26,7 @@ from typing_extensions import Self
 from . import messages, protobuf
 
 T = TypeVar("T")
+LOG = logging.getLogger(__name__)
 
 
 class ProtobufMapping:
@@ -63,7 +65,7 @@ class ProtobufMapping:
         wire_type = self.class_to_type_override.get(type(msg), msg.MESSAGE_WIRE_TYPE)
         if wire_type is None:
             raise ValueError("Cannot encode class without wire type")
-        print("wire type", wire_type)
+        LOG.debug("encoding wire type %d", wire_type)
         buf = io.BytesIO()
         protobuf.dump_message(buf, msg)
         return wire_type, buf.getvalue()

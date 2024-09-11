@@ -61,11 +61,9 @@ class ProtocolV1(ProtocolAndChannel):
         self._write(msg_type, msg_bytes)
 
     def _write(self, message_type: int, message_data: bytes) -> None:
-        print("wooooo")
         chunk_size = self.transport.CHUNK_SIZE
         header = struct.pack(">HL", message_type, len(message_data))
         buffer = bytearray(b"##" + header + message_data)
-        print("wooooo")
 
         while buffer:
             # Report ID, data padded to 63 bytes

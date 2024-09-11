@@ -289,12 +289,10 @@ def list_devices(no_resolve: bool) -> Optional[Iterable["NewTransport"]]:
 
     for transport in new_enumerate_devices():
         try:
-            print("test A")
             client = NewTrezorClient(transport)
-            session = client.get_session()
+            session = client.get_management_session()
             description = format_device_name(session.features)
             # client.end_session()
-            print("after end session")
         except DeviceIsBusy:
             description = "Device is in use by another process"
         except Exception:
