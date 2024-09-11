@@ -14,17 +14,10 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
+from __future__ import annotations
+
 import logging
-from typing import (
-    TYPE_CHECKING,
-    Iterable,
-    List,
-    Optional,
-    Sequence,
-    Tuple,
-    Type,
-    TypeVar,
-)
+from typing import TYPE_CHECKING, Iterable, List, Sequence, Tuple, Type, TypeVar
 
 from ..exceptions import TrezorException
 from ..mapping import ProtobufMapping
@@ -82,8 +75,8 @@ class Transport:
     def initialize_connection(
         self,
         mapping: "ProtobufMapping",
-        session_id: Optional[bytes] = None,
-        derive_cardano: Optional[bool] = None,
+        session_id: bytes | None = None,
+        derive_cardano: bool | None = None,
     ):
         raise NotImplementedError
 
@@ -113,7 +106,7 @@ class Transport:
 
     @classmethod
     def enumerate(
-        cls: Type["T"], models: Optional[Iterable["TrezorModel"]] = None
+        cls: Type["T"], models: Iterable["TrezorModel"] | None = None
     ) -> Iterable["T"]:
         raise NotImplementedError
 
@@ -145,8 +138,21 @@ def all_transports() -> Iterable[Type["Transport"]]:
     return set(t for t in transports if t.ENABLED)
 
 
+def all_new_transports() -> Iterable[Type["NewTransport"]]:
+    # from .bridge import BridgeTransport
+    # from .hid import HidTransport
+    from .new.udp import UdpTransport
+    from .new.webusb import WebUsbTransport
+
+    transports: Tuple[Type["NewTransport"], ...] = (
+        UdpTransport,
+        WebUsbTransport,
+    )
+    return set(t for t in transports if t.ENABLED)
+
+
 def enumerate_devices(
-    models: Optional[Iterable["TrezorModel"]] = None,
+    models: Iterable["TrezorModel"] | None = None,
 ) -> Sequence["Transport"]:
     devices: List["Transport"] = []
     for transport in all_transports():
@@ -163,9 +169,28 @@ def enumerate_devices(
     return devices
 
 
-def get_transport(
-    path: Optional[str] = None, prefix_search: bool = False
-) -> "Transport":
+from .new.transport import NewTransport
+
+
+def new_enumerate_devices(
+    models: Iterable["TrezorModel"] | None = None,
+) -> Sequence["NewTransport"]:
+    devices: List["NewTransport"] = []
+    for transport in all_new_transports():
+        name = transport.__name__
+        try:
+            found = list(transport.enumerate(models))
+            LOG.info(f"Enumerating {name}: found {len(found)} devices")
+            devices.extend(found)
+        except NotImplementedError:
+            LOG.error(f"{name} does not implement device enumeration")
+        except Exception as e:
+            excname = e.__class__.__name__
+            LOG.error(f"Failed to enumerate {name}. {excname}: {e}")
+    return devices
+
+
+def get_transport(path: str | None = None, prefix_search: bool = False) -> "Transport":
     if path is None:
         try:
             return next(iter(enumerate_devices()))

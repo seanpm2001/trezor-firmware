@@ -66,7 +66,6 @@ class ProtobufMapping:
         print("wire type", wire_type)
         buf = io.BytesIO()
         protobuf.dump_message(buf, msg)
-        print("test")
         return wire_type, buf.getvalue()
 
     def encode_without_wire_type(self, msg: protobuf.MessageType) -> bytes:

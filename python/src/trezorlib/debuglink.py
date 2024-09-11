@@ -14,6 +14,8 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
+from __future__ import annotations
+
 import json
 import logging
 import re
@@ -1096,6 +1098,7 @@ class TrezorClientDebugLink(TrezorClient):
         if not hasattr(input_flow, "send"):
             raise RuntimeError("input_flow should be a generator function")
         self.ui.input_flow = input_flow
+        assert input_flow is not None
         input_flow.send(None)  # start the generator
 
     def watch_layout(self, watch: bool = True) -> None:

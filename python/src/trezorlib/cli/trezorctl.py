@@ -24,9 +24,10 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, Optional, TypeVar, ca
 
 import click
 
-from .. import __version__, log, messages, protobuf, ui
+from .. import __version__, log, messages, protobuf
 from ..client import TrezorClient
-from ..transport import DeviceIsBusy, enumerate_devices
+from ..transport import DeviceIsBusy, new_enumerate_devices
+from ..transport.new.client import NewTrezorClient
 from ..transport.udp import UdpTransport
 from . import (
     AliasedGroup,
@@ -54,7 +55,7 @@ from . import (
 F = TypeVar("F", bound=Callable)
 
 if TYPE_CHECKING:
-    from ..transport import Transport
+    from ..transport.new.transport import NewTransport
 
 LOG = logging.getLogger(__name__)
 
@@ -281,16 +282,18 @@ def format_device_name(features: messages.Features) -> str:
 
 @cli.command(name="list")
 @click.option("-n", "no_resolve", is_flag=True, help="Do not resolve Trezor names")
-def list_devices(no_resolve: bool) -> Optional[Iterable["Transport"]]:
+def list_devices(no_resolve: bool) -> Optional[Iterable["NewTransport"]]:
     """List connected Trezor devices."""
     if no_resolve:
-        return enumerate_devices()
+        return new_enumerate_devices()
 
-    for transport in enumerate_devices():
+    for transport in new_enumerate_devices():
         try:
-            client = TrezorClient(transport, ui=ui.ClickUI())
-            description = format_device_name(client.features)
-            client.end_session()
+            print("test A")
+            client = NewTrezorClient(transport)
+            session = client.get_session()
+            description = format_device_name(session.features)
+            # client.end_session()
             print("after end session")
         except DeviceIsBusy:
             description = "Device is in use by another process"

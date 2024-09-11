@@ -174,14 +174,14 @@ class ProtocolBasedTransport(Transport):
         response = mapping.DEFAULT_MAPPING.decode(response_type, response_data)
         self.handle.close()
         if isinstance(response, messages.Failure):
-            from .protocol_v2 import ProtocolV2
+            from .protocol_v2 import DeprecatedProtocolV2
 
             if (
                 response.code == FailureType.UnexpectedMessage
                 and response.message == "Invalid protocol"
             ):
                 LOG.debug("Protocol V2 detected")
-                protocol = ProtocolV2(self.handle)
+                protocol = DeprecatedProtocolV2(self.handle)
 
         return protocol
 
@@ -193,8 +193,8 @@ def _get_protocol(version: int, handle: Handle) -> Protocol:
         return ProtocolV1(handle)
 
     if version == PROTOCOL_VERSION_2:
-        from .protocol_v2 import ProtocolV2
+        from .protocol_v2 import DeprecatedProtocolV2
 
-        return ProtocolV2(handle)
+        return DeprecatedProtocolV2(handle)
 
     raise NotImplementedError
