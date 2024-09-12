@@ -382,10 +382,11 @@ def new_clear_session() -> None:
 
 
 @cli.command()
-@with_client
-def get_features(client: "TrezorClient") -> messages.Features:
+@new_with_client
+def get_features(client: "NewTrezorClient") -> messages.Features:
     """Retrieve device features and settings."""
-    return client.features
+    session = client.get_management_session()
+    return session.features
 
 
 @cli.command()
