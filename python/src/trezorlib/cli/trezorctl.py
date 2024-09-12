@@ -377,7 +377,7 @@ def clear_session(client: "TrezorClient") -> None:
 
 @cli.command()
 def new_clear_session() -> None:
-    """New Clear session (remove cached PIN, passphrase, etc.)."""
+    """New Clear session (remove cached channels from trezorlib)."""
     channel_database.clear_stored_channels()
 
 
