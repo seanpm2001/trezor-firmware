@@ -32,6 +32,7 @@ from ..transport.new.client import NewTrezorClient
 from ..transport.udp import UdpTransport
 from . import (
     AliasedGroup,
+    NewTrezorConnection,
     TrezorConnection,
     binance,
     btc,
@@ -51,6 +52,7 @@ from . import (
     stellar,
     tezos,
     with_client,
+    new_with_client,
 )
 
 F = TypeVar("F", bound=Callable)
@@ -215,7 +217,8 @@ def cli_main(
         except ValueError:
             raise click.ClickException(f"Not a valid session id: {session_id}")
 
-    ctx.obj = TrezorConnection(path, bytes_session_id, passphrase_on_host, script)
+    # ctx.obj = TrezorConnection(path, bytes_session_id, passphrase_on_host, script)
+    ctx.obj = NewTrezorConnection(path, bytes_session_id, passphrase_on_host, script)
 
     # Optionally record the screen into a specified directory.
     if record:
@@ -370,6 +373,12 @@ def get_session(obj: TrezorConnection) -> str:
 def clear_session(client: "TrezorClient") -> None:
     """Clear session (remove cached PIN, passphrase, etc.)."""
     return client.clear_session()
+
+
+@cli.command()
+def new_clear_session() -> None:
+    """New Clear session (remove cached PIN, passphrase, etc.)."""
+    channel_database.clear_stored_channels()
 
 
 @cli.command()

@@ -46,6 +46,12 @@ def ensure_file_exists() -> None:
             json.dump([], f)
 
 
+def clear_stored_channels() -> None:
+    LOG.debug("Clearing contents of %s - to empty list.", FILE_PATH)
+    with open(FILE_PATH, "w") as f:
+        json.dump([], f)
+
+
 def read_all_channels() -> t.List:
     ensure_file_exists()
     with open(FILE_PATH, "r") as f:

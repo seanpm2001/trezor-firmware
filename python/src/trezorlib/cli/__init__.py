@@ -20,6 +20,9 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
 import click
+from ..transport.new.client import NewTrezorClient
+from ..transport.new import channel_database
+from ..transport.new.transport import NewTransport
 
 from .. import exceptions, transport
 from ..client import TrezorClient
@@ -55,6 +58,80 @@ class ChoiceType(click.Choice):
         if isinstance(value, str) and not self.case_sensitive:
             value = value.lower()
         return self.typemap[value]
+
+
+class NewTrezorConnection:
+    def __init__(
+        self,
+        path: str,
+        session_id: Optional[bytes],
+        passphrase_on_host: bool,
+        script: bool,
+    ) -> None:
+        self.path = path
+        self.session_id = session_id
+        self.passphrase_on_host = passphrase_on_host
+        self.script = script
+
+    def get_transport(self) -> "NewTransport":
+        try:
+            # look for transport without prefix search
+            return transport.new_get_transport(self.path, prefix_search=False)
+        except Exception:
+            # most likely not found. try again below.
+            pass
+
+        # look for transport with prefix search
+        # if this fails, we want the exception to bubble up to the caller
+        return transport.new_get_transport(self.path, prefix_search=True)
+
+    def get_client(self) -> NewTrezorClient:
+        transport = self.get_transport()
+
+        stored_channels = channel_database.load_stored_channels()
+        stored_transport_paths = [ch.transport_path for ch in stored_channels]
+        path = transport.get_path()
+        if path in stored_transport_paths:
+            stored_channel_with_correct_transport_path = next(
+                ch for ch in stored_channels if ch.transport_path == path
+            )
+            client = NewTrezorClient.resume(
+                transport, stored_channel_with_correct_transport_path
+            )
+        else:
+            client = NewTrezorClient(transport)
+        return client
+
+    @contextmanager
+    def client_context(self):
+        """Get a client instance as a context manager. Handle errors in a manner
+        appropriate for end-users.
+
+        Usage:
+        >>> with obj.client_context() as client:
+        >>>     do_your_actions_here()
+        """
+        try:
+            client = self.get_client()
+        except transport.DeviceIsBusy:
+            click.echo("Device is in use by another process.")
+            sys.exit(1)
+        except Exception:
+            click.echo("Failed to find a Trezor device.")
+            if self.path is not None:
+                click.echo(f"Using path: {self.path}")
+            sys.exit(1)
+
+        try:
+            yield client
+        except exceptions.Cancelled:
+            # handle cancel action
+            click.echo("Action was cancelled.")
+            sys.exit(1)
+        except exceptions.TrezorException as e:
+            # handle any Trezor-sent exceptions as user-readable
+            raise click.ClickException(str(e)) from e
+            # other exceptions may cause a traceback
 
 
 class TrezorConnection:
@@ -126,6 +203,45 @@ class TrezorConnection:
             # handle any Trezor-sent exceptions as user-readable
             raise click.ClickException(str(e)) from e
             # other exceptions may cause a traceback
+
+
+def new_with_client(
+    func: "Callable[Concatenate[NewTrezorClient, P], R]",
+) -> "Callable[P, R]":
+    """Wrap a Click command in `with obj.client_context() as client`.
+
+    Sessions are handled transparently. The user is warned when session did not resume
+    cleanly. The session is closed after the command completes - unless the session
+    was resumed, in which case it should remain open.
+    """
+
+    @click.pass_obj
+    @functools.wraps(func)
+    def trezorctl_command_with_client(
+        obj: NewTrezorConnection, *args: "P.args", **kwargs: "P.kwargs"
+    ) -> "R":
+        with obj.client_context() as client:
+            # session_was_resumed = obj.session_id == client.session_id
+            # if not session_was_resumed and obj.session_id is not None:
+            #     # tried to resume but failed
+            #     click.echo("Warning: failed to resume session.", err=True)
+            click.echo(
+                "Warning: resume session detection is not implemented yet!", err=True
+            )
+            try:
+                return func(client, *args, **kwargs)
+            finally:
+                channel_database.save_channel(client.protocol)
+                # if not session_was_resumed:
+                #     try:
+                #         client.end_session()
+                #     except Exception:
+                #         pass
+                pass
+
+    # the return type of @click.pass_obj is improperly specified and pyright doesn't
+    # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
+    return trezorctl_command_with_client  # type: ignore [is incompatible with return type]
 
 
 def with_client(func: "Callable[Concatenate[TrezorClient, P], R]") -> "Callable[P, R]":
