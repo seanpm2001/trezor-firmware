@@ -70,8 +70,11 @@ class SessionV2(Session):
     def __init__(self, client: NewTrezorClient, id: bytes) -> None:
         super().__init__(client, id)
         assert isinstance(client.protocol, ProtocolV2)
+
         self.channel: ProtocolV2 = client.protocol.get_channel()
         self.update_id_and_sid(id)
+        if not self.channel.has_valid_features:
+            self.channel.update_features()
         self.features = self.channel.features
 
     def call(self, msg: t.Any) -> t.Any:

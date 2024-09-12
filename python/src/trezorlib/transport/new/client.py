@@ -33,11 +33,22 @@ class NewTrezorClient:
             self.protocol = self._get_protocol()
         else:
             self.protocol = protocol
+        self.protocol.mapping = self.mapping
 
     @classmethod
     def resume(
-        cls, transport: NewTransport, channel_data: ChannelData
-    ) -> NewTrezorClient: ...
+        cls,
+        transport: NewTransport,
+        channel_data: ChannelData,
+        protobuf_mapping: ProtobufMapping | None = None,
+    ) -> NewTrezorClient:
+        if protobuf_mapping is None:
+            protobuf_mapping = mapping.DEFAULT_MAPPING
+        if channel_data.protocol_version == 2:
+            protocol = ProtocolV2(transport, protobuf_mapping, channel_data)
+        else:
+            protocol = ProtocolV1(transport, protobuf_mapping, channel_data)
+        return NewTrezorClient(transport, protobuf_mapping, protocol)
 
     def get_session(
         self,
@@ -59,7 +70,6 @@ class NewTrezorClient:
             self.management_session = SessionV1.new(self, "", False)
         elif isinstance(self.protocol, ProtocolV2):
             self.management_session = SessionV2(self, b"\x00")
-
         assert self.management_session is not None
         return self.management_session
 

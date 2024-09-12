@@ -27,6 +27,7 @@ import click
 from .. import __version__, log, messages, protobuf
 from ..client import TrezorClient
 from ..transport import DeviceIsBusy, new_enumerate_devices
+from ..transport.new import channel_database
 from ..transport.new.client import NewTrezorClient
 from ..transport.udp import UdpTransport
 from . import (
@@ -287,18 +288,32 @@ def list_devices(no_resolve: bool) -> Optional[Iterable["NewTransport"]]:
     if no_resolve:
         return new_enumerate_devices()
 
+    stored_channels = channel_database.load_stored_channels()
+    stored_transport_paths = [ch.transport_path for ch in stored_channels]
     for transport in new_enumerate_devices():
         try:
-            client = NewTrezorClient(transport)
-            session = client.get_management_session()
+            path = transport.get_path()
+            if path in stored_transport_paths:
+                stored_channel_with_correct_transport_path = next(
+                    ch for ch in stored_channels if ch.transport_path == path
+                )
+                client = NewTrezorClient.resume(
+                    transport, stored_channel_with_correct_transport_path
+                )
+            else:
+                client = NewTrezorClient(transport)
 
+            session = client.get_management_session()
             description = format_device_name(session.features)
+            # json_string = channel_database.channel_to_str(client.protocol)
+            # print(json_string)
+            channel_database.save_channel(client.protocol)
             # client.end_session()
         except DeviceIsBusy:
             description = "Device is in use by another process"
         except Exception:
             description = "Failed to read details"
-        click.echo(f"{transport} - {description}")
+        click.echo(f"{transport.get_path()} - {description}")
     return None
 
 

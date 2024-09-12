@@ -13,15 +13,16 @@ LOG = logging.getLogger(__name__)
 
 
 class ProtocolAndChannel:
+
     def __init__(
         self,
         transport: NewTransport,
         mapping: ProtobufMapping,
-        channel_keys: ChannelData | None = None,
+        channel_data: ChannelData | None = None,
     ) -> None:
         self.transport = transport
         self.mapping = mapping
-        self.channel_keys = channel_keys
+        self.channel_keys = channel_data
 
     def close(self) -> None: ...
 
@@ -29,7 +30,8 @@ class ProtocolAndChannel:
 
     # def read(self, session_id: bytes) -> t.Any: ...
 
-    def get_channel_keys(self) -> ChannelData: ...
+    def get_channel_data(self) -> ChannelData:
+        raise NotImplementedError
 
 
 class ProtocolV1(ProtocolAndChannel):
@@ -101,15 +103,3 @@ class ProtocolV1(ProtocolAndChannel):
         if chunk[:1] != b"?":
             raise RuntimeError("Unexpected magic characters")
         return chunk[1:]
-
-
-class Channel:
-    id: int
-    channel_keys: ChannelData | None
-
-    def __init__(self, id: int, keys: ChannelData) -> None:
-        self.id = id
-        self.channel_keys = keys
-
-    def read(self) -> t.Any: ...
-    def write(self, msg: t.Any) -> None: ...

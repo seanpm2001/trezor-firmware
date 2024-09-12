@@ -17,7 +17,7 @@ from ..thp.checksum import CHECKSUM_LENGTH
 from ..thp.packet_header import PacketHeader
 from . import control_byte
 from .channel_data import ChannelData
-from .protocol_and_channel import Channel, ProtocolAndChannel
+from .protocol_and_channel import ProtocolAndChannel
 from .transport import NewTransport
 
 LOG = logging.getLogger(__name__)
@@ -47,30 +47,55 @@ def _get_iv_from_nonce(nonce: int) -> bytes:
 
 
 class ProtocolV2(ProtocolAndChannel):
+    channel_id: int
+
     key_request: bytes
     key_response: bytes
     nonce_request: int
     nonce_response: int
-    channel_id: int
     sync_bit_send: int
     sync_bit_receive: int
+
     has_valid_channel: bool = False
+    has_valid_features: bool = False
     features: messages.Features
 
     def __init__(
         self,
         transport: NewTransport,
         mapping: ProtobufMapping,
-        channel_keys: ChannelData | None = None,
+        channel_data: ChannelData | None = None,
     ) -> None:
-        super().__init__(transport, mapping, channel_keys)
-        self.channel: Channel | None = None
+        super().__init__(transport, mapping, channel_data)
+        if channel_data is not None:
+            self.channel_id = channel_data.channel_id
+            self.key_request = bytes.fromhex(channel_data.key_request)
+            self.key_response = bytes.fromhex(channel_data.key_response)
+            self.nonce_request = channel_data.nonce_request
+            self.nonce_response = channel_data.nonce_response
+            self.sync_bit_receive = channel_data.sync_bit_receive
+            self.sync_bit_send = channel_data.sync_bit_send
+            self.has_valid_channel = True
 
     def get_channel(self) -> ProtocolV2:
         if not self.has_valid_channel:
             self._establish_new_channel()
+        if not self.has_valid_features:
             self.update_features()
         return self
+
+    def get_channel_data(self) -> ChannelData:
+        return ChannelData(
+            protocol_version=2,
+            transport_path=self.transport.get_path(),
+            channel_id=self.channel_id,
+            key_request=self.key_request,
+            key_response=self.key_response,
+            nonce_request=self.nonce_request,
+            nonce_response=self.nonce_response,
+            sync_bit_receive=self.sync_bit_receive,
+            sync_bit_send=self.sync_bit_send,
+        )
 
     def read(self, session_id: int) -> t.Any:
         header, data = self._read_until_valid_crc_check()
@@ -83,7 +108,6 @@ class ProtocolV2(ProtocolAndChannel):
     def update_features(self) -> None:
         message = messages.GetFeatures()
         message_type, message_data = self.mapping.encode(message)
-
         self.session_id: int = 0
         self._encrypt_and_write(MANAGEMENT_SESSION_ID, message_type, message_data)
         _ = self._read_until_valid_crc_check()  # TODO check ACK
@@ -91,6 +115,7 @@ class ProtocolV2(ProtocolAndChannel):
         features = self.mapping.decode(msg_type, msg_data)
         assert isinstance(features, messages.Features)
         self.features = features
+        self.has_valid_features = True
 
     def _establish_new_channel(self) -> None:
         self.sync_bit_send = 0
