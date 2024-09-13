@@ -396,7 +396,7 @@ def usb_reset() -> None:
     This can fix LIBUSB_ERROR_PIPE and similar errors when connecting to a device
     in a messed state.
     """
-    from ..transport.webusb import WebUsbTransport
+    from ..transport.new.webusb import WebUsbTransport
 
     WebUsbTransport.enumerate(usb_reset=True)
 
