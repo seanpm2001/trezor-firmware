@@ -29,7 +29,7 @@ from ..client import TrezorClient
 from ..transport import DeviceIsBusy, new_enumerate_devices
 from ..transport.new import channel_database
 from ..transport.new.client import NewTrezorClient
-from ..transport.udp import UdpTransport
+from ..transport.new.udp import UdpTransport
 from . import (
     AliasedGroup,
     NewTrezorConnection,
@@ -404,7 +404,7 @@ def usb_reset() -> None:
 @cli.command()
 @click.option("-t", "--timeout", type=float, default=10, help="Timeout in seconds")
 @click.pass_obj
-def wait_for_emulator(obj: TrezorConnection, timeout: float) -> None:
+def wait_for_emulator(obj: NewTrezorConnection, timeout: float) -> None:
     """Wait until Trezor Emulator comes up.
 
     Tries to connect to emulator and returns when it succeeds.
@@ -416,7 +416,7 @@ def wait_for_emulator(obj: TrezorConnection, timeout: float) -> None:
         path = path.replace("udp:", "")
 
     start = time.monotonic()
-    UdpTransport(path, skip_protocol_detection=True).wait_until_ready(timeout)
+    UdpTransport(path).wait_until_ready(timeout)
     end = time.monotonic()
 
     LOG.info(f"Waited for {end - start:.3f} seconds")
