@@ -29,6 +29,7 @@ from ..client import TrezorClient
 from ..transport import DeviceIsBusy, new_enumerate_devices
 from ..transport.new import channel_database
 from ..transport.new.client import NewTrezorClient
+from ..transport.new.session import Session
 from ..transport.new.udp import UdpTransport
 from . import (
     AliasedGroup,
@@ -53,6 +54,7 @@ from . import (
     stellar,
     tezos,
     with_client,
+    with_session,
 )
 
 F = TypeVar("F", bound=Callable)
@@ -334,10 +336,14 @@ def version() -> str:
 @cli.command()
 @click.argument("message")
 @click.option("-b", "--button-protection", is_flag=True)
-@with_client
-def ping(client: "TrezorClient", message: str, button_protection: bool) -> str:
+@with_session
+def ping(session: "Session", message: str, button_protection: bool) -> str:
     """Send ping message."""
-    return client.ping(message, button_protection=button_protection)
+
+    # TODO return short-circuit from old client for old Trezors
+    return session.call(
+        messages.Ping(message=message, button_protection=button_protection)
+    )
 
 
 @cli.command()

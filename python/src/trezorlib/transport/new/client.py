@@ -28,9 +28,11 @@ class NewTrezorClient:
             self.mapping = mapping.DEFAULT_MAPPING
         else:
             self.mapping = protobuf_mapping
-
         if protocol is None:
-            self.protocol = self._get_protocol()
+            try:
+                self.protocol = self._get_protocol()
+            except Exception as e:
+                print(e)
         else:
             self.protocol = protocol
         self.protocol.mapping = self.mapping
@@ -52,9 +54,8 @@ class NewTrezorClient:
 
     def get_session(
         self,
-        passphrase: str = "",
+        passphrase: str | None = None,
         derive_cardano: bool = False,
-        management_session: bool = False,
     ) -> Session:
         if isinstance(self.protocol, ProtocolV1):
             return SessionV1.new(self, passphrase, derive_cardano)

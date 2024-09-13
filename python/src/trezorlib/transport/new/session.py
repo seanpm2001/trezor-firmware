@@ -19,7 +19,7 @@ class Session:
 
     @classmethod
     def new(
-        cls, client: NewTrezorClient, passphrase: str, derive_cardano: bool
+        cls, client: NewTrezorClient, passphrase: str | None, derive_cardano: bool
     ) -> Session:
         raise NotImplementedError
 
@@ -30,7 +30,7 @@ class Session:
 class SessionV1(Session):
     @classmethod
     def new(
-        cls, client: NewTrezorClient, passphrase: str, derive_cardano: bool
+        cls, client: NewTrezorClient, passphrase: str | None, derive_cardano: bool
     ) -> SessionV1:
         assert isinstance(client.protocol, ProtocolV1)
         session = SessionV1(client, b"")
@@ -54,9 +54,8 @@ class SessionV2(Session):
 
     @classmethod
     def new(
-        cls, client: NewTrezorClient, passphrase: str, derive_cardano: bool
+        cls, client: NewTrezorClient, passphrase: str | None, derive_cardano: bool
     ) -> SessionV2:
-
         assert isinstance(client.protocol, ProtocolV2)
         session = SessionV2(client, b"\x00")
         new_session: ThpNewSession = session.call(
@@ -73,9 +72,7 @@ class SessionV2(Session):
 
         self.channel: ProtocolV2 = client.protocol.get_channel()
         self.update_id_and_sid(id)
-        if not self.channel.has_valid_features:
-            self.channel.update_features()
-        self.features = self.channel.features
+        self.features = self.channel.get_features()
 
     def call(self, msg: t.Any) -> t.Any:
         self.channel.write(self.sid, msg)

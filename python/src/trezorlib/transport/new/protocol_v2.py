@@ -10,12 +10,12 @@ from enum import IntEnum
 
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
-from ... import messages
+from ... import exceptions, messages
 from ...mapping import ProtobufMapping
 from ..thp import checksum, curve25519, thp_io
 from ..thp.checksum import CHECKSUM_LENGTH
 from ..thp.packet_header import PacketHeader
-from . import control_byte
+from . import channel_database, control_byte
 from .channel_data import ChannelData
 from .protocol_and_channel import ProtocolAndChannel
 from .transport import NewTransport
@@ -56,9 +56,9 @@ class ProtocolV2(ProtocolAndChannel):
     sync_bit_send: int
     sync_bit_receive: int
 
-    has_valid_channel: bool = False
-    has_valid_features: bool = False
-    features: messages.Features
+    _has_valid_channel: bool = False
+    _has_valid_features: bool = False
+    _features: messages.Features
 
     def __init__(
         self,
@@ -75,13 +75,14 @@ class ProtocolV2(ProtocolAndChannel):
             self.nonce_response = channel_data.nonce_response
             self.sync_bit_receive = channel_data.sync_bit_receive
             self.sync_bit_send = channel_data.sync_bit_send
-            self.has_valid_channel = True
+            self._has_valid_channel = True
 
     def get_channel(self) -> ProtocolV2:
-        if not self.has_valid_channel:
+        if not self._has_valid_channel:
             self._establish_new_channel()
-        if not self.has_valid_features:
-            self.update_features()
+        # TODO - Q: should ask for features now or when needed?
+        # if not self.has_valid_features:
+        #     self.update_features()
         return self
 
     def get_channel_data(self) -> ChannelData:
@@ -98,12 +99,23 @@ class ProtocolV2(ProtocolAndChannel):
         )
 
     def read(self, session_id: int) -> t.Any:
-        header, data = self._read_until_valid_crc_check()
-        # TODO
+        sid, msg_type, msg_data = self.read_and_decrypt()
+        if sid != session_id:
+            raise Exception("Received messsage on different session.")
+        channel_database.save_channel(self)
+        return self.mapping.decode(msg_type, msg_data)
 
     def write(self, session_id: int, msg: t.Any) -> None:
         msg_type, msg_data = self.mapping.encode(msg)
         self._encrypt_and_write(session_id, msg_type, msg_data)
+        channel_database.save_channel(self)
+
+    def get_features(self) -> messages.Features:
+        if not self._has_valid_channel:
+            self._establish_new_channel()
+        if not self._has_valid_features:
+            self.update_features()
+        return self._features
 
     def update_features(self) -> None:
         message = messages.GetFeatures()
@@ -111,11 +123,12 @@ class ProtocolV2(ProtocolAndChannel):
         self.session_id: int = 0
         self._encrypt_and_write(MANAGEMENT_SESSION_ID, message_type, message_data)
         _ = self._read_until_valid_crc_check()  # TODO check ACK
-        session_id, msg_type, msg_data = self.read_and_decrypt()
+        _, msg_type, msg_data = self.read_and_decrypt()
         features = self.mapping.decode(msg_type, msg_data)
-        assert isinstance(features, messages.Features)
-        self.features = features
-        self.has_valid_features = True
+        if not isinstance(features, messages.Features):
+            raise exceptions.TrezorException("Unexpected response to GetFeatures")
+        self._features = features
+        self._has_valid_features = True
 
     def _establish_new_channel(self) -> None:
         self.sync_bit_send = 0
@@ -260,7 +273,7 @@ class ProtocolV2(ProtocolAndChannel):
         maaa = self.mapping.decode(msg_type, msg_data)
 
         assert isinstance(maaa, messages.ThpEndResponse)
-        self.has_valid_channel = True
+        self._has_valid_channel = True
 
     def _send_ack_0(self):
         LOG.debug("sending ack 0")
@@ -302,8 +315,13 @@ class ProtocolV2(ProtocolAndChannel):
 
     def read_and_decrypt(self) -> t.Tuple[int, int, bytes]:
         header, raw_payload = self._read_until_valid_crc_check()
+        if control_byte.is_ack(header.ctrl_byte):
+            return self.read_and_decrypt()
         if not header.is_encrypted_transport():
             print("Trying to decrypt not encrypted message!")
+            print(
+                hexlify(header.to_bytes_init()).decode(), hexlify(raw_payload).decode()
+            )
 
         if not control_byte.is_ack(header.ctrl_byte):
             LOG.debug(

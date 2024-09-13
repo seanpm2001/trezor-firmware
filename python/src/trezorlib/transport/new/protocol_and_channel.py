@@ -4,6 +4,7 @@ import logging
 import struct
 import typing as t
 
+from ... import exceptions, messages
 from ...log import DUMP_BYTES
 from ...mapping import ProtobufMapping
 from .channel_data import ChannelData
@@ -30,12 +31,28 @@ class ProtocolAndChannel:
 
     # def read(self, session_id: bytes) -> t.Any: ...
 
+    def get_features(self) -> messages.Features:
+        raise NotImplementedError()
+
     def get_channel_data(self) -> ChannelData:
         raise NotImplementedError
 
 
 class ProtocolV1(ProtocolAndChannel):
     HEADER_LEN = struct.calcsize(">HL")
+    _features: messages.Features
+    _has_valid_features: bool = False
+
+    def get_features(self) -> messages.Features:
+        if not self._has_valid_features:
+            self.write(messages.GetFeatures())
+            resp = self.read()
+            if not isinstance(resp, messages.Features):
+                raise exceptions.TrezorException("Unexpected response to GetFeatures")
+            self._features = resp
+            self._has_valid_features = True
+
+        return self._features
 
     def read(self) -> t.Any:
         msg_type, msg_bytes = self._read()
