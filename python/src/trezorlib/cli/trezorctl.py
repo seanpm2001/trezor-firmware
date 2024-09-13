@@ -46,13 +46,13 @@ from . import (
     firmware,
     monero,
     nem,
+    new_with_client,
     ripple,
     settings,
     solana,
     stellar,
     tezos,
     with_client,
-    new_with_client,
 )
 
 F = TypeVar("F", bound=Callable)

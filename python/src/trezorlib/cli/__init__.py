@@ -20,12 +20,12 @@ from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any, Callable, Dict, Optional
 
 import click
-from ..transport.new.client import NewTrezorClient
-from ..transport.new import channel_database
-from ..transport.new.transport import NewTransport
 
 from .. import exceptions, transport
 from ..client import TrezorClient
+from ..transport.new import channel_database
+from ..transport.new.client import NewTrezorClient
+from ..transport.new.transport import NewTransport
 from ..ui import ClickUI, ScriptUI
 
 if TYPE_CHECKING:
@@ -237,7 +237,6 @@ def new_with_client(
                 #         client.end_session()
                 #     except Exception:
                 #         pass
-                pass
 
     # the return type of @click.pass_obj is improperly specified and pyright doesn't
     # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
