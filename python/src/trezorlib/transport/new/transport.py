@@ -36,14 +36,22 @@ class NewTransport:
 
         raise TransportException(f"{cls.PATH_PREFIX} device not found: {path}")
 
-    def get_path(self) -> str: ...
+    def get_path(self) -> str:
+        raise NotImplementedError
 
-    def open(self) -> None: ...
+    def open(self) -> None:
+        raise NotImplementedError
 
-    def close(self) -> None: ...
+    def close(self) -> None:
+        raise NotImplementedError
 
-    def write_chunk(self, chunk: bytes) -> None: ...
+    def write_chunk(self, chunk: bytes) -> None:
+        raise NotImplementedError
 
-    def read_chunk(self) -> bytes: ...
+    def read_chunk(self) -> bytes:
+        raise NotImplementedError
+
+    def find_debug(self: "T") -> "T":
+        raise NotImplementedError
 
     CHUNK_SIZE: t.ClassVar[int]
