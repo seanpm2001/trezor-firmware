@@ -13,7 +13,6 @@
 #
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
-
 import warnings
 from copy import copy
 from decimal import Decimal
@@ -24,12 +23,11 @@ from typing_extensions import Protocol, TypedDict
 
 from . import exceptions, messages
 from .tools import expect, prepare_message_bytes
-from .transport.new.session import Session
 
 if TYPE_CHECKING:
-    from .client import TrezorClient
     from .protobuf import MessageType
     from .tools import Address
+    from .transport.new.session import Session
 
     class ScriptSig(TypedDict):
         asm: str
@@ -176,13 +174,13 @@ def get_authenticated_address(
 # TODO this is used by tests only
 @expect(messages.OwnershipId, field="ownership_id", ret_type=bytes)
 def get_ownership_id(
-    client: "TrezorClient",
+    session: "Session",
     coin_name: str,
     n: "Address",
     multisig: Optional[messages.MultisigRedeemScriptType] = None,
     script_type: messages.InputScriptType = messages.InputScriptType.SPENDADDRESS,
 ) -> "MessageType":
-    return client.call(
+    return session.call(
         messages.GetOwnershipId(
             address_n=n,
             coin_name=coin_name,
@@ -194,7 +192,7 @@ def get_ownership_id(
 
 # TODO this is used by tests only
 def get_ownership_proof(
-    client: "TrezorClient",
+    session: "Session",
     coin_name: str,
     n: "Address",
     multisig: Optional[messages.MultisigRedeemScriptType] = None,
@@ -205,11 +203,11 @@ def get_ownership_proof(
     preauthorized: bool = False,
 ) -> Tuple[bytes, bytes]:
     if preauthorized:
-        res = client.call(messages.DoPreauthorized())
+        res = session.call(messages.DoPreauthorized())
         if not isinstance(res, messages.PreauthorizedRequest):
             raise exceptions.TrezorException("Unexpected message")
 
-    res = client.call(
+    res = session.call(
         messages.GetOwnershipProof(
             address_n=n,
             coin_name=coin_name,
@@ -435,7 +433,7 @@ def sign_tx(
 
 @expect(messages.Success, field="message", ret_type=str)
 def authorize_coinjoin(
-    client: "TrezorClient",
+    session: "Session",
     coordinator: str,
     max_rounds: int,
     max_coordinator_fee_rate: int,
@@ -444,7 +442,7 @@ def authorize_coinjoin(
     coin_name: str,
     script_type: messages.InputScriptType = messages.InputScriptType.SPENDADDRESS,
 ) -> "MessageType":
-    return client.call(
+    return session.call(
         messages.AuthorizeCoinJoin(
             coordinator=coordinator,
             max_rounds=max_rounds,

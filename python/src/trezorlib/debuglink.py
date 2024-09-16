@@ -57,6 +57,7 @@ if TYPE_CHECKING:
 
     from .messages import PinMatrixRequestType
     from .transport import Transport
+    from .transport.new.session import Session
 
     ExpectedMessage = Union[
         protobuf.MessageType, Type[protobuf.MessageType], "MessageFilter"
@@ -1107,7 +1108,8 @@ class TrezorClientDebugLink(TrezorClient):
         Since trezor-core v2.3.2, it is necessary to call `watch_layout()` before
         using `debug.wait_layout()`, otherwise layout changes are not reported.
         """
-        if self.version >= (2, 3, 2):
+        version = self.get_management_session().get_version()
+        if version >= (2, 3, 2):
             # version check is necessary because otherwise we cannot reliably detect
             # whether and where to wait for reply:
             # - T1 reports unknown debuglink messages on the wirelink
@@ -1319,7 +1321,7 @@ class TrezorClientDebugLink(TrezorClient):
 
 @expect(messages.Success, field="message", ret_type=str)
 def load_device(
-    client: "TrezorClient",
+    session: "Session",
     mnemonic: Union[str, Iterable[str]],
     pin: Optional[str],
     passphrase_protection: bool,
@@ -1333,12 +1335,12 @@ def load_device(
 
     mnemonics = [Mnemonic.normalize_string(m) for m in mnemonic]
 
-    if client.features.initialized:
+    if session.features.initialized:
         raise RuntimeError(
             "Device is initialized already. Call device.wipe() and try again."
         )
 
-    resp = client.call(
+    resp = session.call(
         messages.LoadDevice(
             mnemonics=mnemonics,
             pin=pin,
@@ -1349,7 +1351,7 @@ def load_device(
             no_backup=no_backup,
         )
     )
-    client.init_device()
+    session.init_device()
     return resp
 
 
@@ -1358,11 +1360,11 @@ load_device_by_mnemonic = load_device
 
 
 @expect(messages.Success, field="message", ret_type=str)
-def prodtest_t1(client: "TrezorClient") -> protobuf.MessageType:
-    if client.features.bootloader_mode is not True:
+def prodtest_t1(session: "Session") -> protobuf.MessageType:
+    if session.get_features().bootloader_mode is not True:
         raise RuntimeError("Device must be in bootloader mode")
 
-    return client.call(
+    return session.call(
         messages.ProdTestT1(
             payload=b"\x00\xFF\x55\xAA\x66\x99\x33\xCCABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!\x00\xFF\x55\xAA\x66\x99\x33\xCC"
         )
@@ -1418,5 +1420,5 @@ def _is_emulator(debug_client: "TrezorClientDebugLink") -> bool:
 
 
 @expect(messages.Success, field="message", ret_type=str)
-def optiga_set_sec_max(client: "TrezorClient") -> protobuf.MessageType:
-    return client.call(messages.DebugLinkOptigaSetSecMax())
+def optiga_set_sec_max(session: "Session") -> protobuf.MessageType:
+    return session.call(messages.DebugLinkOptigaSetSecMax())

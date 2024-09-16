@@ -29,7 +29,7 @@ from . import ChoiceType, with_client
 if t.TYPE_CHECKING:
     from ..client import TrezorClient
     from ..protobuf import MessageType
-    from . import TrezorConnection
+    from . import NewTrezorConnection
 
 RECOVERY_DEVICE_INPUT_METHOD = {
     "scrambled": messages.RecoveryDeviceInputMethod.ScrambledWords,
@@ -67,14 +67,15 @@ def cli() -> None:
 @with_client
 def wipe(client: "TrezorClient", bootloader: bool) -> str:
     """Reset device to factory defaults and remove all private data."""
+    features = client.get_management_session().get_features()
     if bootloader:
-        if not client.features.bootloader_mode:
+        if not features.bootloader_mode:
             click.echo("Please switch your device to bootloader mode.")
             sys.exit(1)
         else:
             click.echo("Wiping user data and firmware!")
     else:
-        if client.features.bootloader_mode:
+        if features.bootloader_mode:
             click.echo(
                 "Your device is in bootloader mode. This operation would also erase firmware."
             )
@@ -87,7 +88,9 @@ def wipe(client: "TrezorClient", bootloader: bool) -> str:
             click.echo("Wiping user data!")
 
     try:
-        return device.wipe(client)
+        return device.wipe(
+            client
+        )  # TODO decide where the wipe should happen - management or regular session
     except exceptions.TrezorFailure as e:
         click.echo("Action failed: {} {}".format(*e.args))
         sys.exit(3)
@@ -233,9 +236,11 @@ def setup(
         strength = int(strength)
 
     BT = messages.BackupType
+    management_session = client.get_management_session()
+    version = management_session.get_version()
 
     if backup_type is None:
-        if client.version >= (2, 7, 1):
+        if version >= (2, 7, 1):
             # SLIP39 extendable was introduced in 2.7.1
             backup_type = BT.Slip39_Single_Extendable
         else:
@@ -309,7 +314,7 @@ def sd_protect(
 
 @cli.command()
 @click.pass_obj
-def reboot_to_bootloader(obj: "TrezorConnection") -> str:
+def reboot_to_bootloader(obj: "NewTrezorConnection") -> str:
     """Reboot device into bootloader mode.
 
     Currently only supported on Trezor Model One.

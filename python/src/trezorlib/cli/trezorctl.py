@@ -28,13 +28,11 @@ from .. import __version__, log, messages, protobuf
 from ..client import TrezorClient
 from ..transport import DeviceIsBusy, new_enumerate_devices
 from ..transport.new import channel_database
-from ..transport.new.client import NewTrezorClient
 from ..transport.new.session import Session
 from ..transport.new.udp import UdpTransport
 from . import (
     AliasedGroup,
     NewTrezorConnection,
-    TrezorConnection,
     binance,
     btc,
     cardano,
@@ -47,7 +45,6 @@ from . import (
     firmware,
     monero,
     nem,
-    new_with_client,
     ripple,
     settings,
     solana,
@@ -261,7 +258,7 @@ def print_result(res: Any, is_json: bool, script: bool, **kwargs: Any) -> None:
 
 @cli.set_result_callback()
 @click.pass_obj
-def stop_recording_action(obj: TrezorConnection, *args: Any, **kwargs: Any) -> None:
+def stop_recording_action(obj: NewTrezorConnection, *args: Any, **kwargs: Any) -> None:
     """Stop recording screen changes when the recording was started by `cli_main`.
 
     (When user used the `-r / --record` option of `trezorctl` command.)
@@ -302,14 +299,14 @@ def list_devices(no_resolve: bool) -> Optional[Iterable["NewTransport"]]:
                 stored_channel_with_correct_transport_path = next(
                     ch for ch in stored_channels if ch.transport_path == path
                 )
-                client = NewTrezorClient.resume(
+                client = TrezorClient.resume(
                     transport, stored_channel_with_correct_transport_path
                 )
             else:
-                client = NewTrezorClient(transport)
+                client = TrezorClient(transport)
 
             session = client.get_management_session()
-            description = format_device_name(session.features)
+            description = format_device_name(session.get_features())
             # json_string = channel_database.channel_to_str(client.protocol)
             # print(json_string)
             channel_database.save_channel(client.protocol)
@@ -348,7 +345,9 @@ def ping(session: "Session", message: str, button_protection: bool) -> str:
 
 @cli.command()
 @click.pass_obj
-def get_session(obj: TrezorConnection) -> str:
+def get_session(
+    obj: NewTrezorConnection, passphrase: str = "", derive_cardano: bool = False
+) -> str:
     """Get a session ID for subsequent commands.
 
     Unlocks Trezor with a passphrase and returns a session ID. Use this session ID with
@@ -362,7 +361,10 @@ def get_session(obj: TrezorConnection) -> str:
     obj.session_id = None
 
     with obj.client_context() as client:
-        if client.features.model == "1" and client.version < (1, 9, 0):
+        session = client.get_session(
+            passphrase=passphrase, derive_cardano=derive_cardano
+        )
+        if session.get_features().model == "1" and session.get_version() < (1, 9, 0):
             raise click.ClickException(
                 "Upgrade your firmware to enable session support."
             )
@@ -388,11 +390,11 @@ def new_clear_session() -> None:
 
 
 @cli.command()
-@new_with_client
-def get_features(client: "NewTrezorClient") -> messages.Features:
+@with_client
+def get_features(client: "TrezorClient") -> messages.Features:
     """Retrieve device features and settings."""
     session = client.get_management_session()
-    return session.features
+    return session.get_features()
 
 
 @cli.command()
