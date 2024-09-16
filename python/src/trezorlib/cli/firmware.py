@@ -41,7 +41,7 @@ from . import ChoiceType, with_client
 
 if TYPE_CHECKING:
     from ..client import TrezorClient
-    from . import TrezorConnection
+    from . import NewTrezorConnection
 
 MODEL_CHOICE = ChoiceType(
     {
@@ -74,9 +74,10 @@ def _is_bootloader_onev2(client: "TrezorClient") -> bool:
     This is the case from bootloader version 1.8.0, and also holds for firmware version
     1.8.0 because that installs the appropriate bootloader.
     """
-    f = client.features
-    version = (f.major_version, f.minor_version, f.patch_version)
-    bootloader_onev2 = f.major_version == 1 and version >= (1, 8, 0)
+    management_session = client.get_management_session()
+    features = management_session.get_features()
+    version = management_session.get_version()
+    bootloader_onev2 = features.major_version == 1 and version >= (1, 8, 0)
     return bootloader_onev2
 
 
@@ -306,25 +307,27 @@ def find_best_firmware_version(
     If the specified version is not found, prints the closest available version
     (higher than the specified one, if existing).
     """
+    management_session = client.get_management_session()
+    features = management_session.get_features()
+    model = management_session.get_model()
+
     if bitcoin_only is None:
-        bitcoin_only = _should_use_bitcoin_only(client.features)
+        bitcoin_only = _should_use_bitcoin_only(features)
 
     def version_str(version: Iterable[int]) -> str:
         return ".".join(map(str, version))
 
-    f = client.features
-
-    releases = get_all_firmware_releases(client.model, bitcoin_only, beta)
+    releases = get_all_firmware_releases(model, bitcoin_only, beta)
     highest_version = releases[0]["version"]
 
     if version:
         want_version = [int(x) for x in version.split(".")]
         if len(want_version) != 3:
             click.echo("Please use the 'X.Y.Z' version format.")
-        if want_version[0] != f.major_version:
+        if want_version[0] != features.major_version:
             click.echo(
-                f"Warning: Trezor {client.model.name} firmware version should be "
-                f"{f.major_version}.X.Y (requested: {version})"
+                f"Warning: Trezor {model.name} firmware version should be "
+                f"{features.major_version}.X.Y (requested: {version})"
             )
     else:
         want_version = highest_version
@@ -359,8 +362,8 @@ def find_best_firmware_version(
         #   to the newer one, in that case update to the minimal
         #   compatible version first
         # Choosing the version key to compare based on (not) being in BL mode
-        client_version = [f.major_version, f.minor_version, f.patch_version]
-        if f.bootloader_mode:
+        client_version = management_session.get_version()
+        if features.bootloader_mode:
             key_to_compare = "min_bootloader_version"
         else:
             key_to_compare = "min_firmware_version"
@@ -451,7 +454,7 @@ def upload_firmware_into_device(
     firmware_data: bytes,
 ) -> None:
     """Perform the final act of loading the firmware into Trezor."""
-    f = client.features
+    f = client.get_management_session().get_features()
     try:
         if f.major_version == 1 and f.firmware_present is not False:
             # Trezor One does not send ButtonRequest
@@ -482,7 +485,7 @@ def _is_strict_update(client: "TrezorClient", firmware_data: bytes) -> bool:
     if not isinstance(fw, firmware.VendorFirmware):
         return False
 
-    f = client.features
+    f = client.get_management_session().get_features()
     cur_version = (f.major_version, f.minor_version, f.patch_version, 0)
 
     return (
@@ -519,7 +522,7 @@ def cli() -> None:
 @click.pass_obj
 # fmt: on
 def verify(
-    obj: "TrezorConnection",
+    obj: "NewTrezorConnection",
     filename: BinaryIO,
     check_device: bool,
     fingerprint: Optional[str],
@@ -564,7 +567,7 @@ def verify(
 @click.pass_obj
 # fmt: on
 def download(
-    obj: "TrezorConnection",
+    obj: "NewTrezorConnection",
     output: Optional[BinaryIO],
     model: Optional[TrezorModel],
     version: Optional[str],
@@ -630,7 +633,7 @@ def download(
 # fmt: on
 @click.pass_obj
 def update(
-    obj: "TrezorConnection",
+    obj: "NewTrezorConnection",
     filename: Optional[BinaryIO],
     url: Optional[str],
     version: Optional[str],

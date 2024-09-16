@@ -27,7 +27,7 @@ from ..debuglink import record_screen
 from . import with_client
 
 if TYPE_CHECKING:
-    from . import TrezorConnection
+    from . import NewTrezorConnection
 
 
 @click.group(name="debug")
@@ -40,7 +40,7 @@ def cli() -> None:
 @click.argument("hex_data")
 @click.pass_obj
 def send_bytes(
-    obj: "TrezorConnection", message_name_or_type: str, hex_data: str
+    obj: "NewTrezorConnection", message_name_or_type: str, hex_data: str
 ) -> None:
     """Send raw bytes to Trezor.
 
@@ -86,7 +86,7 @@ def send_bytes(
 @click.argument("directory", required=False)
 @click.option("-s", "--stop", is_flag=True, help="Stop the recording")
 @click.pass_obj
-def record(obj: "TrezorConnection", directory: Union[str, None], stop: bool) -> None:
+def record(obj: "NewTrezorConnection", directory: Union[str, None], stop: bool) -> None:
     """Record screen changes into a specified directory.
 
     Recording can be stopped with `-s / --stop` option.
@@ -95,7 +95,7 @@ def record(obj: "TrezorConnection", directory: Union[str, None], stop: bool) -> 
 
 
 def record_screen_from_connection(
-    obj: "TrezorConnection", directory: Union[str, None]
+    obj: "NewTrezorConnection", directory: Union[str, None]
 ) -> None:
     """Record screen helper to transform TrezorConnection into TrezorClientDebugLink."""
     transport = obj.get_transport()
