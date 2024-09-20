@@ -191,31 +191,3 @@ class SessionContext(GenericSessionContext):
     @property
     def cache(self) -> DataCache:
         return self.session_cache
-
-    if TYPE_CHECKING:
-        T = TypeVar("T")
-
-        @overload
-        def cache_get(self, key: int) -> bytes | None:  # noqa: F811
-            ...
-
-        @overload
-        def cache_get(self, key: int, default: T) -> bytes | T:  # noqa: F811
-            ...
-
-    def cache_get(
-        self, key: int, default: T | None = None
-    ) -> bytes | T | None:  # noqa: F811
-        utils.ensure(key < len(self.session_cache.fields))
-        if self.session_cache.data[key][0] != 1:
-            return default
-        return bytes(self.session_cache.data[key][1:])
-
-    def cache_is_set(self, key: int) -> bool:
-        return self.session_cache.is_set(key)
-
-    def cache_set(self, key: int, value: bytes) -> None:
-        utils.ensure(key < len(self.session_cache.fields))
-        utils.ensure(len(value) <= self.session_cache.fields[key])
-        self.session_cache.data[key][0] = 1
-        self.session_cache.data[key][1:] = value
