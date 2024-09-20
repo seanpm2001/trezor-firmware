@@ -55,3 +55,6 @@ class Cancelled(TrezorException):
 
 class OutdatedFirmwareError(TrezorException):
     pass
+
+class InvalidSession(TrezorException):
+    pass

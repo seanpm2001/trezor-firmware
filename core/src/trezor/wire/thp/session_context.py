@@ -42,20 +42,15 @@ class GenericSessionContext(Context):
         take = self.incoming_message.take()
         next_message: Message | None = None
 
-        while True:
-            try:
-                if await self._handle_message(take, next_message, is_debug_session):
-                    loop.schedule(self.handle())
-                    return
-            except UnexpectedMessageException as unexpected:
-                # The workflow was interrupted by an unexpected message. We need to
-                # process it as if it was a new message...
-                next_message = unexpected.msg
-                continue
-            except Exception as exc:
-                # Log and try again.
-                if __debug__:
-                    log.exception(__name__, exc)
+        try:
+            await self._handle_message(take, next_message, is_debug_session)
+            return
+        except Exception as exc:
+            # Log and try again.
+            if __debug__:
+                log.exception(__name__, exc)
+        finally:
+            self.channel.sessions.pop(self.session_id, None)
 
     def _handle_debug(self, is_debug_session: bool) -> None:
         log.debug(

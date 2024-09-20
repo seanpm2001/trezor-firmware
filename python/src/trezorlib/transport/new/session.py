@@ -97,13 +97,15 @@ class SessionV2(Session):
         cls, client: TrezorClient, passphrase: str | None, derive_cardano: bool
     ) -> SessionV2:
         assert isinstance(client.protocol, ProtocolV2)
-        session = SessionV2(client, b"\x00")
+        session = cls(client, b"\x00")
         new_session: ThpNewSession = session.call(
             ThpCreateNewSession(passphrase=passphrase, derive_cardano=derive_cardano)
         )
         assert new_session.new_session_id is not None
         session_id = new_session.new_session_id
         session.update_id_and_sid(session_id.to_bytes(1, "big"))
+        session.is_mgmt_session = passphrase is None
+        session.active = True
         return session
 
     def __init__(self, client: TrezorClient, id: bytes) -> None:
@@ -115,8 +117,14 @@ class SessionV2(Session):
         self.features = self.channel.get_features()
 
     def call(self, msg: t.Any) -> t.Any:
+        if not self.active:
+            raise InactiveSessionError
         self.channel.write(self.sid, msg)
-        return self.channel.read(self.sid)
+        resp = self.channel.read(self.sid)
+        if isinstance(resp, Failure):
+            ...
+            if resp.code == FailureType.SeedRequired:
+                self.active = False
 
     def get_features(self) -> Features:
         return self.channel.get_features()
