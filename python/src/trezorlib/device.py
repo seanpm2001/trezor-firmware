@@ -138,8 +138,8 @@ def sd_protect(
 @expect(messages.Success, field="message", ret_type=str)
 def wipe(session: "Session") -> "MessageType":
     ret = session.call(messages.WipeDevice())
-    if not session.get_features().bootloader_mode:
-        session.init_device()
+    if not session.features.bootloader_mode:
+        session.refresh_features()
     return ret
 
 
@@ -180,16 +180,13 @@ def recover(
     if type is None:
         type = messages.RecoveryType.NormalRecovery
 
-    if session.get_features().model == "1" and input_callback is None:
+    if session.features.model == "1" and input_callback is None:
         raise RuntimeError("Input callback required for Trezor One")
 
     if word_count not in (12, 18, 24):
         raise ValueError("Invalid word count. Use 12/18/24")
 
-    if (
-        session.get_features().initialized
-        and type == messages.RecoveryType.NormalRecovery
-    ):
+    if session.features.initialized and type == messages.RecoveryType.NormalRecovery:
         raise RuntimeError(
             "Device already initialized. Call device.wipe() and try again."
         )
@@ -221,7 +218,7 @@ def recover(
         except Cancelled:
             res = session.call(messages.Cancel())
 
-    session.init_device()
+    session.refresh_features()
     return res
 
 
@@ -245,13 +242,13 @@ def reset(
             DeprecationWarning,
         )
 
-    if session.get_features().initialized:
+    if session.features.initialized:
         raise RuntimeError(
             "Device is initialized already. Call wipe_device() and try again."
         )
 
     if strength is None:
-        if session.get_features().model == "1":
+        if session.features.model == "1":
             strength = 256
         else:
             strength = 128
@@ -276,7 +273,7 @@ def reset(
     external_entropy = os.urandom(32)
     # LOG.debug("Computer generated entropy: " + external_entropy.hex())
     ret = session.call(messages.EntropyAck(entropy=external_entropy))
-    session.init_device()
+    session.refresh_features()  # TODO is necessary?
     return ret
 
 

@@ -123,7 +123,6 @@ def sign_tx(
         for p in transaction["additional_witness_requests"]
     ]
 
-    session.init_device(derive_cardano=True)
     sign_tx_response = cardano.sign_tx(
         session,
         signing_mode,
@@ -262,7 +261,6 @@ def get_address(
         script_staking_hash_bytes,
     )
 
-    session.init_device(derive_cardano=True)
     return cardano.get_address(
         session,
         address_parameters,
@@ -292,7 +290,6 @@ def get_public_key(
 ) -> messages.CardanoPublicKey:
     """Get Cardano public key."""
     address_n = tools.parse_path(address)
-    session.init_device(derive_cardano=True)
     return cardano.get_public_key(
         session, address_n, derivation_type=derivation_type, show_display=show_display
     )
@@ -323,7 +320,6 @@ def get_native_script_hash(
     native_script_json = json.load(file)
     native_script = cardano.parse_native_script(native_script_json)
 
-    session.init_device(derive_cardano=True)
     return cardano.get_native_script_hash(
         session, native_script, display_format, derivation_type=derivation_type
     )

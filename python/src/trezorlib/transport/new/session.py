@@ -3,13 +3,7 @@ from __future__ import annotations
 import typing as t
 
 from ... import models
-from ...messages import (
-    Features,
-    GetFeatures,
-    Initialize,
-    ThpCreateNewSession,
-    ThpNewSession,
-)
+from ...messages import Features, ThpCreateNewSession, ThpNewSession
 from .protocol_and_channel import ProtocolV1
 from .protocol_v2 import ProtocolV2
 
@@ -21,7 +15,7 @@ class Session:
 
     def __init__(self, client: TrezorClient, id: bytes) -> None:
         self.client = client
-        self.id = id
+        self._id = id
 
     @classmethod
     def new(
@@ -33,46 +27,37 @@ class Session:
         raise NotImplementedError
 
     def refresh_features(self) -> None:
+        self.client.refresh_features()
+
+    def end(self) -> None:
         raise NotImplementedError
 
-    def get_features(self) -> Features:
-        raise NotImplementedError
+    @property
+    def features(self) -> Features:
+        return self.client.features
 
-    def get_model(self) -> models.TrezorModel:
-        features = self.get_features()
-        model = models.by_name(features.model or "1")
+    @property
+    def model(self) -> models.TrezorModel:
+        return self.client.model
 
-        if model is None:
-            raise RuntimeError(
-                "Unsupported Trezor model"
-                f" (internal_model: {features.internal_model}, model: {features.model})"
-            )
-        return model
+    @property
+    def version(self) -> t.Tuple[int, int, int]:
+        return self.client.version
 
-    def get_version(self) -> t.Tuple[int, int, int]:
-        features = self.get_features()
-        version = (
-            features.major_version,
-            features.minor_version,
-            features.patch_version,
-        )
-        return version
+    @property
+    def id(self) -> bytes:
+        return self._id
 
 
 class SessionV1(Session):
-    features: Features
-
     @classmethod
     def new(
         cls, client: TrezorClient, passphrase: str | None, derive_cardano: bool
     ) -> SessionV1:
         assert isinstance(client.protocol, ProtocolV1)
-        session = SessionV1(client, b"")
-        session.features = session.call(
-            # Initialize(passphrase=passphrase, derive_cardano=derive_cardano) # TODO
-            Initialize()
-        )
-        session.id = session.get_features().session_id
+        session_id = client.features.session_id
+        assert session_id is not None
+        session = SessionV1(client, session_id)
         return session
 
     def call(self, msg: t.Any, should_reinit: bool = False) -> t.Any:
@@ -82,12 +67,6 @@ class SessionV1(Session):
             assert isinstance(self.client.protocol, ProtocolV1)
         self.client.protocol.write(msg)
         return self.client.protocol.read()
-
-    def refresh_features(self) -> None:
-        self.features = self.call(GetFeatures())
-
-    def get_features(self) -> Features:
-        return self.features
 
 
 class SessionV2(Session):
@@ -112,18 +91,11 @@ class SessionV2(Session):
 
         self.channel: ProtocolV2 = client.protocol.get_channel()
         self.update_id_and_sid(id)
-        self.features = self.channel.get_features()
 
     def call(self, msg: t.Any) -> t.Any:
         self.channel.write(self.sid, msg)
         return self.channel.read(self.sid)
 
-    def get_features(self) -> Features:
-        return self.channel.get_features()
-
-    def refresh_features(self) -> None:
-        self.channel.update_features()
-
     def update_id_and_sid(self, id: bytes) -> None:
-        self.id = id
+        self._id = id
         self.sid = int.from_bytes(id, "big")  # TODO update to extract only sid

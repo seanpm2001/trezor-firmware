@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, TextIO, Union, cast
 
 from ..debuglink import TrezorClientDebugLink
-from ..transport.udp import UdpTransport
+from ..transport.new.udp import UdpTransport
 
 LOG = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ class Emulator:
         return os.environ.copy()
 
     def _get_transport(self) -> UdpTransport:
-        return UdpTransport(f"127.0.0.1:{self.port}", skip_protocol_detection=True)
+        return UdpTransport(f"127.0.0.1:{self.port}")
 
     def wait_until_ready(self, timeout: float = EMULATOR_WAIT_TIME) -> None:
         assert self.process is not None, "Emulator not started"
@@ -112,7 +112,7 @@ class Emulator:
         start = time.monotonic()
         try:
             while True:
-                if transport._ping():
+                if transport.ping():
                     break
                 if self.process.poll() is not None:
                     raise RuntimeError("Emulator process died")

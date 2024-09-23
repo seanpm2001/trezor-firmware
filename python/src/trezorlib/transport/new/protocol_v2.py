@@ -57,8 +57,7 @@ class ProtocolV2(ProtocolAndChannel):
     sync_bit_receive: int
 
     _has_valid_channel: bool = False
-    _has_valid_features: bool = False
-    _features: messages.Features
+    _features: messages.Features | None = None
 
     def __init__(
         self,
@@ -80,9 +79,6 @@ class ProtocolV2(ProtocolAndChannel):
     def get_channel(self) -> ProtocolV2:
         if not self._has_valid_channel:
             self._establish_new_channel()
-        # TODO - Q: should ask for features now or when needed?
-        # if not self.has_valid_features:
-        #     self.update_features()
         return self
 
     def get_channel_data(self) -> ChannelData:
@@ -113,8 +109,9 @@ class ProtocolV2(ProtocolAndChannel):
     def get_features(self) -> messages.Features:
         if not self._has_valid_channel:
             self._establish_new_channel()
-        if not self._has_valid_features:
+        if self._features is None:
             self.update_features()
+        assert self._features is not None
         return self._features
 
     def update_features(self) -> None:
@@ -128,7 +125,6 @@ class ProtocolV2(ProtocolAndChannel):
         if not isinstance(features, messages.Features):
             raise exceptions.TrezorException("Unexpected response to GetFeatures")
         self._features = features
-        self._has_valid_features = True
 
     def _establish_new_channel(self) -> None:
         self.sync_bit_send = 0

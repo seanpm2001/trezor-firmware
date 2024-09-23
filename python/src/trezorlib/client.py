@@ -19,8 +19,9 @@ import logging
 import os
 import typing as t
 
-from . import mapping
+from . import mapping, models
 from .mapping import ProtobufMapping
+from .messages import Features
 from .tools import parse_path
 from .transport import NewTransport
 from .transport.new.channel_data import ChannelData
@@ -53,6 +54,7 @@ LOG = logging.getLogger(__name__)
 
 class TrezorClient:
     management_session: Session | None = None
+    _features: Features | None = None
 
     def __init__(
         self,
@@ -112,6 +114,43 @@ class TrezorClient:
         assert self.management_session is not None
         return self.management_session
 
+    @property
+    def features(self) -> Features:
+        if self._features is None:
+            self._features = self.protocol.get_features()
+        assert self._features is not None
+        return self._features
+
+    @property
+    def model(self) -> models.TrezorModel:
+        f = self.features
+        model = models.by_name(f.model or "1")
+
+        if model is None:
+            raise RuntimeError(
+                "Unsupported Trezor model"
+                f" (internal_model: {f.internal_model}, model: {f.model})"
+            )
+        return model
+
+    @property
+    def version(self) -> tuple[int, int, int]:
+        f = self.features
+        ver = (
+            f.major_version,
+            f.minor_version,
+            f.patch_version,
+        )
+        return ver
+
+    def refresh_features(self) -> None:
+        self.protocol.update_features()
+        self._features = self.protocol.get_features()
+
+    def ensure_unlocked(self) -> None:
+        # TODO implement
+        raise NotImplementedError
+
     def resume_session(self, session_id: bytes) -> Session:
         raise NotImplementedError  # TODO
 
@@ -152,12 +191,12 @@ def get_default_client(
     the value of TREZOR_PATH env variable, or finds first connected Trezor.
     If no UI is supplied, instantiates the default CLI UI.
     """
-    from .transport import new_get_transport
+    from .transport import get_transport
 
     if path is None:
         path = os.getenv("TREZOR_PATH")
 
-    transport = new_get_transport(path, prefix_search=True)
+    transport = get_transport(path, prefix_search=True)
 
     return TrezorClient(transport, **kwargs)
 
@@ -213,7 +252,7 @@ def get_default_client(
 #         LOG.info(f"creating client instance for device: {transport.get_path()}")
 #         # Here, self.model could be set to None. Unless _init_device is False, it will
 #         # get correctly reconfigured as part of the init_device flow.
-#         self.model = model  # type: ignore ["None" is incompatible with "TrezorModel"]
+#         self.model = model  # type: ignre ["None" is incompatible with "TrezorModel"]
 #         if self.model:
 #             self.mapping = self.model.default_mapping
 #         else:

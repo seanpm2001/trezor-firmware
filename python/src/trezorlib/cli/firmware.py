@@ -37,10 +37,11 @@ import requests
 from .. import device, exceptions, firmware, messages, models
 from ..firmware import models as fw_models
 from ..models import TrezorModel
-from . import ChoiceType, with_client
+from . import ChoiceType, with_management_session
 
 if TYPE_CHECKING:
     from ..client import TrezorClient
+    from ..transport.new.session import Session
     from . import NewTrezorConnection
 
 MODEL_CHOICE = ChoiceType(
@@ -74,9 +75,8 @@ def _is_bootloader_onev2(client: "TrezorClient") -> bool:
     This is the case from bootloader version 1.8.0, and also holds for firmware version
     1.8.0 because that installs the appropriate bootloader.
     """
-    management_session = client.get_management_session()
-    features = management_session.get_features()
-    version = management_session.get_version()
+    features = client.features
+    version = client.version
     bootloader_onev2 = features.major_version == 1 and version >= (1, 8, 0)
     return bootloader_onev2
 
@@ -307,9 +307,8 @@ def find_best_firmware_version(
     If the specified version is not found, prints the closest available version
     (higher than the specified one, if existing).
     """
-    management_session = client.get_management_session()
-    features = management_session.get_features()
-    model = management_session.get_model()
+    features = client.features
+    model = client.model
 
     if bitcoin_only is None:
         bitcoin_only = _should_use_bitcoin_only(features)
@@ -362,7 +361,7 @@ def find_best_firmware_version(
         #   to the newer one, in that case update to the minimal
         #   compatible version first
         # Choosing the version key to compare based on (not) being in BL mode
-        client_version = management_session.get_version()
+        client_version = client.version
         if features.bootloader_mode:
             key_to_compare = "min_bootloader_version"
         else:
@@ -450,11 +449,11 @@ def extract_embedded_fw(
 
 
 def upload_firmware_into_device(
-    client: "TrezorClient",
+    session: "Session",
     firmware_data: bytes,
 ) -> None:
     """Perform the final act of loading the firmware into Trezor."""
-    f = client.get_management_session().get_features()
+    f = session.features
     try:
         if f.major_version == 1 and f.firmware_present is not False:
             # Trezor One does not send ButtonRequest
@@ -464,7 +463,7 @@ def upload_firmware_into_device(
         with click.progressbar(
             label="Uploading", length=len(firmware_data), show_eta=False
         ) as bar:
-            firmware.update(client, firmware_data, bar.update)
+            firmware.update(session, firmware_data, bar.update)
     except exceptions.Cancelled:
         click.echo("Update aborted on device.")
     except exceptions.TrezorException as e:
@@ -485,7 +484,7 @@ def _is_strict_update(client: "TrezorClient", firmware_data: bytes) -> bool:
     if not isinstance(fw, firmware.VendorFirmware):
         return False
 
-    f = client.get_management_session().get_features()
+    f = client.features
     cur_version = (f.major_version, f.minor_version, f.patch_version, 0)
 
     return (
@@ -658,6 +657,7 @@ def update(
     """
     print("client context")
     with obj.client_context() as client:
+        management_session = client.get_management_session()
         if sum(bool(x) for x in (filename, url, version)) > 1:
             click.echo("You can use only one of: filename, url, version.")
             sys.exit(1)
@@ -713,7 +713,7 @@ def update(
             if _is_strict_update(client, firmware_data):
                 header_size = _get_firmware_header_size(firmware_data)
                 device.reboot_to_bootloader(
-                    client,
+                    management_session,
                     boot_command=messages.BootCommand.INSTALL_UPGRADE,
                     firmware_header=firmware_data[:header_size],
                     language_data=language_data,
@@ -723,7 +723,7 @@ def update(
                     click.echo(
                         "WARNING: Seamless installation not possible, language data will not be uploaded."
                     )
-                device.reboot_to_bootloader(client)
+                device.reboot_to_bootloader(management_session)
 
             click.echo("Waiting for bootloader...")
             while True:
@@ -739,13 +739,15 @@ def update(
             click.echo("Please switch your device to bootloader mode.")
             sys.exit(1)
 
-        upload_firmware_into_device(client=client, firmware_data=firmware_data)
+        upload_firmware_into_device(
+            session=client.get_management_session(), firmware_data=firmware_data
+        )
 
 
 @cli.command()
 @click.argument("hex_challenge", required=False)
-@with_client
-def get_hash(client: "TrezorClient", hex_challenge: Optional[str]) -> str:
+@with_management_session
+def get_hash(session: "Session", hex_challenge: Optional[str]) -> str:
     """Get a hash of the installed firmware combined with the optional challenge."""
     challenge = bytes.fromhex(hex_challenge) if hex_challenge else None
-    return firmware.get_hash(client, challenge).hex()
+    return firmware.get_hash(session, challenge).hex()

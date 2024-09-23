@@ -138,14 +138,14 @@ class NewTrezorConnection:
     def get_transport(self) -> "NewTransport":
         try:
             # look for transport without prefix search
-            return transport.new_get_transport(self.path, prefix_search=False)
+            return transport.get_transport(self.path, prefix_search=False)
         except Exception:
             # most likely not found. try again below.
             pass
 
         # look for transport with prefix search
         # if this fails, we want the exception to bubble up to the caller
-        return transport.new_get_transport(self.path, prefix_search=True)
+        return transport.get_transport(self.path, prefix_search=True)
 
     def get_client(self) -> TrezorClient:
         transport = self.get_transport()
@@ -164,6 +164,11 @@ class NewTrezorConnection:
             client = TrezorClient(transport)
 
         return client
+
+    def get_management_session(self) -> Session:
+        client = self.get_client()
+        management_session = client.get_management_session()
+        return management_session
 
     @contextmanager
     def client_context(self):
@@ -296,6 +301,27 @@ def with_session(
     # the return type of @click.pass_obj is improperly specified and pyright doesn't
     # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
     return function_with_session  # type: ignore [is incompatible with return type]
+
+
+def with_management_session(
+    func: "t.Callable[Concatenate[Session, P], R]",
+) -> "t.Callable[P, R]":
+
+    @click.pass_obj
+    @functools.wraps(func)
+    def function_with_management_session(
+        obj: NewTrezorConnection, *args: "P.args", **kwargs: "P.kwargs"
+    ) -> "R":
+        session = obj.get_management_session()
+        try:
+            return func(session, *args, **kwargs)
+        finally:
+            pass
+            # TODO try end session if not resumed
+
+    # the return type of @click.pass_obj is improperly specified and pyright doesn't
+    # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
+    return function_with_management_session  # type: ignore [is incompatible with return type]
 
 
 def with_client(

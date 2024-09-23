@@ -26,7 +26,7 @@ import click
 
 from .. import __version__, log, messages, protobuf
 from ..client import TrezorClient
-from ..transport import DeviceIsBusy, new_enumerate_devices
+from ..transport import DeviceIsBusy, enumerate_devices
 from ..transport.new import channel_database
 from ..transport.new.session import Session
 from ..transport.new.udp import UdpTransport
@@ -288,11 +288,11 @@ def format_device_name(features: messages.Features) -> str:
 def list_devices(no_resolve: bool) -> Optional[Iterable["NewTransport"]]:
     """List connected Trezor devices."""
     if no_resolve:
-        return new_enumerate_devices()
+        return enumerate_devices()
 
     stored_channels = channel_database.load_stored_channels()
     stored_transport_paths = [ch.transport_path for ch in stored_channels]
-    for transport in new_enumerate_devices():
+    for transport in enumerate_devices():
         try:
             path = transport.get_path()
             if path in stored_transport_paths:
@@ -305,8 +305,7 @@ def list_devices(no_resolve: bool) -> Optional[Iterable["NewTransport"]]:
             else:
                 client = TrezorClient(transport)
 
-            session = client.get_management_session()
-            description = format_device_name(session.get_features())
+            description = format_device_name(client.features)
             # json_string = channel_database.channel_to_str(client.protocol)
             # print(json_string)
             channel_database.save_channel(client.protocol)
@@ -361,26 +360,29 @@ def get_session(
     obj.session_id = None
 
     with obj.client_context() as client:
-        session = client.get_session(
-            passphrase=passphrase, derive_cardano=derive_cardano
-        )
-        if session.get_features().model == "1" and session.get_version() < (1, 9, 0):
+
+        if client.features.model == "1" and client.version < (1, 9, 0):
             raise click.ClickException(
                 "Upgrade your firmware to enable session support."
             )
 
         client.ensure_unlocked()
-        if client.session_id is None:
+        session = client.get_session(
+            passphrase=passphrase, derive_cardano=derive_cardano
+        )
+        if session.id is None:
             raise click.ClickException("Passphrase not enabled or firmware too old.")
         else:
-            return client.session_id.hex()
+            return session.id.hex()
 
 
 @cli.command()
-@with_client
-def clear_session(client: "TrezorClient") -> None:
+@with_session
+def clear_session(session: "Session") -> None:
     """Clear session (remove cached PIN, passphrase, etc.)."""
-    return client.clear_session()
+    # TODO something like old: return client.clear_session()
+    print("NOT IMPLEMENTED")
+    raise NotImplementedError
 
 
 @cli.command()
@@ -393,8 +395,7 @@ def new_clear_session() -> None:
 @with_client
 def get_features(client: "TrezorClient") -> messages.Features:
     """Retrieve device features and settings."""
-    session = client.get_management_session()
-    return session.get_features()
+    return client.features
 
 
 @cli.command()

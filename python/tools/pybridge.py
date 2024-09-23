@@ -24,6 +24,9 @@ from __future__ import annotations
 
 from gevent import monkey
 
+import trezorlib.transport.new
+import trezorlib.transport.new.transport
+
 monkey.patch_all()
 
 import json
@@ -98,16 +101,18 @@ class Transport:
     TRANSPORT_COUNTER = 0
     TRANSPORTS: dict[str, Transport] = {}
 
-    def __init__(self, transport: trezorlib.transport.Transport) -> None:
+    def __init__(
+        self, transport: trezorlib.transport.new.transport.NewTransport
+    ) -> None:
         self.path = transport.get_path()
         self.session: Session | None = None
         self.transport = transport
 
-        client = TrezorClient(transport, ui=SilentUI())
+        client = TrezorClient(transport)  # TODO add silent UI?
         self.model = (
             trezorlib.models.by_name(client.features.model) or trezorlib.models.TREZOR_T
         )
-        client.end_session()
+        # TODO client.end_session()
 
     def acquire(self, sid: str) -> str:
         if self.session_id() != sid:
@@ -116,11 +121,11 @@ class Transport:
             self.session.release()
 
         self.session = Session(self)
-        self.transport.deprecated_begin_session()
+        # TODO self.transport.deprecated_begin_session()
         return self.session.id
 
     def release(self) -> None:
-        self.transport.deprecated_end_session()
+        # TODO self.transport.deprecated_end_session()
         self.session = None
 
     def session_id(self) -> str | None:
@@ -141,10 +146,14 @@ class Transport:
         }
 
     def write(self, msg_id: int, data: bytes) -> None:
-        self.transport.write(msg_id, data)
+        raise NotImplementedError
+        # TODO
+        # self.transport.write(msg_id, data)
 
     def read(self) -> tuple[int, bytes]:
-        return self.transport.read()
+        raise NotImplementedError
+        # TODO
+        # return self.transport.read()
 
     @classmethod
     def find(cls, path: str) -> Transport | None:

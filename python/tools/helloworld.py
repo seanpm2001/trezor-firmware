@@ -27,7 +27,7 @@ def main() -> None:
     session = client.get_session(derive_cardano=True)
 
     # Print out Trezor's features and settings
-    print(session.get_features())
+    print(session.features)
 
     # Get the first address of first BIP44 account
     bip32_path = parse_path("44h/0h/0h/0/0")

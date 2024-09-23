@@ -37,22 +37,26 @@ class ProtocolAndChannel:
     def get_channel_data(self) -> ChannelData:
         raise NotImplementedError
 
+    def update_features(self) -> None:
+        raise NotImplementedError
+
 
 class ProtocolV1(ProtocolAndChannel):
     HEADER_LEN = struct.calcsize(">HL")
-    _features: messages.Features
-    _has_valid_features: bool = False
+    _features: messages.Features | None = None
 
     def get_features(self) -> messages.Features:
-        if not self._has_valid_features:
-            self.write(messages.GetFeatures())
-            resp = self.read()
-            if not isinstance(resp, messages.Features):
-                raise exceptions.TrezorException("Unexpected response to GetFeatures")
-            self._features = resp
-            self._has_valid_features = True
-
+        if self._features is None:
+            self.update_features()
+        assert self._features is not None
         return self._features
+
+    def update_features(self) -> None:
+        self.write(messages.GetFeatures())
+        resp = self.read()
+        if not isinstance(resp, messages.Features):
+            raise exceptions.TrezorException("Unexpected response to GetFeatures")
+        self._features = resp
 
     def read(self) -> t.Any:
         msg_type, msg_bytes = self._read()

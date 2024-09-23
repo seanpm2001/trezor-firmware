@@ -151,28 +151,28 @@ def all_new_transports() -> Iterable[Type["NewTransport"]]:
     return set(t for t in transports if t.ENABLED)
 
 
-def enumerate_devices(
-    models: Iterable["TrezorModel"] | None = None,
-) -> Sequence["Transport"]:
-    devices: List["Transport"] = []
-    for transport in all_transports():
-        name = transport.__name__
-        try:
-            found = list(transport.enumerate(models))
-            LOG.info(f"Enumerating {name}: found {len(found)} devices")
-            devices.extend(found)
-        except NotImplementedError:
-            LOG.error(f"{name} does not implement device enumeration")
-        except Exception as e:
-            excname = e.__class__.__name__
-            LOG.error(f"Failed to enumerate {name}. {excname}: {e}")
-    return devices
+# def enumerate_devices(
+#     models: Iterable["TrezorModel"] | None = None,
+# ) -> Sequence["Transport"]:
+#     devices: List["Transport"] = []
+#     for transport in all_transports():
+#         name = transport.__name__
+#         try:
+#             found = list(transport.enumerate(models))
+#             LOG.info(f"Enumerating {name}: found {len(found)} devices")
+#             devices.extend(found)
+#         except NotImplementedError:
+#             LOG.error(f"{name} does not implement device enumeration")
+#         except Exception as e:
+#             excname = e.__class__.__name__
+#             LOG.error(f"Failed to enumerate {name}. {excname}: {e}")
+#     return devices
 
 
 from .new.transport import NewTransport
 
 
-def new_enumerate_devices(
+def enumerate_devices(
     models: Iterable["TrezorModel"] | None = None,
 ) -> Sequence["NewTransport"]:
     devices: List["NewTransport"] = []
@@ -190,12 +190,12 @@ def new_enumerate_devices(
     return devices
 
 
-def new_get_transport(
+def get_transport(
     path: str | None = None, prefix_search: bool = False
 ) -> "NewTransport":
     if path is None:
         try:
-            return next(iter(new_enumerate_devices()))
+            return next(iter(enumerate_devices()))
         except StopIteration:
             raise TransportException("No Trezor device found") from None
 
@@ -217,26 +217,26 @@ def new_get_transport(
     raise TransportException(f"Could not find device by path: {path}")
 
 
-def get_transport(path: str | None = None, prefix_search: bool = False) -> "Transport":
-    if path is None:
-        try:
-            return next(iter(enumerate_devices()))
-        except StopIteration:
-            raise TransportException("No Trezor device found") from None
+# def get_transport(path: str | None = None, prefix_search: bool = False) -> "Transport":
+#     if path is None:
+#         try:
+#             return next(iter(enumerate_devices()))
+#         except StopIteration:
+#             raise TransportException("No Trezor device found") from None
 
-    # Find whether B is prefix of A (transport name is part of the path)
-    # or A is prefix of B (path is a prefix, or a name, of transport).
-    # This naively expects that no two transports have a common prefix.
-    def match_prefix(a: str, b: str) -> bool:
-        return a.startswith(b) or b.startswith(a)
+#     # Find whether B is prefix of A (transport name is part of the path)
+#     # or A is prefix of B (path is a prefix, or a name, of transport).
+#     # This naively expects that no two transports have a common prefix.
+#     def match_prefix(a: str, b: str) -> bool:
+#         return a.startswith(b) or b.startswith(a)
 
-    LOG.info(
-        "looking for device by {}: {}".format(
-            "prefix" if prefix_search else "full path", path
-        )
-    )
-    transports = [t for t in all_transports() if match_prefix(path, t.PATH_PREFIX)]
-    if transports:
-        return transports[0].find_by_path(path, prefix_search=prefix_search)
+#     LOG.info(
+#         "looking for device by {}: {}".format(
+#             "prefix" if prefix_search else "full path", path
+#         )
+#     )
+#     transports = [t for t in all_transports() if match_prefix(path, t.PATH_PREFIX)]
+#     if transports:
+#         return transports[0].find_by_path(path, prefix_search=prefix_search)
 
-    raise TransportException(f"Could not find device by path: {path}")
+#     raise TransportException(f"Could not find device by path: {path}")

@@ -56,8 +56,8 @@ if TYPE_CHECKING:
     from typing_extensions import Protocol
 
     from .messages import PinMatrixRequestType
-    from .transport import Transport
     from .transport.new.session import Session
+    from .transport.new.transport import NewTransport
 
     ExpectedMessage = Union[
         protobuf.MessageType, Type[protobuf.MessageType], "MessageFilter"
@@ -409,7 +409,8 @@ def _make_input_func(
 
 
 class DebugLink:
-    def __init__(self, transport: "Transport", auto_interact: bool = True) -> None:
+
+    def __init__(self, transport: "NewTransport", auto_interact: bool = True) -> None:
         self.transport = transport
         self.allow_interactions = auto_interact
         self.mapping = mapping.DEFAULT_MAPPING
@@ -450,10 +451,14 @@ class DebugLink:
         self.screen_text_file = file_path
 
     def open(self) -> None:
-        self.transport.deprecated_begin_session()
+        raise NotImplementedError
+        # TODO
+        # self.transport.deprecated_begin_session()
 
     def close(self) -> None:
-        self.transport.deprecated_end_session()
+        raise NotImplementedError
+        # TODO
+        # self.transport.deprecated_end_session()
 
     def _write(self, msg: protobuf.MessageType) -> None:
         if self.waiting_for_layout_change:
@@ -979,7 +984,7 @@ class TrezorClientDebugLink(TrezorClient):
     # without special DebugLink interface provided
     # by the device.
 
-    def __init__(self, transport: "Transport", auto_interact: bool = True) -> None:
+    def __init__(self, transport: "NewTransport", auto_interact: bool = True) -> None:
         try:
             debug_transport = transport.find_debug()
             self.debug = DebugLink(debug_transport, auto_interact)
@@ -997,7 +1002,8 @@ class TrezorClientDebugLink(TrezorClient):
 
         self.reset_debug_features()
         self.sync_responses()
-        super().__init__(transport, ui=self.ui)
+        # TODO remove: super().__init__(transport, ui=self.ui)
+        super.__init__(transport)
 
         # So that we can choose right screenshotting logic (T1 vs TT)
         # and know the supported debug capabilities
@@ -1108,8 +1114,7 @@ class TrezorClientDebugLink(TrezorClient):
         Since trezor-core v2.3.2, it is necessary to call `watch_layout()` before
         using `debug.wait_layout()`, otherwise layout changes are not reported.
         """
-        version = self.get_management_session().get_version()
-        if version >= (2, 3, 2):
+        if self.version >= (2, 3, 2):
             # version check is necessary because otherwise we cannot reliably detect
             # whether and where to wait for reply:
             # - T1 reports unknown debuglink messages on the wirelink
@@ -1351,7 +1356,7 @@ def load_device(
             no_backup=no_backup,
         )
     )
-    session.init_device()
+    session.refresh_features()
     return resp
 
 
@@ -1361,7 +1366,7 @@ load_device_by_mnemonic = load_device
 
 @expect(messages.Success, field="message", ret_type=str)
 def prodtest_t1(session: "Session") -> protobuf.MessageType:
-    if session.get_features().bootloader_mode is not True:
+    if session.features.bootloader_mode is not True:
         raise RuntimeError("Device must be in bootloader mode")
 
     return session.call(
