@@ -1,6 +1,6 @@
 # This file is part of the Trezor project.
 #
-# Copyright (C) 2012-2022 SatoshiLabs and contributors
+# Copyright (C) 2012-2024 SatoshiLabs and contributors
 #
 # This library is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License version 3
@@ -22,12 +22,14 @@ import requests
 
 from ..log import DUMP_PACKETS
 from . import DeviceIsBusy, MessagePayload, Transport, TransportException
-from .protocol import PROTOCOL_VERSION_1, PROTOCOL_VERSION_2
 
 if TYPE_CHECKING:
     from ..models import TrezorModel
 
 LOG = logging.getLogger(__name__)
+
+PROTOCOL_VERSION_1 = 1
+PROTOCOL_VERSION_2 = 2
 
 TREZORD_HOST = "http://127.0.0.1:21325"
 TREZORD_ORIGIN_HEADER = {"Origin": "https://python.trezor.io"}
