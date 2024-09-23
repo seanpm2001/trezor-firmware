@@ -12,13 +12,13 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from ... import exceptions, messages
 from ...mapping import ProtobufMapping
+from .. import NewTransport
 from ..thp import checksum, curve25519, thp_io
 from ..thp.checksum import CHECKSUM_LENGTH
 from ..thp.packet_header import PacketHeader
 from . import channel_database, control_byte
 from .channel_data import ChannelData
 from .protocol_and_channel import ProtocolAndChannel
-from .transport import NewTransport
 
 LOG = logging.getLogger(__name__)
 

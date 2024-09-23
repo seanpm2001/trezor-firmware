@@ -1,6 +1,6 @@
 # This file is part of the Trezor project.
 #
-# Copyright (C) 2012-2022 SatoshiLabs and contributors
+# Copyright (C) 2012-2024 SatoshiLabs and contributors
 #
 # This library is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License version 3
@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import logging
+import typing as t
 from typing import TYPE_CHECKING, Iterable, List, Sequence, Tuple, Type, TypeVar
 
 from ..exceptions import TrezorException
@@ -25,7 +26,9 @@ from ..mapping import ProtobufMapping
 if TYPE_CHECKING:
     from ..models import TrezorModel
 
-    T = TypeVar("T", bound="Transport")
+    T = TypeVar("T", bound="NewTransport")
+    U = TypeVar("U", bound="Transport")
+
 
 LOG = logging.getLogger(__name__)
 
@@ -101,8 +104,30 @@ class Transport:
     def write(self, message_type: int, message_data: bytes) -> None:
         raise NotImplementedError
 
-    def find_debug(self: "T") -> "T":
+    def find_debug(self: "U") -> "U":
         raise NotImplementedError
+
+    @classmethod
+    def enumerate(
+        cls: Type["U"], models: Iterable["TrezorModel"] | None = None
+    ) -> Iterable["U"]:
+        raise NotImplementedError
+
+    @classmethod
+    def find_by_path(cls: Type["U"], path: str, prefix_search: bool = False) -> "U":
+        for device in cls.enumerate():
+
+            if device.get_path() == path:
+                return device
+
+            if prefix_search and device.get_path().startswith(path):
+                return device
+
+        raise TransportException(f"{cls.PATH_PREFIX} device not found: {path}")
+
+
+class NewTransport:
+    PATH_PREFIX: str
 
     @classmethod
     def enumerate(
@@ -122,61 +147,48 @@ class Transport:
 
         raise TransportException(f"{cls.PATH_PREFIX} device not found: {path}")
 
+    def get_path(self) -> str:
+        raise NotImplementedError
 
-def all_transports() -> Iterable[Type["Transport"]]:
-    from .bridge import BridgeTransport
-    from .hid import HidTransport
+    def open(self) -> None:
+        raise NotImplementedError
+
+    def close(self) -> None:
+        raise NotImplementedError
+
+    def write_chunk(self, chunk: bytes) -> None:
+        raise NotImplementedError
+
+    def read_chunk(self) -> bytes:
+        raise NotImplementedError
+
+    def find_debug(self: "T") -> "T":
+        raise NotImplementedError
+
+    CHUNK_SIZE: t.ClassVar[int]
+
+
+def all_transports() -> Iterable[Type["NewTransport"]]:
+    # from .bridge import BridgeTransport
+    # from .hid import HidTransport
+    # TODO add bridge and HID
     from .udp import UdpTransport
     from .webusb import WebUsbTransport
 
-    transports: Tuple[Type["Transport"], ...] = (
-        BridgeTransport,
-        HidTransport,
-        UdpTransport,
-        WebUsbTransport,
-    )
-    return set(t for t in transports if t.ENABLED)
-
-
-def all_new_transports() -> Iterable[Type["NewTransport"]]:
-    # from .bridge import BridgeTransport
-    # from .hid import HidTransport
-    from .new.udp import UdpTransport
-    from .new.webusb import WebUsbTransport
-
     transports: Tuple[Type["NewTransport"], ...] = (
+        # BridgeTransport,
+        # HidTransport,
         UdpTransport,
         WebUsbTransport,
     )
     return set(t for t in transports if t.ENABLED)
-
-
-# def enumerate_devices(
-#     models: Iterable["TrezorModel"] | None = None,
-# ) -> Sequence["Transport"]:
-#     devices: List["Transport"] = []
-#     for transport in all_transports():
-#         name = transport.__name__
-#         try:
-#             found = list(transport.enumerate(models))
-#             LOG.info(f"Enumerating {name}: found {len(found)} devices")
-#             devices.extend(found)
-#         except NotImplementedError:
-#             LOG.error(f"{name} does not implement device enumeration")
-#         except Exception as e:
-#             excname = e.__class__.__name__
-#             LOG.error(f"Failed to enumerate {name}. {excname}: {e}")
-#     return devices
-
-
-from .new.transport import NewTransport
 
 
 def enumerate_devices(
     models: Iterable["TrezorModel"] | None = None,
 ) -> Sequence["NewTransport"]:
     devices: List["NewTransport"] = []
-    for transport in all_new_transports():
+    for transport in all_transports():
         name = transport.__name__
         try:
             found = list(transport.enumerate(models))
@@ -210,33 +222,8 @@ def get_transport(
             "prefix" if prefix_search else "full path", path
         )
     )
-    transports = [t for t in all_new_transports() if match_prefix(path, t.PATH_PREFIX)]
+    transports = [t for t in all_transports() if match_prefix(path, t.PATH_PREFIX)]
     if transports:
         return transports[0].find_by_path(path, prefix_search=prefix_search)
 
     raise TransportException(f"Could not find device by path: {path}")
-
-
-# def get_transport(path: str | None = None, prefix_search: bool = False) -> "Transport":
-#     if path is None:
-#         try:
-#             return next(iter(enumerate_devices()))
-#         except StopIteration:
-#             raise TransportException("No Trezor device found") from None
-
-#     # Find whether B is prefix of A (transport name is part of the path)
-#     # or A is prefix of B (path is a prefix, or a name, of transport).
-#     # This naively expects that no two transports have a common prefix.
-#     def match_prefix(a: str, b: str) -> bool:
-#         return a.startswith(b) or b.startswith(a)
-
-#     LOG.info(
-#         "looking for device by {}: {}".format(
-#             "prefix" if prefix_search else "full path", path
-#         )
-#     )
-#     transports = [t for t in all_transports() if match_prefix(path, t.PATH_PREFIX)]
-#     if transports:
-#         return transports[0].find_by_path(path, prefix_search=prefix_search)
-
-#     raise TransportException(f"Could not find device by path: {path}")

@@ -1,7 +1,7 @@
 import struct
 from typing import Tuple
 
-from ..new.transport import NewTransport
+from .. import NewTransport
 from ..thp import checksum
 from .packet_header import PacketHeader
 

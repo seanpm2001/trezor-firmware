@@ -42,7 +42,7 @@ if not (0, 11) <= version_tuple < (0, 14):
 
 
 if TYPE_CHECKING:
-    from trezorlib.transport.new.transport import NewTransport
+    from trezorlib.transport import NewTransport
 
 
 def wait_for_devices() -> Sequence["NewTransport"]:

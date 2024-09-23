@@ -1,6 +1,6 @@
 # This file is part of the Trezor project.
 #
-# Copyright (C) 2012-2022 SatoshiLabs and contributors
+# Copyright (C) 2012-2024 SatoshiLabs and contributors
 #
 # This library is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License version 3
@@ -14,16 +14,17 @@
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
 
+from __future__ import annotations
+
 import atexit
 import logging
 import sys
 import time
-from typing import Iterable, List, Optional
+from typing import Iterable, List
 
 from ..log import DUMP_PACKETS
 from ..models import TREZORS, TrezorModel
-from . import UDEV_RULES_STR, DeviceIsBusy, TransportException
-from .protocol import Protocol, ProtocolBasedTransport
+from . import UDEV_RULES_STR, DeviceIsBusy, NewTransport, TransportException
 
 LOG = logging.getLogger(__name__)
 
@@ -41,58 +42,7 @@ DEBUG_INTERFACE = 1
 DEBUG_ENDPOINT = 2
 
 
-class WebUsbHandle:
-    def __init__(self, device: "usb1.USBDevice", debug: bool = False) -> None:
-        self.device = device
-        self.interface = DEBUG_INTERFACE if debug else INTERFACE
-        self.endpoint = DEBUG_ENDPOINT if debug else ENDPOINT
-        self.count = 0
-        self.handle: Optional["usb1.USBDeviceHandle"] = None
-
-    def open(self) -> None:
-        self.handle = self.device.open()
-        if self.handle is None:
-            if sys.platform.startswith("linux"):
-                args = (UDEV_RULES_STR,)
-            else:
-                args = ()
-            raise IOError("Cannot open device", *args)
-        try:
-            self.handle.claimInterface(self.interface)
-        except usb1.USBErrorAccess as e:
-            raise DeviceIsBusy(self.device) from e
-
-    def close(self) -> None:
-        if self.handle is not None:
-            self.handle.releaseInterface(self.interface)
-            self.handle.close()
-        self.handle = None
-
-    def write_chunk(self, chunk: bytes) -> None:
-        print("ti")
-        assert self.handle is not None
-        print("te")
-        if len(chunk) != 64:
-            raise TransportException(f"Unexpected chunk size: {len(chunk)}")
-        LOG.log(DUMP_PACKETS, f"writing packet: {chunk.hex()}")
-        self.handle.interruptWrite(self.endpoint, chunk)
-
-    def read_chunk(self) -> bytes:
-        assert self.handle is not None
-        endpoint = 0x80 | self.endpoint
-        while True:
-            chunk = self.handle.interruptRead(endpoint, 64)
-            if chunk:
-                break
-            else:
-                time.sleep(0.001)
-        LOG.log(DUMP_PACKETS, f"read packet: {chunk.hex()}")
-        if len(chunk) != 64:
-            raise TransportException(f"Unexpected chunk size: {len(chunk)}")
-        return chunk
-
-
-class WebUsbTransport(ProtocolBasedTransport):
+class WebUsbTransport(NewTransport):
     """
     WebUsbTransport implements transport over WebUSB interface.
     """
@@ -100,31 +50,26 @@ class WebUsbTransport(ProtocolBasedTransport):
     PATH_PREFIX = "webusb"
     ENABLED = USB_IMPORTED
     context = None
+    CHUNK_SIZE = 64
 
     def __init__(
         self,
         device: "usb1.USBDevice",
-        protocol: Optional[Protocol] = None,
-        handle: Optional[WebUsbHandle] = None,
         debug: bool = False,
     ) -> None:
-        if handle is None:
-            handle = WebUsbHandle(device, debug)
 
         self.device = device
-        self.handle = handle
         self.debug = debug
 
-        if protocol is None:
-            protocol = self.get_protocol()
-        super().__init__(protocol)
+        self.interface = DEBUG_INTERFACE if debug else INTERFACE
+        self.endpoint = DEBUG_ENDPOINT if debug else ENDPOINT
+        self.handle: usb1.USBDeviceHandle | None = None
 
-    def get_path(self) -> str:
-        return f"{self.PATH_PREFIX}:{dev_to_str(self.device)}"
+        super().__init__()
 
     @classmethod
     def enumerate(
-        cls, models: Optional[Iterable["TrezorModel"]] = None, usb_reset: bool = False
+        cls, models: Iterable["TrezorModel"] | None = None, usb_reset: bool = False
     ) -> Iterable["WebUsbTransport"]:
         if cls.context is None:
             cls.context = usb1.USBContext()
@@ -158,9 +103,52 @@ class WebUsbTransport(ProtocolBasedTransport):
                 pass
         return devices
 
+    def get_path(self) -> str:
+        return f"{self.PATH_PREFIX}:{dev_to_str(self.device)}"
+
+    def open(self) -> None:
+        self.handle = self.device.open()
+        if self.handle is None:
+            if sys.platform.startswith("linux"):
+                args = (UDEV_RULES_STR,)
+            else:
+                args = ()
+            raise IOError("Cannot open device", *args)
+        try:
+            self.handle.claimInterface(self.interface)
+        except usb1.USBErrorAccess as e:
+            raise DeviceIsBusy(self.device) from e
+
+    def close(self) -> None:
+        if self.handle is not None:
+            self.handle.releaseInterface(self.interface)
+            self.handle.close()
+        self.handle = None
+
+    def write_chunk(self, chunk: bytes) -> None:
+        assert self.handle is not None
+        if len(chunk) != 64:
+            raise TransportException(f"Unexpected chunk size: {len(chunk)}")
+        LOG.log(DUMP_PACKETS, f"writing packet: {chunk.hex()}")
+        self.handle.interruptWrite(self.endpoint, chunk)
+
+    def read_chunk(self) -> bytes:
+        assert self.handle is not None
+        endpoint = 0x80 | self.endpoint
+        while True:
+            chunk = self.handle.interruptRead(endpoint, 64)
+            if chunk:
+                break
+            else:
+                time.sleep(0.001)
+        LOG.log(DUMP_PACKETS, f"read packet: {chunk.hex()}")
+        if len(chunk) != 64:
+            raise TransportException(f"Unexpected chunk size: {len(chunk)}")
+        return chunk
+
     def find_debug(self) -> "WebUsbTransport":
         # For v1 protocol, find debug USB interface for the same serial number
-        return WebUsbTransport(self.device, self.protocol, debug=True)
+        return WebUsbTransport(self.device, debug=True)
 
 
 def is_vendor_class(dev: "usb1.USBDevice") -> bool:

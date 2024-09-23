@@ -56,8 +56,8 @@ if TYPE_CHECKING:
     from typing_extensions import Protocol
 
     from .messages import PinMatrixRequestType
+    from .transport import NewTransport
     from .transport.new.session import Session
-    from .transport.new.transport import NewTransport
 
     ExpectedMessage = Union[
         protobuf.MessageType, Type[protobuf.MessageType], "MessageFilter"

@@ -29,7 +29,7 @@ from ..client import TrezorClient
 from ..transport import DeviceIsBusy, enumerate_devices
 from ..transport.new import channel_database
 from ..transport.new.session import Session
-from ..transport.new.udp import UdpTransport
+from ..transport.udp import UdpTransport
 from . import (
     AliasedGroup,
     NewTrezorConnection,
@@ -57,7 +57,7 @@ from . import (
 F = TypeVar("F", bound=Callable)
 
 if TYPE_CHECKING:
-    from ..transport.new.transport import NewTransport
+    from ..transport import NewTransport
 
 LOG = logging.getLogger(__name__)
 
@@ -405,7 +405,7 @@ def usb_reset() -> None:
     This can fix LIBUSB_ERROR_PIPE and similar errors when connecting to a device
     in a messed state.
     """
-    from ..transport.new.webusb import WebUsbTransport
+    from ..transport.webusb import WebUsbTransport
 
     WebUsbTransport.enumerate(usb_reset=True)
 

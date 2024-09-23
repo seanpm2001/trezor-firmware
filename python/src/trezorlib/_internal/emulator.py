@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Sequence, TextIO, Union, cast
 
 from ..debuglink import TrezorClientDebugLink
-from ..transport.new.udp import UdpTransport
+from ..transport.udp import UdpTransport
 
 LOG = logging.getLogger(__name__)
 

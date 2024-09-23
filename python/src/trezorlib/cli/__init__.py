@@ -27,8 +27,8 @@ import click
 from .. import exceptions, transport, ui
 from ..client import TrezorClient
 from ..messages import Capability
+from ..transport import NewTransport
 from ..transport.new import channel_database
-from ..transport.new.transport import NewTransport
 
 if t.TYPE_CHECKING:
     # Needed to enforce a return value from decorators

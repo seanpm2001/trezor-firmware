@@ -157,44 +157,6 @@ class ProtocolBasedTransport(Transport):
         self.protocol.deprecated_end_session()
 
     def get_protocol(self, version: Optional[int] = None) -> Protocol:
-        if version is not None:
-            return _get_protocol(version, self.handle)
-
-        from .. import mapping, messages
-        from ..messages import FailureType
         from .protocol_v1 import ProtocolV1
 
-        request_type, request_data = mapping.DEFAULT_MAPPING.encode(
-            messages.Initialize()
-        )
-        self.handle.open()
-        protocol = ProtocolV1(self.handle)
-        protocol.write(request_type, request_data)
-        response_type, response_data = protocol.read()
-        response = mapping.DEFAULT_MAPPING.decode(response_type, response_data)
-        self.handle.close()
-        if isinstance(response, messages.Failure):
-            from .protocol_v2 import DeprecatedProtocolV2
-
-            if (
-                response.code == FailureType.UnexpectedMessage
-                and response.message == "Invalid protocol"
-            ):
-                LOG.debug("Protocol V2 detected")
-                protocol = DeprecatedProtocolV2(self.handle)
-
-        return protocol
-
-
-def _get_protocol(version: int, handle: Handle) -> Protocol:
-    if version == PROTOCOL_VERSION_1:
-        from .protocol_v1 import ProtocolV1
-
-        return ProtocolV1(handle)
-
-    if version == PROTOCOL_VERSION_2:
-        from .protocol_v2 import DeprecatedProtocolV2
-
-        return DeprecatedProtocolV2(handle)
-
-    raise NotImplementedError
+        return ProtocolV1(self.handle)
