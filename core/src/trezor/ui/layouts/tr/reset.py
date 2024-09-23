@@ -12,8 +12,6 @@ CONFIRMED = trezorui2.CONFIRMED  # global_import_cache
 if TYPE_CHECKING:
     from typing import Awaitable, Sequence
 
-    from trezor.enums import BackupType
-
 
 async def show_share_words(
     share_words: Sequence[str],

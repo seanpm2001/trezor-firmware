@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from storage.cache_thp import MANAGEMENT_SESSION_ID, SessionThpCache
-from trezor import log, loop, protobuf, utils
+from trezor import log, loop, protobuf
 from trezor.wire import message_handler, protocol_common
 from trezor.wire.context import UnexpectedMessageException
 from trezor.wire.message_handler import AVOID_RESTARTING_FOR, failure, find_handler
@@ -10,7 +10,7 @@ from ..protocol_common import Context, Message
 from . import SessionState
 
 if TYPE_CHECKING:
-    from typing import Any, Awaitable, Container, TypeVar, overload
+    from typing import Any, Awaitable, Container
 
     from storage.cache_common import DataCache
 

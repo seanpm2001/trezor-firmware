@@ -1,13 +1,8 @@
-from typing import TYPE_CHECKING
-
 import trezorui2
 from trezor import ui
 from trezor.enums import ButtonRequestType
 
 from ..common import interact
-
-if TYPE_CHECKING:
-    from trezor.loop import AwaitableTask
 
 
 async def confirm_fido(

@@ -111,8 +111,6 @@ async def continue_recovery(
     # There is very limited space on the screen
     # (and having middle button would mean shortening the right button text)
 
-    from trezor.wire import ActionCancelled
-
     # Never showing info for dry-run, user already saw it and it is disturbing
     if recovery_type in (RecoveryType.DryRun, RecoveryType.UnlockRepeatedBackup):
         show_instructions = False

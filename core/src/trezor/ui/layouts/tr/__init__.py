@@ -8,7 +8,7 @@ from trezor.wire import ActionCancelled
 from ..common import draw_simple, interact, raise_if_not_confirmed
 
 if TYPE_CHECKING:
-    from typing import Any, Awaitable, Iterable, NoReturn, Sequence
+    from typing import Awaitable, Iterable, NoReturn, Sequence
 
     from ..common import ExceptionType, PropertyType
 
@@ -1157,7 +1157,7 @@ def pin_mismatch_popup(is_wipe_code: bool = False) -> Awaitable[None]:
         TR.buttons__check_again,
         BR_CODE_OTHER,
     )
-    return layout  # type: ignore [Type cannot be assigned to type "None"]
+    return layout  # type: ignore [Expression of type "Awaitable[UiResult]" is incompatible with return type "Awaitable[None]"]
 
 
 def wipe_code_same_as_pin_popup() -> Awaitable[None]:

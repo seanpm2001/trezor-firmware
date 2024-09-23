@@ -255,7 +255,7 @@ def slip39_prompt_number_of_shares(num_words: int, group_id: int | None = None) 
             num_words, group_id + 1
         )
 
-    return _prompt_number(
+    return _prompt_number(  # type: ignore [Expression of type "Coroutine[Any, Any, int]" is incompatible with return type "int"]
         TR.reset__title_set_number_of_shares,
         description,
         lambda i: info,

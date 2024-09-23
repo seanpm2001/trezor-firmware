@@ -6,7 +6,6 @@ if not __debug__:
     halt("debug mode inactive")
 
 if __debug__:
-    import utime
     from micropython import const
     from typing import TYPE_CHECKING
 
@@ -58,7 +57,7 @@ if __debug__:
     def notify_layout_change(layout: Layout | None) -> None:
         layout_change_chan.put(layout, replace=True)
 
-    def wait_until_layout_is_running(tries: int | None = _DEADLOCK_WAIT_TRIES) -> Awaitable[None]:  # type: ignore [awaitable-is-generator]
+    def wait_until_layout_is_running(tries: int | None = _DEADLOCK_WAIT_TRIES) -> Awaitable[None]:  # type: ignore [Return type of generator function must be compatible with "Generator[Any, Any, Any]"]
         counter = 0
         while ui.CURRENT_LAYOUT is None:
             # TODO modify this so that we can detect a Rust layout in transition:
@@ -69,7 +68,7 @@ if __debug__:
                 raise wire.FirmwareError(
                     "layout deadlock detected (did you send a ButtonAck?)"
                 )
-            yield
+            yield  # type: ignore [Return type of generator function must be compatible with "Generator[None, Any, Any]"]
 
     async def return_layout_change(
         ctx: wire.context.Context, detect_deadlock: bool = False

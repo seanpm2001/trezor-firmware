@@ -1,15 +1,14 @@
 from typing import TYPE_CHECKING
 
 import trezorui2
-from trezor import TR, io, loop, ui, utils
+from trezor import TR, ui, utils
 from trezor.enums import ButtonRequestType
-from trezor.messages import ButtonAck, ButtonRequest
-from trezor.wire import ActionCancelled, context
+from trezor.wire import ActionCancelled
 
 from ..common import draw_simple, interact, raise_if_not_confirmed, with_info
 
 if TYPE_CHECKING:
-    from typing import Any, Awaitable, Iterable, NoReturn, Sequence, TypeVar
+    from typing import Awaitable, Iterable, NoReturn, Sequence, TypeVar
 
     from ..common import ExceptionType, PropertyType
 
@@ -91,9 +90,9 @@ def confirm_single(
 
 def confirm_reset_device(_title: str, recovery: bool = False) -> Awaitable[None]:
     if recovery:
-        return raise_if_not_confirmed(trezorui2.flow_confirm_reset_recover(), None)
+        return raise_if_not_confirmed(trezorui2.flow_confirm_reset_recover(), None)  # type: ignore ["flow_confirm_reset_recover" is not a known attribute of module "trezorui2"]
     else:
-        return raise_if_not_confirmed(trezorui2.flow_confirm_reset_create(), None)
+        return raise_if_not_confirmed(trezorui2.flow_confirm_reset_create(), None)  # type: ignore ["flow_confirm_reset_create" is not a known attribute of module "trezorui2"]
 
 
 async def show_wallet_created_success() -> None:
@@ -997,7 +996,7 @@ def request_passphrase_on_device(max_len: int) -> Awaitable[str]:
         ButtonRequestType.PassphraseEntry,
         raise_on_cancel=ActionCancelled("Passphrase entry cancelled"),
     )
-    return result  # type: ignore ['UiResult' is incompatible with 'str']
+    return result  # type: ignore [Expression of type "Coroutine[Any, Any, str | UiResult]" is incompatible with return type "Awaitable[str]"]
 
 
 def request_pin_on_device(
@@ -1026,7 +1025,7 @@ def request_pin_on_device(
         ButtonRequestType.PinEntry,
         raise_on_cancel=PinCancelled,
     )
-    return result  # type: ignore ['UiResult' is incompatible with 'str']
+    return result  # type: ignore [Expression of type "Coroutine[Any, Any, str | UiResult]" is incompatible with return type "Awaitable[str]"]
 
 
 async def confirm_reenter_pin(is_wipe_code: bool = False) -> None:

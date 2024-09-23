@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 from trezor import TR
-from trezor.enums import ButtonRequestType
 from trezor.ui.layouts.recovery import (  # noqa: F401
     request_word_count,
     show_group_share_success,
