@@ -27,7 +27,7 @@ import click
 from .. import exceptions, transport, ui
 from ..client import TrezorClient
 from ..messages import Capability
-from ..transport import NewTransport
+from ..transport import Transport
 from ..transport.new import channel_database
 
 if t.TYPE_CHECKING:
@@ -135,7 +135,7 @@ class NewTrezorConnection:
         )
         return session
 
-    def get_transport(self) -> "NewTransport":
+    def get_transport(self) -> "Transport":
         try:
             # look for transport without prefix search
             return transport.get_transport(self.path, prefix_search=False)

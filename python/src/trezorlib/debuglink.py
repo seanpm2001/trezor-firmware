@@ -56,7 +56,7 @@ if TYPE_CHECKING:
     from typing_extensions import Protocol
 
     from .messages import PinMatrixRequestType
-    from .transport import NewTransport
+    from .transport import Transport
     from .transport.new.session import Session
 
     ExpectedMessage = Union[
@@ -410,7 +410,7 @@ def _make_input_func(
 
 class DebugLink:
 
-    def __init__(self, transport: "NewTransport", auto_interact: bool = True) -> None:
+    def __init__(self, transport: "Transport", auto_interact: bool = True) -> None:
         self.transport = transport
         self.allow_interactions = auto_interact
         self.mapping = mapping.DEFAULT_MAPPING
@@ -984,7 +984,7 @@ class TrezorClientDebugLink(TrezorClient):
     # without special DebugLink interface provided
     # by the device.
 
-    def __init__(self, transport: "NewTransport", auto_interact: bool = True) -> None:
+    def __init__(self, transport: "Transport", auto_interact: bool = True) -> None:
         try:
             debug_transport = transport.find_debug()
             self.debug = DebugLink(debug_transport, auto_interact)

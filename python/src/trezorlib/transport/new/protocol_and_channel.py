@@ -4,7 +4,7 @@ import logging
 
 from ... import messages
 from ...mapping import ProtobufMapping
-from .. import NewTransport
+from .. import Transport
 from .channel_data import ChannelData
 
 LOG = logging.getLogger(__name__)
@@ -14,7 +14,7 @@ class ProtocolAndChannel:
 
     def __init__(
         self,
-        transport: NewTransport,
+        transport: Transport,
         mapping: ProtobufMapping,
         channel_data: ChannelData | None = None,
     ) -> None:

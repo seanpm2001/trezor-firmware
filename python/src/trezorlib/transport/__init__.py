@@ -18,16 +18,13 @@ from __future__ import annotations
 
 import logging
 import typing as t
-from typing import TYPE_CHECKING, Iterable, List, Sequence, Tuple, Type, TypeVar
 
 from ..exceptions import TrezorException
-from ..mapping import ProtobufMapping
 
-if TYPE_CHECKING:
+if t.TYPE_CHECKING:
     from ..models import TrezorModel
 
-    T = TypeVar("T", bound="NewTransport")
-    U = TypeVar("U", bound="Transport")
+    T = t.TypeVar("T", bound="Transport")
 
 
 LOG = logging.getLogger(__name__)
@@ -38,7 +35,7 @@ https://github.com/trezor/trezor-common/blob/master/udev/51-trezor.rules
 """.strip()
 
 
-MessagePayload = Tuple[int, bytes]
+MessagePayload = t.Tuple[int, bytes]
 
 
 class TransportException(TrezorException):
@@ -50,93 +47,16 @@ class DeviceIsBusy(TransportException):
 
 
 class Transport:
-    """Raw connection to a Trezor device.
-
-    Transport subclass represents a kind of communication link: Trezor Bridge, WebUSB
-    or USB-HID connection, or UDP socket of listening emulator(s).
-    It can also enumerate devices available over this communication link, and return
-    them as instances.
-
-    Transport instance is a thing that:
-    - can be identified and requested by a string URI-like path
-    - can open and close sessions, which enclose related operations
-    - can read and write protobuf messages
-
-    You need to implement a new Transport subclass if you invent a new way to connect
-    a Trezor device to a computer.
-    """
-
-    PATH_PREFIX: str
-    ENABLED = False
-
-    def __str__(self) -> str:
-        return self.get_path()
-
-    def get_path(self) -> str:
-        raise NotImplementedError
-
-    def initialize_connection(
-        self,
-        mapping: "ProtobufMapping",
-        session_id: bytes | None = None,
-        derive_cardano: bool | None = None,
-    ):
-        raise NotImplementedError
-
-    def start_session(self, passphrase: bytes) -> bytes:
-        raise NotImplementedError
-
-    def resume_session(self, session_id: bytes) -> bytes:
-        raise NotImplementedError
-
-    def end_session(self, session_id: bytes) -> bytes:
-        raise NotImplementedError
-
-    def deprecated_begin_session(self) -> None:
-        raise NotImplementedError
-
-    def deprecated_end_session(self) -> None:
-        raise NotImplementedError
-
-    def read(self) -> MessagePayload:
-        raise NotImplementedError
-
-    def write(self, message_type: int, message_data: bytes) -> None:
-        raise NotImplementedError
-
-    def find_debug(self: "U") -> "U":
-        raise NotImplementedError
-
-    @classmethod
-    def enumerate(
-        cls: Type["U"], models: Iterable["TrezorModel"] | None = None
-    ) -> Iterable["U"]:
-        raise NotImplementedError
-
-    @classmethod
-    def find_by_path(cls: Type["U"], path: str, prefix_search: bool = False) -> "U":
-        for device in cls.enumerate():
-
-            if device.get_path() == path:
-                return device
-
-            if prefix_search and device.get_path().startswith(path):
-                return device
-
-        raise TransportException(f"{cls.PATH_PREFIX} device not found: {path}")
-
-
-class NewTransport:
     PATH_PREFIX: str
 
     @classmethod
     def enumerate(
-        cls: Type["T"], models: Iterable["TrezorModel"] | None = None
-    ) -> Iterable["T"]:
+        cls: t.Type["T"], models: t.Iterable["TrezorModel"] | None = None
+    ) -> t.Iterable["T"]:
         raise NotImplementedError
 
     @classmethod
-    def find_by_path(cls: Type["T"], path: str, prefix_search: bool = False) -> "T":
+    def find_by_path(cls: t.Type["T"], path: str, prefix_search: bool = False) -> "T":
         for device in cls.enumerate():
 
             if device.get_path() == path:
@@ -168,13 +88,13 @@ class NewTransport:
     CHUNK_SIZE: t.ClassVar[int]
 
 
-def all_transports() -> Iterable[Type["NewTransport"]]:
+def all_transports() -> t.Iterable[t.Type["Transport"]]:
     from .bridge import BridgeTransport
     from .hid import HidTransport
     from .udp import UdpTransport
     from .webusb import WebUsbTransport
 
-    transports: Tuple[Type["NewTransport"], ...] = (
+    transports: t.Tuple[t.Type["Transport"], ...] = (
         BridgeTransport,
         HidTransport,
         UdpTransport,
@@ -184,9 +104,9 @@ def all_transports() -> Iterable[Type["NewTransport"]]:
 
 
 def enumerate_devices(
-    models: Iterable["TrezorModel"] | None = None,
-) -> Sequence["NewTransport"]:
-    devices: List["NewTransport"] = []
+    models: t.Iterable["TrezorModel"] | None = None,
+) -> t.Sequence["Transport"]:
+    devices: t.List["Transport"] = []
     for transport in all_transports():
         name = transport.__name__
         try:
@@ -201,9 +121,7 @@ def enumerate_devices(
     return devices
 
 
-def get_transport(
-    path: str | None = None, prefix_search: bool = False
-) -> "NewTransport":
+def get_transport(path: str | None = None, prefix_search: bool = False) -> "Transport":
     if path is None:
         try:
             return next(iter(enumerate_devices()))

@@ -12,7 +12,7 @@ from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from ... import exceptions, messages
 from ...mapping import ProtobufMapping
-from .. import NewTransport
+from .. import Transport
 from ..thp import checksum, curve25519, thp_io
 from ..thp.checksum import CHECKSUM_LENGTH
 from ..thp.packet_header import PacketHeader
@@ -61,7 +61,7 @@ class ProtocolV2(ProtocolAndChannel):
 
     def __init__(
         self,
-        transport: NewTransport,
+        transport: Transport,
         mapping: ProtobufMapping,
         channel_data: ChannelData | None = None,
     ) -> None:

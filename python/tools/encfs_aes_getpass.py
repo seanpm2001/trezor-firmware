@@ -42,10 +42,10 @@ if not (0, 11) <= version_tuple < (0, 14):
 
 
 if TYPE_CHECKING:
-    from trezorlib.transport import NewTransport
+    from trezorlib.transport import Transport
 
 
-def wait_for_devices() -> Sequence["NewTransport"]:
+def wait_for_devices() -> Sequence["Transport"]:
     devices = enumerate_devices()
     while not len(devices):
         sys.stderr.write("Please connect Trezor to computer and press Enter...")
@@ -55,7 +55,7 @@ def wait_for_devices() -> Sequence["NewTransport"]:
     return devices
 
 
-def choose_device(devices: Sequence["NewTransport"]) -> "NewTransport":
+def choose_device(devices: Sequence["Transport"]) -> "Transport":
     if not len(devices):
         raise RuntimeError("No Trezor connected!")
 

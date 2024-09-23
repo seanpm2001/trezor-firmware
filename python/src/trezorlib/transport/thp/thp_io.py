@@ -1,7 +1,7 @@
 import struct
 from typing import Tuple
 
-from .. import NewTransport
+from .. import Transport
 from ..thp import checksum
 from .packet_header import PacketHeader
 
@@ -14,7 +14,7 @@ CONTINUATION_PACKET = 0x80
 
 
 def write_payload_to_wire_and_add_checksum(
-    transport: NewTransport, header: PacketHeader, transport_payload: bytes
+    transport: Transport, header: PacketHeader, transport_payload: bytes
 ):
     chksum: bytes = checksum.compute(header.to_bytes_init() + transport_payload)
     data = transport_payload + chksum
@@ -22,7 +22,7 @@ def write_payload_to_wire_and_add_checksum(
 
 
 def write_payload_to_wire(
-    transport: NewTransport, header: PacketHeader, transport_payload: bytes
+    transport: Transport, header: PacketHeader, transport_payload: bytes
 ):
     transport.open()
     buffer = bytearray(transport_payload)
@@ -40,7 +40,7 @@ def write_payload_to_wire(
         buffer = buffer[transport.CHUNK_SIZE - CONT_HEADER_LENGTH :]
 
 
-def read(transport: NewTransport) -> Tuple[PacketHeader, bytes, bytes]:
+def read(transport: Transport) -> Tuple[PacketHeader, bytes, bytes]:
     buffer = bytearray()
     # Read header with first part of message data
     header, first_chunk = read_first(transport)
@@ -60,7 +60,7 @@ def read(transport: NewTransport) -> Tuple[PacketHeader, bytes, bytes]:
     )
 
 
-def read_first(transport: NewTransport) -> Tuple[PacketHeader, bytes]:
+def read_first(transport: Transport) -> Tuple[PacketHeader, bytes]:
     chunk = transport.read_chunk()
     try:
         ctrl_byte, cid, data_length = struct.unpack(
@@ -73,7 +73,7 @@ def read_first(transport: NewTransport) -> Tuple[PacketHeader, bytes]:
     return PacketHeader(ctrl_byte, cid, data_length), data
 
 
-def read_next(transport: NewTransport, cid: int) -> bytes:
+def read_next(transport: Transport, cid: int) -> bytes:
     chunk = transport.read_chunk()
     ctrl_byte, read_cid = struct.unpack(
         PacketHeader.format_str_cont, chunk[:CONT_HEADER_LENGTH]

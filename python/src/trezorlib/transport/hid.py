@@ -23,7 +23,7 @@ import typing as t
 
 from ..log import DUMP_PACKETS
 from ..models import TREZOR_ONE, TrezorModel
-from . import UDEV_RULES_STR, NewTransport, TransportException
+from . import UDEV_RULES_STR, Transport, TransportException
 
 LOG = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ HidDevice = t.Dict[str, t.Any]
 HidDeviceHandle = t.Any
 
 
-class HidTransport(NewTransport):
+class HidTransport(Transport):
     """
     HidTransport implements transport over USB HID interface.
     """

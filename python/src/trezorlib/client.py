@@ -22,7 +22,7 @@ import typing as t
 from . import mapping, messages, models
 from .mapping import ProtobufMapping
 from .tools import parse_path
-from .transport import NewTransport, get_transport
+from .transport import Transport, get_transport
 from .transport.new.channel_data import ChannelData
 from .transport.new.protocol_and_channel import ProtocolAndChannel
 from .transport.new.protocol_v1 import ProtocolV1
@@ -58,7 +58,7 @@ class TrezorClient:
 
     def __init__(
         self,
-        transport: NewTransport,
+        transport: Transport,
         protobuf_mapping: ProtobufMapping | None = None,
         protocol: ProtocolAndChannel | None = None,
     ) -> None:
@@ -80,7 +80,7 @@ class TrezorClient:
     @classmethod
     def resume(
         cls,
-        transport: NewTransport,
+        transport: Transport,
         channel_data: ChannelData,
         protobuf_mapping: ProtobufMapping | None = None,
     ) -> TrezorClient:

@@ -23,7 +23,7 @@ import typing as t
 import requests
 
 from ..log import DUMP_PACKETS
-from . import DeviceIsBusy, MessagePayload, NewTransport, TransportException
+from . import DeviceIsBusy, MessagePayload, Transport, TransportException
 
 if t.TYPE_CHECKING:
     from ..models import TrezorModel
@@ -156,7 +156,7 @@ class BridgeHandleLegacy(BridgeHandle):
             self.request = None
 
 
-class BridgeTransport(NewTransport):
+class BridgeTransport(Transport):
     """
     BridgeTransport implements transport through Trezor Bridge (aka trezord).
     """

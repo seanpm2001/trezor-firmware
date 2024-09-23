@@ -101,7 +101,7 @@ class Transport:
     TRANSPORT_COUNTER = 0
     TRANSPORTS: dict[str, Transport] = {}
 
-    def __init__(self, transport: trezorlib.transport.NewTransport) -> None:
+    def __init__(self, transport: trezorlib.transport.Transport) -> None:
         self.path = transport.get_path()
         self.session: Session | None = None
         self.transport = transport

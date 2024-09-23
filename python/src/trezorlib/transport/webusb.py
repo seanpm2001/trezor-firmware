@@ -24,7 +24,7 @@ from typing import Iterable, List
 
 from ..log import DUMP_PACKETS
 from ..models import TREZORS, TrezorModel
-from . import UDEV_RULES_STR, DeviceIsBusy, NewTransport, TransportException
+from . import UDEV_RULES_STR, DeviceIsBusy, Transport, TransportException
 
 LOG = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ DEBUG_INTERFACE = 1
 DEBUG_ENDPOINT = 2
 
 
-class WebUsbTransport(NewTransport):
+class WebUsbTransport(Transport):
     """
     WebUsbTransport implements transport over WebUSB interface.
     """

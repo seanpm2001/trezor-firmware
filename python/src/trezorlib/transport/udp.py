@@ -22,7 +22,7 @@ import time
 from typing import TYPE_CHECKING, Iterable, Tuple
 
 from ..log import DUMP_PACKETS
-from . import NewTransport, TransportException
+from . import Transport, TransportException
 
 if TYPE_CHECKING:
     from ..models import TrezorModel
@@ -32,7 +32,7 @@ SOCKET_TIMEOUT = 10
 LOG = logging.getLogger(__name__)
 
 
-class UdpTransport(NewTransport):
+class UdpTransport(Transport):
 
     DEFAULT_HOST = "127.0.0.1"
     DEFAULT_PORT = 21324

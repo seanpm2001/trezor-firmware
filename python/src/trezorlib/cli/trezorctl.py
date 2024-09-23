@@ -57,7 +57,7 @@ from . import (
 F = TypeVar("F", bound=Callable)
 
 if TYPE_CHECKING:
-    from ..transport import NewTransport
+    from ..transport import Transport
 
 LOG = logging.getLogger(__name__)
 
@@ -285,7 +285,7 @@ def format_device_name(features: messages.Features) -> str:
 
 @cli.command(name="list")
 @click.option("-n", "no_resolve", is_flag=True, help="Do not resolve Trezor names")
-def list_devices(no_resolve: bool) -> Optional[Iterable["NewTransport"]]:
+def list_devices(no_resolve: bool) -> Optional[Iterable["Transport"]]:
     """List connected Trezor devices."""
     if no_resolve:
         return enumerate_devices()
