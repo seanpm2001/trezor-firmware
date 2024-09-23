@@ -4,7 +4,7 @@ import typing as t
 
 from ... import models
 from ...messages import Features, ThpCreateNewSession, ThpNewSession
-from .protocol_and_channel import ProtocolV1
+from .protocol_v1 import ProtocolV1
 from .protocol_v2 import ProtocolV2
 
 if t.TYPE_CHECKING:

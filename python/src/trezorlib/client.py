@@ -19,13 +19,13 @@ import logging
 import os
 import typing as t
 
-from . import mapping, models
+from . import mapping, messages, models
 from .mapping import ProtobufMapping
-from .messages import Features
 from .tools import parse_path
-from .transport import NewTransport
+from .transport import NewTransport, get_transport
 from .transport.new.channel_data import ChannelData
-from .transport.new.protocol_and_channel import ProtocolAndChannel, ProtocolV1
+from .transport.new.protocol_and_channel import ProtocolAndChannel
+from .transport.new.protocol_v1 import ProtocolV1
 from .transport.new.protocol_v2 import ProtocolV2
 from .transport.new.session import Session, SessionV1, SessionV2
 
@@ -54,7 +54,7 @@ LOG = logging.getLogger(__name__)
 
 class TrezorClient:
     management_session: Session | None = None
-    _features: Features | None = None
+    _features: messages.Features | None = None
 
     def __init__(
         self,
@@ -115,7 +115,7 @@ class TrezorClient:
         return self.management_session
 
     @property
-    def features(self) -> Features:
+    def features(self) -> messages.Features:
         if self._features is None:
             self._features = self.protocol.get_features()
         assert self._features is not None
@@ -155,11 +155,6 @@ class TrezorClient:
         raise NotImplementedError  # TODO
 
     def _get_protocol(self) -> ProtocolAndChannel:
-
-        from . import messages
-        from .messages import FailureType
-        from .transport.new.protocol_and_channel import ProtocolV1
-
         self.transport.open()
 
         protocol = ProtocolV1(self.transport, mapping.DEFAULT_MAPPING)
@@ -170,7 +165,7 @@ class TrezorClient:
         self.transport.close()
         if isinstance(response, messages.Failure):
             if (
-                response.code == FailureType.UnexpectedMessage
+                response.code == messages.FailureType.UnexpectedMessage
                 and response.message == "Invalid protocol"
             ):
                 LOG.debug("Protocol V2 detected")
@@ -191,7 +186,6 @@ def get_default_client(
     the value of TREZOR_PATH env variable, or finds first connected Trezor.
     If no UI is supplied, instantiates the default CLI UI.
     """
-    from .transport import get_transport
 
     if path is None:
         path = os.getenv("TREZOR_PATH")
