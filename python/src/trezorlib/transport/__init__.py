@@ -89,13 +89,13 @@ class Transport:
 
 
 def all_transports() -> t.Iterable[t.Type["Transport"]]:
-    from .bridge import BridgeTransport
+    # from .bridge import BridgeTransport
     from .hid import HidTransport
     from .udp import UdpTransport
     from .webusb import WebUsbTransport
 
     transports: t.Tuple[t.Type["Transport"], ...] = (
-        BridgeTransport,
+        # BridgeTransport,
         HidTransport,
         UdpTransport,
         WebUsbTransport,
