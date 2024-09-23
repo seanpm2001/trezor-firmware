@@ -170,14 +170,15 @@ class NewTransport:
 
 def all_transports() -> Iterable[Type["NewTransport"]]:
     # from .bridge import BridgeTransport
-    # from .hid import HidTransport
-    # TODO add bridge and HID
+    # TODO add BridgeTransport
+
+    from .hid import HidTransport
     from .udp import UdpTransport
     from .webusb import WebUsbTransport
 
     transports: Tuple[Type["NewTransport"], ...] = (
         # BridgeTransport,
-        # HidTransport,
+        HidTransport,
         UdpTransport,
         WebUsbTransport,
     )
