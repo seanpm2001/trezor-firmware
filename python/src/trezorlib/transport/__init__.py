@@ -150,6 +150,9 @@ class NewTransport:
     def get_path(self) -> str:
         raise NotImplementedError
 
+    def find_debug(self: "T") -> "T":
+        raise NotImplementedError
+
     def open(self) -> None:
         raise NotImplementedError
 
@@ -162,22 +165,17 @@ class NewTransport:
     def read_chunk(self) -> bytes:
         raise NotImplementedError
 
-    def find_debug(self: "T") -> "T":
-        raise NotImplementedError
-
     CHUNK_SIZE: t.ClassVar[int]
 
 
 def all_transports() -> Iterable[Type["NewTransport"]]:
-    # from .bridge import BridgeTransport
-    # TODO add BridgeTransport
-
+    from .bridge import BridgeTransport
     from .hid import HidTransport
     from .udp import UdpTransport
     from .webusb import WebUsbTransport
 
     transports: Tuple[Type["NewTransport"], ...] = (
-        # BridgeTransport,
+        BridgeTransport,
         HidTransport,
         UdpTransport,
         WebUsbTransport,
