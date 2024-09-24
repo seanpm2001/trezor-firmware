@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import typing as t
 
 from ... import models, messages, exceptions
@@ -9,6 +10,7 @@ from .protocol_v2 import ProtocolV2
 if t.TYPE_CHECKING:
     from ...client import TrezorClient
 
+LOG = logging.getLogger(__name__)
 
 class Session:
 
@@ -81,9 +83,10 @@ class SessionV1(Session):
     ) -> SessionV1:
         assert isinstance(client.protocol, ProtocolV1)
         session_id = client.features.session_id
-        assert session_id is not None
-        session = SessionV1(client, session_id)
-        return session
+        if session_id is None:
+            LOG.debug("warning, session id of protocol_v1 session is None")
+            return SessionV1(client, id=b"")
+        return SessionV1(client, session_id)
 
     def call(self, msg: t.Any, should_reinit: bool = False) -> t.Any:
         # if should_reinit:

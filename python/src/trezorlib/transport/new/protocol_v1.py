@@ -36,6 +36,7 @@ class ProtocolV1(ProtocolAndChannel):
             f"received message: {msg.__class__.__name__}",
             extra={"protobuf": msg},
         )
+        self.transport.close()
         return msg
 
     def write(self, msg: t.Any) -> None:

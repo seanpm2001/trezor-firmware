@@ -126,6 +126,8 @@ class WebUsbTransport(Transport):
         self.handle = None
 
     def write_chunk(self, chunk: bytes) -> None:
+        if self.handle is None:
+            self.open()
         assert self.handle is not None
         if len(chunk) != 64:
             raise TransportException(f"Unexpected chunk size: {len(chunk)}")
@@ -133,6 +135,8 @@ class WebUsbTransport(Transport):
         self.handle.interruptWrite(self.endpoint, chunk)
 
     def read_chunk(self) -> bytes:
+        if self.handle is None:
+            self.open()
         assert self.handle is not None
         endpoint = 0x80 | self.endpoint
         while True:

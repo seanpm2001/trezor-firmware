@@ -17,6 +17,7 @@
 from __future__ import annotations
 
 import functools
+import logging
 import os
 import sys
 import typing as t
@@ -29,6 +30,8 @@ from ..client import TrezorClient
 from ..messages import Capability
 from ..transport import Transport
 from ..transport.new import channel_database
+
+LOG = logging.getLogger(__name__)
 
 if t.TYPE_CHECKING:
     # Needed to enforce a return value from decorators
@@ -157,9 +160,14 @@ class NewTrezorConnection:
             stored_channel_with_correct_transport_path = next(
                 ch for ch in stored_channels if ch.transport_path == path
             )
-            client = TrezorClient.resume(
-                transport, stored_channel_with_correct_transport_path
-            )
+            try:
+                client = TrezorClient.resume(
+                    transport, stored_channel_with_correct_transport_path
+                )
+            except Exception:
+                LOG.debug("Failed to resume a channel. Replacing by a new one.")
+                channel_database.remove_channel(path)
+                client = TrezorClient(transport)
         else:
             client = TrezorClient(transport)
 

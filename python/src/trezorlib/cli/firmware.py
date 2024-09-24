@@ -655,7 +655,6 @@ def update(
     against downloaded firmware fingerprint. Otherwise fingerprint is checked
     against data.trezor.io information, if available.
     """
-    print("client context")
     with obj.client_context() as client:
         management_session = client.get_management_session()
         if sum(bool(x) for x in (filename, url, version)) > 1:

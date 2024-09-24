@@ -84,6 +84,10 @@ def save_channel(new_channel: ProtocolAndChannel):
 
 
 def remove_channel(transport_path: str) -> None:
+    LOG.debug(
+        "Removing channel with path %s from the channel database.",
+        transport_path,
+    )
     channels = read_all_channels()
     remaining_channels = [
         ch for ch in channels if ch["transport_path"] != transport_path
