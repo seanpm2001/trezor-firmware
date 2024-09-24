@@ -88,7 +88,7 @@ class TrezorClient:
             protobuf_mapping = mapping.DEFAULT_MAPPING
         protocol_v1 = ProtocolV1(transport, protobuf_mapping)
         if channel_data.protocol_version == 2:
-            protocol_v1.write(messages.Ping("Sanity check"))
+            protocol_v1.write(messages.Ping(message="Sanity check"))
             response = protocol_v1.read()
             if isinstance(response, messages.Failure) and (
                 response.code == messages.FailureType.UnexpectedMessage
