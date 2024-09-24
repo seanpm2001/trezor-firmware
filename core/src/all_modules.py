@@ -233,8 +233,6 @@ trezor.wire.thp.cpace
 import trezor.wire.thp.cpace
 trezor.wire.thp.crypto
 import trezor.wire.thp.crypto
-trezor.wire.thp.handler_provider
-import trezor.wire.thp.handler_provider
 trezor.wire.thp.interface_manager
 import trezor.wire.thp.interface_manager
 trezor.wire.thp.memory_manager
@@ -431,8 +429,8 @@ apps.misc.sign_identity
 import apps.misc.sign_identity
 apps.thp
 import apps.thp
-apps.thp.create_session
-import apps.thp.create_session
+apps.thp.create_new_session
+import apps.thp.create_new_session
 apps.thp.credential_manager
 import apps.thp.credential_manager
 apps.thp.pairing

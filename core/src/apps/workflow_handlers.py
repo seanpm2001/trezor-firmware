@@ -29,6 +29,11 @@ def _find_message_handler_module(msg_type: int) -> str:
     if __debug__ and msg_type == MessageType.LoadDevice:
         return "apps.debug.load_device"
 
+    if utils.USE_THP:
+        # thp management
+        if msg_type == MessageType.ThpCreateNewSession:
+            return "apps.thp.create_new_session"
+
     # management
     if msg_type == MessageType.ResetDevice:
         return "apps.management.reset_device"

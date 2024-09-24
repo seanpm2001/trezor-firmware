@@ -157,11 +157,6 @@ class ManagementSessionContext(GenericSessionContext):
 
     def __init__(self, channel_ctx: Channel) -> None:
         super().__init__(channel_ctx, MANAGEMENT_SESSION_ID)
-        from trezor.wire.thp.handler_provider import (
-            find_management_session_message_handler,
-        )
-
-        self.handler_finder = find_management_session_message_handler
 
     def get_session_state(self) -> SessionState:
         return SessionState.MANAGEMENT
