@@ -49,7 +49,7 @@ if utils.USE_THP:
         header = b"\x40\xff\xff\x00\x0c"
         chksum = checksum.compute(header + nonce)
         cid_req = header + nonce + chksum
-        gen = thp_main.thp_main_loop(interface, is_debug_session=True)
+        gen = thp_main.thp_main_loop(interface)
         gen.send(None)
         gen.send(cid_req)
         gen.send(None)
@@ -92,12 +92,14 @@ class TestTrezorHostProtocol(unittest.TestCase):
     def setUp(self):
         self.interface = MockHID(0xDEADBEEF)
         buffer = bytearray(64)
+        buffer2 = bytearray(256)
         thp_main.set_read_buffer(buffer)
+        thp_main.set_write_buffer(buffer2)
         interface_manager.decode_iface = thp_common.dummy_decode_iface
 
     def test_codec_message(self):
         self.assertEqual(len(self.interface.data), 0)
-        gen = thp_main.thp_main_loop(self.interface, is_debug_session=True)
+        gen = thp_main.thp_main_loop(self.interface)
         gen.send(None)
 
         # There should be a failiure response to received init packet (starts with "?##")
@@ -106,9 +108,7 @@ class TestTrezorHostProtocol(unittest.TestCase):
         gen.send(None)
         self.assertEqual(len(self.interface.data), 1)
 
-        expected_response = (
-            b"?##\x00\x03\x00\x00\x00\x14\x08\x01\x12\x10Invalid protocol"
-        )
+        expected_response = b"?##\x00\x03\x00\x00\x00\x14\x08\x10"
         self.assertEqual(
             self.interface.data[-1][: len(expected_response)], expected_response
         )
@@ -122,7 +122,7 @@ class TestTrezorHostProtocol(unittest.TestCase):
         self.assertEqual(len(self.interface.data), 1)
 
     def test_message_on_unallocated_channel(self):
-        gen = thp_main.thp_main_loop(self.interface, is_debug_session=True)
+        gen = thp_main.thp_main_loop(self.interface)
         query = gen.send(None)
         self.assertObjectEqual(query, self.interface.wait_object(io.POLL_READ))
         message_to_channel_789a = (
@@ -152,7 +152,7 @@ class TestTrezorHostProtocol(unittest.TestCase):
         self.assertEqual(thp_main._CHANNELS[cid].get_channel_state(), ChannelState.TH1)
 
     def test_invalid_encrypted_tag(self):
-        gen = thp_main.thp_main_loop(self.interface, is_debug_session=True)
+        gen = thp_main.thp_main_loop(self.interface)
         gen.send(None)
         # prepare 2 new channels
         expected_response_1 = send_channel_allocation_request(self.interface)
@@ -198,7 +198,7 @@ class TestTrezorHostProtocol(unittest.TestCase):
         )
 
     def test_channel_errors(self):
-        gen = thp_main.thp_main_loop(self.interface, is_debug_session=True)
+        gen = thp_main.thp_main_loop(self.interface)
         gen.send(None)
         # prepare 2 new channels
         expected_response_1 = send_channel_allocation_request(self.interface)

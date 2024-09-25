@@ -69,6 +69,7 @@ async def handle_received_message(
         try:
             import micropython
 
+            print("micropython.mem_info() from received_message_handler.py")
             micropython.mem_info()
             print(
                 "Allocation count:", micropython.alloc_count()  # type: ignore ["alloc_count" is not a known attribute of module "micropython"]

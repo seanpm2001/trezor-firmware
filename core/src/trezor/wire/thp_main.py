@@ -54,7 +54,7 @@ def get_raw_write_buffer() -> bytearray:
     return _WRITE_BUFFER
 
 
-async def thp_main_loop(iface: WireInterface, is_debug_session=False):
+async def thp_main_loop(iface: WireInterface):
     global _CHANNELS
     global _READ_BUFFER
     _CHANNELS = channel_manager.load_cached_channels(_READ_BUFFER)

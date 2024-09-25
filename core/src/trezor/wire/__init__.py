@@ -32,12 +32,7 @@ if utils.USE_THP:
     from trezor.wire import thp_main
     from trezor.wire.message_handler import WIRE_BUFFER_2
 from trezor.wire.context import UnexpectedMessageException
-from trezor.wire.message_handler import (
-    WIRE_BUFFER,
-    WIRE_BUFFER_DEBUG,
-    failure,
-    find_handler,
-)
+from trezor.wire.message_handler import WIRE_BUFFER, failure, find_handler
 
 # Import all errors into namespace, so that `wire.Error` is available from
 # other packages.
@@ -58,24 +53,19 @@ if TYPE_CHECKING:
 EXPERIMENTAL_ENABLED = False
 
 
-def setup(iface: WireInterface, is_debug_session: bool = False) -> None:
+def setup(iface: WireInterface) -> None:
     """Initialize the wire stack on passed WireInterface."""
-    if utils.USE_THP and not is_debug_session:
-        loop.schedule(handle_thp_session(iface, is_debug_session))
+    if utils.USE_THP:
+        loop.schedule(handle_thp_session(iface))
     else:
-        loop.schedule(handle_session(iface, is_debug_session))
+        loop.schedule(handle_session(iface))
 
 
 if utils.USE_THP:
 
-    async def handle_thp_session(iface: WireInterface, is_debug_session: bool = False):
-        if __debug__ and is_debug_session:
-            ctx_buffer = WIRE_BUFFER_DEBUG
-        else:
-            ctx_buffer = WIRE_BUFFER
+    async def handle_thp_session(iface: WireInterface):
 
-        thp_main.set_read_buffer(ctx_buffer)
-
+        thp_main.set_read_buffer(WIRE_BUFFER)
         thp_main.set_write_buffer(WIRE_BUFFER_2)
 
         # Take a mark of modules that are imported at this point, so we can
@@ -84,34 +74,22 @@ if utils.USE_THP:
 
         while True:
             try:
-                await thp_main.thp_main_loop(iface, is_debug_session)
-
-                if not __debug__ or not is_debug_session:
-                    # Unload modules imported by the workflow.  Should not raise.
-                    # This is not done for the debug session because the snapshot taken
-                    # in a debug session would clear modules which are in use by the
-                    # workflow running on wire.
-                    if __debug__:
-                        log.debug(
-                            __name__, "utils.unimport_end(modules) and loop.clear()"
-                        )
-                    utils.unimport_end(modules)
-                    loop.clear()
-                    return
-
+                await thp_main.thp_main_loop(iface)
             except Exception as exc:
-                # Log and try again. The session handler can only exit explicitly via
-                # loop.clear() above.
+                # Log and try again.
                 if __debug__:
                     log.exception(__name__, exc)
+            finally:
+                # Unload modules imported by the workflow. Should not raise.
+                if __debug__:
+                    log.debug(__name__, "utils.unimport_end(modules) and loop.clear()")
+                utils.unimport_end(modules)
+                loop.clear()
+                return  # pylint: disable=lost-exception
 
 
-async def handle_session(iface: WireInterface, is_debug_session: bool = False) -> None:
-    if __debug__ and is_debug_session:
-        ctx_buffer = WIRE_BUFFER_DEBUG
-    else:
-        ctx_buffer = WIRE_BUFFER
-    ctx = context.CodecContext(iface, ctx_buffer)
+async def handle_session(iface: WireInterface) -> None:
+    ctx = context.CodecContext(iface, WIRE_BUFFER)
     next_msg: protocol_common.Message | None = None
 
     # Take a mark of modules that are imported at this point, so we can
@@ -153,7 +131,7 @@ async def handle_session(iface: WireInterface, is_debug_session: bool = False) -
                 if __debug__:
                     log.exception(__name__, exc)
             finally:
-                # Unload modules imported by the workflow.  Should not raise.
+                # Unload modules imported by the workflow. Should not raise.
                 utils.unimport_end(modules)
 
                 if not do_not_restart:

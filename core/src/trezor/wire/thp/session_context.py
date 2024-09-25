@@ -35,16 +35,16 @@ class GenericSessionContext(Context):
         self.incoming_message = loop.chan()
         self.handler_finder: HandlerFinder = find_handler
 
-    async def handle(self, is_debug_session: bool = False) -> None:
+    async def handle(self) -> None:
         if __debug__:
-            self._handle_debug(is_debug_session)
+            self._handle_debug()
 
         take = self.incoming_message.take()
         next_message: Message | None = None
 
         while True:
             try:
-                if await self._handle_message(take, next_message, is_debug_session):
+                if await self._handle_message(take, next_message):
                     loop.schedule(self.handle())
                     return
             except UnexpectedMessageException as unexpected:
@@ -57,23 +57,22 @@ class GenericSessionContext(Context):
                 if __debug__:
                     log.exception(__name__, exc)
 
-    def _handle_debug(self, is_debug_session: bool) -> None:
+    def _handle_debug(self) -> None:
         log.debug(
             __name__,
             "handle - start (channel_id (bytes): %s, session_id: %d)",
             get_bytes_as_str(self.channel_id),
             self.session_id,
         )
-        if is_debug_session:
-            import apps.debug
+        # if is_debug_session:
+        #     import apps.debug
 
-            apps.debug.DEBUG_CONTEXT = self
+        #     apps.debug.DEBUG_CONTEXT = self
 
     async def _handle_message(
         self,
         take: Awaitable[Any],
         next_message: Message | None,
-        is_debug_session: bool,
     ) -> bool:
 
         try:
@@ -98,16 +97,15 @@ class GenericSessionContext(Context):
             if __debug__:
                 log.exception(__name__, exc)
         finally:
-            if not __debug__ or not is_debug_session:
-                # Unload modules imported by the workflow.  Should not raise.
-                # This is not done for the debug session because the snapshot taken
-                # in a debug session would clear modules which are in use by the
-                # workflow running on wire.
-                # TODO utils.unimport_end(modules)
+            # Unload modules imported by the workflow.  Should not raise.
+            # This is not done for the debug session because the snapshot taken
+            # in a debug session would clear modules which are in use by the
+            # workflow running on wire.
+            # TODO utils.unimport_end(modules)
 
-                if next_message is None and message.type not in AVOID_RESTARTING_FOR:
-                    # Shut down the loop if there is no next message waiting.
-                    return _EXIT_LOOP  # pylint: disable=lost-exception
+            if next_message is None and message.type not in AVOID_RESTARTING_FOR:
+                # Shut down the loop if there is no next message waiting.
+                return _EXIT_LOOP  # pylint: disable=lost-exception
             return _REPEAT_LOOP  # pylint: disable=lost-exception
 
     async def _get_message(

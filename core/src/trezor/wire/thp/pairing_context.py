@@ -84,12 +84,12 @@ class PairingContext(Context):
         self.host_name: str
 
     async def handle(self, is_debug_session: bool = False) -> None:
-        if __debug__:
-            log.debug(__name__, "handle - start")
-            if is_debug_session:
-                import apps.debug
+        # if __debug__:
+        #     log.debug(__name__, "handle - start")
+        #     if is_debug_session:
+        #         import apps.debug
 
-                apps.debug.DEBUG_CONTEXT = self
+        #         apps.debug.DEBUG_CONTEXT = self
 
         take = self.incoming_message.take()
         next_message: Message | None = None
@@ -112,26 +112,23 @@ class PairingContext(Context):
                     next_message = None
 
                 try:
-                    next_message = await handle_pairing_request_message(
-                        self, message, use_workflow=not is_debug_session
-                    )
+                    next_message = await handle_pairing_request_message(self, message)
                 except Exception as exc:
                     # Log and ignore. The session handler can only exit explicitly in the
                     # following finally block.
                     if __debug__:
                         log.exception(__name__, exc)
                 finally:
-                    if not __debug__ or not is_debug_session:
-                        # Unload modules imported by the workflow.  Should not raise.
-                        # This is not done for the debug session because the snapshot taken
-                        # in a debug session would clear modules which are in use by the
-                        # workflow running on wire.
-                        # TODO utils.unimport_end(modules)
+                    # Unload modules imported by the workflow.  Should not raise.
+                    # This is not done for the debug session because the snapshot taken
+                    # in a debug session would clear modules which are in use by the
+                    # workflow running on wire.
+                    # TODO utils.unimport_end(modules)
 
-                        if next_message is None:
+                    if next_message is None:
 
-                            # Shut down the loop if there is no next message waiting.
-                            return  # pylint: disable=lost-exception
+                        # Shut down the loop if there is no next message waiting.
+                        return  # pylint: disable=lost-exception
 
             except Exception as exc:
                 # Log and try again. The session handler can only exit explicitly via
@@ -189,7 +186,6 @@ class PairingContext(Context):
 async def handle_pairing_request_message(
     pairing_ctx: PairingContext,
     msg: protocol_common.Message,
-    use_workflow: bool,
 ) -> protocol_common.Message | None:
 
     res_msg: protobuf.MessageType | None = None
@@ -217,14 +213,7 @@ async def handle_pairing_request_message(
         # communication inside, but it should eventually return a
         # response message, or raise an exception (a rather common
         # thing to do).  Exceptions are handled in the code below.
-        if use_workflow:
-            # Spawn a workflow around the task. This ensures that concurrent
-            # workflows are shut down.
-            res_msg = await workflow.spawn(context.with_context(pairing_ctx, task))
-        else:
-            # For debug messages, ignore workflow processing and just await
-            # results of the handler.
-            res_msg = await task
+        res_msg = await workflow.spawn(context.with_context(pairing_ctx, task))
 
     except UnexpectedMessageException as exc:
         # Workflow was trying to read a message from the wire, and
