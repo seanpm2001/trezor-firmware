@@ -97,8 +97,13 @@ class TrezorClient:
                 isinstance(response, messages.Failure)
                 and response.code == messages.FailureType.InvalidProtocol
             ):
-                LOG.debug("Protocol V2 detected - can be resumed")
                 protocol = ProtocolV2(transport, protobuf_mapping, channel_data)
+                protocol.write(0, messages.Ping())
+                response = protocol.read(0)
+                if not isinstance(response, messages.Success):
+                    LOG.debug("Failed to resume ProtocolV2")
+                    raise Exception("Failed to resume ProtocolV2")
+                LOG.debug("Protocol V2 detected - can be resumed")
             else:
                 LOG.debug("Failed to resume ProtocolV2")
                 raise Exception("Failed to resume ProtocolV2")
