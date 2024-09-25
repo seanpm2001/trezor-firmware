@@ -1048,7 +1048,7 @@ def pin_mismatch_popup(is_wipe_code: bool = False) -> Awaitable[ui.UiResult]:
     )
 
 
-async def wipe_code_same_as_pin_popup() -> Awaitable[ui.UiResult]:
+def wipe_code_same_as_pin_popup() -> Awaitable[ui.UiResult]:
     return interact(
         error_popup(
             TR.wipe_code__invalid,
