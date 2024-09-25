@@ -85,10 +85,7 @@ def detect_protocol_version(transport: "BridgeTransport") -> int:
     response = mapping.DEFAULT_MAPPING.decode(response_type, response_data)
     transport.deprecated_begin_session()
     if isinstance(response, messages.Failure):
-        if (
-            response.code == FailureType.UnexpectedMessage
-            and response.message == "Invalid protocol"
-        ):
+        if response.code == FailureType.InvalidProtocol:
             LOG.debug("Protocol V2 detected")
             protocol_version = PROTOCOL_VERSION_2
 

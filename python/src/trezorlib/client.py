@@ -88,11 +88,14 @@ class TrezorClient:
             protobuf_mapping = mapping.DEFAULT_MAPPING
         protocol_v1 = ProtocolV1(transport, protobuf_mapping)
         if channel_data.protocol_version == 2:
-            protocol_v1.write(messages.Ping(message="Sanity check"))
+            try:
+                protocol_v1.write(messages.Ping(message="Sanity check - to resume"))
+            except Exception as e:
+                print(type(e))
             response = protocol_v1.read()
-            if isinstance(response, messages.Failure) and (
-                response.code == messages.FailureType.UnexpectedMessage
-                and response.message == "Invalid protocol"
+            if (
+                isinstance(response, messages.Failure)
+                and response.code == messages.FailureType.InvalidProtocol
             ):
                 LOG.debug("Protocol V2 detected - can be resumed")
                 protocol = ProtocolV2(transport, protobuf_mapping, channel_data)
@@ -175,10 +178,7 @@ class TrezorClient:
         response = protocol.read()
         self.transport.close()
         if isinstance(response, messages.Failure):
-            if (
-                response.code == messages.FailureType.UnexpectedMessage
-                and response.message == "Invalid protocol"
-            ):
+            if response.code == messages.FailureType.InvalidProtocol:
                 LOG.debug("Protocol V2 detected")
                 protocol = ProtocolV2(self.transport, self.mapping)
         return protocol
