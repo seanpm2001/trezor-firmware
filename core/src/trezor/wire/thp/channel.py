@@ -141,6 +141,7 @@ class Channel:
             raise ThpError(
                 "Read more bytes than is the expected length of the message!"
             )
+        return None
 
     def _handle_received_packet(self, packet: utils.BufferType) -> None:
         ctrl_byte = packet[0]
