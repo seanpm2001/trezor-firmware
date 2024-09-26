@@ -100,18 +100,14 @@ async def handle_single_message(
 
     res_msg: protobuf.MessageType | None = None
 
-    # # We need to find a handler for this message type.
-    # try:
-    #     handler = find_handler(ctx.iface, msg.type)
-    # except Error as exc:
-    #     # Handlers are allowed to exception out. In that case, we can skip decoding
-    #     # and return the error.
-    #     await ctx.write(failure(exc))
-    #     return True
-
-    # We need to find a handler for this message type.  Should not raise.
-
-    handler: Handler | None = handler_finder(msg.type)
+    # We need to find a handler for this message type.
+    try:
+        handler: Handler | None = handler_finder(msg.type)
+    except Error as exc:
+        # Handlers are allowed to exception out. In that case, we can skip decoding
+        # and return the error.
+        await ctx.write(failure(exc))
+        return True
 
     if handler is None:
         # If no handler is found, we can skip decoding and directly
