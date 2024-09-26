@@ -61,8 +61,6 @@ class Channel:
         self.transmission_loop: TransmissionLoop | None = None
         self.handshake: crypto.Handshake | None = None
 
-        self._create_management_session()
-
     def clear(self):
         clear_sessions_with_channel_id(self.channel_id)
         self.channel_cache.clear()
@@ -106,11 +104,6 @@ class Channel:
                 utils.get_bytes_as_str(self.channel_id),
                 type(self.buffer),
             )
-
-    def _create_management_session(self) -> None:
-        session = session_manager.create_new_management_session(self)
-        self.sessions[session.session_id] = session
-        loop.schedule(session.handle())
 
     # CALLED BY THP_MAIN_LOOP
 

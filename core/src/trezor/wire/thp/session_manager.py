@@ -22,27 +22,20 @@ def create_new_session(channel_ctx: Channel) -> SessionContext:
 
 
 def create_new_management_session(
-    channel_ctx: Channel,
+    channel_ctx: Channel, session_id: int = cache_thp.MANAGEMENT_SESSION_ID
 ) -> ManagementSessionContext:
-    return ManagementSessionContext(channel_ctx)
+    return ManagementSessionContext(channel_ctx, session_id)
 
 
-def load_cached_sessions(
-    channel_ctx: Channel,
-) -> dict[int, GenericSessionContext]:
-    if __debug__:
-        log.debug(__name__, "load_cached_sessions - start")
-    sessions: dict[int, GenericSessionContext] = {}
+def get_session_from_cache(
+    channel_ctx: Channel, session_id: int
+) -> GenericSessionContext | None:
     cached_sessions = cache_thp.get_allocated_sessions(channel_ctx.channel_id)
-    if __debug__:
-        log.debug(
-            __name__,
-            "load_cached_sessions - loaded a total of %d sessions from cache",
-            len(cached_sessions),
-        )
-    for session in cached_sessions:
-        if session.channel_id == channel_ctx.channel_id:
-            sid = int.from_bytes(session.session_id, "big")
-            sessions[sid] = SessionContext(channel_ctx, session)
-            loop.schedule(sessions[sid].handle())
-    return sessions
+    for s in cached_sessions:
+        print(s, s.channel_id, int.from_bytes(s.session_id, "big"))
+        if (
+            s.channel_id == channel_ctx.channel_id
+            and int.from_bytes(s.session_id, "big") == session_id
+        ):
+            return SessionContext(channel_ctx, s)
+    return None

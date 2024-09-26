@@ -153,8 +153,10 @@ class GenericSessionContext(Context):
 
 class ManagementSessionContext(GenericSessionContext):
 
-    def __init__(self, channel_ctx: Channel) -> None:
-        super().__init__(channel_ctx, MANAGEMENT_SESSION_ID)
+    def __init__(
+        self, channel_ctx: Channel, session_id: int = MANAGEMENT_SESSION_ID
+    ) -> None:
+        super().__init__(channel_ctx, session_id)
 
     def get_session_state(self) -> SessionState:
         return SessionState.MANAGEMENT

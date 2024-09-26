@@ -10,6 +10,7 @@ from storage.cache_common import (
 )
 from storage.cache_thp import (
     KEY_LENGTH,
+    MANAGEMENT_SESSION_ID,
     SESSION_ID_LENGTH,
     TAG_LENGTH,
     update_channel_last_used,
@@ -18,6 +19,7 @@ from storage.cache_thp import (
 from trezor import log, loop, utils
 from trezor.enums import FailureType
 from trezor.messages import Failure
+from trezor.wire.thp import session_manager
 
 from ..errors import DataError
 from ..protocol_common import Message
@@ -346,13 +348,22 @@ async def _handle_state_ENCRYPTED_TRANSPORT(ctx: Channel, message_length: int) -
         ">BH", memoryview(ctx.buffer)[INIT_HEADER_LENGTH:]
     )
     if session_id not in ctx.sessions:
+        if session_id == MANAGEMENT_SESSION_ID:
+            s = session_manager.create_new_management_session(ctx)
+        else:
+            s = session_manager.get_session_from_cache(ctx, session_id)
+        if s is None:
+            raise ThpUnallocatedSessionError(session_id)
+        ctx.sessions[session_id] = s
+        loop.schedule(s.handle())
+
+    elif ctx.sessions[session_id].get_session_state() is SessionState.UNALLOCATED:
         raise ThpUnallocatedSessionError(session_id)
 
-    session_state = ctx.sessions[session_id].get_session_state()
-    if session_state is SessionState.UNALLOCATED:
-        raise ThpUnallocatedSessionError(session_id)
-    update_session_last_used(ctx.channel_id, session_id)
-    ctx.sessions[session_id].incoming_message.publish(
+    s = ctx.sessions[session_id]
+    update_session_last_used(s.channel_id, s.session_id)
+
+    s.incoming_message.publish(
         Message(
             message_type,
             ctx.buffer[
