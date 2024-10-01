@@ -110,7 +110,7 @@ ui.init_ui(TREZOR_MODEL, "bootloader", CPPDEFINES_MOD, SOURCE_MOD, RUST_UI_FEATU
 env = Environment(
     ENV=os.environ,
     CFLAGS=f"{ARGUMENTS.get('CFLAGS', '')} -DPRODUCTION={int(PRODUCTION)} -DBOOTLOADER_QA={int(BOOTLOADER_QA)}",
-    CPPDEFINES_IMPLICIT=[]
+    CPPDEFINES_IMPLICIT=[],
     CPPDEFPREFIX="-D'",
     CPPDEFSUFFIX="'",
     )
