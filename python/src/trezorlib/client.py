@@ -50,7 +50,10 @@ LOG = logging.getLogger(__name__)
 
 
 class TrezorClient:
-    management_session: Session | None = None
+    button_callback: t.Callable[[Session, t.Any], t.Any] | None = None
+    pin_callback: t.Callable[[Session, t.Any], t.Any] | None = None
+
+    _management_session: Session | None = None
     _features: messages.Features | None = None
 
     def __init__(
@@ -121,18 +124,17 @@ class TrezorClient:
             return SessionV2.new(self, passphrase, derive_cardano)
         raise NotImplementedError  # TODO
 
-    def get_management_session(self):
+    def get_management_session(self, new_session: bool = False):
         from .transport.session import SessionV1, SessionV2
 
-        if self.management_session is not None:
-            return self.management_session
-
+        if not new_session and self._management_session is not None:
+            return self._management_session
         if isinstance(self.protocol, ProtocolV1):
-            self.management_session = SessionV1.new(self, "", False)
+            self._management_session = SessionV1.new(self, "", False)
         elif isinstance(self.protocol, ProtocolV2):
-            self.management_session = SessionV2(self, b"\x00")
-        assert self.management_session is not None
-        return self.management_session
+            self._management_session = SessionV2(self, b"\x00")
+        assert self._management_session is not None
+        return self._management_session
 
     @property
     def features(self) -> messages.Features:

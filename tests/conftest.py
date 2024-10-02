@@ -31,6 +31,8 @@ from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.device import apply_settings
 from trezorlib.device import wipe as wipe_device
 from trezorlib.transport import enumerate_devices, get_transport
+from trezorlib.transport.new.protocol_v1 import ProtocolV1
+from trezorlib.transport.session import Session
 
 # register rewrites before importing from local package
 # so that we see details of failed asserts from this module
@@ -232,12 +234,13 @@ def client(
 
     _raw_client.reset_debug_features()
     _raw_client.open()
-    try:
-        _raw_client.sync_responses()
-        _raw_client.init_device()
-    except Exception:
-        request.session.shouldstop = "Failed to communicate with Trezor"
-        pytest.fail("Failed to communicate with Trezor")
+    if isinstance(_raw_client.protocol, ProtocolV1):
+        try:
+            _raw_client.sync_responses()
+            # TODO _raw_client.init_device()
+        except Exception:
+            request.session.shouldstop = "Failed to communicate with Trezor"
+            pytest.fail("Failed to communicate with Trezor")
 
     # Resetting all the debug events to not be influenced by previous test
     _raw_client.debug.reset_debug_events()
@@ -249,8 +252,20 @@ def client(
     if sd_marker:
         should_format = sd_marker.kwargs.get("formatted", True)
         _raw_client.debug.erase_sd_card(format=should_format)
+    session = _raw_client.get_management_session()
 
-    wipe_device(_raw_client)
+    wipe_device(session)
+
+    from trezorlib.transport.new import channel_database
+
+    channel_database.clear_stored_channels()
+    _raw_client.protocol = None
+    _raw_client.__init__(
+        transport=_raw_client.transport,
+        auto_interact=_raw_client.debug.allow_interactions,
+    )
+    if not _raw_client.features.bootloader_mode:
+        _raw_client.refresh_features()
 
     # Load language again, as it got erased in wipe
     if _raw_client.model is not models.T1B1:
@@ -275,10 +290,10 @@ def client(
     use_passphrase = setup_params["passphrase"] is True or isinstance(
         setup_params["passphrase"], str
     )
-
     if not setup_params["uninitialized"]:
+        session = _raw_client.get_management_session(new_session=True)
         debuglink.load_device(
-            _raw_client,
+            session,
             mnemonic=setup_params["mnemonic"],  # type: ignore
             pin=setup_params["pin"],  # type: ignore
             passphrase_protection=use_passphrase,
@@ -293,12 +308,25 @@ def client(
         if use_passphrase and isinstance(setup_params["passphrase"], str):
             _raw_client.use_passphrase(setup_params["passphrase"])
 
-        _raw_client.clear_session()
+        # TODO _raw_client.clear_session()
 
     with ui_tests.screen_recording(_raw_client, request):
         yield _raw_client
 
     _raw_client.close()
+
+
+@pytest.fixture(scope="function")
+def session(
+    request: pytest.FixtureRequest, client: Client
+) -> Generator[Session, None, None]:
+    session = client.get_session()
+    try:
+        yield session
+    finally:
+        pass
+        # TODO
+        # session.end()
 
 
 def _is_main_runner(session_or_request: pytest.Session | pytest.FixtureRequest) -> bool:
