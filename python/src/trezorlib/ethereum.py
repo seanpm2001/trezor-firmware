@@ -23,7 +23,7 @@ from .tools import expect, prepare_message_bytes, unharden
 if TYPE_CHECKING:
     from .protobuf import MessageType
     from .tools import Address
-    from .transport.new.session import Session
+    from .transport.session import Session
 
 
 def int_to_big_endian(value: int) -> bytes:

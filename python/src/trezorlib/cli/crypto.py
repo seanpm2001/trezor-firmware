@@ -22,7 +22,7 @@ from .. import misc, tools
 from . import ChoiceType, with_session
 
 if TYPE_CHECKING:
-    from ..transport.new.session import Session
+    from ..transport.session import Session
 
 
 PROMPT_TYPE = ChoiceType(

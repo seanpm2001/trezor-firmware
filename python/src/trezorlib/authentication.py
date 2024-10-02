@@ -7,7 +7,7 @@ import typing as t
 from importlib import metadata
 
 from . import device
-from .transport.new.session import Session
+from .transport.session import Session
 
 try:
     cryptography_version = metadata.version("cryptography")

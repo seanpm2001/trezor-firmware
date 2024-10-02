@@ -22,7 +22,7 @@ from .. import fido
 from . import with_session
 
 if TYPE_CHECKING:
-    from ..transport.new.session import Session
+    from ..transport.session import Session
 
 ALGORITHM_NAME = {-7: "ES256 (ECDSA w/ SHA-256)", -8: "EdDSA"}
 

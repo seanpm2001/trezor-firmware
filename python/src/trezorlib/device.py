@@ -27,7 +27,7 @@ from .tools import Address, expect
 
 if TYPE_CHECKING:
     from .protobuf import MessageType
-    from .transport.new.session import Session
+    from .transport.session import Session
 
 
 RECOVERY_BACK = "\x08"  # backspace character, sent literally
@@ -137,9 +137,10 @@ def sd_protect(
 
 @expect(messages.Success, field="message", ret_type=str)
 def wipe(session: "Session") -> "MessageType":
+
     ret = session.call(messages.WipeDevice())
-    if not session.features.bootloader_mode:
-        session.refresh_features()
+    # if not session.features.bootloader_mode:
+    #     session.refresh_features()
     return ret
 
 

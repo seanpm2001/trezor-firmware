@@ -22,7 +22,7 @@ from .. import messages, monero, tools
 from . import ChoiceType, with_session
 
 if TYPE_CHECKING:
-    from ..transport.new.session import Session
+    from ..transport.session import Session
 
 PATH_HELP = "BIP-32 path, e.g. m/44h/128h/0h"
 

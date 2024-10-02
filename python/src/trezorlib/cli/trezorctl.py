@@ -28,7 +28,7 @@ from .. import __version__, log, messages, protobuf
 from ..client import TrezorClient
 from ..transport import DeviceIsBusy, enumerate_devices
 from ..transport.new import channel_database
-from ..transport.new.session import Session
+from ..transport.session import Session
 from ..transport.udp import UdpTransport
 from . import (
     AliasedGroup,

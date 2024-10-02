@@ -27,7 +27,7 @@ from .tools import expect, prepare_message_bytes
 if TYPE_CHECKING:
     from .protobuf import MessageType
     from .tools import Address
-    from .transport.new.session import Session
+    from .transport.session import Session
 
     class ScriptSig(TypedDict):
         asm: str

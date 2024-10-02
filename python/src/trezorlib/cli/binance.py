@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, TextIO
 import click
 
 from .. import binance, tools
-from ..transport.new.session import Session
+from ..transport.session import Session
 from . import with_session
 
 if TYPE_CHECKING:

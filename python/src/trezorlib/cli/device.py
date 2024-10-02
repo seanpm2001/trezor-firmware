@@ -28,7 +28,7 @@ from . import ChoiceType, with_management_session
 
 if t.TYPE_CHECKING:
     from ..protobuf import MessageType
-    from ..transport.new.session import Session
+    from ..transport.session import Session
     from . import NewTrezorConnection
 
 RECOVERY_DEVICE_INPUT_METHOD = {

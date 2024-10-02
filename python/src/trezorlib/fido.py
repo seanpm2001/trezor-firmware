@@ -21,7 +21,7 @@ from .tools import expect
 
 if TYPE_CHECKING:
     from .protobuf import MessageType
-    from .transport.new.session import Session
+    from .transport.session import Session
 
 
 @expect(

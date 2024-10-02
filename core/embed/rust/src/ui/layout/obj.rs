@@ -29,7 +29,10 @@ use crate::{
     time::Duration,
     ui::{
         button_request::ButtonRequest,
-        component::{base::{AttachType, TimerToken}, Component, Event, EventCtx, Never},
+        component::{
+            base::{AttachType, TimerToken},
+            Component, Event, EventCtx, Never,
+        },
         constant, display,
         event::USBEvent,
         geometry::Rect,

@@ -281,7 +281,7 @@ class NewTrezorConnection:
 #             raise click.ClickException(str(e)) from e
 #             # other exceptions may cause a traceback
 
-from ..transport.new.session import Session
+from ..transport.session import Session
 
 
 def with_cardano_session(

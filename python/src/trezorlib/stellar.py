@@ -23,7 +23,7 @@ from .tools import expect
 if TYPE_CHECKING:
     from .protobuf import MessageType
     from .tools import Address
-    from .transport.new.session import Session
+    from .transport.session import Session
 
     StellarMessageType = Union[
         messages.StellarAccountMergeOp,

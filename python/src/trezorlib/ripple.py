@@ -23,7 +23,7 @@ from .tools import dict_from_camelcase, expect
 if TYPE_CHECKING:
     from .protobuf import MessageType
     from .tools import Address
-    from .transport.new.session import Session
+    from .transport.session import Session
 
 REQUIRED_FIELDS = ("Fee", "Sequence", "TransactionType", "Payment")
 REQUIRED_PAYMENT_FIELDS = ("Amount", "Destination")

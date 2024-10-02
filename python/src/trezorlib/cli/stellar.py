@@ -24,7 +24,7 @@ from .. import stellar, tools
 from . import with_session
 
 if TYPE_CHECKING:
-    from ..transport.new.session import Session
+    from ..transport.session import Session
 
 try:
     from stellar_sdk import (

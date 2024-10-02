@@ -23,7 +23,7 @@ from .. import cardano, messages, tools
 from . import ChoiceType, with_cardano_session
 
 if TYPE_CHECKING:
-    from ..transport.new.session import Session
+    from ..transport.session import Session
 
 PATH_HELP = "BIP-32 path to key, e.g. m/44h/1815h/0h/0/0"
 

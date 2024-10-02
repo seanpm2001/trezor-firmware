@@ -22,7 +22,7 @@ from ..debuglink import TrezorClientDebugLink
 from ..debuglink import optiga_set_sec_max as debuglink_optiga_set_sec_max
 from ..debuglink import prodtest_t1 as debuglink_prodtest_t1
 from ..debuglink import record_screen
-from ..transport.new.session import Session
+from ..transport.session import Session
 from . import with_management_session
 
 if TYPE_CHECKING:

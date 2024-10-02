@@ -38,7 +38,7 @@ if True:
     from .vendor import *  # noqa: F401, F403
 
 if t.TYPE_CHECKING:
-    from ..transport.new.session import Session
+    from ..transport.session import Session
 
     T = t.TypeVar("T", bound="FirmwareType")
 

@@ -41,7 +41,7 @@ from . import ChoiceType, with_management_session
 
 if TYPE_CHECKING:
     from ..client import TrezorClient
-    from ..transport.new.session import Session
+    from ..transport.session import Session
     from . import NewTrezorConnection
 
 MODEL_CHOICE = ChoiceType(

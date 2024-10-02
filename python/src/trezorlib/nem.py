@@ -23,7 +23,7 @@ from .tools import expect
 if TYPE_CHECKING:
     from .protobuf import MessageType
     from .tools import Address
-    from .transport.new.session import Session
+    from .transport.session import Session
 
 TYPE_TRANSACTION_TRANSFER = 0x0101
 TYPE_IMPORTANCE_TRANSFER = 0x0801

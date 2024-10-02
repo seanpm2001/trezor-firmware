@@ -24,7 +24,7 @@ import click
 import requests
 
 from .. import device, messages, toif
-from ..transport.new.session import Session
+from ..transport.session import Session
 from . import AliasedGroup, ChoiceType, with_management_session
 
 if TYPE_CHECKING:

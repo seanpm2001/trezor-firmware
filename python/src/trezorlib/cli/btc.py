@@ -26,7 +26,7 @@ from .. import btc, messages, protobuf, tools
 from . import ChoiceType, with_session
 
 if TYPE_CHECKING:
-    from ..transport.new.session import Session
+    from ..transport.session import Session
 
 PURPOSE_BIP44 = 44
 PURPOSE_BIP48 = 48

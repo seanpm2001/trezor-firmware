@@ -27,12 +27,9 @@ from .transport.new.channel_data import ChannelData
 from .transport.new.protocol_and_channel import ProtocolAndChannel
 from .transport.new.protocol_v1 import ProtocolV1
 from .transport.new.protocol_v2 import ProtocolV2
-from .transport.new.session import Session, SessionV1, SessionV2
 
 if t.TYPE_CHECKING:
-    from .ui import TrezorClientUI
-
-UI = t.TypeVar("UI", bound="TrezorClientUI")
+    from .transport.session import Session
 
 LOG = logging.getLogger(__name__)
 
@@ -116,6 +113,8 @@ class TrezorClient:
         passphrase: str | None = None,
         derive_cardano: bool = False,
     ) -> Session:
+        from .transport.session import SessionV1, SessionV2
+
         if isinstance(self.protocol, ProtocolV1):
             return SessionV1.new(self, passphrase, derive_cardano)
         if isinstance(self.protocol, ProtocolV2):
@@ -123,6 +122,8 @@ class TrezorClient:
         raise NotImplementedError  # TODO
 
     def get_management_session(self):
+        from .transport.session import SessionV1, SessionV2
+
         if self.management_session is not None:
             return self.management_session
 
@@ -191,7 +192,6 @@ class TrezorClient:
 
 def get_default_client(
     path: t.Optional[str] = None,
-    ui: t.Optional["TrezorClientUI"] = None,
     **kwargs: t.Any,
 ) -> "TrezorClient":
     """Get a client for a connected Trezor device.
