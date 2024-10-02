@@ -1,16 +1,12 @@
 from typing import TYPE_CHECKING
 
 from storage import cache_thp
-from trezor import loop
 
 from .session_context import (
     GenericSessionContext,
     ManagementSessionContext,
     SessionContext,
 )
-
-if __debug__:
-    from trezor import log
 
 if TYPE_CHECKING:
     from .channel import Channel

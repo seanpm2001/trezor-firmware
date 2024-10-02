@@ -12,7 +12,6 @@ from .thp import (
     ThpErrorType,
     channel_manager,
     checksum,
-    session_manager,
     thp_messages,
 )
 from .thp.channel import Channel
