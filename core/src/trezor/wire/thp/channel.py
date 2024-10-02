@@ -20,7 +20,6 @@ from . import (
     interface_manager,
     memory_manager,
     received_message_handler,
-    session_manager,
 )
 from .checksum import CHECKSUM_LENGTH
 from .thp_messages import ENCRYPTED_TRANSPORT, PacketHeader
@@ -303,7 +302,12 @@ class Channel:
 
     # CALLED BY WORKFLOW / SESSION CONTEXT
 
-    def write(self, msg: protobuf.MessageType, session_id: int = 0) -> None:
+    async def write(
+        self,
+        msg: protobuf.MessageType,
+        session_id: int = 0,
+        force: bool = False,
+    ) -> None:
         if __debug__ and utils.EMULATOR:
             log.debug(
                 __name__,
@@ -317,7 +321,9 @@ class Channel:
         noise_payload_len = memory_manager.encode_into_buffer(
             self.buffer, msg, session_id
         )
-        return self.write_and_encrypt(self.buffer[:noise_payload_len])
+        task = self.write_and_encrypt(self.buffer[:noise_payload_len], force)
+        if task is not None:
+            await task
 
     def write_error(self, err_type: int) -> Awaitable[None]:
         msg_data = err_type.to_bytes(1, "big")
@@ -325,7 +331,9 @@ class Channel:
         header = PacketHeader.get_error_header(self.get_channel_id_int(), length)
         return write_payload_to_wire_and_add_checksum(self.iface, header, msg_data)
 
-    def write_and_encrypt(self, payload: bytes) -> None:
+    def write_and_encrypt(
+        self, payload: bytes, force: bool = False
+    ) -> Awaitable[None] | None:
         payload_length = len(payload)
         self._encrypt(self.buffer, payload_length)
         payload_length = payload_length + TAG_LENGTH
@@ -334,11 +342,20 @@ class Channel:
             self.write_task_spawn.close()  # UPS TODO might break something
             print("\nCLOSED\n")
         self._prepare_write()
+        if force:
+            if __debug__:
+                log.debug(
+                    __name__, "Writing FORCE message (without async or retransmission)."
+                )
+            return self._write_encrypted_payload_loop(
+                ENCRYPTED_TRANSPORT, memoryview(self.buffer[:payload_length])
+            )
         self.write_task_spawn = loop.spawn(
             self._write_encrypted_payload_loop(
                 ENCRYPTED_TRANSPORT, memoryview(self.buffer[:payload_length])
             )
         )
+        return None
 
     def write_handshake_message(self, ctrl_byte: int, payload: bytes) -> None:
         self._prepare_write()

@@ -138,6 +138,13 @@ class GenericSessionContext(Context):
             )
         message: Message = await self.incoming_message.take()
         if message.type not in expected_types:
+            if __debug__:
+                log.debug(
+                    __name__,
+                    "EXPECTED TYPES: %s\nRECEIVED TYPE: %s",
+                    str(expected_types),
+                    str(message.type),
+                )
             raise UnexpectedMessageException(message)
 
         if expected_type is None:
@@ -146,7 +153,10 @@ class GenericSessionContext(Context):
         return message_handler.wrap_protobuf_load(message.data, expected_type)
 
     async def write(self, msg: protobuf.MessageType) -> None:
-        return self.channel.write(msg, self.session_id)
+        return await self.channel.write(msg, self.session_id)
+
+    async def write_force(self, msg: protobuf.MessageType) -> None:
+        return await self.channel.write(msg, self.session_id, force=True)
 
     def get_session_state(self) -> SessionState: ...
 

@@ -23,9 +23,9 @@ class TransmissionLoop:
         self.wait_task: loop.spawn | None = None
         self.min_retransmisson_count_achieved: bool = False
 
-    async def start(self):
+    async def start(self, max_retransmission_count: int = MAX_RETRANSMISSION_COUNT):
         self.min_retransmisson_count_achieved = False
-        for i in range(MAX_RETRANSMISSION_COUNT):
+        for i in range(max_retransmission_count):
             if i >= MIN_RETRANSMISSION_COUNT:
                 self.min_retransmisson_count_achieved = True
             await write_payload_to_wire_and_add_checksum(

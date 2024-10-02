@@ -51,6 +51,9 @@ class Context:
 
     async def write(self, msg: protobuf.MessageType) -> None: ...
 
+    async def write_force(self, msg: protobuf.MessageType) -> None:
+        await self.write(msg)
+
     async def call(
         self,
         msg: protobuf.MessageType,

@@ -163,7 +163,7 @@ class PairingContext(Context):
         return message_handler.wrap_protobuf_load(message.data, expected_type)
 
     async def write(self, msg: protobuf.MessageType) -> None:
-        return self.channel_ctx.write(msg)
+        return await self.channel_ctx.write(msg)
 
     async def call(
         self, msg: protobuf.MessageType, expected_type: type[protobuf.MessageType]

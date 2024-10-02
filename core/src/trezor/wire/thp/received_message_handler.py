@@ -124,7 +124,7 @@ async def handle_received_message(
         )
     except ThpUnallocatedSessionError as e:
         error_message = Failure(code=FailureType.ThpUnallocatedSession)
-        ctx.write(error_message, e.session_id)
+        await ctx.write(error_message, e.session_id)
     except ThpDecryptionError:
         await ctx.write_error(ThpErrorType.DECRYPTION_FAILED)
         ctx.clear()
