@@ -17,8 +17,9 @@
 import pytest
 
 from trezorlib.binance import get_address
-from trezorlib.debuglink import TrezorClientDebugLink as Client
+from trezorlib.debuglink import TrezorClientDebugLink
 from trezorlib.tools import parse_path
+from trezorlib.transport.session import Session
 
 from ...input_flows import InputFlowShowAddressQRCode
 
@@ -38,23 +39,24 @@ BINANCE_ADDRESS_TEST_VECTORS = [
 
 
 @pytest.mark.parametrize("path, expected_address", BINANCE_ADDRESS_TEST_VECTORS)
-def test_binance_get_address(client: Client, path: str, expected_address: str):
+def test_binance_get_address(session: Session, path: str, expected_address: str):
     # data from https://github.com/binance-chain/javascript-sdk/blob/master/__tests__/crypto.test.js#L50
 
-    address = get_address(client, parse_path(path), show_display=True)
+    address = get_address(session, parse_path(path), show_display=True)
     assert address == expected_address
 
 
 @pytest.mark.parametrize("path, expected_address", BINANCE_ADDRESS_TEST_VECTORS)
 def test_binance_get_address_chunkify_details(
-    client: Client, path: str, expected_address: str
+    session: Session, path: str, expected_address: str
 ):
     # data from https://github.com/binance-chain/javascript-sdk/blob/master/__tests__/crypto.test.js#L50
 
-    with client:
+    with session.client as client:
+        assert isinstance(client, TrezorClientDebugLink)
         IF = InputFlowShowAddressQRCode(client)
         client.set_input_flow(IF.get())
         address = get_address(
-            client, parse_path(path), show_display=True, chunkify=True
+            session, parse_path(path), show_display=True, chunkify=True
         )
         assert address == expected_address

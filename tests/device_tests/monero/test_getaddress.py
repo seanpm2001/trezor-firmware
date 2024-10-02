@@ -17,8 +17,9 @@
 import pytest
 
 from trezorlib import monero
-from trezorlib.debuglink import TrezorClientDebugLink as Client
+from trezorlib.debuglink import TrezorClientDebugLink
 from trezorlib.tools import parse_path
+from trezorlib.transport.session import Session
 
 from ...common import MNEMONIC12
 from ...input_flows import InputFlowShowAddressQRCode
@@ -47,19 +48,21 @@ pytestmark = [
 
 
 @pytest.mark.parametrize("path, expected_address", TEST_VECTORS)
-def test_monero_getaddress(client: Client, path: str, expected_address: bytes):
-    address = monero.get_address(client, parse_path(path), show_display=True)
+def test_monero_getaddress(session: Session, path: str, expected_address: bytes):
+    print("XXX", session)
+    address = monero.get_address(session, parse_path(path), show_display=True)
     assert address == expected_address
 
 
 @pytest.mark.parametrize("path, expected_address", TEST_VECTORS)
 def test_monero_getaddress_chunkify_details(
-    client: Client, path: str, expected_address: bytes
+    session: Session, path: str, expected_address: bytes
 ):
-    with client:
+    with session.client as client:
+        assert isinstance(client, TrezorClientDebugLink)
         IF = InputFlowShowAddressQRCode(client)
         client.set_input_flow(IF.get())
         address = monero.get_address(
-            client, parse_path(path), show_display=True, chunkify=True
+            session, parse_path(path), show_display=True, chunkify=True
         )
         assert address == expected_address
