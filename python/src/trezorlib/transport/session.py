@@ -29,7 +29,6 @@ class Session:
 
     def call(self, msg: t.Any) -> t.Any:
         # TODO self.check_firmware_version()
-        print("session call_raw")
         resp = self.call_raw(msg)
 
         while True:
@@ -146,11 +145,13 @@ class SessionV2(Session):
         self.update_id_and_sid(id)
 
     def _write(self, msg: t.Any) -> None:
-        print("writing message", type(msg))
+        LOG.debug("writing message %s", type(msg))
         self.channel.write(self.sid, msg)
 
     def _read(self) -> t.Any:
-        return self.channel.read(self.sid)
+        msg = self.channel.read(self.sid)
+        LOG.debug("reading message %s", type(msg))
+        return msg
 
     def update_id_and_sid(self, id: bytes) -> None:
         self._id = id

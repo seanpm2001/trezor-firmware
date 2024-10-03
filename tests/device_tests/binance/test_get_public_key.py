@@ -19,7 +19,7 @@ import pytest
 from trezorlib import binance
 from trezorlib.debuglink import TrezorClientDebugLink
 from trezorlib.tools import parse_path
-from trezorlib.transport.session import Session
+from trezorlib.debuglink import SessionDebugWrapper as Session
 
 from ...input_flows import InputFlowShowXpubQRCode
 
@@ -34,7 +34,6 @@ BINANCE_PATH = parse_path("m/44h/714h/0h/0/0")
 )
 def test_binance_get_public_key(session: Session):
     with session.client as client:
-        assert isinstance(client, TrezorClientDebugLink)
         IF = InputFlowShowXpubQRCode(client)
         client.set_input_flow(IF.get())
         sig = binance.get_public_key(session, BINANCE_PATH, show_display=True)

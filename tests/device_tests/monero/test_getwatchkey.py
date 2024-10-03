@@ -18,7 +18,7 @@ import pytest
 
 from trezorlib import monero
 from trezorlib.tools import parse_path
-from trezorlib.transport.session import Session
+from trezorlib.debuglink import SessionDebugWrapper as Session
 
 from ...common import MNEMONIC12
 

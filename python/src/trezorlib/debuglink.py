@@ -38,13 +38,13 @@ from .log import DUMP_BYTES
 from .messages import DebugWaitType
 from .tools import expect
 from .transport.new.protocol_v1 import ProtocolV1
+from .transport.session import Session
 
 if t.TYPE_CHECKING:
     from typing_extensions import Protocol
 
     from .messages import PinMatrixRequestType
     from .transport import Transport
-    from .transport.session import Session
 
     ExpectedMessage = t.Union[
         protobuf.MessageType, t.Type[protobuf.MessageType], "MessageFilter"
@@ -966,6 +966,205 @@ class MessageFilterGenerator:
 
 
 message_filters = MessageFilterGenerator()
+
+
+class SessionDebugWrapper(Session):
+    def __init__(self, session: Session) -> None:
+        self._session = session
+        self.reset_debug_features()
+        self.actual_responses = None
+        self.pin_callback = self.client.pin_callback
+        self.button_callback = self.client.button_callback
+
+    @property
+    def client(self) -> TrezorClientDebugLink:
+        assert isinstance(self._session.client, TrezorClientDebugLink)
+        return self._session.client
+
+    @property
+    def id(self) -> bytes:
+        return self._session.id
+
+    def _write(self, msg: t.Any) -> None:
+        print("writing message:", type(msg))
+        self._session._write(msg)
+
+    def _read(self) -> t.Any:
+        resp = self._session._read()
+        print("reading message:", type(resp))
+        if self.actual_responses is not None:
+            self.actual_responses.append(resp)
+        return resp
+
+    def set_expected_responses(
+        self,
+        expected: t.List["ExpectedMessage" | t.Tuple[bool, "ExpectedMessage"]],
+    ) -> None:
+        """Set a sequence of expected responses to session calls.
+
+        Within a given with-block, the list of received responses from device must
+        match the list of expected responses, otherwise an ``AssertionError`` is raised.
+
+        If an expected response is given a field value other than ``None``, that field value
+        must exactly match the received field value. If a given field is ``None``
+        (or unspecified) in the expected response, the received field value is not
+        checked.
+
+        Each expected response can also be a tuple ``(bool, message)``. In that case, the
+        expected response is only evaluated if the first field is ``True``.
+        This is useful for differentiating sequences between Trezor models:
+
+        >>> trezor_one = session.features.model == "1"
+        >>> session.set_expected_responses([
+        >>>     messages.ButtonRequest(code=ConfirmOutput),
+        >>>     (trezor_one, messages.ButtonRequest(code=ConfirmOutput)),
+        >>>     messages.Success(),
+        >>> ])
+        """
+        if not self.in_with_statement:
+            raise RuntimeError("Must be called inside 'with' statement")
+
+        # make sure all items are (bool, message) tuples
+        expected_with_validity = (
+            e if isinstance(e, tuple) else (True, e) for e in expected
+        )
+
+        # only apply those items that are (True, message)
+        self.expected_responses = [
+            MessageFilter.from_message_or_type(expected)
+            for valid, expected in expected_with_validity
+            if valid
+        ]
+        self.actual_responses = []
+
+    def set_filter(
+        self,
+        message_type: t.Type[protobuf.MessageType],
+        callback: t.Callable[[protobuf.MessageType], protobuf.MessageType] | None,
+    ) -> None:
+        """Configure a filter function for a specified message type.
+
+        The `callback` must be a function that accepts a protobuf message, and returns
+        a (possibly modified) protobuf message of the same type. Whenever a message
+        is sent or received that matches `message_type`, `callback` is invoked on the
+        message and its result is substituted for the original.
+
+        Useful for test scenarios with an active malicious actor on the wire.
+        """
+        if not self.in_with_statement:
+            raise RuntimeError("Must be called inside 'with' statement")
+
+        self.filters[message_type] = callback
+
+    def reset_debug_features(self) -> None:
+        """Prepare the debugging session for a new testcase.
+
+        Clears all debugging state that might have been modified by a testcase.
+        """
+        self.in_with_statement = False
+        self.expected_responses: t.List[MessageFilter] | None = None
+        self.actual_responses: t.List[protobuf.MessageType] | None = None
+        self.filters: t.Dict[
+            t.Type[protobuf.MessageType],
+            t.Callable[[protobuf.MessageType], protobuf.MessageType] | None,
+        ] = {}
+        # self.client.reset_debug_features()
+
+    def __enter__(self) -> "SessionDebugWrapper":
+        # For usage in with/expected_responses
+        if self.in_with_statement:
+            raise RuntimeError("Do not nest!")
+        self.in_with_statement = True
+        return self
+
+    def __exit__(self, exc_type: t.Any, value: t.Any, traceback: t.Any) -> None:
+        __tracebackhide__ = True  # for pytest # pylint: disable=W0612
+
+        # copy expected/actual responses before clearing them
+        expected_responses = self.expected_responses
+        actual_responses = self.actual_responses
+
+        # grab a copy of the inputflow generator to raise an exception through it
+        if isinstance(self.client.ui, DebugUI):
+            input_flow = self.client.ui.input_flow
+        else:
+            input_flow = None
+
+        self.reset_debug_features()
+
+        if exc_type is None:
+            # If no other exception was raised, evaluate missed responses
+            # (raises AssertionError on mismatch)
+            self._verify_responses(expected_responses, actual_responses)
+            if isinstance(input_flow, t.Generator):
+                # Ensure that the input flow is exhausted
+                try:
+                    input_flow.throw(
+                        AssertionError("input flow continues past end of test")
+                    )
+                except StopIteration:
+                    pass
+
+        elif isinstance(input_flow, t.Generator):
+            # Propagate the exception through the input flow, so that we see in
+            # traceback where it is stuck.
+            input_flow.throw(exc_type, value, traceback)
+
+    @classmethod
+    def _verify_responses(
+        cls,
+        expected: t.List[MessageFilter] | None,
+        actual: t.List[protobuf.MessageType] | None,
+    ) -> None:
+        __tracebackhide__ = True  # for pytest # pylint: disable=W0612
+
+        if expected is None and actual is None:
+            return
+
+        assert expected is not None
+        assert actual is not None
+
+        for i, (exp, act) in enumerate(zip_longest(expected, actual)):
+            if exp is None:
+                output = cls._expectation_lines(expected, i)
+                output.append("No more messages were expected, but we got:")
+                for resp in actual[i:]:
+                    output.append(
+                        textwrap.indent(protobuf.format_message(resp), "    ")
+                    )
+                raise AssertionError("\n".join(output))
+
+            if act is None:
+                output = cls._expectation_lines(expected, i)
+                output.append("This and the following message was not received.")
+                raise AssertionError("\n".join(output))
+
+            if not exp.match(act):
+                output = cls._expectation_lines(expected, i)
+                output.append("Actually received:")
+                output.append(textwrap.indent(protobuf.format_message(act), "    "))
+                raise AssertionError("\n".join(output))
+
+    @staticmethod
+    def _expectation_lines(
+        expected: t.List[MessageFilter], current: int
+    ) -> t.List[str]:
+        start_at = max(current - EXPECTED_RESPONSES_CONTEXT_LINES, 0)
+        stop_at = min(current + EXPECTED_RESPONSES_CONTEXT_LINES + 1, len(expected))
+        output: t.List[str] = []
+        output.append("Expected responses:")
+        if start_at > 0:
+            output.append(f"    (...{start_at} previous responses omitted)")
+        for i in range(start_at, stop_at):
+            exp = expected[i]
+            prefix = "    " if i != current else ">>> "
+            output.append(textwrap.indent(exp.to_string(), prefix))
+        if stop_at < len(expected):
+            omitted = len(expected) - stop_at
+            output.append(f"    (...{omitted} following responses omitted)")
+
+        output.append("")
+        return output
 
 
 class TrezorClientDebugLink(TrezorClient):

@@ -27,12 +27,12 @@ from _pytest.python import IdMaker
 from _pytest.reports import TestReport
 
 from trezorlib import debuglink, log, models
+from trezorlib.debuglink import SessionDebugWrapper
 from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.device import apply_settings
 from trezorlib.device import wipe as wipe_device
 from trezorlib.transport import enumerate_devices, get_transport
 from trezorlib.transport.new.protocol_v1 import ProtocolV1
-from trezorlib.transport.session import Session
 
 # register rewrites before importing from local package
 # so that we see details of failed asserts from this module
@@ -319,10 +319,10 @@ def client(
 @pytest.fixture(scope="function")
 def session(
     request: pytest.FixtureRequest, client: Client
-) -> Generator[Session, None, None]:
+) -> Generator[SessionDebugWrapper, None, None]:
     session = client.get_session()
     try:
-        yield session
+        yield SessionDebugWrapper(session)
     finally:
         pass
         # TODO

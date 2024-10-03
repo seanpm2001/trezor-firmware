@@ -17,9 +17,8 @@
 import pytest
 
 from trezorlib.binance import get_address
-from trezorlib.debuglink import TrezorClientDebugLink
 from trezorlib.tools import parse_path
-from trezorlib.transport.session import Session
+from trezorlib.debuglink import SessionDebugWrapper as Session
 
 from ...input_flows import InputFlowShowAddressQRCode
 
@@ -53,7 +52,6 @@ def test_binance_get_address_chunkify_details(
     # data from https://github.com/binance-chain/javascript-sdk/blob/master/__tests__/crypto.test.js#L50
 
     with session.client as client:
-        assert isinstance(client, TrezorClientDebugLink)
         IF = InputFlowShowAddressQRCode(client)
         client.set_input_flow(IF.get())
         address = get_address(
