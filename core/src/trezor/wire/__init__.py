@@ -49,10 +49,6 @@ if TYPE_CHECKING:
     LoadedMessageType = TypeVar("LoadedMessageType", bound=protobuf.MessageType)
 
 
-# If set to False protobuf messages marked with "experimental_message" option are rejected.
-EXPERIMENTAL_ENABLED = False
-
-
 def setup(iface: WireInterface) -> None:
     """Initialize the wire stack on passed WireInterface."""
     if utils.USE_THP:
