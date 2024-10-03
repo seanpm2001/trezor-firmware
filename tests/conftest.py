@@ -303,7 +303,7 @@ def client(
         )
 
         if request.node.get_closest_marker("experimental"):
-            apply_settings(_raw_client, experimental_features=True)
+            apply_settings(session, experimental_features=True)
 
         if use_passphrase and isinstance(setup_params["passphrase"], str):
             _raw_client.use_passphrase(setup_params["passphrase"])
