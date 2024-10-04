@@ -19,7 +19,7 @@ from collections import namedtuple
 import pytest
 
 from trezorlib import btc, messages, misc, models
-from trezorlib.debuglink import TrezorClientDebugLink as Client
+from trezorlib.debuglink import SessionDebugWrapper as Session
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.tools import parse_path
 
@@ -144,7 +144,7 @@ SERIALIZED_TX = "01000000000101e29305e85821ea86f2bca1fcfe45e7cb0c8de87b612479ee6
         case("out12", (PaymentRequestParams([1, 2], [], get_nonce=True),)),
     ),
 )
-def test_payment_request(client: Client, payment_request_params):
+def test_payment_request(session: Session, payment_request_params):
     for txo in outputs:
         txo.payment_req_index = None
 
@@ -154,10 +154,10 @@ def test_payment_request(client: Client, payment_request_params):
         for txo_index in params.txo_indices:
             outputs[txo_index].payment_req_index = i
             request_outputs.append(outputs[txo_index])
-        nonce = misc.get_nonce(client) if params.get_nonce else None
+        nonce = misc.get_nonce(session) if params.get_nonce else None
         payment_reqs.append(
             make_payment_request(
-                client,
+                session,
                 recipient_name="trezor.io",
                 outputs=request_outputs,
                 change_addresses=["tb1qkvwu9g3k2pdxewfqr7syz89r3gj557l3uuf9r9"],
@@ -167,7 +167,7 @@ def test_payment_request(client: Client, payment_request_params):
         )
 
     _, serialized_tx = btc.sign_tx(
-        client,
+        session,
         "Testnet",
         inputs,
         outputs,
@@ -180,7 +180,7 @@ def test_payment_request(client: Client, payment_request_params):
     # Ensure that the nonce has been invalidated.
     with pytest.raises(TrezorFailure, match="Invalid nonce in payment request"):
         btc.sign_tx(
-            client,
+            session,
             "Testnet",
             inputs,
             outputs,
@@ -189,18 +189,18 @@ def test_payment_request(client: Client, payment_request_params):
         )
 
 
-def test_payment_request_details(client: Client):
-    if client.model is models.T2B1:
+def test_payment_request_details(session: Session):
+    if session.model is models.T2B1:
         pytest.skip("Details not implemented on T2B1")
 
     # Test that payment request details are shown when requested.
     outputs[0].payment_req_index = 0
     outputs[1].payment_req_index = 0
     outputs[2].payment_req_index = None
-    nonce = misc.get_nonce(client)
+    nonce = misc.get_nonce(session)
     payment_reqs = [
         make_payment_request(
-            client,
+            session,
             recipient_name="trezor.io",
             outputs=outputs[:2],
             memos=[TextMemo("Invoice #87654321.")],
@@ -208,12 +208,12 @@ def test_payment_request_details(client: Client):
         )
     ]
 
-    with client:
+    with session.client as client:
         IF = InputFlowPaymentRequestDetails(client, outputs)
         client.set_input_flow(IF.get())
 
         _, serialized_tx = btc.sign_tx(
-            client,
+            session,
             "Testnet",
             inputs,
             outputs,
@@ -224,16 +224,16 @@ def test_payment_request_details(client: Client):
     assert serialized_tx.hex() == SERIALIZED_TX
 
 
-def test_payment_req_wrong_amount(client: Client):
+def test_payment_req_wrong_amount(session: Session):
     # Test wrong total amount in payment request.
     outputs[0].payment_req_index = 0
     outputs[1].payment_req_index = 0
     outputs[2].payment_req_index = None
     payment_req = make_payment_request(
-        client,
+        session,
         recipient_name="trezor.io",
         outputs=outputs[:2],
-        nonce=misc.get_nonce(client),
+        nonce=misc.get_nonce(session),
     )
 
     # Decrease the total amount of the payment request.
@@ -241,7 +241,7 @@ def test_payment_req_wrong_amount(client: Client):
 
     with pytest.raises(TrezorFailure, match="Invalid amount in payment request"):
         btc.sign_tx(
-            client,
+            session,
             "Testnet",
             inputs,
             outputs,
@@ -250,18 +250,18 @@ def test_payment_req_wrong_amount(client: Client):
         )
 
 
-def test_payment_req_wrong_mac_refund(client: Client):
+def test_payment_req_wrong_mac_refund(session: Session):
     # Test wrong MAC in payment request memo.
     memo = RefundMemo(parse_path("m/44h/1h/0h/1/0"))
     outputs[0].payment_req_index = 0
     outputs[1].payment_req_index = 0
     outputs[2].payment_req_index = None
     payment_req = make_payment_request(
-        client,
+        session,
         recipient_name="trezor.io",
         outputs=outputs[:2],
         memos=[memo],
-        nonce=misc.get_nonce(client),
+        nonce=misc.get_nonce(session),
     )
 
     # Corrupt the MAC value.
@@ -271,7 +271,7 @@ def test_payment_req_wrong_mac_refund(client: Client):
 
     with pytest.raises(TrezorFailure, match="Invalid address MAC"):
         btc.sign_tx(
-            client,
+            session,
             "Testnet",
             inputs,
             outputs,
@@ -283,7 +283,7 @@ def test_payment_req_wrong_mac_refund(client: Client):
 @pytest.mark.altcoin
 @pytest.mark.skip_t2b1
 @pytest.mark.skip_t3t1
-def test_payment_req_wrong_mac_purchase(client: Client):
+def test_payment_req_wrong_mac_purchase(session: Session):
     # Test wrong MAC in payment request memo.
     memo = CoinPurchaseMemo(
         amount="22.34904 DASH",
@@ -295,11 +295,11 @@ def test_payment_req_wrong_mac_purchase(client: Client):
     outputs[1].payment_req_index = 0
     outputs[2].payment_req_index = None
     payment_req = make_payment_request(
-        client,
+        session,
         recipient_name="trezor.io",
         outputs=outputs[:2],
         memos=[memo],
-        nonce=misc.get_nonce(client),
+        nonce=misc.get_nonce(session),
     )
 
     # Corrupt the MAC value.
@@ -309,7 +309,7 @@ def test_payment_req_wrong_mac_purchase(client: Client):
 
     with pytest.raises(TrezorFailure, match="Invalid address MAC"):
         btc.sign_tx(
-            client,
+            session,
             "Testnet",
             inputs,
             outputs,
@@ -318,16 +318,16 @@ def test_payment_req_wrong_mac_purchase(client: Client):
         )
 
 
-def test_payment_req_wrong_output(client: Client):
+def test_payment_req_wrong_output(session: Session):
     # Test wrong output in payment request.
     outputs[0].payment_req_index = 0
     outputs[1].payment_req_index = 0
     outputs[2].payment_req_index = None
     payment_req = make_payment_request(
-        client,
+        session,
         recipient_name="trezor.io",
         outputs=outputs[:2],
-        nonce=misc.get_nonce(client),
+        nonce=misc.get_nonce(session),
     )
 
     # Use a different address in the second output.
@@ -344,7 +344,7 @@ def test_payment_req_wrong_output(client: Client):
 
     with pytest.raises(TrezorFailure, match="Invalid signature in payment request"):
         btc.sign_tx(
-            client,
+            session,
             "Testnet",
             inputs,
             fake_outputs,
