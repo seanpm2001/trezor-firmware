@@ -19,6 +19,7 @@ from __future__ import annotations
 import os
 from enum import IntEnum
 from pathlib import Path
+from time import sleep
 from typing import TYPE_CHECKING, Generator, Iterator
 
 import pytest
@@ -255,7 +256,7 @@ def client(
     session = _raw_client.get_management_session()
 
     wipe_device(session)
-
+    sleep(1)  # Makes test more stable (wait for wipe to finish)
     from trezorlib.transport.new import channel_database
 
     channel_database.clear_stored_channels()
