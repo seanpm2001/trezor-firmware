@@ -18,7 +18,7 @@ import pytest
 from mnemonic import Mnemonic
 
 from trezorlib import device, messages, models
-from trezorlib.debuglink import TrezorClientDebugLink as Client
+from trezorlib.debuglink import SessionDebugWrapper as Session
 from trezorlib.exceptions import TrezorFailure
 
 from ...common import EXTERNAL_ENTROPY, MNEMONIC12, WITH_MOCK_URANDOM, generate_entropy
@@ -31,14 +31,15 @@ from ...input_flows import (
 pytestmark = [pytest.mark.skip_t1b1]
 
 
-def reset_device(client: Client, strength: int):
-    with WITH_MOCK_URANDOM, client:
+def reset_device(session: Session, strength: int):
+    debug = session.client.debug
+    with WITH_MOCK_URANDOM, session.client as client:
         IF = InputFlowBip39ResetBackup(client)
         client.set_input_flow(IF.get())
 
         # No PIN, no passphrase, don't display random
         device.reset(
-            client,
+            session,
             display_random=False,
             strength=strength,
             passphrase_protection=False,
@@ -47,7 +48,7 @@ def reset_device(client: Client, strength: int):
         )
 
     # generate mnemonic locally
-    internal_entropy = client.debug.state().reset_entropy
+    internal_entropy = debug.state().reset_entropy
     entropy = generate_entropy(strength, internal_entropy, EXTERNAL_ENTROPY)
     expected_mnemonic = Mnemonic("english").to_mnemonic(entropy)
 
@@ -55,7 +56,7 @@ def reset_device(client: Client, strength: int):
     assert IF.mnemonic == expected_mnemonic
 
     # Check if device is properly initialized
-    resp = client.call_raw(messages.Initialize())
+    resp = session.call_raw(messages.GetFeatures())
     assert resp.initialized is True
     assert resp.backup_availability == messages.BackupAvailability.NotAvailable
     assert resp.pin_protection is False
@@ -64,30 +65,31 @@ def reset_device(client: Client, strength: int):
 
     # backup attempt fails because backup was done in reset
     with pytest.raises(TrezorFailure, match="ProcessError: Seed already backed up"):
-        device.backup(client)
+        device.backup(session)
 
 
 @pytest.mark.setup_client(uninitialized=True)
-def test_reset_device(client: Client):
-    reset_device(client, 128)  # 12 words
+def test_reset_device(session: Session):
+    reset_device(session, 128)  # 12 words
 
 
 @pytest.mark.setup_client(uninitialized=True)
-def test_reset_device_192(client: Client):
-    reset_device(client, 192)  # 18 words
+def test_reset_device_192(session: Session):
+    reset_device(session, 192)  # 18 words
 
 
 @pytest.mark.setup_client(uninitialized=True)
-def test_reset_device_pin(client: Client):
+def test_reset_device_pin(session: Session):
+    debug = session.client.debug
     strength = 256  # 24 words
 
-    with WITH_MOCK_URANDOM, client:
+    with WITH_MOCK_URANDOM, session.client as client:
         IF = InputFlowBip39ResetPIN(client)
         client.set_input_flow(IF.get())
 
         # PIN, passphrase, display random
         device.reset(
-            client,
+            session,
             display_random=True,
             strength=strength,
             passphrase_protection=True,
@@ -96,7 +98,7 @@ def test_reset_device_pin(client: Client):
         )
 
     # generate mnemonic locally
-    internal_entropy = client.debug.state().reset_entropy
+    internal_entropy = debug.state().reset_entropy
     entropy = generate_entropy(strength, internal_entropy, EXTERNAL_ENTROPY)
     expected_mnemonic = Mnemonic("english").to_mnemonic(entropy)
 
@@ -104,7 +106,7 @@ def test_reset_device_pin(client: Client):
     assert IF.mnemonic == expected_mnemonic
 
     # Check if device is properly initialized
-    resp = client.call_raw(messages.Initialize())
+    resp = session.call_raw(messages.GetFeatures())
     assert resp.initialized is True
     assert resp.backup_availability == messages.BackupAvailability.NotAvailable
     assert resp.pin_protection is True
@@ -112,16 +114,17 @@ def test_reset_device_pin(client: Client):
 
 
 @pytest.mark.setup_client(uninitialized=True)
-def test_reset_failed_check(client: Client):
+def test_reset_failed_check(session: Session):
+    debug = session.client.debug
     strength = 256  # 24 words
 
-    with WITH_MOCK_URANDOM, client:
+    with WITH_MOCK_URANDOM, session.client as client:
         IF = InputFlowBip39ResetFailedCheck(client)
         client.set_input_flow(IF.get())
 
         # PIN, passphrase, display random
         device.reset(
-            client,
+            session,
             display_random=False,
             strength=strength,
             passphrase_protection=False,
@@ -130,7 +133,7 @@ def test_reset_failed_check(client: Client):
         )
 
     # generate mnemonic locally
-    internal_entropy = client.debug.state().reset_entropy
+    internal_entropy = debug.state().reset_entropy
     entropy = generate_entropy(strength, internal_entropy, EXTERNAL_ENTROPY)
     expected_mnemonic = Mnemonic("english").to_mnemonic(entropy)
 
@@ -138,7 +141,7 @@ def test_reset_failed_check(client: Client):
     assert IF.mnemonic == expected_mnemonic
 
     # Check if device is properly initialized
-    resp = client.call_raw(messages.Initialize())
+    resp = session.call_raw(messages.GetFeatures())
     assert resp.initialized is True
     assert resp.backup_availability == messages.BackupAvailability.NotAvailable
     assert resp.pin_protection is False
@@ -147,42 +150,43 @@ def test_reset_failed_check(client: Client):
 
 
 @pytest.mark.setup_client(uninitialized=True)
-def test_failed_pin(client: Client):
+def test_failed_pin(session: Session):
+    debug = session.client.debug
     strength = 128
-    ret = client.call_raw(
+    ret = session.call_raw(
         messages.ResetDevice(strength=strength, pin_protection=True, label="test")
     )
 
     # Confirm Reset
     assert isinstance(ret, messages.ButtonRequest)
-    client.debug.press_yes()
-    ret = client.call_raw(messages.ButtonAck())
+    debug.press_yes()
+    ret = session.call_raw(messages.ButtonAck())
 
     # Enter PIN for first time
     assert isinstance(ret, messages.ButtonRequest)
-    client.debug.input("654")
-    ret = client.call_raw(messages.ButtonAck())
+    debug.input("654")
+    ret = session.call_raw(messages.ButtonAck())
 
     # Re-enter PIN for TR
-    if client.model is models.T2B1:
+    if session.model is models.T2B1:
         assert isinstance(ret, messages.ButtonRequest)
-        client.debug.press_yes()
-        ret = client.call_raw(messages.ButtonAck())
+        debug.press_yes()
+        ret = session.call_raw(messages.ButtonAck())
 
     # Enter PIN for second time
     assert isinstance(ret, messages.ButtonRequest)
-    client.debug.input("456")
-    ret = client.call_raw(messages.ButtonAck())
+    debug.input("456")
+    ret = session.call_raw(messages.ButtonAck())
 
     # PIN mismatch
     assert isinstance(ret, messages.ButtonRequest)
-    client.debug.press_yes()
-    ret = client.call_raw(messages.ButtonAck())
+    debug.press_yes()
+    ret = session.call_raw(messages.ButtonAck())
 
     assert isinstance(ret, messages.ButtonRequest)
 
 
 @pytest.mark.setup_client(mnemonic=MNEMONIC12)
-def test_already_initialized(client: Client):
+def test_already_initialized(session: Session):
     with pytest.raises(Exception):
-        device.reset(client, False, 128, True, True, "label")
+        device.reset(session, False, 128, True, True, "label")
