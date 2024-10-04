@@ -321,7 +321,11 @@ def client(
 def session(
     request: pytest.FixtureRequest, client: Client
 ) -> Generator[SessionDebugWrapper, None, None]:
-    session = client.get_session()
+    if request.node.get_closest_marker("cardano"):
+        derive_cardano = True
+    else:
+        derive_cardano = False
+    session = client.get_session(derive_cardano=derive_cardano)
     try:
         yield SessionDebugWrapper(session)
     finally:
