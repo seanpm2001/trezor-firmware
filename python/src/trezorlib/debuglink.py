@@ -1203,6 +1203,7 @@ class TrezorClientDebugLink(TrezorClient):
         # and know the supported debug capabilities
         self.debug.model = self.model
         self.debug.version = self.version
+        self.passphrase: str | None = None
 
     def reset_debug_features(self) -> None:
         """Prepare the debugging client for a new testcase.
@@ -1410,6 +1411,7 @@ class TrezorClientDebugLink(TrezorClient):
 
     def use_passphrase(self, passphrase: str) -> None:
         """Respond to passphrase prompts from device with the provided passphrase."""
+        self.passphrase = passphrase
         self.ui.passphrase = Mnemonic.normalize_string(passphrase)
 
     def use_mnemonic(self, mnemonic: str) -> None:

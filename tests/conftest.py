@@ -325,7 +325,8 @@ def session(
         derive_cardano = True
     else:
         derive_cardano = False
-    session = client.get_session(derive_cardano=derive_cardano)
+    passphrase = client.passphrase or ""
+    session = client.get_session(derive_cardano=derive_cardano, passphrase=passphrase)
     try:
         yield SessionDebugWrapper(session)
     finally:
