@@ -44,7 +44,7 @@ def set_write_buffer(buffer: bytearray):
 
 
 def get_raw_read_buffer() -> bytearray:
-    global _WRITE_BUFFER
+    global _READ_BUFFER
     return _READ_BUFFER
 
 
