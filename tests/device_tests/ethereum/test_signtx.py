@@ -437,6 +437,7 @@ HEXDATA = "0123456789abcd000023456789abcd010003456789abcd020000456789abcd0300000
 @pytest.mark.skip_t1b1
 def test_signtx_data_pagination(session: Session, flow):
     raise Exception("TEST DOES NOT WORK - TODO FIX")
+
     def _sign_tx_call():
         ethereum.sign_tx(
             session,
