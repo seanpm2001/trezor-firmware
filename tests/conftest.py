@@ -321,12 +321,23 @@ def client(
 def session(
     request: pytest.FixtureRequest, client: Client
 ) -> Generator[SessionDebugWrapper, None, None]:
-    if request.node.get_closest_marker("cardano"):
-        derive_cardano = True
-    else:
-        derive_cardano = False
+    derive_cardano = bool(request.node.get_closest_marker("cardano"))
     passphrase = client.passphrase or ""
     session = client.get_session(derive_cardano=derive_cardano, passphrase=passphrase)
+    try:
+        yield SessionDebugWrapper(session)
+    finally:
+        pass
+        # TODO
+        # session.end()
+
+
+@pytest.fixture(scope="function")
+def uninitialized_session(
+    request: pytest.FixtureRequest,
+    client: Client,
+) -> Generator[SessionDebugWrapper, None, None]:
+    session = client.get_management_session()
     try:
         yield SessionDebugWrapper(session)
     finally:

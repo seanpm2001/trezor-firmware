@@ -17,7 +17,7 @@
 import pytest
 
 from trezorlib import device
-from trezorlib.debuglink import TrezorClientDebugLink as Client
+from trezorlib.debuglink import SessionDebugWrapper as Session
 
 from ..input_flows import InputFlowTutorial
 
@@ -28,10 +28,10 @@ from ..input_flows import InputFlowTutorial
 @pytest.mark.skip_t2b1
 @pytest.mark.skip_t2t1
 @pytest.mark.parametrize("cancel", (True, False))
-def test_tutorial_t3t1(client: Client, cancel: bool):
-    with client:
+def test_tutorial_t3t1(uninitialized_session: Session, cancel: bool):
+    with uninitialized_session as session, session.client as client:
         IF = InputFlowTutorial(client, cancel=cancel)
         client.set_input_flow(IF.get())
-        device.show_device_tutorial(client)
+        device.show_device_tutorial(session)
 
-    assert client.features.initialized is False
+    assert session.features.initialized is False

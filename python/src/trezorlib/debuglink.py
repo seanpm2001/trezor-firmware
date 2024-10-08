@@ -972,9 +972,6 @@ class SessionDebugWrapper(Session):
     def __init__(self, session: Session) -> None:
         self._session = session
         self.reset_debug_features()
-        self.actual_responses = None
-        self.pin_callback = self.client.pin_callback
-        self.button_callback = self.client.button_callback
 
     @property
     def client(self) -> TrezorClientDebugLink:
@@ -1037,6 +1034,30 @@ class SessionDebugWrapper(Session):
         ]
         self.actual_responses = []
 
+    def lock(self, *, _refresh_features: bool = True) -> None:
+        """Lock the device.
+
+        If the device does not have a PIN configured, this will do nothing.
+        Otherwise, a lock screen will be shown and the device will prompt for PIN
+        before further actions.
+
+        This call does _not_ invalidate passphrase cache. If passphrase is in use,
+        the device will not prompt for it after unlocking.
+
+        To invalidate passphrase cache, use `end_session()`. To lock _and_ invalidate
+        passphrase cache, use `clear_session()`.
+        """
+        # TODO update the documentation above
+        # Private argument _refresh_features can be used internally to avoid
+        # refreshing in cases where we will refresh soon anyway. This is used
+        # in TrezorClient.clear_session()
+        self.call(messages.LockDevice())
+        if _refresh_features:
+            self.refresh_features()
+
+    def cancel(self) -> None:
+        self._write(messages.Cancel())
+
     def set_filter(
         self,
         message_type: t.Type[protobuf.MessageType],
@@ -1068,7 +1089,8 @@ class SessionDebugWrapper(Session):
             t.Type[protobuf.MessageType],
             t.Callable[[protobuf.MessageType], protobuf.MessageType] | None,
         ] = {}
-        # self.client.reset_debug_features()
+        self.button_callback = self.client.button_callback
+        self.pin_callback = self.client.pin_callback
 
     def __enter__(self) -> "SessionDebugWrapper":
         # For usage in with/expected_responses
@@ -1195,10 +1217,10 @@ class TrezorClientDebugLink(TrezorClient):
         super().__init__(transport)
 
         self.transport = transport
+        self.ui: DebugUI = DebugUI(self.debug)
 
         self.reset_debug_features()
         self.sync_responses()
-
         # So that we can choose right screenshotting logic (T1 vs TT)
         # and know the supported debug capabilities
         self.debug.model = self.model
@@ -1211,8 +1233,7 @@ class TrezorClientDebugLink(TrezorClient):
         Clears all debugging state that might have been modified by a testcase.
         """
         self.ui: DebugUI = DebugUI(self.debug)
-        self.button_callback = self.ui.debug_callback_button
-
+        # self.pin_callback = self.ui.debug_callback_button
         self.in_with_statement = False
         self.expected_responses: t.List[MessageFilter] | None = None
         self.actual_responses: t.List[protobuf.MessageType] | None = None
@@ -1222,6 +1243,10 @@ class TrezorClientDebugLink(TrezorClient):
         ] = {}
 
         self._management_session = self.get_management_session(new_session=True)
+
+    @property
+    def button_callback(self):
+        return self.ui.debug_callback_button
 
     def ensure_open(self) -> None:
         """Only open session if there isn't already an open one."""
