@@ -17,8 +17,8 @@
 import pytest
 
 from trezorlib.binance import get_address
-from trezorlib.tools import parse_path
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.tools import parse_path
 
 from ...input_flows import InputFlowShowAddressQRCode
 

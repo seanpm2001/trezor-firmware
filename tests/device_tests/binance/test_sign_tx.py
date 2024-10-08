@@ -17,8 +17,8 @@
 import pytest
 
 from trezorlib import binance
-from trezorlib.tools import parse_path
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.tools import parse_path
 
 BINANCE_TEST_VECTORS = [
     (  # CANCEL

@@ -17,9 +17,8 @@
 import pytest
 
 from trezorlib import binance
-from trezorlib.debuglink import TrezorClientDebugLink
-from trezorlib.tools import parse_path
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.tools import parse_path
 
 from ...input_flows import InputFlowShowXpubQRCode
 
