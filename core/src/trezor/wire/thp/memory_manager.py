@@ -115,6 +115,13 @@ def _get_buffer_for_read(
         from ..thp_main import get_raw_read_buffer
 
         if length > len(get_raw_read_buffer()):
+            if __debug__:
+                log.debug(
+                    __name__,
+                    "Required length is %d, where raw buffer has capacity only %d",
+                    length,
+                    len(get_raw_read_buffer()),
+                )
             raise ThpError("Message is too large")
 
         try:
