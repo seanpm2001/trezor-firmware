@@ -111,6 +111,7 @@ else:
 
         if msg.derive_cardano:
             from apps.cardano.seed import derive_and_store_secrets
+
             ctx.cache.set_bool(APP_COMMON_DERIVE_CARDANO, True)
             derive_and_store_secrets(ctx, passphrase)
 
