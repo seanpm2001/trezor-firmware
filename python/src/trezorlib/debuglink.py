@@ -490,9 +490,16 @@ class DebugLink:
         return self._read()
 
     def state(
-        self, wait_type: DebugWaitType = DebugWaitType.CURRENT_LAYOUT
+        self,
+        wait_type: DebugWaitType = DebugWaitType.CURRENT_LAYOUT,
+        thp_channel_id=None,
     ) -> messages.DebugLinkState:
-        result = self._call(messages.DebugLinkGetState(wait_layout=wait_type))
+        result = self._call(
+            messages.DebugLinkGetState(
+                wait_layout=wait_type,
+                thp_channel_id=thp_channel_id,
+            )
+        )
         if isinstance(result, messages.Failure):
             raise TrezorFailure(result)
         return result
