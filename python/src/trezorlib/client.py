@@ -124,7 +124,7 @@ class TrezorClient:
             return SessionV2.new(self, passphrase, derive_cardano)
         raise NotImplementedError  # TODO
 
-    def get_management_session(self, new_session: bool = False):
+    def get_management_session(self, new_session: bool = False) -> Session:
         from .transport.session import SessionV1, SessionV2
 
         if not new_session and self._management_session is not None:
