@@ -200,7 +200,11 @@ async def handle_pairing_request_message(
     try:
         # Find a protobuf.MessageType subclass that describes this
         # message.  Raises if the type is not found.
-        req_type = protobuf.type_for_wire(msg.type)
+        name = message_handler.get_msg_name(msg.type)
+        if name is None:
+            req_type = protobuf.type_for_wire(msg.type)
+        else:
+            req_type = protobuf.type_for_name(name)
 
         # Try to decode the message according to schema from
         # `req_type`. Raises if the message is malformed.

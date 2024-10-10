@@ -57,6 +57,18 @@ WIRE_BUFFER = bytearray(_PROTOBUF_BUFFER_SIZE)
 if utils.USE_THP:
     WIRE_BUFFER_2 = bytearray(_PROTOBUF_BUFFER_SIZE)
 
+if utils.USE_THP:
+    from trezor.enums import ThpMessageType
+
+    def get_msg_name(msg_type: int) -> str | None:
+        for name in dir(ThpMessageType):
+            if not name.startswith("__"):  # Skip built-in attributes
+                value = getattr(ThpMessageType, name)
+                if isinstance(value, int):
+                    if value == msg_type:
+                        return name
+        return None
+
 
 async def handle_single_message(
     ctx: Context,
@@ -123,7 +135,15 @@ async def handle_single_message(
     try:
         # Find a protobuf.MessageType subclass that describes this
         # message.  Raises if the type is not found.
-        req_type = protobuf.type_for_wire(msg.type)
+
+        if utils.USE_THP:
+            name = get_msg_name(msg.type)
+            if name is None:
+                req_type = protobuf.type_for_wire(msg.type)
+            else:
+                req_type = protobuf.type_for_name(name)
+        else:
+            req_type = protobuf.type_for_wire(msg.type)
 
         # Try to decode the message according to schema from
         # `req_type`. Raises if the message is malformed.
