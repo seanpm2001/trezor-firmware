@@ -518,42 +518,6 @@ pub enum MessageType {
     MessageType_BenchmarkRun = 9102,
     // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_BenchmarkResult)
     MessageType_BenchmarkResult = 9103,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCreateNewSession)
-    MessageType_ThpCreateNewSession = 1000,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpNewSession)
-    MessageType_ThpNewSession = 1001,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpStartPairingRequest)
-    MessageType_ThpStartPairingRequest = 1008,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpPairingPreparationsFinished)
-    MessageType_ThpPairingPreparationsFinished = 1009,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCredentialRequest)
-    MessageType_ThpCredentialRequest = 1010,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCredentialResponse)
-    MessageType_ThpCredentialResponse = 1011,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpEndRequest)
-    MessageType_ThpEndRequest = 1012,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpEndResponse)
-    MessageType_ThpEndResponse = 1013,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCodeEntryCommitment)
-    MessageType_ThpCodeEntryCommitment = 1016,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCodeEntryChallenge)
-    MessageType_ThpCodeEntryChallenge = 1017,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCodeEntryCpaceHost)
-    MessageType_ThpCodeEntryCpaceHost = 1018,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCodeEntryCpaceTrezor)
-    MessageType_ThpCodeEntryCpaceTrezor = 1019,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCodeEntryTag)
-    MessageType_ThpCodeEntryTag = 1020,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpCodeEntrySecret)
-    MessageType_ThpCodeEntrySecret = 1021,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpQrCodeTag)
-    MessageType_ThpQrCodeTag = 1024,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpQrCodeSecret)
-    MessageType_ThpQrCodeSecret = 1025,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpNfcUnidirectionalTag)
-    MessageType_ThpNfcUnidirectionalTag = 1032,
-    // @@protoc_insertion_point(enum_value:hw.trezor.messages.MessageType.MessageType_ThpNfcUnidirectionalSecret)
-    MessageType_ThpNfcUnidirectionalSecret = 1033,
 }
 
 impl ::protobuf::Enum for MessageType {
@@ -810,24 +774,6 @@ impl ::protobuf::Enum for MessageType {
             9101 => ::std::option::Option::Some(MessageType::MessageType_BenchmarkNames),
             9102 => ::std::option::Option::Some(MessageType::MessageType_BenchmarkRun),
             9103 => ::std::option::Option::Some(MessageType::MessageType_BenchmarkResult),
-            1000 => ::std::option::Option::Some(MessageType::MessageType_ThpCreateNewSession),
-            1001 => ::std::option::Option::Some(MessageType::MessageType_ThpNewSession),
-            1008 => ::std::option::Option::Some(MessageType::MessageType_ThpStartPairingRequest),
-            1009 => ::std::option::Option::Some(MessageType::MessageType_ThpPairingPreparationsFinished),
-            1010 => ::std::option::Option::Some(MessageType::MessageType_ThpCredentialRequest),
-            1011 => ::std::option::Option::Some(MessageType::MessageType_ThpCredentialResponse),
-            1012 => ::std::option::Option::Some(MessageType::MessageType_ThpEndRequest),
-            1013 => ::std::option::Option::Some(MessageType::MessageType_ThpEndResponse),
-            1016 => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryCommitment),
-            1017 => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryChallenge),
-            1018 => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryCpaceHost),
-            1019 => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryCpaceTrezor),
-            1020 => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryTag),
-            1021 => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntrySecret),
-            1024 => ::std::option::Option::Some(MessageType::MessageType_ThpQrCodeTag),
-            1025 => ::std::option::Option::Some(MessageType::MessageType_ThpQrCodeSecret),
-            1032 => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnidirectionalTag),
-            1033 => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnidirectionalSecret),
             _ => ::std::option::Option::None
         }
     }
@@ -1079,24 +1025,6 @@ impl ::protobuf::Enum for MessageType {
             "MessageType_BenchmarkNames" => ::std::option::Option::Some(MessageType::MessageType_BenchmarkNames),
             "MessageType_BenchmarkRun" => ::std::option::Option::Some(MessageType::MessageType_BenchmarkRun),
             "MessageType_BenchmarkResult" => ::std::option::Option::Some(MessageType::MessageType_BenchmarkResult),
-            "MessageType_ThpCreateNewSession" => ::std::option::Option::Some(MessageType::MessageType_ThpCreateNewSession),
-            "MessageType_ThpNewSession" => ::std::option::Option::Some(MessageType::MessageType_ThpNewSession),
-            "MessageType_ThpStartPairingRequest" => ::std::option::Option::Some(MessageType::MessageType_ThpStartPairingRequest),
-            "MessageType_ThpPairingPreparationsFinished" => ::std::option::Option::Some(MessageType::MessageType_ThpPairingPreparationsFinished),
-            "MessageType_ThpCredentialRequest" => ::std::option::Option::Some(MessageType::MessageType_ThpCredentialRequest),
-            "MessageType_ThpCredentialResponse" => ::std::option::Option::Some(MessageType::MessageType_ThpCredentialResponse),
-            "MessageType_ThpEndRequest" => ::std::option::Option::Some(MessageType::MessageType_ThpEndRequest),
-            "MessageType_ThpEndResponse" => ::std::option::Option::Some(MessageType::MessageType_ThpEndResponse),
-            "MessageType_ThpCodeEntryCommitment" => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryCommitment),
-            "MessageType_ThpCodeEntryChallenge" => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryChallenge),
-            "MessageType_ThpCodeEntryCpaceHost" => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryCpaceHost),
-            "MessageType_ThpCodeEntryCpaceTrezor" => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryCpaceTrezor),
-            "MessageType_ThpCodeEntryTag" => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntryTag),
-            "MessageType_ThpCodeEntrySecret" => ::std::option::Option::Some(MessageType::MessageType_ThpCodeEntrySecret),
-            "MessageType_ThpQrCodeTag" => ::std::option::Option::Some(MessageType::MessageType_ThpQrCodeTag),
-            "MessageType_ThpQrCodeSecret" => ::std::option::Option::Some(MessageType::MessageType_ThpQrCodeSecret),
-            "MessageType_ThpNfcUnidirectionalTag" => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnidirectionalTag),
-            "MessageType_ThpNfcUnidirectionalSecret" => ::std::option::Option::Some(MessageType::MessageType_ThpNfcUnidirectionalSecret),
             _ => ::std::option::Option::None
         }
     }
@@ -1347,24 +1275,6 @@ impl ::protobuf::Enum for MessageType {
         MessageType::MessageType_BenchmarkNames,
         MessageType::MessageType_BenchmarkRun,
         MessageType::MessageType_BenchmarkResult,
-        MessageType::MessageType_ThpCreateNewSession,
-        MessageType::MessageType_ThpNewSession,
-        MessageType::MessageType_ThpStartPairingRequest,
-        MessageType::MessageType_ThpPairingPreparationsFinished,
-        MessageType::MessageType_ThpCredentialRequest,
-        MessageType::MessageType_ThpCredentialResponse,
-        MessageType::MessageType_ThpEndRequest,
-        MessageType::MessageType_ThpEndResponse,
-        MessageType::MessageType_ThpCodeEntryCommitment,
-        MessageType::MessageType_ThpCodeEntryChallenge,
-        MessageType::MessageType_ThpCodeEntryCpaceHost,
-        MessageType::MessageType_ThpCodeEntryCpaceTrezor,
-        MessageType::MessageType_ThpCodeEntryTag,
-        MessageType::MessageType_ThpCodeEntrySecret,
-        MessageType::MessageType_ThpQrCodeTag,
-        MessageType::MessageType_ThpQrCodeSecret,
-        MessageType::MessageType_ThpNfcUnidirectionalTag,
-        MessageType::MessageType_ThpNfcUnidirectionalSecret,
     ];
 }
 
@@ -1621,24 +1531,6 @@ impl ::protobuf::EnumFull for MessageType {
             MessageType::MessageType_BenchmarkNames => 242,
             MessageType::MessageType_BenchmarkRun => 243,
             MessageType::MessageType_BenchmarkResult => 244,
-            MessageType::MessageType_ThpCreateNewSession => 245,
-            MessageType::MessageType_ThpNewSession => 246,
-            MessageType::MessageType_ThpStartPairingRequest => 247,
-            MessageType::MessageType_ThpPairingPreparationsFinished => 248,
-            MessageType::MessageType_ThpCredentialRequest => 249,
-            MessageType::MessageType_ThpCredentialResponse => 250,
-            MessageType::MessageType_ThpEndRequest => 251,
-            MessageType::MessageType_ThpEndResponse => 252,
-            MessageType::MessageType_ThpCodeEntryCommitment => 253,
-            MessageType::MessageType_ThpCodeEntryChallenge => 254,
-            MessageType::MessageType_ThpCodeEntryCpaceHost => 255,
-            MessageType::MessageType_ThpCodeEntryCpaceTrezor => 256,
-            MessageType::MessageType_ThpCodeEntryTag => 257,
-            MessageType::MessageType_ThpCodeEntrySecret => 258,
-            MessageType::MessageType_ThpQrCodeTag => 259,
-            MessageType::MessageType_ThpQrCodeSecret => 260,
-            MessageType::MessageType_ThpNfcUnidirectionalTag => 261,
-            MessageType::MessageType_ThpNfcUnidirectionalSecret => 262,
         };
         Self::enum_descriptor().value_by_index(index)
     }
@@ -1658,7 +1550,7 @@ impl MessageType {
 
 static file_descriptor_proto_data: &'static [u8] = b"\
     \n\x0emessages.proto\x12\x12hw.trezor.messages\x1a\x20google/protobuf/de\
-    scriptor.proto\x1a\roptions.proto*\xe7[\n\x0bMessageType\x12(\n\x16Messa\
+    scriptor.proto\x1a\roptions.proto*\x89U\n\x0bMessageType\x12(\n\x16Messa\
     geType_Initialize\x10\0\x1a\x0c\x80\xa6\x1d\x01\xb0\xb5\x18\x01\x90\xb5\
     \x18\x01\x12\x1e\n\x10MessageType_Ping\x10\x01\x1a\x08\x80\xa6\x1d\x01\
     \x90\xb5\x18\x01\x12%\n\x13MessageType_Success\x10\x02\x1a\x0c\x80\xa6\
@@ -1935,34 +1827,11 @@ static file_descriptor_proto_data: &'static [u8] = b"\
     s\x10\x8cG\x1a\x04\x80\xa6\x1d\x01\x12%\n\x1aMessageType_BenchmarkNames\
     \x10\x8dG\x1a\x04\x80\xa6\x1d\x01\x12#\n\x18MessageType_BenchmarkRun\x10\
     \x8eG\x1a\x04\x80\xa6\x1d\x01\x12&\n\x1bMessageType_BenchmarkResult\x10\
-    \x8fG\x1a\x04\x80\xa6\x1d\x01\x12.\n\x1fMessageType_ThpCreateNewSession\
-    \x10\xe8\x07\x1a\x08\x80\xa6\x1d\x01\xc8\xb5\x18\x01\x12(\n\x19MessageTy\
-    pe_ThpNewSession\x10\xe9\x07\x1a\x08\x80\xa6\x1d\x01\xd0\xb5\x18\x01\x12\
-    1\n\"MessageType_ThpStartPairingRequest\x10\xf0\x07\x1a\x08\x80\xa6\x1d\
-    \x01\xd8\xb5\x18\x01\x129\n*MessageType_ThpPairingPreparationsFinished\
-    \x10\xf1\x07\x1a\x08\x80\xa6\x1d\x01\xe0\xb5\x18\x01\x12/\n\x20MessageTy\
-    pe_ThpCredentialRequest\x10\xf2\x07\x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\
-    \x01\x120\n!MessageType_ThpCredentialResponse\x10\xf3\x07\x1a\x08\x80\
-    \xa6\x1d\x01\xe0\xb5\x18\x01\x12(\n\x19MessageType_ThpEndRequest\x10\xf4\
-    \x07\x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x12)\n\x1aMessageType_ThpEn\
-    dResponse\x10\xf5\x07\x1a\x08\x80\xa6\x1d\x01\xe0\xb5\x18\x01\x121\n\"Me\
-    ssageType_ThpCodeEntryCommitment\x10\xf8\x07\x1a\x08\x80\xa6\x1d\x01\xe0\
-    \xb5\x18\x01\x120\n!MessageType_ThpCodeEntryChallenge\x10\xf9\x07\x1a\
-    \x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x120\n!MessageType_ThpCodeEntryCpac\
-    eHost\x10\xfa\x07\x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x122\n#Message\
-    Type_ThpCodeEntryCpaceTrezor\x10\xfb\x07\x1a\x08\x80\xa6\x1d\x01\xe0\xb5\
-    \x18\x01\x12*\n\x1bMessageType_ThpCodeEntryTag\x10\xfc\x07\x1a\x08\x80\
-    \xa6\x1d\x01\xd8\xb5\x18\x01\x12-\n\x1eMessageType_ThpCodeEntrySecret\
-    \x10\xfd\x07\x1a\x08\x80\xa6\x1d\x01\xe0\xb5\x18\x01\x12'\n\x18MessageTy\
-    pe_ThpQrCodeTag\x10\x80\x08\x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x12*\
-    \n\x1bMessageType_ThpQrCodeSecret\x10\x81\x08\x1a\x08\x80\xa6\x1d\x01\
-    \xe0\xb5\x18\x01\x122\n#MessageType_ThpNfcUnidirectionalTag\x10\x88\x08\
-    \x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x125\n&MessageType_ThpNfcUnidir\
-    ectionalSecret\x10\x89\x08\x1a\x08\x80\xa6\x1d\x01\xd8\xb5\x18\x01\x1a\
-    \x04\xc8\xf3\x18\x01\"\x04\x08Z\x10\\\"\x04\x08G\x10J\"\x04\x08r\x10z\"\
-    \x06\x08\xdb\x01\x10\xdb\x01\"\x06\x08\xe0\x01\x10\xe0\x01\"\x06\x08\xac\
-    \x02\x10\xb0\x02\"\x06\x08\xb5\x02\x10\xb8\x02B8\n#com.satoshilabs.trezo\
-    r.lib.protobufB\rTrezorMessage\x80\xa6\x1d\x01\
+    \x8fG\x1a\x04\x80\xa6\x1d\x01\x1a\x04\xc8\xf3\x18\x01\"\x04\x08Z\x10\\\"\
+    \x04\x08G\x10J\"\x04\x08r\x10z\"\x06\x08\xdb\x01\x10\xdb\x01\"\x06\x08\
+    \xe0\x01\x10\xe0\x01\"\x06\x08\xac\x02\x10\xb0\x02\"\x06\x08\xb5\x02\x10\
+    \xb8\x02\"\x06\x08\xe8\x07\x10\xcb\x08B8\n#com.satoshilabs.trezor.lib.pr\
+    otobufB\rTrezorMessage\x80\xa6\x1d\x01\
 ";
 
 /// `FileDescriptorProto` object which was a source for this generated file

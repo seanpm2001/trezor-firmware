@@ -30,8 +30,10 @@ def _find_message_handler_module(msg_type: int) -> str:
         return "apps.debug.load_device"
 
     if utils.USE_THP:
+        from trezor.enums import ThpMessageType
+
         # thp management
-        if msg_type == MessageType.ThpCreateNewSession:
+        if msg_type == ThpMessageType.ThpCreateNewSession:
             return "apps.thp.create_new_session"
 
     # management
