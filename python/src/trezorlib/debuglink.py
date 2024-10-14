@@ -37,8 +37,8 @@ from .exceptions import TrezorFailure
 from .log import DUMP_BYTES
 from .messages import DebugWaitType
 from .tools import expect
-from .transport.new.protocol_v1 import ProtocolV1
 from .transport.session import Session
+from .transport.thp.protocol_v1 import ProtocolV1
 
 if t.TYPE_CHECKING:
     from typing_extensions import Protocol

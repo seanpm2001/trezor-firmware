@@ -4,8 +4,8 @@ import logging
 import typing as t
 
 from .. import exceptions, messages, models
-from .new.protocol_v1 import ProtocolV1
-from .new.protocol_v2 import ProtocolV2
+from .thp.protocol_v1 import ProtocolV1
+from .thp.protocol_v2 import ProtocolV2
 
 if t.TYPE_CHECKING:
     from ..client import TrezorClient

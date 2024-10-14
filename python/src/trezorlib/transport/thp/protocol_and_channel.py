@@ -5,7 +5,7 @@ import logging
 from ... import messages
 from ...mapping import ProtobufMapping
 from .. import Transport
-from .channel_data import ChannelData
+from ..thp.channel_data import ChannelData
 
 LOG = logging.getLogger(__name__)
 

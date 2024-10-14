@@ -33,7 +33,7 @@ from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.device import apply_settings
 from trezorlib.device import wipe as wipe_device
 from trezorlib.transport import enumerate_devices, get_transport
-from trezorlib.transport.new.protocol_v1 import ProtocolV1
+from trezorlib.transport.thp.protocol_v1 import ProtocolV1
 
 # register rewrites before importing from local package
 # so that we see details of failed asserts from this module
@@ -310,7 +310,7 @@ def client(
 
     wipe_device(session)
     sleep(1)  # Makes tests more stable (wait for wipe to finish)
-    from trezorlib.transport.new import channel_database
+    from trezorlib.transport.thp import channel_database
 
     channel_database.clear_stored_channels()
     _raw_client.protocol = None
