@@ -24,8 +24,7 @@ from __future__ import annotations
 
 from gevent import monkey
 
-import trezorlib.transport.new
-import trezorlib.transport.new.transport
+import trezorlib.transport
 
 monkey.patch_all()
 

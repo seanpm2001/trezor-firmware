@@ -15,10 +15,10 @@ from ... import exceptions, messages
 from ...mapping import ProtobufMapping
 from .. import Transport
 from ..thp import checksum, curve25519, thp_io
+from ..thp.channel_data import ChannelData
 from ..thp.checksum import CHECKSUM_LENGTH
 from ..thp.message_header import MessageHeader
 from . import channel_database, control_byte
-from .channel_data import ChannelData
 from .protocol_and_channel import ProtocolAndChannel
 
 LOG = logging.getLogger(__name__)
@@ -365,7 +365,7 @@ class ProtocolV2(ProtocolAndChannel):
             if not is_valid:
                 click.echo(
                     "Received a message with an invalid checksum:"
-                    + hexlify(header.to_bytes_init() + payload + chksum),
+                    + hexlify(header.to_bytes_init() + payload + chksum).decode(),
                     err=True,
                 )
                 header, payload, chksum = thp_io.read(self.transport)

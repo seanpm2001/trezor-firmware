@@ -29,7 +29,7 @@ from .. import exceptions, transport, ui
 from ..client import TrezorClient
 from ..messages import Capability
 from ..transport import Transport
-from ..transport.new import channel_database
+from ..transport.thp import channel_database
 
 LOG = logging.getLogger(__name__)
 

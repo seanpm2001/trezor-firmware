@@ -23,10 +23,10 @@ from . import mapping, messages, models
 from .mapping import ProtobufMapping
 from .tools import parse_path
 from .transport import Transport, get_transport
-from .transport.new.channel_data import ChannelData
-from .transport.new.protocol_and_channel import ProtocolAndChannel
-from .transport.new.protocol_v1 import ProtocolV1
-from .transport.new.protocol_v2 import ProtocolV2
+from .transport.thp.channel_data import ChannelData
+from .transport.thp.protocol_and_channel import ProtocolAndChannel
+from .transport.thp.protocol_v1 import ProtocolV1
+from .transport.thp.protocol_v2 import ProtocolV2
 
 if t.TYPE_CHECKING:
     from .transport.session import Session

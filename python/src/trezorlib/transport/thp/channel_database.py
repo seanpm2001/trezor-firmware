@@ -3,7 +3,7 @@ import logging
 import os
 import typing as t
 
-from .channel_data import ChannelData
+from ..thp.channel_data import ChannelData
 from .protocol_and_channel import ProtocolAndChannel
 
 LOG = logging.getLogger(__name__)
@@ -69,7 +69,7 @@ def save_channel(new_channel: ProtocolAndChannel):
     channels = read_all_channels()
     transport_path = new_channel.transport.get_path()
 
-    # If channel is modified: replace the old by the new
+    # If the channel is found in database: replace the old entry by the new
     for i, channel in enumerate(channels):
         if channel["transport_path"] == transport_path:
             LOG.debug("Modified channel entry for %s", transport_path)
@@ -77,7 +77,7 @@ def save_channel(new_channel: ProtocolAndChannel):
             save_all_channels(channels)
             return
 
-    # Else: add a new channel entry
+    # Channel was not found: add a new channel entry
     LOG.debug("Created a new channel entry on path %s", transport_path)
     channels.append(new_channel.get_channel_data().to_dict())
     save_all_channels(channels)
