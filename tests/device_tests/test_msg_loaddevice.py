@@ -29,18 +29,19 @@ from ..common import (
 
 pytestmark = [
     pytest.mark.setup_client(uninitialized=True),
+    pytest.mark.uninitialized_session,
 ]
 
 
-def test_load_device_1(uninitialized_session: Session):
+def test_load_device_1(session: Session):
     debuglink.load_device(
-        uninitialized_session,
+        session,
         mnemonic=MNEMONIC12,
         pin="",
         passphrase_protection=False,
         label="test",
     )
-    session: Session = uninitialized_session.client.get_session()
+    session: Session = session.client.get_session()
     state = session.client.debug.state()
     assert state.mnemonic_secret == MNEMONIC12.encode()
     assert state.pin is None
@@ -50,15 +51,15 @@ def test_load_device_1(uninitialized_session: Session):
     assert address == "mkqRFzxmkCGX9jxgpqqFHcxRUmLJcLDBer"
 
 
-def test_load_device_2(uninitialized_session: Session):
+def test_load_device_2(session: Session):
     debuglink.load_device(
-        uninitialized_session,
+        session,
         mnemonic=MNEMONIC12,
         pin="1234",
         passphrase_protection=True,
         label="test",
     )
-    session: Session = uninitialized_session.client.get_session(passphrase="passphrase")
+    session: Session = session.client.get_session(passphrase="passphrase")
 
     state = session.client.debug.state()
     assert state.mnemonic_secret == MNEMONIC12.encode()
@@ -73,8 +74,8 @@ def test_load_device_2(uninitialized_session: Session):
 
 
 @pytest.mark.models("core")
-def test_load_device_slip39_basic(uninitialized_session: Session):
-    session = uninitialized_session
+def test_load_device_slip39_basic(session: Session):
+    session = session
     debuglink.load_device(
         session,
         mnemonic=MNEMONIC_SLIP39_BASIC_20_3of6,
@@ -86,8 +87,8 @@ def test_load_device_slip39_basic(uninitialized_session: Session):
 
 
 @pytest.mark.models("core")
-def test_load_device_slip39_advanced(uninitialized_session: Session):
-    session = uninitialized_session
+def test_load_device_slip39_advanced(session: Session):
+    session = session
     debuglink.load_device(
         session,
         mnemonic=MNEMONIC_SLIP39_ADVANCED_20,
@@ -98,7 +99,7 @@ def test_load_device_slip39_advanced(uninitialized_session: Session):
     assert session.features.backup_type == BackupType.Slip39_Advanced
 
 
-def test_load_device_utf(uninitialized_session: Session):
+def test_load_device_utf(session: Session):
     words_nfkd = "Pr\u030ci\u0301s\u030cerne\u030c z\u030clut\u030couc\u030cky\u0301 ku\u030an\u030c u\u0301pe\u030cl d\u030ca\u0301belske\u0301 o\u0301dy za\u0301ker\u030cny\u0301 uc\u030cen\u030c be\u030cz\u030ci\u0301 pode\u0301l zo\u0301ny u\u0301lu\u030a"
     words_nfc = "P\u0159\xed\u0161ern\u011b \u017elu\u0165ou\u010dk\xfd k\u016f\u0148 \xfap\u011bl \u010f\xe1belsk\xe9 \xf3dy z\xe1ke\u0159n\xfd u\u010de\u0148 b\u011b\u017e\xed pod\xe9l z\xf3ny \xfal\u016f"
     words_nfkc = "P\u0159\xed\u0161ern\u011b \u017elu\u0165ou\u010dk\xfd k\u016f\u0148 \xfap\u011bl \u010f\xe1belsk\xe9 \xf3dy z\xe1ke\u0159n\xfd u\u010de\u0148 b\u011b\u017e\xed pod\xe9l z\xf3ny \xfal\u016f"
@@ -114,14 +115,14 @@ def test_load_device_utf(uninitialized_session: Session):
     )
 
     debuglink.load_device(
-        uninitialized_session,
+        session,
         mnemonic=words_nfkd,
         pin="",
         passphrase_protection=True,
         label="test",
         skip_checksum=True,
     )
-    session: Session = uninitialized_session.client.get_session()
+    session: Session = session.client.get_session()
     session.client.use_passphrase(passphrase_nfkd)
     address_nfkd = get_test_address(session)
 
