@@ -23,7 +23,7 @@ TREZOR_STATE_PAIRED = b"\x01"
 BROADCAST_CHANNEL_ID = 0xFFFF
 
 
-class PacketHeader:
+class MessageHeader:
     format_str_init = ">BHH"
     format_str_cont = ">BH"
 
