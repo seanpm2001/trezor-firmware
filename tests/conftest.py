@@ -374,23 +374,14 @@ def client(
 def session(
     request: pytest.FixtureRequest, client: Client
 ) -> t.Generator[SessionDebugWrapper, None, None]:
-    derive_cardano = bool(request.node.get_closest_marker("cardano"))
-    passphrase = client.passphrase or ""
-    session = client.get_session(derive_cardano=derive_cardano, passphrase=passphrase)
-    try:
-        yield SessionDebugWrapper(session)
-    finally:
-        pass
-        # TODO
-        # session.end()
-
-
-@pytest.fixture(scope="function")
-def uninitialized_session(
-    request: pytest.FixtureRequest,
-    client: Client,
-) -> t.Generator[SessionDebugWrapper, None, None]:
-    session = client.get_management_session()
+    if bool(request.node.get_closest_marker("uninitialized_session")):
+        session = client.get_management_session()
+    else:
+        derive_cardano = bool(request.node.get_closest_marker("cardano"))
+        passphrase = client.passphrase or ""
+        session = client.get_session(
+            derive_cardano=derive_cardano, passphrase=passphrase
+        )
     try:
         yield SessionDebugWrapper(session)
     finally:
@@ -508,6 +499,10 @@ def pytest_configure(config: "Config") -> None:
     config.addinivalue_line(
         "markers",
         'setup_client(mnemonic="all all all...", pin=None, passphrase=False, uninitialized=False): configure the client instance',
+    )
+    config.addinivalue_line(
+        "markers",
+        "uninitialized_session: use uninitialized session instance",
     )
     with open(os.path.join(os.path.dirname(__file__), "REGISTERED_MARKERS")) as f:
         for line in f:
