@@ -32,8 +32,8 @@ from ..transport.session import Session
 from ..transport.udp import UdpTransport
 from . import (
     AliasedGroup,
-    benchmark,
     NewTrezorConnection,
+    benchmark,
     binance,
     btc,
     cardano,
