@@ -21,7 +21,7 @@ async def create_new_session(message: ThpCreateNewSession) -> ThpNewSession | Fa
     channel = ctx.channel
 
     # Do not use `ctx` beyond this point, as it is techically
-    # allowed to change inbetween await statements
+    # allowed to change in between await statements
 
     new_session = create_new_session(channel)
     try:
@@ -31,13 +31,11 @@ async def create_new_session(message: ThpCreateNewSession) -> ThpNewSession | Fa
     except ActionCancelled as e:
         return Failure(code=FailureType.ActionCancelled, message=e.message)
     # TODO handle other errors
-    # TODO handle BITCOIN_ONLY
 
     new_session.set_session_state(SessionState.ALLOCATED)
     channel.sessions[new_session.session_id] = new_session
     loop.schedule(new_session.handle())
     new_session_id: int = new_session.session_id
-    # await get_seed() TODO
 
     if __debug__:
         log.debug(
