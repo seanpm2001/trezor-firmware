@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-import storage.cache_codec as cache_codec
 import storage.device as storage_device
 from storage.cache import check_thp_is_not_used
 from storage.cache_common import APP_COMMON_BUSY_DEADLINE_MS, APP_COMMON_SEED
@@ -210,6 +209,8 @@ def get_features() -> Features:
 async def handle_Initialize(
     msg: Initialize,
 ) -> Features:
+    import storage.cache_codec as cache_codec
+
     session_id = cache_codec.start_session(msg.session_id)
 
     # TODO change cardano derivation
@@ -269,10 +270,11 @@ async def handle_SetBusy(msg: SetBusy) -> Success:
     return Success()
 
 
+@check_thp_is_not_used
 async def handle_EndSession(msg: EndSession) -> Success:
-    cache_codec.end_current_session()
-    return Success()
+    from storage.cache_codec import end_current_session
 
+    end_current_session()
 
 async def handle_Ping(msg: Ping) -> Success:
     if msg.button_protection:
