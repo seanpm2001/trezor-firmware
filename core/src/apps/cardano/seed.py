@@ -152,7 +152,7 @@ async def _get_keychain_bip39(derivation_type: CardanoDerivationType) -> Keychai
         raise wire.NotInitialized("Device is not initialized")
 
     if derivation_type == CardanoDerivationType.LEDGER:
-        seed = await get_seed()
+        seed = get_seed()
         return Keychain(cardano.from_seed_ledger(seed))
 
     if not context.cache_get_bool(APP_COMMON_DERIVE_CARDANO):
@@ -179,7 +179,7 @@ async def _get_keychain(derivation_type: CardanoDerivationType) -> Keychain:
         return await _get_keychain_bip39(derivation_type)
     else:
         # derive the root node via SLIP-0023 https://github.com/satoshilabs/slips/blob/master/slip-0023.md
-        seed = await get_seed()
+        seed = get_seed()
         return Keychain(cardano.from_seed_slip23(seed))
 
 

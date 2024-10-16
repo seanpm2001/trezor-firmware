@@ -322,7 +322,7 @@ async def handle_UnlockPath(msg: UnlockPath) -> protobuf.MessageType:
     if msg.address_n != [SLIP25_PURPOSE]:
         raise wire.DataError("Invalid path")
 
-    seed = await get_seed()
+    seed = get_seed()
     node = Slip21Node(seed)
     node.derive_path(_KEYCHAIN_MAC_KEY_PATH)
     mac = utils.HashWriter(hmac(hmac.SHA256, node.key()))

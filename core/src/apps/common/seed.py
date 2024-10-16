@@ -60,7 +60,7 @@ class Slip21Node:
         return Slip21Node(data=self.data)
 
 
-async def get_seed() -> bytes:
+def get_seed() -> bytes:
     common_seed = context.cache_get(APP_COMMON_SEED)
     assert common_seed is not None
     return common_seed
