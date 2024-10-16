@@ -98,11 +98,16 @@ class SessionThpCache(ConnectionCache):
 
 _CHANNELS: list[ChannelCache] = []
 _SESSIONS: list[SessionThpCache] = []
+cid_counter: int = 0
+
+# Last-used counter
+_usage_counter = 0
 
 
 def initialize() -> None:
     global _CHANNELS
     global _SESSIONS
+    global cid_counter
 
     for _ in range(_MAX_CHANNELS_COUNT):
         _CHANNELS.append(ChannelCache())
@@ -114,12 +119,9 @@ def initialize() -> None:
     for session in _SESSIONS:
         session.clear()
 
+    import random
 
-# First unauthenticated channel will have index 0
-_usage_counter = 0
-
-# with this (arbitrary) value=4659, the first allocated channel will have cid=1234 (hex)
-cid_counter: int = 4659  # TODO change to random value on start
+    cid_counter = random.randint(0, 0xFFFE)
 
 
 def get_new_channel(iface: bytes) -> ChannelCache:
@@ -211,11 +213,6 @@ def get_new_session(channel: ChannelCache):
     return _SESSIONS[index]
 
 
-def _get_usage_counter() -> int:
-    global _usage_counter
-    return _usage_counter
-
-
 def _get_usage_counter_and_increment() -> int:
     global _usage_counter
     _usage_counter += 1
@@ -303,7 +300,8 @@ def _get_cid(session: SessionThpCache) -> int:
 def get_least_recently_used_item(
     list: list[ChannelCache] | list[SessionThpCache], max_count: int
 ):
-    lru_counter = _get_usage_counter()
+    global _usage_counter
+    lru_counter = _usage_counter + 1
     lru_item_index = 0
     for i in range(max_count):
         if list[i].last_usage < lru_counter:
