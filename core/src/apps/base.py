@@ -275,6 +275,7 @@ async def handle_EndSession(msg: EndSession) -> Success:
     from storage.cache_codec import end_current_session
 
     end_current_session()
+    return Success()
 
 async def handle_Ping(msg: Ping) -> Success:
     if msg.button_protection:
