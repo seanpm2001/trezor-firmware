@@ -101,18 +101,7 @@ async def handle_pairing_request(
     response = await show_display_data(
         ctx, _get_possible_pairing_methods_and_cancel(ctx)
     )
-    if __debug__:
-        from trezor.messages import DebugLinkGetState
 
-        while DebugLinkGetState.is_type_of(response):
-            from apps.debug import dispatch_DebugLinkGetState
-
-            dl_state = await dispatch_DebugLinkGetState(response)
-            assert dl_state is not None
-            await ctx.write(dl_state)
-            response = await show_display_data(
-                ctx, _get_possible_pairing_methods_and_cancel(ctx)
-            )
     if Cancel.is_type_of(response):
         ctx.channel_ctx.clear()
         raise SilentError("Action was cancelled by the Host")
