@@ -47,13 +47,7 @@ if __debug__:
         LOG_MEMORY = 0
 
 if TYPE_CHECKING:
-    from typing import (  # pyright: ignore[reportShadowedImports]
-        Any,
-        Iterator,
-        Protocol,
-        Sequence,
-        TypeVar,
-    )
+    from typing import Any, Iterator, Protocol, Sequence, TypeVar
 
     from trezor.protobuf import MessageType
 

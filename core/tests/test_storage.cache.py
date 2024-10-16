@@ -27,9 +27,7 @@ else:
         return cache_codec.get_active_session()
 
 
-class TestStorageCache(
-    unittest.TestCase
-):  # noqa: F405 # pyright: ignore[reportUndefinedVariable]
+class TestStorageCache(unittest.TestCase):  # noqa: F405
     def setUp(self):
         cache.clear_all()
 
