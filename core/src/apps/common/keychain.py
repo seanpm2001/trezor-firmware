@@ -172,7 +172,7 @@ async def get_keychain(
 ) -> Keychain:
     from .seed import get_seed
 
-    seed = await get_seed()
+    seed = get_seed()
     keychain = Keychain(seed, curve, schemas, slip21_namespaces)
     return keychain
 
