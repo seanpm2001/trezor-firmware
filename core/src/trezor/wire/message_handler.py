@@ -69,6 +69,12 @@ if utils.USE_THP:
                         return name
         return None
 
+    def get_msg_type(msg_name: str) -> int | None:
+        value = getattr(ThpMessageType, msg_name)
+        if isinstance(value, int):
+            return value
+        return None
+
 
 async def handle_single_message(
     ctx: Context,
