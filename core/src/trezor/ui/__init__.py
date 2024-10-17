@@ -167,6 +167,7 @@ class Layout(Generic[T]):
         self.backlight_level = BacklightLevels.NORMAL
         self.context: context.Context | None = None
         self.state: LayoutState = LayoutState.INITIAL
+        self.awaiting_button_ack = False
 
     def is_ready(self) -> bool:
         """True if the layout is in READY state."""
@@ -281,6 +282,7 @@ class Layout(Generic[T]):
         if __debug__ and CURRENT_LAYOUT is not self:
             raise wire.FirmwareError("layout received an event but it is not running")
 
+        first_paint = False
         state = event_call(*args)
         self.transition_out = self.layout.get_transition_out()
 
@@ -288,19 +290,23 @@ class Layout(Generic[T]):
             self._emit_message(self.layout.return_value())
 
         elif state is LayoutState.ATTACHED:
-            self._button_request()
-            if __debug__:
+            self.awaiting_button_ack = self._button_request()
+            first_paint = True
+            if self.awaiting_button_ack:
+                # TODO explain
+                state = LayoutState.TRANSITIONING
+            elif __debug__:
                 self.notify_debuglink(self)
 
         if state is not None:
             self.state = state
 
-        if state is LayoutState.ATTACHED:
+        if first_paint:
             self._first_paint()
         else:
             self._paint()
 
-    def _button_request(self) -> None:
+    def _button_request(self) -> bool:
         """Process a button request coming out of the Rust layout."""
         if __debug__ and not self.button_request_box.is_empty():
             raise wire.FirmwareError(
@@ -310,13 +316,14 @@ class Layout(Generic[T]):
 
         res = self.layout.button_request()
         if res is None:
-            return
+            return False
 
         if self.context is None:
-            return
+            return False
 
         # in production, we don't want this to fail, hence replace=True
         self.button_request_box.put(res, replace=True)
+        return True
 
     def _paint(self) -> None:
         """Paint the layout and ensure that homescreen cache is properly invalidated."""
@@ -416,6 +423,11 @@ class Layout(Generic[T]):
                     ),
                     ButtonAck,
                 )
+                if self.awaiting_button_ack and self.state == LayoutState.TRANSITIONING:
+                    self.awaiting_button_ack = False
+                    self.state = LayoutState.ATTACHED
+                    if __debug__:
+                        self.notify_debuglink(self)
             except Exception:
                 raise
 
