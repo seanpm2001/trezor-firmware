@@ -29,6 +29,12 @@ def _find_message_handler_module(msg_type: int) -> str:
     if __debug__ and msg_type == MessageType.LoadDevice:
         return "apps.debug.load_device"
 
+    # benchmark
+    if __debug__ and msg_type == MessageType.BenchmarkListNames:
+        return "apps.benchmark.list_names"
+    if __debug__ and msg_type == MessageType.BenchmarkRun:
+        return "apps.benchmark.run"
+
     if utils.USE_THP:
         from trezor.enums import ThpMessageType
 
@@ -210,12 +216,6 @@ def _find_message_handler_module(msg_type: int) -> str:
             return "apps.solana.get_address"
         if msg_type == MessageType.SolanaSignTx:
             return "apps.solana.sign_tx"
-
-        # benchmark
-        if __debug__ and msg_type == MessageType.BenchmarkListNames:
-            return "apps.benchmark.list_names"
-        if __debug__ and msg_type == MessageType.BenchmarkRun:
-            return "apps.benchmark.run"
 
     raise ValueError
 
