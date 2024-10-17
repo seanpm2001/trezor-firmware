@@ -119,9 +119,9 @@ def initialize() -> None:
     for session in _SESSIONS:
         session.clear()
 
-    import random
+    from trezor.crypto import random
 
-    cid_counter = random.randint(0, 0xFFFE)
+    cid_counter = random.uniform(0xFFFE)
 
 
 def get_new_channel(iface: bytes) -> ChannelCache:
