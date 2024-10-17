@@ -158,7 +158,11 @@ class PairingContext(Context):
             raise UnexpectedMessageException(message)
 
         if expected_type is None:
-            expected_type = protobuf.type_for_wire(message.type)
+            name = message_handler.get_msg_name(message.type)
+            if name is None:
+                expected_type = protobuf.type_for_wire(message.type)
+            else:
+                expected_type = protobuf.type_for_name(name)
 
         return message_handler.wrap_protobuf_load(message.data, expected_type)
 
@@ -168,12 +172,16 @@ class PairingContext(Context):
     async def call(
         self, msg: protobuf.MessageType, expected_type: type[protobuf.MessageType]
     ) -> protobuf.MessageType:
-        assert expected_type.MESSAGE_WIRE_TYPE is not None
+        expected_wire_type = message_handler.get_msg_type(expected_type.MESSAGE_NAME)
+        if expected_wire_type is None:
+            expected_wire_type = expected_type.MESSAGE_WIRE_TYPE
+
+        assert expected_wire_type is not None
 
         await self.write(msg)
         del msg
 
-        return await self.read((expected_type.MESSAGE_WIRE_TYPE,), expected_type)
+        return await self.read((expected_wire_type,), expected_type)
 
     async def call_any(
         self, msg: protobuf.MessageType, *expected_types: int

@@ -1,6 +1,6 @@
 from storage.cache_thp import SESSION_ID_LENGTH, TAG_LENGTH
 from trezor import log, protobuf, utils
-from trezor.enums import ThpMessageType
+from trezor.wire.message_handler import get_msg_type
 
 from . import ChannelState, ThpError
 from .checksum import CHECKSUM_LENGTH
@@ -51,13 +51,6 @@ def get_write_buffer(
     if required_min_size > len(buffer):
         return _get_buffer_for_write(required_min_size, buffer)
     return buffer
-
-
-def get_msg_type(msg_name: str) -> int | None:
-    value = getattr(ThpMessageType, msg_name)
-    if isinstance(value, int):
-        return value
-    return None
 
 
 def encode_into_buffer(

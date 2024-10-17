@@ -277,6 +277,7 @@ async def handle_EndSession(msg: EndSession) -> Success:
     end_current_session()
     return Success()
 
+
 async def handle_Ping(msg: Ping) -> Success:
     if msg.button_protection:
         from trezor.enums import ButtonRequestType as B
