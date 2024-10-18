@@ -32,19 +32,18 @@ class GenericSessionContext(Context):
         super().__init__(channel.iface, channel.channel_id)
         self.channel: Channel = channel
         self.session_id: int = session_id
-        self.incoming_message = loop.chan()
+        self.incoming_message = loop.mailbox()
         self.handler_finder: HandlerFinder = find_handler
 
     async def handle(self) -> None:
         if __debug__:
             self._handle_debug()
 
-        take = self.incoming_message.take()
         next_message: Message | None = None
 
         while True:
             try:
-                if await self._handle_message(take, next_message):
+                if await self._handle_message(next_message):
                     loop.schedule(self.handle())
                     return
             except UnexpectedMessageException as unexpected:
@@ -71,12 +70,11 @@ class GenericSessionContext(Context):
 
     async def _handle_message(
         self,
-        take: Awaitable[Any],
         next_message: Message | None,
     ) -> bool:
 
         try:
-            message = await self._get_message(take, next_message)
+            message = await self._get_message(self.incoming_message, next_message)
         except protocol_common.WireError as e:
             if __debug__:
                 log.exception(__name__, e)
@@ -136,7 +134,7 @@ class GenericSessionContext(Context):
                 str(expected_types),
                 exp_type,
             )
-        message: Message = await self.incoming_message.take()
+        message: Message = await self.incoming_message
         if message.type not in expected_types:
             if __debug__:
                 log.debug(

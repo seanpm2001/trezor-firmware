@@ -76,7 +76,7 @@ class PairingContext(Context):
     def __init__(self, channel_ctx: Channel) -> None:
         super().__init__(channel_ctx.iface, channel_ctx.channel_id)
         self.channel_ctx: Channel = channel_ctx
-        self.incoming_message = loop.chan()
+        self.incoming_message = loop.mailbox()
         self.secret: bytes = random.bytes(16)
 
         self.display_data: PairingDisplayData = PairingDisplayData()
@@ -91,7 +91,6 @@ class PairingContext(Context):
 
         #         apps.debug.DEBUG_CONTEXT = self
 
-        take = self.incoming_message.take()
         next_message: Message | None = None
 
         while True:
@@ -100,7 +99,7 @@ class PairingContext(Context):
                     # If the previous run did not keep an unprocessed message for us,
                     # wait for a new one.
                     try:
-                        message: Message = await take
+                        message: Message = await self.incoming_message
                     except protocol_common.WireError as e:
                         if __debug__:
                             log.exception(__name__, e)
@@ -152,7 +151,7 @@ class PairingContext(Context):
                 exp_type,
             )
 
-        message: Message = await self.incoming_message.take()
+        message: Message = await self.incoming_message
 
         if message.type not in expected_types:
             raise UnexpectedMessageException(message)

@@ -363,7 +363,7 @@ async def _handle_state_ENCRYPTED_TRANSPORT(ctx: Channel, message_length: int) -
     s = ctx.sessions[session_id]
     update_session_last_used(s.channel_id, s.session_id)
 
-    s.incoming_message.publish(
+    s.incoming_message.put(
         Message(
             message_type,
             ctx.buffer[
@@ -389,7 +389,7 @@ async def _handle_pairing(ctx: Channel, message_length: int) -> None:
         ">H", ctx.buffer[INIT_HEADER_LENGTH + SESSION_ID_LENGTH :]
     )[0]
 
-    ctx.connection_context.incoming_message.publish(
+    ctx.connection_context.incoming_message.put(
         Message(
             message_type,
             ctx.buffer[
