@@ -44,7 +44,7 @@ if TYPE_CHECKING:
 
 class Channel:
     def __init__(self, channel_cache: ChannelCache) -> None:
-        if __debug__:
+        if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
             log.debug(__name__, "channel initialization")
         self.iface: WireInterface = interface_manager.decode_iface(channel_cache.iface)
         self.channel_cache: ChannelCache = channel_cache

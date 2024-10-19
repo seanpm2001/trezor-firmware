@@ -72,7 +72,7 @@ def set_expected_receive_seq_bit(cache: ChannelCache, seq_bit: int) -> None:
     Set the expected sequential number (bit) of the next message to be received
     in the provided channel
     """
-    if __debug__:
+    if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
         log.debug(__name__, "Set sync receive expected seq bit to %d", seq_bit)
     if seq_bit not in (0, 1):
         raise ThpError("Unexpected receive sync bit")
@@ -86,7 +86,7 @@ def set_expected_receive_seq_bit(cache: ChannelCache, seq_bit: int) -> None:
 def _set_send_seq_bit(cache: ChannelCache, seq_bit: int) -> None:
     if seq_bit not in (0, 1):
         raise ThpError("Unexpected send seq bit")
-    if __debug__:
+    if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
         log.debug(__name__, "setting sync send seq bit to %d", seq_bit)
     # set third bit to "seq_bit" value
     cache.sync &= 0xDF
