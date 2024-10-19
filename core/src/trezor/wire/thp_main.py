@@ -62,7 +62,7 @@ async def thp_main_loop(iface: WireInterface):
 
     while True:
         try:
-            if __debug__:
+            if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
                 log.debug(__name__, "thp_main_loop")
             packet = await read
             ctrl_byte, cid = ustruct.unpack(">BH", packet)

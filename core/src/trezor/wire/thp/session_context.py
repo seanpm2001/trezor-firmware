@@ -36,7 +36,7 @@ class GenericSessionContext(Context):
         self.handler_finder: HandlerFinder = find_handler
 
     async def handle(self) -> None:
-        if __debug__:
+        if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
             self._handle_debug()
 
         next_message: Message | None = None
@@ -63,10 +63,6 @@ class GenericSessionContext(Context):
             get_bytes_as_str(self.channel_id),
             self.session_id,
         )
-        # if is_debug_session:
-        #     import apps.debug
-
-        #     apps.debug.DEBUG_CONTEXT = self
 
     async def _handle_message(
         self,
@@ -124,7 +120,7 @@ class GenericSessionContext(Context):
         expected_types: Container[int],
         expected_type: type[protobuf.MessageType] | None = None,
     ) -> protobuf.MessageType:
-        if __debug__:
+        if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
             exp_type: str = str(expected_type)
             if expected_type is not None:
                 exp_type = expected_type.MESSAGE_NAME
