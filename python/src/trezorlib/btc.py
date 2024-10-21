@@ -13,6 +13,8 @@
 #
 # You should have received a copy of the License along with this library.
 # If not, see <https://www.gnu.org/licenses/lgpl-3.0.html>.
+
+import time
 import warnings
 from copy import copy
 from decimal import Decimal
@@ -358,7 +360,12 @@ def sign_tx(
     )
 
     R = messages.RequestType
+    start2 = time.time()
+    end2 = time.time()
+
     while isinstance(res, messages.TxRequest):
+        print(end2 - start2)
+        start2 = time.time()
         # If there's some part of signed transaction, let's add it
         if res.serialized:
             if res.serialized.serialized_tx:
@@ -420,6 +427,7 @@ def sign_tx(
                 )
 
             res = session.call(messages.TxAck(tx=msg))
+            end2 = time.time()
 
     if not isinstance(res, messages.TxRequest):
         raise exceptions.TrezorException("Unexpected message")

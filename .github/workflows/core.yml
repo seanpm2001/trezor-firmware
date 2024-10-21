@@ -438,7 +438,6 @@ jobs:
 
   core_memory_profile:
     name: Memory allocation report
-    if: false  # NOTE manual job, comment out to run
     runs-on: ubuntu-latest
     env:
       TREZOR_MODEL: T
