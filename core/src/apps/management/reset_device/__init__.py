@@ -146,9 +146,9 @@ async def reset_device(msg: ResetDevice) -> Success:
 async def _entropy_check(secret: bytes, backup_type: BackupType) -> bool:
     """Returns True to indicate that entropy check loop should continue."""
     from trezor.messages import GetPublicKey, Success
-    from trezor.wire.context import call_any, get_context
+    from trezor.wire.context import call_any
 
-    from apps import workflow_handlers
+    from apps.bitcoin.get_public_key import get_public_key
 
     try:
         storage_cache.set(storage_cache.APP_STAGED_MNEMONIC_SECRET, secret)
@@ -171,12 +171,7 @@ async def _entropy_check(secret: bytes, backup_type: BackupType) -> bool:
 
             assert GetPublicKey.is_type_of(req)
             req.show_display = False
-
-            handler = workflow_handlers.find_registered_handler(
-                get_context().iface, req.MESSAGE_WIRE_TYPE
-            )
-            assert handler is not None
-            msg = await handler(req)
+            msg = await get_public_key(req)
     finally:
         storage_cache.delete(storage_cache.APP_STAGED_MNEMONIC_SECRET)
         storage_cache.end_current_session()
