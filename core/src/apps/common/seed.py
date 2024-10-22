@@ -53,9 +53,7 @@ if not utils.BITCOIN_ONLY:
     async def derive_and_store_roots() -> None:
         from trezor import wire
 
-        if not storage_device.is_initialized() and not storage_cache.is_set(
-            storage_cache.APP_STAGED_MNEMONIC_SECRET
-        ):
+        if not storage_device.is_initialized():
             raise wire.NotInitialized("Device is not initialized")
 
         need_seed = not storage_cache.is_set(storage_cache.APP_COMMON_SEED)

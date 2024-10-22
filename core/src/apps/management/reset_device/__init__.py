@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING, Sequence
 
 import storage
-import storage.cache as storage_cache
 import storage.device as storage_device
 from trezor import TR
 from trezor.crypto import hmac, slip39
@@ -106,7 +105,7 @@ async def reset_device(msg: ResetDevice) -> Success:
             # in BIP-39 we store mnemonic string instead of the secret
             secret = bip39.from_data(secret).encode()
 
-        if not msg.entropy_check or not await _entropy_check(secret, backup_type):
+        if not msg.entropy_check or not await _entropy_check(secret):
             break
 
         prev_int_entropy = int_entropy
@@ -143,38 +142,42 @@ async def reset_device(msg: ResetDevice) -> Success:
     return Success(message="Initialized")
 
 
-async def _entropy_check(secret: bytes, backup_type: BackupType) -> bool:
+async def _entropy_check(secret: bytes) -> bool:
     """Returns True to indicate that entropy check loop should continue."""
     from trezor.messages import GetPublicKey, Success
     from trezor.wire.context import call_any
 
     from apps.bitcoin.get_public_key import get_public_key
+    from apps.common import coininfo, paths
+    from apps.common.keychain import Keychain
+    from apps.common.mnemonic import get_seed
 
-    try:
-        storage_cache.set(storage_cache.APP_STAGED_MNEMONIC_SECRET, secret)
-        storage_cache.start_session()
-        msg = Success()
-        while True:
-            req = await call_any(
-                msg,
-                MessageType.GetPublicKey,
-                MessageType.ResetDeviceContinue,
-                MessageType.ResetDeviceFinish,
-            )
-            assert req.MESSAGE_WIRE_TYPE is not None
+    seed = get_seed(mnemonic_secret=secret)
 
-            if req.MESSAGE_WIRE_TYPE == MessageType.ResetDeviceContinue:
-                return True
+    msg = Success()
+    while True:
+        req = await call_any(
+            msg,
+            MessageType.GetPublicKey,
+            MessageType.ResetDeviceContinue,
+            MessageType.ResetDeviceFinish,
+        )
+        assert req.MESSAGE_WIRE_TYPE is not None
 
-            if req.MESSAGE_WIRE_TYPE == MessageType.ResetDeviceFinish:
-                return False
+        if req.MESSAGE_WIRE_TYPE == MessageType.ResetDeviceContinue:
+            return True
 
-            assert GetPublicKey.is_type_of(req)
-            req.show_display = False
-            msg = await get_public_key(req)
-    finally:
-        storage_cache.delete(storage_cache.APP_STAGED_MNEMONIC_SECRET)
-        storage_cache.end_current_session()
+        if req.MESSAGE_WIRE_TYPE == MessageType.ResetDeviceFinish:
+            return False
+
+        assert GetPublicKey.is_type_of(req)
+        req.show_display = False
+        curve_name = (
+            req.ecdsa_curve_name
+            or coininfo.by_name(req.coin_name or "Bitcoin").curve_name
+        )
+        keychain = Keychain(seed, curve_name, [paths.AlwaysMatchingSchema])
+        msg = await get_public_key(req, keychain=keychain)
 
 
 async def _backup_bip39(mnemonic: str) -> None:

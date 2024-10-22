@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-import storage.cache as storage_cache
 import storage.device as storage_device
 from trezor import utils
 
@@ -16,9 +15,7 @@ def get() -> tuple[bytes | None, BackupType]:
 
 
 def get_secret() -> bytes | None:
-    return storage_device.get_mnemonic_secret() or storage_cache.get(
-        storage_cache.APP_STAGED_MNEMONIC_SECRET
-    )
+    return storage_device.get_mnemonic_secret()
 
 
 def get_type() -> BackupType:
@@ -35,8 +32,12 @@ def is_bip39() -> bool:
     return get_type() == BackupType.Bip39
 
 
-def get_seed(passphrase: str = "", progress_bar: bool = True) -> bytes:
-    mnemonic_secret = get_secret()
+def get_seed(
+    passphrase: str = "",
+    progress_bar: bool = True,
+    mnemonic_secret: bytes | None = None,
+) -> bytes:
+    mnemonic_secret = mnemonic_secret or get_secret()
     if mnemonic_secret is None:
         raise ValueError  # Mnemonic not set
 
