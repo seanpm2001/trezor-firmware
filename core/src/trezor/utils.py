@@ -39,6 +39,27 @@ DISABLE_ENCRYPTION: bool = False
 
 ALLOW_DEBUG_MESSAGES: bool = False
 
+last_allocation_count: int = 0
+
+
+def print_and_update_alloc(name: str = "unknown") -> None:
+    try:
+        import micropython
+
+        global last_allocation_count
+        current_count = micropython.alloc_count()
+        print("------------------------")
+        micropython.mem_info()
+        print("### Called from:     ", name)
+        print("### Allocation count:", current_count)
+        print("### Allocation diff: ", current_count - last_allocation_count)
+        print("------------------------")
+
+        last_allocation_count = current_count
+    except Exception:
+        print("Memory profiling failed")
+
+
 if __debug__:
     if EMULATOR:
         import uos

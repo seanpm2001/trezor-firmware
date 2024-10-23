@@ -60,7 +60,7 @@ def setup(iface: WireInterface) -> None:
 if utils.USE_THP:
 
     async def handle_thp_session(iface: WireInterface):
-
+        utils.print_and_update_alloc(__name__)
         thp_main.set_read_buffer(WIRE_BUFFER)
         thp_main.set_write_buffer(WIRE_BUFFER_2)
 

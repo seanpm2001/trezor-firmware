@@ -65,6 +65,7 @@ async def handle_received_message(
     ctx: Channel, message_buffer: utils.BufferType
 ) -> None:
     """Handle a message received from the channel."""
+    utils.print_and_update_alloc(__name__)
 
     if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
         log.debug(__name__, "handle_received_message")
@@ -99,7 +100,10 @@ async def handle_received_message(
 
     # 1: Handle ACKs
     if control_byte.is_ack(ctrl_byte):
+        utils.print_and_update_alloc("ACK before handling")
         await _handle_ack(ctx, ack_bit)
+        utils.print_and_update_alloc("ACK after handling")
+
         return
 
     if _should_have_ctrl_byte_encrypted_transport(
@@ -173,11 +177,19 @@ async def _handle_ack(ctx: Channel, ack_bit: int):
             log.debug(__name__, "Stopped transmission loop")
 
     ABP.set_sending_allowed(ctx.channel_cache, True)
-
+    utils.print_and_update_alloc("Handle ACK, after cache edit")
     if ctx.write_task_spawn is not None:
         if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
             log.debug(__name__, 'Control to "write_encrypted_payload_loop" task')
         await ctx.write_task_spawn
+        try:
+            ctx.write_task_spawn.close()
+            ctx.write_task_spawn = None
+        except Exception as e:
+            print("\nTHE KILLING FAILED, SO IT IS ONLY ATTEMPTED MURDER")
+            print(type(e))
+        utils.print_and_update_alloc("Handle ACK, after write task spawn")
+
         # Note that no the write_task_spawn could result in loop.clear(),
         # which will result in termination of this function - any code after
         # this await might not be executed
