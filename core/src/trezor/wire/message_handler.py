@@ -37,7 +37,7 @@ def wrap_protobuf_load(
                 utils.get_bytes_as_str(buffer),
             )
         msg = protobuf.decode(buffer, expected_type, EXPERIMENTAL_ENABLED)
-        if __debug__ and utils.EMULATOR:
+        if __debug__ and utils.EMULATOR and utils.ALLOW_DEBUG_MESSAGES:
             log.debug(
                 __name__, "received message contents:\n%s", utils.dump_protobuf(msg)
             )

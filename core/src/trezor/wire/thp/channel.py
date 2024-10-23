@@ -308,7 +308,7 @@ class Channel:
         session_id: int = 0,
         force: bool = False,
     ) -> None:
-        if __debug__ and utils.EMULATOR:
+        if __debug__ and utils.EMULATOR and utils.ALLOW_DEBUG_MESSAGES:
             log.debug(
                 __name__,
                 "(cid: %s) write message: %s\n%s",
