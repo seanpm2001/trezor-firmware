@@ -4,34 +4,6 @@ from trezorui_api import *
 
 
 # rust/src/ui/model_mercury/layout.rs
-def disable_animation(disable: bool) -> None:
-    """Disable animations, debug builds only."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def check_homescreen_format(data: bytes) -> bool:
-    """Check homescreen format and dimensions."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def confirm_action(
-    *,
-    title: str,
-    action: str | None,
-    description: str | None,
-    subtitle: str | None = None,
-    verb: str | None = None,
-    verb_cancel: str | None = None,
-    hold: bool = False,
-    hold_danger: bool = False,
-    reverse: bool = False,
-    prompt_screen: bool = False,
-    prompt_title: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm action."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def confirm_emphasized(
     *,
     title: str,
@@ -487,34 +459,6 @@ from trezorui_api import *
 
 
 # rust/src/ui/model_tr/layout.rs
-def disable_animation(disable: bool) -> None:
-    """Disable animations, debug builds only."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def check_homescreen_format(data: bytes) -> bool:
-    """Check homescreen format and dimensions."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_action(
-    *,
-    title: str,
-    action: str | None,
-    description: str | None,
-    subtitle: str | None = None,
-    verb: str = "CONFIRM",
-    verb_cancel: str | None = None,
-    hold: bool = False,
-    hold_danger: bool = False,  # unused on TR
-    reverse: bool = False,
-    prompt_screen: bool = False,
-    prompt_title: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm action."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_homescreen(
     *,
     title: str,
@@ -891,34 +835,6 @@ def show_wait_text(message: str, /) -> None:
     """Show single-line text in the middle of the screen."""
 from trezor import utils
 from trezorui_api import *
-
-
-# rust/src/ui/model_tt/layout.rs
-def disable_animation(disable: bool) -> None:
-    """Disable animations, debug builds only."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def check_homescreen_format(data: bytes) -> bool:
-    """Check homescreen format and dimensions."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_action(
-    *,
-    title: str,
-    action: str | None,
-    description: str | None,
-    subtitle: str | None = None,
-    verb: str | None = None,
-    verb_cancel: str | None = None,
-    hold: bool = False,
-    hold_danger: bool = False,
-    reverse: bool = False,
-    prompt_screen: bool = False,
-    prompt_title: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm action."""
 
 
 # rust/src/ui/model_tt/layout.rs

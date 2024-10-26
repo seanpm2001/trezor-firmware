@@ -69,6 +69,16 @@ INFO: UiResult
 
 
 # rust/src/ui/api/firmware_upy.rs
+def check_homescreen_format(data: bytes) -> bool:
+    """Check homescreen format and dimensions."""
+
+
+# rust/src/ui/api/firmware_upy.rs
+def disable_animation(disable: bool) -> None:
+    """Disable animations, debug builds only."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def request_bip39(
     *,
     prompt: str,

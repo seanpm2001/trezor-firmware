@@ -1,5 +1,7 @@
 use crate::{
     error::Error,
+    io::BinaryData,
+    maybe_trace::MaybeTrace,
     micropython::gc::Gc,
     strutil::TString,
     ui::{
@@ -18,6 +20,48 @@ use super::{
 };
 
 impl UIFeaturesFirmware for ModelTRFeatures {
+    fn confirm_action(
+        title: TString<'static>,
+        action: Option<TString<'static>>,
+        description: Option<TString<'static>>,
+        subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        hold: bool,
+        hold_danger: bool,
+        reverse: bool,
+        prompt_screen: bool,
+        prompt_title: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let paragraphs = {
+            let action = action.unwrap_or("".into());
+            let description = description.unwrap_or("".into());
+            let mut paragraphs = ParagraphVecShort::new();
+            if !reverse {
+                paragraphs
+                    .add(Paragraph::new(&theme::TEXT_BOLD, action))
+                    .add(Paragraph::new(&theme::TEXT_NORMAL, description));
+            } else {
+                paragraphs
+                    .add(Paragraph::new(&theme::TEXT_NORMAL, description))
+                    .add(Paragraph::new(&theme::TEXT_BOLD, action));
+            }
+            paragraphs.into_paragraphs()
+        };
+
+        content_in_button_page(
+            title,
+            paragraphs,
+            verb.unwrap_or(TString::empty()),
+            verb_cancel,
+            hold,
+        )
+    }
+
+    fn check_homescreen_format(image: BinaryData, _accept_toif: bool) -> bool {
+        super::component::check_homescreen_format(image)
+    }
+
     fn request_bip39(
         prompt: TString<'static>,
         prefill_word: TString<'static>,

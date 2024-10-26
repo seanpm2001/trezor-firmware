@@ -1384,15 +1384,6 @@ extern "C" fn new_show_lockscreen(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-pub extern "C" fn upy_check_homescreen_format(data: Obj) -> Obj {
-    let block = || {
-        let buffer = data.try_into()?;
-        Ok(check_homescreen_format(buffer).into())
-    };
-
-    unsafe { util::try_or_raise(block) }
-}
-
 extern "C" fn new_show_wait_text(message: Obj) -> Obj {
     let block = || {
         let message: TString<'static> = message.try_into()?;
@@ -1431,31 +1422,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezorui_api import *
     ///
     Qstr::MP_QSTR___name__ => Qstr::MP_QSTR_trezorui2.to_obj(),
-
-    /// def disable_animation(disable: bool) -> None:
-    ///     """Disable animations, debug builds only."""
-    Qstr::MP_QSTR_disable_animation => obj_fn_1!(upy_disable_animation).as_obj(),
-
-    /// def check_homescreen_format(data: bytes) -> bool:
-    ///     """Check homescreen format and dimensions."""
-    Qstr::MP_QSTR_check_homescreen_format => obj_fn_1!(upy_check_homescreen_format).as_obj(),
-
-    /// def confirm_action(
-    ///     *,
-    ///     title: str,
-    ///     action: str | None,
-    ///     description: str | None,
-    ///     subtitle: str | None = None,
-    ///     verb: str | None = None,
-    ///     verb_cancel: str | None = None,
-    ///     hold: bool = False,
-    ///     hold_danger: bool = False,
-    ///     reverse: bool = False,
-    ///     prompt_screen: bool = False,
-    ///     prompt_title: str | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm action."""
-    Qstr::MP_QSTR_confirm_action => obj_fn_kw!(0, new_confirm_action).as_obj(),
 
     /// def confirm_emphasized(
     ///     *,

@@ -51,7 +51,7 @@ use crate::{
         layout::{
             obj::{ComponentMsgObj, LayoutObj},
             result::{CANCELLED, CONFIRMED, INFO},
-            util::{upy_disable_animation, ConfirmBlob, PropsList, RecoveryType},
+            util::{ConfirmBlob, PropsList, RecoveryType},
         },
         model_tt::component::check_homescreen_format,
     },
@@ -1539,15 +1539,6 @@ extern "C" fn new_show_lockscreen(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-pub extern "C" fn upy_check_homescreen_format(data: Obj) -> Obj {
-    let block = || {
-        let buffer = data.try_into()?;
-        Ok(check_homescreen_format(buffer, false).into())
-    };
-
-    unsafe { util::try_or_raise(block) }
-}
-
 #[no_mangle]
 extern "C" fn new_confirm_firmware_update(
     n_args: usize,
@@ -1593,13 +1584,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
     /// from trezorui_api import *
     ///
-    /// def disable_animation(disable: bool) -> None:
-    ///     """Disable animations, debug builds only."""
-    Qstr::MP_QSTR_disable_animation => obj_fn_1!(upy_disable_animation).as_obj(),
-
-    /// def check_homescreen_format(data: bytes) -> bool:
-    ///     """Check homescreen format and dimensions."""
-    Qstr::MP_QSTR_check_homescreen_format => obj_fn_1!(upy_check_homescreen_format).as_obj(),
 
     /// def confirm_action(
     ///     *,
