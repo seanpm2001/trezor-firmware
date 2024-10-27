@@ -18,7 +18,8 @@ use crate::{
 use super::{
     component::{
         Bip39Input, Frame, MnemonicKeyboard, PinKeyboard, Slip39Input, SwipeContent, SwipeUpScreen,
-    }, flow, theme, ModelMercuryFeatures
+    },
+    flow, theme, ModelMercuryFeatures,
 };
 
 impl UIFeaturesFirmware for ModelMercuryFeatures {

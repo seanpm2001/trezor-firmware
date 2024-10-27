@@ -358,41 +358,6 @@ extern "C" fn new_confirm_blob_intro(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_action(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let action: Option<TString> = kwargs.get(Qstr::MP_QSTR_action)?.try_into_option()?;
-        let description: Option<TString> =
-            kwargs.get(Qstr::MP_QSTR_description)?.try_into_option()?;
-        let subtitle: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_subtitle)
-            .unwrap_or(Obj::const_none())
-            .try_into_option()?;
-        let verb_cancel: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_cancel)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let reverse: bool = kwargs.get_or(Qstr::MP_QSTR_reverse, false)?;
-        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
-        let prompt_screen: bool = kwargs.get_or(Qstr::MP_QSTR_prompt_screen, false)?;
-        let prompt_title: TString = kwargs.get_or(Qstr::MP_QSTR_prompt_title, title)?;
-
-        let flow = flow::confirm_action::new_confirm_action(
-            title,
-            action,
-            description,
-            subtitle,
-            verb_cancel,
-            reverse,
-            hold,
-            prompt_screen,
-            prompt_title,
-        )?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_firmware_update(
     n_args: usize,
     args: *const Obj,

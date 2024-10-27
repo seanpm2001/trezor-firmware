@@ -34,7 +34,7 @@ async def confirm_fido(
 async def confirm_fido_reset() -> bool:
     from trezor import TR
 
-    confirm = trezorui2.confirm_action(
+    confirm = trezorui_api.confirm_action(
         title=TR.fido__title_reset,
         description=TR.fido__wanna_erase_credentials,
         action=None,

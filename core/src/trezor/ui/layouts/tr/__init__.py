@@ -70,7 +70,7 @@ def confirm_action(
         description = description.format(description_param)
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_action(
+        trezorui_api.confirm_action(
             title=title,
             action=action,
             description=description,
@@ -146,7 +146,7 @@ async def prompt_backup() -> bool:
         return True
 
     result = await interact(
-        trezorui2.confirm_action(
+        trezorui_api.confirm_action(
             title=TR.backup__title_skip,
             action=None,
             description=TR.backup__want_to_skip,

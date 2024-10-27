@@ -2,6 +2,7 @@ use crate::{error::Error, io::BinaryData, micropython::gc::Gc, strutil::TString}
 
 use super::layout::obj::{LayoutMaybeTrace, LayoutObj};
 
+
 pub trait UIFeaturesFirmware {
     fn confirm_action(
         title: TString<'static>,

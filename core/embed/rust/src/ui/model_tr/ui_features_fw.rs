@@ -6,8 +6,8 @@ use crate::{
     strutil::TString,
     ui::{
         component::{
-            text::paragraphs::{Paragraph, Paragraphs},
-            ComponentExt, Timeout,
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
+            Component, ComponentExt, Paginate, Timeout,
         },
         layout::obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
         ui_features_fw::UIFeaturesFirmware,
@@ -15,7 +15,10 @@ use crate::{
 };
 
 use super::{
-    component::{Frame, PassphraseEntry, PinEntry, WordlistEntry, WordlistType},
+    component::{
+        ButtonDetails, ButtonPage, Frame, PassphraseEntry, PinEntry, ScrollableFrame,
+        WordlistEntry, WordlistType,
+    },
     theme, ModelTRFeatures,
 };
 
@@ -134,4 +137,41 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         };
         Ok(obj)
     }
+}
+
+/// Function to create and call a `ButtonPage` dialog based on paginable content
+/// (e.g. `Paragraphs` or `FormattedText`).
+/// Has optional title (supply empty `TString` for that) and hold-to-confirm
+/// functionality.
+fn content_in_button_page<T: Component + Paginate + MaybeTrace + 'static>(
+    title: TString<'static>,
+    content: T,
+    verb: TString<'static>,
+    verb_cancel: Option<TString<'static>>,
+    hold: bool,
+) -> Result<impl LayoutMaybeTrace, Error> {
+    // Left button - icon, text or nothing.
+    let cancel_btn = verb_cancel.map(ButtonDetails::from_text_possible_icon);
+
+    // Right button - text or nothing.
+    // Optional HoldToConfirm
+    let mut confirm_btn = if !verb.is_empty() {
+        Some(ButtonDetails::text(verb))
+    } else {
+        None
+    };
+    if hold {
+        confirm_btn = confirm_btn.map(|btn| btn.with_default_duration());
+    }
+
+    let content = ButtonPage::new(content, theme::BG)
+        .with_cancel_btn(cancel_btn)
+        .with_confirm_btn(confirm_btn);
+
+    let mut frame = ScrollableFrame::new(content);
+    if !title.is_empty() {
+        frame = frame.with_title(title);
+    }
+
+    Ok(RootComponent::new(frame))
 }

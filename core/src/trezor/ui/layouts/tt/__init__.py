@@ -42,7 +42,7 @@ def confirm_action(
         description = description.format(description_param)
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_action(
+        trezorui_api.confirm_action(
             title=title,
             action=action,
             description=description,
@@ -108,7 +108,7 @@ async def show_wallet_created_success() -> None:
 # TODO cleanup @ redesign
 async def prompt_backup() -> bool:
     result = await interact(
-        trezorui2.confirm_action(
+        trezorui_api.confirm_action(
             title=TR.words__title_success,
             action=TR.backup__new_wallet_successfully_created,
             description=TR.backup__it_should_be_backed_up,
@@ -123,7 +123,7 @@ async def prompt_backup() -> bool:
         return True
 
     result = await interact(
-        trezorui2.confirm_action(
+        trezorui_api.confirm_action(
             title=TR.words__warning,
             action=TR.backup__want_to_skip,
             description=TR.backup__can_back_up_anytime,

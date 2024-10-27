@@ -5,7 +5,11 @@ use crate::{
     strutil::TString,
     translations::TR,
     ui::{
-        component::{image::BlendedImage, ComponentExt, Empty, Timeout},
+        component::{
+            image::BlendedImage,
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, VecExt},
+            ComponentExt, Empty, Timeout,
+        },
         layout::obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
         ui_features_fw::UIFeaturesFirmware,
     },
@@ -13,8 +17,8 @@ use crate::{
 
 use super::{
     component::{
-        Bip39Input, Button, ButtonMsg, ButtonStyleSheet, CancelConfirmMsg, IconDialog,
-        MnemonicKeyboard, PassphraseKeyboard, PinKeyboard, Slip39Input,
+        Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet, CancelConfirmMsg, Frame,
+        IconDialog, MnemonicKeyboard, PassphraseKeyboard, PinKeyboard, Slip39Input,
     },
     theme, ModelTTFeatures,
 };

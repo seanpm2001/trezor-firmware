@@ -44,7 +44,7 @@ def confirm_action(
         description = description.format(description_param)
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_action(
+        trezorui_api.confirm_action(
             title=title,
             action=action,
             description=description,

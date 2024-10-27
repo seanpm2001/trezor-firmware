@@ -79,6 +79,24 @@ def disable_animation(disable: bool) -> None:
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_action(
+    *,
+    title: str,
+    action: str | None,
+    description: str | None,
+    subtitle: str | None = None,
+    verb: str | None = None,
+    verb_cancel: str | None = None,
+    hold: bool = False,
+    hold_danger: bool = False,
+    reverse: bool = False,
+    prompt_screen: bool = False,
+    prompt_title: str | None = None,
+) -> LayoutObj[UiResult]:
+    """Confirm action."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def request_bip39(
     *,
     prompt: str,

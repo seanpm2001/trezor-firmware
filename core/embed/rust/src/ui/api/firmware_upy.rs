@@ -13,7 +13,8 @@ use crate::{
         layout::{
             base::LAYOUT_STATE,
             obj::{LayoutObj, ATTACH_TYPE_OBJ},
-            result::{CANCELLED, CONFIRMED, INFO}, util::upy_disable_animation,
+            result::{CANCELLED, CONFIRMED, INFO},
+            util::upy_disable_animation,
         },
         ui_features::ModelUI,
         ui_features_fw::UIFeaturesFirmware,
@@ -23,6 +24,51 @@ use crate::{
 // free-standing functions exported to MicroPython mirror `trait
 // UIFeaturesFirmware`
 // NOTE: `disable_animation` not a part of trait UiFeaturesFirmware
+
+extern "C" fn new_confirm_action(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let action: Option<TString> = kwargs.get(Qstr::MP_QSTR_action)?.try_into_option()?;
+        let description: Option<TString> =
+            kwargs.get(Qstr::MP_QSTR_description)?.try_into_option()?;
+        let subtitle: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_subtitle)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let verb: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let verb_cancel: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb_cancel)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
+        let hold_danger: bool = kwargs.get_or(Qstr::MP_QSTR_hold_danger, false)?;
+        let reverse: bool = kwargs.get_or(Qstr::MP_QSTR_reverse, false)?;
+        let prompt_screen: bool = kwargs.get_or(Qstr::MP_QSTR_prompt_screen, false)?;
+        let prompt_title: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_prompt_title)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+
+        let layout = ModelUI::confirm_action(
+            title,
+            action,
+            description,
+            subtitle,
+            verb,
+            verb_cancel,
+            hold,
+            hold_danger,
+            reverse,
+            prompt_screen,
+            prompt_title,
+        )?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
 
 extern "C" fn new_request_bip39(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
@@ -199,6 +245,23 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// def disable_animation(disable: bool) -> None:
     ///     """Disable animations, debug builds only."""
     Qstr::MP_QSTR_disable_animation => obj_fn_1!(upy_disable_animation).as_obj(),
+
+    /// def confirm_action(
+    ///     *,
+    ///     title: str,
+    ///     action: str | None,
+    ///     description: str | None,
+    ///     subtitle: str | None = None,
+    ///     verb: str | None = None,
+    ///     verb_cancel: str | None = None,
+    ///     hold: bool = False,
+    ///     hold_danger: bool = False,
+    ///     reverse: bool = False,
+    ///     prompt_screen: bool = False,
+    ///     prompt_title: str | None = None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm action."""
+    Qstr::MP_QSTR_confirm_action => obj_fn_kw!(0, new_confirm_action).as_obj(),
 
     /// def request_bip39(
     ///     *,
