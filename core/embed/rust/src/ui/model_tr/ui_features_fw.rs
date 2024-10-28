@@ -4,23 +4,29 @@ use crate::{
     maybe_trace::MaybeTrace,
     micropython::gc::Gc,
     strutil::TString,
+    translations::TR,
     ui::{
         component::{
             text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
             Component, ComponentExt, Paginate, Timeout,
         },
-        layout::obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
+        layout::{
+            obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
+            util::RecoveryType,
+        },
         ui_features_fw::UIFeaturesFirmware,
     },
 };
 
 use super::{
     component::{
-        ButtonDetails, ButtonPage, Frame, PassphraseEntry, PinEntry, ScrollableFrame,
+        ButtonDetails, ButtonPage, Frame, PassphraseEntry, PinEntry, ScrollableFrame, SimpleChoice,
         WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
+
+use heapless::Vec;
 
 impl UIFeaturesFirmware for ModelTRFeatures {
     fn confirm_action(
@@ -113,6 +119,43 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout =
             RootComponent::new(Frame::new(prompt, PassphraseEntry::new()).with_title_centered());
+        Ok(layout)
+    }
+
+    fn select_word(
+        title: TString<'static>,
+        description: TString<'static>,
+        words: [TString<'static>; 3],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let words: Vec<TString<'static>, 5> = Vec::from_iter(words);
+        // Returning the index of the selected word, not the word itself
+        let layout = RootComponent::new(
+            Frame::new(
+                description,
+                SimpleChoice::new(words, false)
+                    .with_show_incomplete()
+                    .with_return_index(),
+            )
+            .with_title_centered(),
+        );
+        Ok(layout)
+    }
+
+    fn select_word_count(recovery_type: RecoveryType) -> Result<impl LayoutMaybeTrace, Error> {
+        let title: TString = TR::word_count__title.into();
+        let choices: Vec<TString<'static>, 5> = {
+            let nums: &[&str] = if matches!(recovery_type, RecoveryType::UnlockRepeatedBackup) {
+                &["20", "33"]
+            } else {
+                &["12", "18", "20", "24", "33"]
+            };
+
+            nums.iter().map(|&num| num.into()).collect()
+        };
+
+        let layout = RootComponent::new(
+            Frame::new(title, SimpleChoice::new(choices, false)).with_title_centered(),
+        );
         Ok(layout)
     }
 

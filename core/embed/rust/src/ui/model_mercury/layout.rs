@@ -1154,20 +1154,6 @@ extern "C" fn new_request_number(n_args: usize, args: *const Obj, kwargs: *mut M
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_select_word(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let words_iterable: Obj = kwargs.get(Qstr::MP_QSTR_words)?;
-        let words: [TString; 3] = util::iter_into_array(words_iterable)?;
-
-        let content = VerticalMenu::select_word(words);
-        let frame_with_menu = Frame::left_aligned(title, content).with_subtitle(description);
-        Ok(LayoutObj::new(frame_with_menu)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1216,23 +1202,6 @@ extern "C" fn new_show_tutorial() -> Obj {
         Ok(obj.into())
     };
     unsafe { util::try_or_raise(block) }
-}
-
-extern "C" fn new_select_word_count(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
-        let content = if matches!(recovery_type, RecoveryType::UnlockRepeatedBackup) {
-            SelectWordCount::new_multishare()
-        } else {
-            SelectWordCount::new_all()
-        };
-        let obj = LayoutObj::new(Frame::left_aligned(
-            TR::recovery__num_of_words.into(),
-            content,
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
 extern "C" fn new_show_group_share_success(
@@ -1601,16 +1570,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm coinjoin authorization."""
     Qstr::MP_QSTR_confirm_coinjoin => obj_fn_kw!(0, new_confirm_coinjoin).as_obj(),
 
-    /// def select_word(
-    ///     *,
-    ///     title: str,
-    ///     description: str,
-    ///     words: Iterable[str],
-    /// ) -> LayoutObj[int]:
-    ///     """Select mnemonic word from three possibilities - seed check after backup. The
-    ///    iterable must be of exact size. Returns index in range `0..3`."""
-    Qstr::MP_QSTR_select_word => obj_fn_kw!(0, new_select_word).as_obj(),
-
     /// def flow_prompt_backup() -> LayoutObj[UiResult]:
     ///     """Prompt a user to create backup with an option to skip."""
     Qstr::MP_QSTR_flow_prompt_backup => obj_fn_0!(new_prompt_backup).as_obj(),
@@ -1671,14 +1630,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_flow_continue_recovery => obj_fn_kw!(0, new_continue_recovery).as_obj(),
-
-    /// def select_word_count(
-    ///     *,
-    ///     recovery_type: RecoveryType,
-    /// ) -> LayoutObj[int | str]:  # merucry returns int
-    ///     """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
-    ///     For unlocking a repeated backup, select from 20 or 33."""
-    Qstr::MP_QSTR_select_word_count => obj_fn_kw!(0, new_select_word_count).as_obj(),
 
     /// def show_group_share_success(
     ///     *,

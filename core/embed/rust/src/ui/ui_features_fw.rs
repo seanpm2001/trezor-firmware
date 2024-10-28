@@ -1,7 +1,9 @@
 use crate::{error::Error, io::BinaryData, micropython::gc::Gc, strutil::TString};
 
-use super::layout::obj::{LayoutMaybeTrace, LayoutObj};
-
+use super::layout::{
+    obj::{LayoutMaybeTrace, LayoutObj},
+    util::RecoveryType,
+};
 
 pub trait UIFeaturesFirmware {
     fn confirm_action(
@@ -43,6 +45,14 @@ pub trait UIFeaturesFirmware {
         prompt: TString<'static>,
         max_len: u32,
     ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn select_word(
+        title: TString<'static>,
+        description: TString<'static>,
+        words: [TString<'static>; 3],
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn select_word_count(recovery_type: RecoveryType) -> Result<impl LayoutMaybeTrace, Error>;
 
     fn show_info(
         title: TString<'static>,

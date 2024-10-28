@@ -137,6 +137,26 @@ def request_passphrase(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def select_word(
+    *,
+    title: str,
+    description: str,
+    words: Iterable[str],
+) -> LayoutObj[int]:
+    """Select mnemonic word from three possibilities - seed check after backup. The
+   iterable must be of exact size. Returns index in range `0..3`."""
+
+
+# rust/src/ui/api/firmware_upy.rs
+def select_word_count(
+    *,
+    recovery_type: RecoveryType,
+) -> LayoutObj[int | str]:  # TR returns str
+    """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
+    For unlocking a repeated backup, select from 20 or 33."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_info(
     *,
     title: str,

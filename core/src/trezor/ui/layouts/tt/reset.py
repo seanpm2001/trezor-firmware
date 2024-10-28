@@ -84,7 +84,7 @@ async def select_word(
         words.append(words[-1])
 
     result = await interact(
-        trezorui2.select_word(
+        trezorui_api.select_word(
             title=title,
             description=TR.reset__select_word_x_of_y_template.format(
                 checked_index + 1, count

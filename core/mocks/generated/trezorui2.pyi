@@ -235,17 +235,6 @@ def confirm_coinjoin(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def select_word(
-    *,
-    title: str,
-    description: str,
-    words: Iterable[str],
-) -> LayoutObj[int]:
-    """Select mnemonic word from three possibilities - seed check after backup. The
-   iterable must be of exact size. Returns index in range `0..3`."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_prompt_backup() -> LayoutObj[UiResult]:
     """Prompt a user to create backup with an option to skip."""
 
@@ -310,15 +299,6 @@ def flow_continue_recovery(
     pages: Iterable[tuple[str, str]] | None = None,
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def select_word_count(
-    *,
-    recovery_type: RecoveryType,
-) -> LayoutObj[int | str]:  # merucry returns int
-    """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
-    For unlocking a repeated backup, select from 20 or 33."""
 
 
 # rust/src/ui/model_mercury/layout.rs
@@ -702,17 +682,6 @@ def confirm_coinjoin(
 
 
 # rust/src/ui/model_tr/layout.rs
-def select_word(
-    *,
-    title: str,  # unused on TR
-    description: str,
-    words: Iterable[str],
-) -> LayoutObj[int]:
-    """Select mnemonic word from three possibilities - seed check after backup. The
-    iterable must be of exact size. Returns index in range `0..3`."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def show_share_words(
     *,
     share_words: Iterable[str],
@@ -755,15 +724,6 @@ def confirm_recovery(
     show_instructions: bool,
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def select_word_count(
-    *,
-    recovery_type: RecoveryType,
-) -> LayoutObj[int | str]:  # TR returns str
-    """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
-    For unlocking a repeated backup, select from 20 or 33."""
 
 
 # rust/src/ui/model_tr/layout.rs
@@ -1094,17 +1054,6 @@ def confirm_coinjoin(
 
 
 # rust/src/ui/model_tt/layout.rs
-def select_word(
-    *,
-    title: str,
-    description: str,
-    words: Iterable[str],
-) -> LayoutObj[int]:
-    """Select mnemonic word from three possibilities - seed check after backup. The
-   iterable must be of exact size. Returns index in range `0..3`."""
-
-
-# rust/src/ui/model_tt/layout.rs
 def show_share_words(
     *,
     title: str,
@@ -1156,15 +1105,6 @@ def confirm_recovery(
     show_instructions: bool = False,  # unused on TT
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def select_word_count(
-    *,
-    recovery_type: RecoveryType,
-) -> LayoutObj[int | str]:  # TT returns int
-    """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
-    For unlocking a repeated backup, select from 20 or 33."""
 
 
 # rust/src/ui/model_tt/layout.rs

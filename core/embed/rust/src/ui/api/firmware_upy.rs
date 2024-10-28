@@ -14,7 +14,7 @@ use crate::{
             base::LAYOUT_STATE,
             obj::{LayoutObj, ATTACH_TYPE_OBJ},
             result::{CANCELLED, CONFIRMED, INFO},
-            util::upy_disable_animation,
+            util::{upy_disable_animation, RecoveryType},
         },
         ui_features::ModelUI,
         ui_features_fw::UIFeaturesFirmware,
@@ -113,6 +113,29 @@ extern "C" fn new_request_passphrase(n_args: usize, args: *const Obj, kwargs: *m
         let max_len: u32 = kwargs.get(Qstr::MP_QSTR_max_len)?.try_into()?;
 
         let layout = ModelUI::request_passphrase(prompt, max_len)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_select_word(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
+        let words_iterable: Obj = kwargs.get(Qstr::MP_QSTR_words)?;
+        let words: [TString<'static>; 3] = util::iter_into_array(words_iterable)?;
+
+        let layout = ModelUI::select_word(title, description, words)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_select_word_count(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
+
+        let layout = ModelUI::select_word_count(recovery_type)?;
         Ok(LayoutObj::new_root(layout)?.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
@@ -298,6 +321,24 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[str | UiResult]:
     ///     """Passphrase input keyboard."""
     Qstr::MP_QSTR_request_passphrase => obj_fn_kw!(0, new_request_passphrase).as_obj(),
+
+    /// def select_word(
+    ///     *,
+    ///     title: str,
+    ///     description: str,
+    ///     words: Iterable[str],
+    /// ) -> LayoutObj[int]:
+    ///     """Select mnemonic word from three possibilities - seed check after backup. The
+    ///    iterable must be of exact size. Returns index in range `0..3`."""
+    Qstr::MP_QSTR_select_word => obj_fn_kw!(0, new_select_word).as_obj(),
+
+    /// def select_word_count(
+    ///     *,
+    ///     recovery_type: RecoveryType,
+    /// ) -> LayoutObj[int | str]:  # TR returns str
+    ///     """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
+    ///     For unlocking a repeated backup, select from 20 or 33."""
+    Qstr::MP_QSTR_select_word_count => obj_fn_kw!(0, new_select_word_count).as_obj(),
 
     /// def show_info(
     ///     *,

@@ -10,14 +10,18 @@ use crate::{
             text::paragraphs::{Paragraph, Paragraphs},
         },
         geometry::Direction,
-        layout::obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
+        layout::{
+            obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
+            util::RecoveryType,
+        },
         ui_features_fw::UIFeaturesFirmware,
     },
 };
 
 use super::{
     component::{
-        Bip39Input, Frame, MnemonicKeyboard, PinKeyboard, Slip39Input, SwipeContent, SwipeUpScreen,
+        Bip39Input, Frame, MnemonicKeyboard, PinKeyboard, SelectWordCount, Slip39Input,
+        SwipeContent, SwipeUpScreen, VerticalMenu,
     },
     flow, theme, ModelMercuryFeatures,
 };
@@ -103,6 +107,30 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let flow = flow::request_passphrase::new_request_passphrase()?;
         Ok(flow)
+    }
+
+    fn select_word(
+        title: TString<'static>,
+        description: TString<'static>,
+        words: [TString<'static>; 3],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let content = VerticalMenu::select_word(words);
+        let layout =
+            RootComponent::new(Frame::left_aligned(title, content).with_subtitle(description));
+        Ok(layout)
+    }
+
+    fn select_word_count(recovery_type: RecoveryType) -> Result<impl LayoutMaybeTrace, Error> {
+        let content = if matches!(recovery_type, RecoveryType::UnlockRepeatedBackup) {
+            SelectWordCount::new_multishare()
+        } else {
+            SelectWordCount::new_all()
+        };
+        let layout = RootComponent::new(Frame::left_aligned(
+            TR::recovery__num_of_words.into(),
+            content,
+        ));
+        Ok(layout)
     }
 
     fn show_info(

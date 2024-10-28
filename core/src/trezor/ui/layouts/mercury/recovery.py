@@ -17,9 +17,10 @@ if TYPE_CHECKING:
 
 
 async def request_word_count(recovery_type: RecoveryType) -> int:
-    selector = trezorui2.select_word_count(recovery_type=recovery_type)
     count = await interact(
-        selector, "recovery_word_count", ButtonRequestType.MnemonicWordCount
+        trezorui_api.select_word_count(recovery_type=recovery_type),
+        "recovery_word_count",
+        ButtonRequestType.MnemonicWordCount,
     )
     return int(count)
 

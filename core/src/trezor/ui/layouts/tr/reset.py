@@ -88,7 +88,7 @@ async def select_word(
 
     word_ordinal = format_ordinal(checked_index + 1)
     result = await interact(
-        trezorui2.select_word(
+        trezorui_api.select_word(
             title="",
             description=TR.reset__select_word_template.format(word_ordinal),
             words=(words[0].lower(), words[1].lower(), words[2].lower()),

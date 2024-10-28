@@ -1175,29 +1175,6 @@ extern "C" fn new_confirm_coinjoin(n_args: usize, args: *const Obj, kwargs: *mut
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_select_word(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = |_args: &[Obj], kwargs: &Map| {
-        // we ignore passed in `title` and use `description` in its place
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let words_iterable: Obj = kwargs.get(Qstr::MP_QSTR_words)?;
-        // There are only 3 words, but SimpleChoice requires 5 elements
-        let words: Vec<TString<'static>, 5> = util::iter_into_vec(words_iterable)?;
-
-        // Returning the index of the selected word, not the word itself
-        let obj = LayoutObj::new(
-            Frame::new(
-                description,
-                SimpleChoice::new(words, false)
-                    .with_show_incomplete()
-                    .with_return_index(),
-            )
-            .with_title_centered(),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = |_args: &[Obj], kwargs: &Map| {
         let share_words_obj: Obj = kwargs.get(Qstr::MP_QSTR_share_words)?;
@@ -1306,29 +1283,6 @@ extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut
             Some("".into()),
             false,
         )
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_select_word_count(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = |_args: &[Obj], kwargs: &Map| {
-        let title: TString = TR::word_count__title.into();
-        let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
-
-        let choices: Vec<TString<'static>, 5> = {
-            let nums: &[&str] = if matches!(recovery_type, RecoveryType::UnlockRepeatedBackup) {
-                &["20", "33"]
-            } else {
-                &["12", "18", "20", "24", "33"]
-            };
-
-            nums.iter().map(|&num| num.into()).collect()
-        };
-
-        let obj = LayoutObj::new(
-            Frame::new(title, SimpleChoice::new(choices, false)).with_title_centered(),
-        )?;
-        Ok(obj.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
@@ -1723,16 +1677,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm coinjoin authorization."""
     Qstr::MP_QSTR_confirm_coinjoin => obj_fn_kw!(0, new_confirm_coinjoin).as_obj(),
 
-    /// def select_word(
-    ///     *,
-    ///     title: str,  # unused on TR
-    ///     description: str,
-    ///     words: Iterable[str],
-    /// ) -> LayoutObj[int]:
-    ///     """Select mnemonic word from three possibilities - seed check after backup. The
-    ///     iterable must be of exact size. Returns index in range `0..3`."""
-    Qstr::MP_QSTR_select_word => obj_fn_kw!(0, new_select_word).as_obj(),
-
     /// def show_share_words(
     ///     *,
     ///     share_words: Iterable[str],
@@ -1773,14 +1717,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_confirm_recovery => obj_fn_kw!(0, new_confirm_recovery).as_obj(),
-
-    /// def select_word_count(
-    ///     *,
-    ///     recovery_type: RecoveryType,
-    /// ) -> LayoutObj[int | str]:  # TR returns str
-    ///     """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
-    ///     For unlocking a repeated backup, select from 20 or 33."""
-    Qstr::MP_QSTR_select_word_count => obj_fn_kw!(0, new_select_word_count).as_obj(),
 
     /// def show_group_share_success(
     ///     *,

@@ -1161,24 +1161,6 @@ extern "C" fn new_confirm_coinjoin(n_args: usize, args: *const Obj, kwargs: *mut
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_select_word(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let words_iterable: Obj = kwargs.get(Qstr::MP_QSTR_words)?;
-        let words: [TString<'static>; 3] = util::iter_into_array(words_iterable)?;
-
-        let paragraphs = Paragraphs::new([Paragraph::new(&theme::TEXT_DEMIBOLD, description)]);
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            title,
-            Dialog::new(paragraphs, Button::select_word(words)),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1325,36 +1307,6 @@ extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut
                 Dialog::new(paragraphs, Button::cancel_confirm_text(None, Some(button))),
             ))?
         };
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_select_word_count(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
-        let title: TString = match recovery_type {
-            RecoveryType::DryRun => TR::recovery__title_dry_run.into(),
-            RecoveryType::UnlockRepeatedBackup => TR::recovery__title_dry_run.into(),
-            _ => TR::recovery__title.into(),
-        };
-
-        let paragraphs = Paragraphs::new(Paragraph::new(
-            &theme::TEXT_DEMIBOLD,
-            TR::recovery__num_of_words,
-        ));
-
-        let content = if matches!(recovery_type, RecoveryType::UnlockRepeatedBackup) {
-            SelectWordCount::new_multishare()
-        } else {
-            SelectWordCount::new_all()
-        };
-
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            title,
-            Dialog::new(paragraphs, content),
-        ))?;
         Ok(obj.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
@@ -1773,16 +1725,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm coinjoin authorization."""
     Qstr::MP_QSTR_confirm_coinjoin => obj_fn_kw!(0, new_confirm_coinjoin).as_obj(),
 
-    /// def select_word(
-    ///     *,
-    ///     title: str,
-    ///     description: str,
-    ///     words: Iterable[str],
-    /// ) -> LayoutObj[int]:
-    ///     """Select mnemonic word from three possibilities - seed check after backup. The
-    ///    iterable must be of exact size. Returns index in range `0..3`."""
-    Qstr::MP_QSTR_select_word => obj_fn_kw!(0, new_select_word).as_obj(),
-
     /// def show_share_words(
     ///     *,
     ///     title: str,
@@ -1831,14 +1773,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_confirm_recovery => obj_fn_kw!(0, new_confirm_recovery).as_obj(),
-
-    /// def select_word_count(
-    ///     *,
-    ///     recovery_type: RecoveryType,
-    /// ) -> LayoutObj[int | str]:  # TT returns int
-    ///     """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
-    ///     For unlocking a repeated backup, select from 20 or 33."""
-    Qstr::MP_QSTR_select_word_count => obj_fn_kw!(0, new_select_word_count).as_obj(),
 
     /// def show_group_share_success(
     ///     *,

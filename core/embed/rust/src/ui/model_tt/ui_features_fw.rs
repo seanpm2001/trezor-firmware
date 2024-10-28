@@ -7,18 +7,22 @@ use crate::{
     ui::{
         component::{
             image::BlendedImage,
-            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, VecExt},
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
             ComponentExt, Empty, Timeout,
         },
-        layout::obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
+        layout::{
+            obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
+            util::RecoveryType,
+        },
         ui_features_fw::UIFeaturesFirmware,
     },
 };
 
 use super::{
     component::{
-        Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet, CancelConfirmMsg, Frame,
-        IconDialog, MnemonicKeyboard, PassphraseKeyboard, PinKeyboard, Slip39Input,
+        Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet, CancelConfirmMsg, Dialog,
+        Frame, IconDialog, MnemonicKeyboard, PassphraseKeyboard, PinKeyboard, SelectWordCount,
+        Slip39Input,
     },
     theme, ModelTTFeatures,
 };
@@ -116,6 +120,46 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         max_len: u32,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(PassphraseKeyboard::new());
+        Ok(layout)
+    }
+
+    fn select_word(
+        title: TString<'static>,
+        description: TString<'static>,
+        words: [TString<'static>; 3],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let paragraphs = Paragraphs::new([Paragraph::new(&theme::TEXT_DEMIBOLD, description)]);
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title,
+            Dialog::new(paragraphs, Button::select_word(words)),
+        ));
+        Ok(layout)
+    }
+
+    fn select_word_count(recovery_type: RecoveryType) -> Result<impl LayoutMaybeTrace, Error> {
+        let title: TString = match recovery_type {
+            RecoveryType::DryRun => TR::recovery__title_dry_run.into(),
+            RecoveryType::UnlockRepeatedBackup => TR::recovery__title_dry_run.into(),
+            _ => TR::recovery__title.into(),
+        };
+
+        let paragraphs = Paragraphs::new(Paragraph::new(
+            &theme::TEXT_DEMIBOLD,
+            TR::recovery__num_of_words,
+        ));
+
+        let content = if matches!(recovery_type, RecoveryType::UnlockRepeatedBackup) {
+            SelectWordCount::new_multishare()
+        } else {
+            SelectWordCount::new_all()
+        };
+
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title,
+            Dialog::new(paragraphs, content),
+        ));
         Ok(layout)
     }
 
