@@ -355,6 +355,7 @@ class Channel:
                 ENCRYPTED_TRANSPORT, memoryview(self.buffer[:payload_length])
             )
         )
+        utils.print_and_update_alloc("After establishing write task spawn")
         return None
 
     def write_handshake_message(self, ctrl_byte: int, payload: bytes) -> None:
@@ -370,6 +371,8 @@ class Channel:
     async def _write_encrypted_payload_loop(
         self, ctrl_byte: int, payload: bytes
     ) -> None:
+        utils.print_and_update_alloc("Write encrypted payload loop start")
+
         if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
             log.debug(
                 __name__,
@@ -381,12 +384,16 @@ class Channel:
         ctrl_byte = control_byte.add_seq_bit_to_ctrl_byte(ctrl_byte, sync_bit)
         header = PacketHeader(ctrl_byte, self.get_channel_id_int(), payload_len)
         self.transmission_loop = TransmissionLoop(self, header, payload)
+        utils.print_and_update_alloc("Write encrypted payload loop before transmission")
+
         await self.transmission_loop.start()
+        utils.print_and_update_alloc("Write encrypted payload loop after transmission")
 
         ABP.set_send_seq_bit_to_opposite(self.channel_cache)
 
         # Let the main loop be restarted and clear loop, if there is no other
         # workflow and the state is ENCRYPTED_TRANSPORT
+
         if self._can_clear_loop():
             if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
                 log.debug(

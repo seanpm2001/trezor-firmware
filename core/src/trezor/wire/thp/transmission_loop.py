@@ -1,7 +1,7 @@
 from micropython import const
 from typing import TYPE_CHECKING
 
-from trezor import loop
+from trezor import loop, utils
 from trezor.wire.thp.thp_messages import PacketHeader
 from trezor.wire.thp.writer import write_payload_to_wire_and_add_checksum
 
@@ -24,6 +24,7 @@ class TransmissionLoop:
         self.min_retransmisson_count_achieved: bool = False
 
     async def start(self, max_retransmission_count: int = MAX_RETRANSMISSION_COUNT):
+        utils.print_and_update_alloc("TransmissionLoop - start of start")
         self.min_retransmisson_count_achieved = False
         for i in range(max_retransmission_count):
             if i >= MIN_RETRANSMISSION_COUNT:
