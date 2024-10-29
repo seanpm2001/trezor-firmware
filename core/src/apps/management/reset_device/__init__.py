@@ -121,7 +121,7 @@ async def reset_device(msg: ResetDevice) -> Success:
     if perform_backup:
         await layout.show_backup_success()
 
-    return Success(message="Initialized")
+    return Success(message="Initialized")  # TODO: Why "Initialized?"
 
 
 async def _backup_bip39(mnemonic: str) -> None:

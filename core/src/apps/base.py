@@ -205,39 +205,42 @@ def get_features() -> Features:
     return f
 
 
-@check_thp_is_not_used
-async def handle_Initialize(
-    msg: Initialize,
-) -> Features:
-    import storage.cache_codec as cache_codec
+if not utils.USE_THP:
 
-    session_id = cache_codec.start_session(msg.session_id)
+    async def handle_Initialize(
+        msg: Initialize,
+    ) -> Features:
+        import storage.cache_codec as cache_codec
 
-    # TODO change cardano derivation
-    # ctx = context.get_context()
+        session_id = cache_codec.start_session(msg.session_id)
 
-    if not utils.BITCOIN_ONLY:
-        from storage.cache_common import APP_COMMON_DERIVE_CARDANO
+        # TODO change cardano derivation
+        # ctx = context.get_context()
 
-        derive_cardano = context.cache_get_bool(APP_COMMON_DERIVE_CARDANO)
-        have_seed = context.cache_is_set(APP_COMMON_SEED)
-        if (
-            have_seed
-            and msg.derive_cardano is not None
-            and msg.derive_cardano != bool(derive_cardano)
-        ):
-            # seed is already derived, and host wants to change derive_cardano setting
-            # => create a new session
-            cache_codec.end_current_session()
-            session_id = cache_codec.start_session()
-            have_seed = False
+        if not utils.BITCOIN_ONLY:
+            from storage.cache_common import APP_COMMON_DERIVE_CARDANO
 
-        if not have_seed:
-            context.cache_set_bool(APP_COMMON_DERIVE_CARDANO, bool(msg.derive_cardano))
+            derive_cardano = context.cache_get_bool(APP_COMMON_DERIVE_CARDANO)
+            have_seed = context.cache_is_set(APP_COMMON_SEED)
+            if (
+                have_seed
+                and msg.derive_cardano is not None
+                and msg.derive_cardano != bool(derive_cardano)
+            ):
+                # seed is already derived, and host wants to change derive_cardano setting
+                # => create a new session
+                cache_codec.end_current_session()
+                session_id = cache_codec.start_session()
+                have_seed = False
 
-    features = get_features()
-    features.session_id = session_id
-    return features
+            if not have_seed:
+                context.cache_set_bool(
+                    APP_COMMON_DERIVE_CARDANO, bool(msg.derive_cardano)
+                )
+
+        features = get_features()
+        features.session_id = session_id
+        return features
 
 
 async def handle_GetFeatures(msg: GetFeatures) -> Features:
@@ -473,8 +476,9 @@ def boot() -> None:
     MT = MessageType  # local_cache_global
 
     # Register workflow handlers
+    if not utils.USE_THP:
+        workflow_handlers.register(MT.Initialize, handle_Initialize)
     for msg_type, handler in [
-        (MT.Initialize, handle_Initialize),
         (MT.GetFeatures, handle_GetFeatures),
         (MT.Cancel, handle_Cancel),
         (MT.LockDevice, handle_LockDevice),
