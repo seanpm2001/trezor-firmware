@@ -51,15 +51,12 @@ if TYPE_CHECKING:
 
 def setup(iface: WireInterface) -> None:
     """Initialize the wire stack on passed WireInterface."""
-    if utils.USE_THP:
-        loop.schedule(handle_thp_session(iface))
-    else:
-        loop.schedule(handle_session(iface))
+    loop.schedule(handle_session(iface))
 
 
 if utils.USE_THP:
 
-    async def handle_thp_session(iface: WireInterface):
+    async def handle_session(iface: WireInterface):
 
         thp_main.set_read_buffer(WIRE_BUFFER)
         thp_main.set_write_buffer(WIRE_BUFFER_2)
@@ -83,62 +80,63 @@ if utils.USE_THP:
                 loop.clear()
                 return  # pylint: disable=lost-exception
 
+else:
 
-async def handle_session(iface: WireInterface) -> None:
-    ctx = context.CodecContext(iface, WIRE_BUFFER)
-    next_msg: protocol_common.Message | None = None
+    async def handle_session(iface: WireInterface) -> None:
+        ctx = context.CodecContext(iface, WIRE_BUFFER)
+        next_msg: protocol_common.Message | None = None
 
-    # Take a mark of modules that are imported at this point, so we can
-    # roll back and un-import any others.
-    modules = utils.unimport_begin()
-    while True:
-        try:
-            if next_msg is None:
-                # If the previous run did not keep an unprocessed message for us,
-                # wait for a new one coming from the wire.
+        # Take a mark of modules that are imported at this point, so we can
+        # roll back and un-import any others.
+        modules = utils.unimport_begin()
+        while True:
+            try:
+                if next_msg is None:
+                    # If the previous run did not keep an unprocessed message for us,
+                    # wait for a new one coming from the wire.
+                    try:
+                        msg = await ctx.read_from_wire()
+                    except protocol_common.WireError as exc:
+                        if __debug__:
+                            log.exception(__name__, exc)
+                        await ctx.write(failure(exc))
+                        continue
+
+                else:
+                    # Process the message from previous run.
+                    msg = next_msg
+                    next_msg = None
+
+                do_not_restart = False
                 try:
-                    msg = await ctx.read_from_wire()
-                except protocol_common.WireError as exc:
+                    do_not_restart = await message_handler.handle_single_message(
+                        ctx, msg, handler_finder=find_handler
+                    )
+                except UnexpectedMessageException as unexpected:
+                    # The workflow was interrupted by an unexpected message. We need to
+                    # process it as if it was a new message...
+                    next_msg = unexpected.msg
+                    # ...and we must not restart because that would lose the message.
+                    do_not_restart = True
+                    continue
+                except Exception as exc:
+                    # Log and ignore. The session handler can only exit explicitly in the
+                    # following finally block.
                     if __debug__:
                         log.exception(__name__, exc)
-                    await ctx.write(failure(exc))
-                    continue
+                finally:
+                    # Unload modules imported by the workflow. Should not raise.
+                    utils.unimport_end(modules)
 
-            else:
-                # Process the message from previous run.
-                msg = next_msg
-                next_msg = None
+                    if not do_not_restart:
+                        # Let the session be restarted from `main`.
+                        if __debug__:
+                            log.debug(__name__, "loop.clear()")
+                        loop.clear()
+                        return  # pylint: disable=lost-exception
 
-            do_not_restart = False
-            try:
-                do_not_restart = await message_handler.handle_single_message(
-                    ctx, msg, handler_finder=find_handler
-                )
-            except UnexpectedMessageException as unexpected:
-                # The workflow was interrupted by an unexpected message. We need to
-                # process it as if it was a new message...
-                next_msg = unexpected.msg
-                # ...and we must not restart because that would lose the message.
-                do_not_restart = True
-                continue
             except Exception as exc:
-                # Log and ignore. The session handler can only exit explicitly in the
-                # following finally block.
+                # Log and try again. The session handler can only exit explicitly via
+                # loop.clear() above.
                 if __debug__:
                     log.exception(__name__, exc)
-            finally:
-                # Unload modules imported by the workflow. Should not raise.
-                utils.unimport_end(modules)
-
-                if not do_not_restart:
-                    # Let the session be restarted from `main`.
-                    if __debug__:
-                        log.debug(__name__, "loop.clear()")
-                    loop.clear()
-                    return  # pylint: disable=lost-exception
-
-        except Exception as exc:
-            # Log and try again. The session handler can only exit explicitly via
-            # loop.clear() above.
-            if __debug__:
-                log.exception(__name__, exc)
