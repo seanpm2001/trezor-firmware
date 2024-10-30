@@ -1,14 +1,12 @@
 use crate::{
-    error::Error,
+    error::{value_error, Error},
     io::BinaryData,
     micropython::gc::Gc,
     strutil::TString,
     translations::TR,
     ui::{
         component::{
-            image::BlendedImage,
-            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
-            ComponentExt, Empty, Label, Timeout,
+            image::BlendedImage, text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt}, ComponentExt, Empty, Jpeg, Label, Timeout
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -20,9 +18,9 @@ use crate::{
 
 use super::{
     component::{
-        Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet, CancelConfirmMsg, Dialog,
-        Frame, Homescreen, IconDialog, Lockscreen, MnemonicKeyboard, PassphraseKeyboard,
-        PinKeyboard, SelectWordCount, Slip39Input,
+        check_homescreen_format, Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet,
+        CancelConfirmMsg, Dialog, Frame, Homescreen, IconDialog, Lockscreen, MnemonicKeyboard,
+        PassphraseKeyboard, PinKeyboard, SelectWordCount, Slip39Input,
     },
     theme, ModelTTFeatures,
 };
@@ -66,6 +64,29 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             page = page.with_confirm_style(theme::button_danger())
         }
         let layout = RootComponent::new(Frame::left_aligned(theme::label_title(), title, page));
+        Ok(layout)
+    }
+
+    fn confirm_homescreen(
+        title: TString<'static>,
+        mut image: BinaryData<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        if image.is_empty() {
+            // Incoming data may be empty, meaning we should
+            // display default homescreen image.
+            image = theme::IMAGE_HOMESCREEN.into();
+        }
+
+        if !check_homescreen_format(image, false) {
+            return Err(value_error!(c"Invalid image."));
+        };
+
+        let buttons = Button::cancel_confirm_text(None, Some(TR::buttons__change.into()));
+        let layout = RootComponent::new(Frame::centered(
+            theme::label_title(),
+            title,
+            Dialog::new(Jpeg::new(image, 1), buttons),
+        ));
         Ok(layout)
     }
 

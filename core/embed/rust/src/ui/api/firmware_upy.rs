@@ -1,15 +1,12 @@
 use crate::{
-    micropython::{
+    io::BinaryData, micropython::{
         macros::{obj_fn_1, obj_fn_kw, obj_module},
         map::Map,
         module::Module,
         obj::Obj,
         qstr::Qstr,
         util,
-    },
-    strutil::TString,
-    trezorhal::model,
-    ui::{
+    }, strutil::TString, trezorhal::model, ui::{
         backlight::BACKLIGHT_LEVELS_OBJ,
         layout::{
             base::LAYOUT_STATE,
@@ -19,7 +16,7 @@ use crate::{
         },
         ui_features::ModelUI,
         ui_features_fw::UIFeaturesFirmware,
-    },
+    }
 };
 
 // free-standing functions exported to MicroPython mirror `trait
@@ -83,6 +80,20 @@ extern "C" fn new_confirm_firmware_update(
         let layout = ModelUI::confirm_firmware_update(description, fingerprint)?;
         Ok(LayoutObj::new_root(layout)?.into())
     };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_confirm_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let image: Obj = kwargs.get(Qstr::MP_QSTR_image)?;
+
+        let jpeg: BinaryData = image.try_into()?;
+
+        let layout = ModelUI::confirm_homescreen(title, jpeg)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
@@ -351,6 +362,14 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Ask whether to update firmware, optionally show fingerprint."""
     Qstr::MP_QSTR_confirm_firmware_update => obj_fn_kw!(0, new_confirm_firmware_update).as_obj(),
+
+    /// def confirm_homescreen(
+    ///     *,
+    ///     title: str,
+    ///     image: bytes,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm homescreen."""
+    Qstr::MP_QSTR_confirm_homescreen => obj_fn_kw!(0, new_confirm_homescreen).as_obj(),
 
     /// def request_bip39(
     ///     *,

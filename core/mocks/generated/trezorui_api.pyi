@@ -106,6 +106,15 @@ def confirm_firmware_update(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_homescreen(
+    *,
+    title: str,
+    image: bytes,
+) -> LayoutObj[UiResult]:
+    """Confirm homescreen."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def request_bip39(
     *,
     prompt: str,

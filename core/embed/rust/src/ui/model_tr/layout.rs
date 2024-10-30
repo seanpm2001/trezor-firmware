@@ -373,17 +373,6 @@ extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let image: Obj = kwargs.get(Qstr::MP_QSTR_image)?;
-        let obj = LayoutObj::new(ConfirmHomescreen::new(title, image.try_into()?))?;
-        Ok(obj.into())
-    };
-
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1376,14 +1365,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezorui_api import *
     ///
     Qstr::MP_QSTR___name__ => Qstr::MP_QSTR_trezorui2.to_obj(),
-
-    /// def confirm_homescreen(
-    ///     *,
-    ///     title: str,
-    ///     image: bytes,
-    /// ) -> object:
-    ///     """Confirm homescreen."""
-    Qstr::MP_QSTR_confirm_homescreen => obj_fn_kw!(0, new_confirm_homescreen).as_obj(),
 
     /// def confirm_blob(
     ///     *,

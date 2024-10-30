@@ -1,5 +1,5 @@
 use crate::{
-    error::Error,
+    error::{value_error, Error},
     io::BinaryData,
     micropython::gc::Gc,
     strutil::TString,
@@ -7,7 +7,8 @@ use crate::{
     ui::{
         component::{
             swipe_detect::SwipeSettings,
-            text::paragraphs::{Paragraph, Paragraphs},
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs},
+            CachedJpeg,
         },
         geometry::Direction,
         layout::{
@@ -20,10 +21,14 @@ use crate::{
 
 use super::{
     component::{
-        Bip39Input, Frame, Homescreen, Lockscreen, MnemonicKeyboard, PinKeyboard, SelectWordCount,
-        Slip39Input, SwipeContent, SwipeUpScreen, VerticalMenu,
+        check_homescreen_format, Bip39Input, Frame, Homescreen, Lockscreen, MnemonicKeyboard,
+        PinKeyboard, SelectWordCount, Slip39Input, SwipeContent, SwipeUpScreen, VerticalMenu,
     },
-    flow, theme, ModelMercuryFeatures,
+    flow::{
+        self, new_confirm_action_simple, ConfirmActionExtra, ConfirmActionMenu,
+        ConfirmActionMenuStrings, ConfirmActionStrings,
+    },
+    theme, ModelMercuryFeatures,
 };
 
 impl UIFeaturesFirmware for ModelMercuryFeatures {
@@ -52,6 +57,53 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
             prompt_title.unwrap_or(TString::empty()),
         )?;
         Ok(flow)
+    }
+
+    fn confirm_homescreen(
+        title: TString<'static>,
+        image: BinaryData<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = if image.is_empty() {
+            // Incoming data may be empty, meaning we should
+            // display default homescreen message.
+            let paragraphs = ParagraphVecShort::from_iter([Paragraph::new(
+                &theme::TEXT_DEMIBOLD,
+                TR::homescreen__set_default,
+            )])
+            .into_paragraphs();
+            let paragraphs = paragraphs;
+
+            new_confirm_action_simple(
+                paragraphs,
+                ConfirmActionExtra::Menu(ConfirmActionMenuStrings::new()),
+                ConfirmActionStrings::new(
+                    TR::homescreen__settings_title.into(),
+                    Some(TR::homescreen__settings_subtitle.into()),
+                    None,
+                    Some(TR::homescreen__settings_title.into()),
+                ),
+                false,
+                None,
+                0,
+                false,
+            )?
+        } else {
+            if !check_homescreen_format(image) {
+                return Err(value_error!(c"Invalid image."));
+            };
+
+            let obj = RootComponent::new(SwipeUpScreen::new(
+                Frame::left_aligned(title, SwipeContent::new(CachedJpeg::new(image, 1)))
+                    .with_cancel_button()
+                    .with_footer(
+                        TR::instructions__swipe_up.into(),
+                        Some(TR::buttons__change.into()),
+                    )
+                    .with_swipe(Direction::Up, SwipeSettings::default()),
+            ));
+            obj
+        };
+        Ok(layout)
     }
 
     fn confirm_firmware_update(

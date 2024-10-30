@@ -20,8 +20,8 @@ use crate::{
 
 use super::{
     component::{
-        ButtonDetails, ButtonPage, Frame, Homescreen, Lockscreen, PassphraseEntry, PinEntry,
-        ScrollableFrame, SimpleChoice, WordlistEntry, WordlistType,
+        ButtonDetails, ButtonPage, ConfirmHomescreen, Frame, Homescreen, Lockscreen,
+        PassphraseEntry, PinEntry, ScrollableFrame, SimpleChoice, WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
@@ -65,6 +65,14 @@ impl UIFeaturesFirmware for ModelTRFeatures {
             verb_cancel,
             hold,
         )
+    }
+
+    fn confirm_homescreen(
+        title: TString<'static>,
+        image: BinaryData<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(ConfirmHomescreen::new(title, image));
+        Ok(layout)
     }
 
     fn confirm_firmware_update(

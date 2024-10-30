@@ -192,7 +192,7 @@ def confirm_multisig_different_paths_warning() -> Awaitable[ui.UiResult]:
 
 def confirm_homescreen(image: bytes) -> Awaitable[None]:
     return raise_if_not_confirmed(
-        trezorui2.confirm_homescreen(
+        trezorui_api.confirm_homescreen(
             title=TR.homescreen__title_set,
             image=image,
         ),

@@ -15,15 +15,6 @@ def confirm_emphasized(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def confirm_homescreen(
-    *,
-    title: str,
-    image: bytes,
-) -> LayoutObj[UiResult]:
-    """Confirm homescreen."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def confirm_blob(
     *,
     title: str,
@@ -407,15 +398,6 @@ from trezorui_api import *
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_homescreen(
-    *,
-    title: str,
-    image: bytes,
-) -> object:
-    """Confirm homescreen."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_blob(
     *,
     title: str,
@@ -742,15 +724,6 @@ def confirm_emphasized(
 ) -> LayoutObj[UiResult]:
     """Confirm formatted text that has been pre-split in python. For tuples
     the first component is a bool indicating whether this part is emphasized."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_homescreen(
-    *,
-    title: str,
-    image: bytes,
-) -> LayoutObj[UiResult]:
-    """Confirm homescreen."""
 
 
 # rust/src/ui/model_tt/layout.rs

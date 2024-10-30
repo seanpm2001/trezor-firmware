@@ -402,60 +402,6 @@ extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let image: Obj = kwargs.get(Qstr::MP_QSTR_image)?;
-
-        let jpeg: BinaryData = image.try_into()?;
-
-        let obj = if jpeg.is_empty() {
-            // Incoming data may be empty, meaning we should
-            // display default homescreen message.
-            let paragraphs = ParagraphVecShort::from_iter([Paragraph::new(
-                &theme::TEXT_DEMIBOLD,
-                TR::homescreen__set_default,
-            )])
-            .into_paragraphs();
-
-            new_confirm_action_simple(
-                paragraphs,
-                ConfirmActionExtra::Menu(ConfirmActionMenuStrings::new()),
-                ConfirmActionStrings::new(
-                    TR::homescreen__settings_title.into(),
-                    Some(TR::homescreen__settings_subtitle.into()),
-                    None,
-                    Some(TR::homescreen__settings_title.into()),
-                ),
-                false,
-                None,
-                0,
-                false,
-            )
-            .and_then(LayoutObj::new_root)
-            .map(Into::into)
-        } else {
-            if !check_homescreen_format(jpeg) {
-                return Err(value_error!(c"Invalid image."));
-            };
-
-            let obj = LayoutObj::new(SwipeUpScreen::new(
-                Frame::left_aligned(title, SwipeContent::new(CachedJpeg::new(jpeg, 1)))
-                    .with_cancel_button()
-                    .with_footer(
-                        TR::instructions__swipe_up.into(),
-                        Some(TR::buttons__change.into()),
-                    )
-                    .with_swipe(Direction::Up, SwipeSettings::default()),
-            ));
-            Ok(obj?.into())
-        };
-        obj
-    };
-
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_reset(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let recovery: bool = kwargs.get(Qstr::MP_QSTR_recovery)?.try_into()?;
@@ -1325,14 +1271,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm formatted text that has been pre-split in python. For tuples
     ///     the first component is a bool indicating whether this part is emphasized."""
     Qstr::MP_QSTR_confirm_emphasized => obj_fn_kw!(0, new_confirm_emphasized).as_obj(),
-
-    /// def confirm_homescreen(
-    ///     *,
-    ///     title: str,
-    ///     image: bytes,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm homescreen."""
-    Qstr::MP_QSTR_confirm_homescreen => obj_fn_kw!(0, new_confirm_homescreen).as_obj(),
 
     /// def confirm_blob(
     ///     *,

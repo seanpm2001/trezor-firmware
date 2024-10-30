@@ -552,35 +552,6 @@ extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let image: Obj = kwargs.get(Qstr::MP_QSTR_image)?;
-
-        let mut jpeg: BinaryData = image.try_into()?;
-
-        if jpeg.is_empty() {
-            // Incoming data may be empty, meaning we should
-            // display default homescreen image.
-            jpeg = theme::IMAGE_HOMESCREEN.into();
-        }
-
-        if !check_homescreen_format(jpeg, false) {
-            return Err(value_error!(c"Invalid image."));
-        };
-
-        let buttons = Button::cancel_confirm_text(None, Some(TR::buttons__change.into()));
-        let obj = LayoutObj::new(Frame::centered(
-            theme::label_title(),
-            title,
-            Dialog::new(Jpeg::new(jpeg, 1), buttons),
-        ))?;
-        Ok(obj.into())
-    };
-
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1427,14 +1398,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm formatted text that has been pre-split in python. For tuples
     ///     the first component is a bool indicating whether this part is emphasized."""
     Qstr::MP_QSTR_confirm_emphasized => obj_fn_kw!(0, new_confirm_emphasized).as_obj(),
-
-    /// def confirm_homescreen(
-    ///     *,
-    ///     title: str,
-    ///     image: bytes,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm homescreen."""
-    Qstr::MP_QSTR_confirm_homescreen => obj_fn_kw!(0, new_confirm_homescreen).as_obj(),
 
     /// def confirm_blob(
     ///     *,

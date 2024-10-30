@@ -158,7 +158,7 @@ def confirm_homescreen(
     workflow.close_others()
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_homescreen(
+        trezorui_api.confirm_homescreen(
             title=TR.homescreen__title_set,
             image=image,
         ),
