@@ -4,7 +4,7 @@ from mock_storage import mock_storage
 from storage import cache, cache_codec
 from trezor.messages import EndSession, Initialize
 
-from apps.base import handle_EndSession, handle_Initialize
+from apps.base import handle_EndSession
 
 KEY = 0
 
@@ -467,39 +467,42 @@ class TestStorageCache(unittest.TestCase):  # noqa: F405
             # function is not called for a second time
             self.assertEqual(run_count, 1)
 
-        @mock_storage
-        def test_Initialize(self):
+        if not utils.USE_THP:
 
-            def call_Initialize(**kwargs):
-                msg = Initialize(**kwargs)
-                return await_result(handle_Initialize(msg))
+            @mock_storage
+            def test_Initialize(self):
+                from apps.base import handle_Initialize
 
-            # calling Initialize without an ID allocates a new one
-            session_id = cache_codec.start_session()
-            features = call_Initialize()
-            self.assertNotEqual(session_id, features.session_id)
+                def call_Initialize(**kwargs):
+                    msg = Initialize(**kwargs)
+                    return await_result(handle_Initialize(msg))
 
-            # calling Initialize with the current ID does not allocate a new one
-            features = call_Initialize(session_id=session_id)
-            self.assertEqual(session_id, features.session_id)
+                # calling Initialize without an ID allocates a new one
+                session_id = cache_codec.start_session()
+                features = call_Initialize()
+                self.assertNotEqual(session_id, features.session_id)
 
-            # store "hello"
-            get_active_session().set(KEY, b"hello")
-            # check that it is cleared
-            features = call_Initialize()
-            session_id = features.session_id
-            self.assertIsNone(get_active_session().get(KEY))
-            # store "hello" again
-            get_active_session().set(KEY, b"hello")
-            self.assertEqual(get_active_session().get(KEY), b"hello")
+                # calling Initialize with the current ID does not allocate a new one
+                features = call_Initialize(session_id=session_id)
+                self.assertEqual(session_id, features.session_id)
 
-            # supplying a different session ID starts a new session
-            call_Initialize(session_id=b"A" * _PROTOCOL_CACHE.SESSION_ID_LENGTH)
-            self.assertIsNone(get_active_session().get(KEY))
+                # store "hello"
+                get_active_session().set(KEY, b"hello")
+                # check that it is cleared
+                features = call_Initialize()
+                session_id = features.session_id
+                self.assertIsNone(get_active_session().get(KEY))
+                # store "hello" again
+                get_active_session().set(KEY, b"hello")
+                self.assertEqual(get_active_session().get(KEY), b"hello")
 
-            # but resuming a session loads the previous one
-            call_Initialize(session_id=session_id)
-            self.assertEqual(get_active_session().get(KEY), b"hello")
+                # supplying a different session ID starts a new session
+                call_Initialize(session_id=b"A" * _PROTOCOL_CACHE.SESSION_ID_LENGTH)
+                self.assertIsNone(get_active_session().get(KEY))
+
+                # but resuming a session loads the previous one
+                call_Initialize(session_id=session_id)
+                self.assertEqual(get_active_session().get(KEY), b"hello")
 
         def test_EndSession(self):
 

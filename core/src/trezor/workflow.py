@@ -22,11 +22,6 @@ if utils.USE_THP:
 else:
     protocol_specific = MessageType.Initialize
 
-protocol_specific = (
-    (ThpMessageType.ThpCreateNewSession,)
-    if utils.USE_THP
-    else (MessageType.Initialize,)
-)
 
 ALLOW_WHILE_LOCKED = (
     protocol_specific,

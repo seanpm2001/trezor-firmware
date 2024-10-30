@@ -129,7 +129,7 @@ def get_new_channel(iface: bytes) -> ChannelCache:
         raise Exception("Invalid WireInterface (encoded) length")
 
     new_cid = get_next_channel_id()
-    index = _get_next_unauthenticated_channel_index()
+    index = _get_next_channel_index()
 
     # clear sessions from replaced channel
     if _get_channel_state(_CHANNELS[index]) != _UNALLOCATED_STATE:
@@ -219,7 +219,7 @@ def _get_usage_counter_and_increment() -> int:
     return _usage_counter
 
 
-def _get_next_unauthenticated_channel_index() -> int:
+def _get_next_channel_index() -> int:
     idx = _get_unallocated_channel_index()
     if idx is not None:
         return idx
@@ -230,7 +230,7 @@ def _get_next_session_index() -> int:
     idx = _get_unallocated_session_index()
     if idx is not None:
         return idx
-    return get_least_recently_used_item(_SESSIONS, _MAX_SESSIONS_COUNT)
+    return get_least_recently_used_item(_SESSIONS, max_count=_MAX_SESSIONS_COUNT)
 
 
 def _get_unallocated_channel_index() -> int | None:
@@ -287,14 +287,12 @@ def _is_session_id_unique(channel: ChannelCache) -> bool:
 
 
 def _is_cid_unique() -> bool:
-    for session in _SESSIONS:
-        if cid_counter == _get_cid(session):
+    global cid_counter
+    cid_counter_bytes = cid_counter.to_bytes(_CHANNEL_ID_LENGTH, "big")
+    for channel in _CHANNELS:
+        if channel.channel_id == cid_counter_bytes:
             return False
     return True
-
-
-def _get_cid(session: SessionThpCache) -> int:
-    return int.from_bytes(session.session_id[2:], "big")
 
 
 def get_least_recently_used_item(
