@@ -4,7 +4,7 @@ from trezor import protobuf
 
 if TYPE_CHECKING:
     from trezorio import WireInterface
-    from typing import Container, TypeVar, overload
+    from typing import Awaitable, Container, TypeVar, overload
 
     from storage.cache_common import DataCache
 
@@ -51,8 +51,8 @@ class Context:
 
     async def write(self, msg: protobuf.MessageType) -> None: ...
 
-    async def write_force(self, msg: protobuf.MessageType) -> None:
-        await self.write(msg)
+    def write_force(self, msg: protobuf.MessageType) -> Awaitable[None]:
+        return self.write(msg)
 
     async def call(
         self,

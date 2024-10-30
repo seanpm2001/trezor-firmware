@@ -150,8 +150,8 @@ class GenericSessionContext(Context):
     async def write(self, msg: protobuf.MessageType) -> None:
         return await self.channel.write(msg, self.session_id)
 
-    async def write_force(self, msg: protobuf.MessageType) -> None:
-        return await self.channel.write(msg, self.session_id, force=True)
+    def write_force(self, msg: protobuf.MessageType) -> Awaitable[None]:
+        return self.channel.write(msg, self.session_id, force=True)
 
     def get_session_state(self) -> SessionState: ...
 
