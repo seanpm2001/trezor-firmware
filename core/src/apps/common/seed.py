@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 import storage.device as storage_device
-from storage.cache import check_thp_is_not_used
 from storage.cache_common import APP_COMMON_SEED, APP_COMMON_SEED_WITHOUT_PASSPHRASE
 from trezor import utils
 from trezor.crypto import hmac
@@ -12,7 +11,6 @@ from trezor.wire.errors import DataError
 from apps.common import cache
 
 from . import mnemonic
-from .passphrase import get as get_passphrase_legacy
 from .passphrase import get_passphrase as get_passphrase
 
 if TYPE_CHECKING:
@@ -27,6 +25,9 @@ if not utils.BITCOIN_ONLY:
         APP_CARDANO_ICARUS_SECRET,
         APP_COMMON_DERIVE_CARDANO,
     )
+
+if not utils.USE_THP:
+    from .passphrase import get as get_passphrase_legacy
 
 
 class Slip21Node:
@@ -115,32 +116,33 @@ else:
             ctx.cache.set_bool(APP_COMMON_DERIVE_CARDANO, True)
             derive_and_store_secrets(ctx, passphrase)
 
-    @check_thp_is_not_used
-    async def derive_and_store_roots_legacy() -> None:
-        from trezor import wire
+    if not utils.USE_THP:
 
-        if not storage_device.is_initialized():
-            raise wire.NotInitialized("Device is not initialized")
+        async def derive_and_store_roots_legacy() -> None:
+            from trezor import wire
 
-        ctx = get_context()
-        need_seed = not ctx.cache.is_set(APP_COMMON_SEED)
-        need_cardano_secret = ctx.cache.get_bool(
-            APP_COMMON_DERIVE_CARDANO
-        ) and not ctx.cache.is_set(APP_CARDANO_ICARUS_SECRET)
+            if not storage_device.is_initialized():
+                raise wire.NotInitialized("Device is not initialized")
 
-        if not need_seed and not need_cardano_secret:
-            return
+            ctx = get_context()
+            need_seed = not ctx.cache.is_set(APP_COMMON_SEED)
+            need_cardano_secret = ctx.cache.get_bool(
+                APP_COMMON_DERIVE_CARDANO
+            ) and not ctx.cache.is_set(APP_CARDANO_ICARUS_SECRET)
 
-        passphrase = await get_passphrase_legacy()
+            if not need_seed and not need_cardano_secret:
+                return
 
-        if need_seed:
-            common_seed = mnemonic.get_seed(passphrase)
-            ctx.cache.set(APP_COMMON_SEED, common_seed)
+            passphrase = await get_passphrase_legacy()
 
-        if need_cardano_secret:
-            from apps.cardano.seed import derive_and_store_secrets
+            if need_seed:
+                common_seed = mnemonic.get_seed(passphrase)
+                ctx.cache.set(APP_COMMON_SEED, common_seed)
 
-            derive_and_store_secrets(ctx, passphrase)
+            if need_cardano_secret:
+                from apps.cardano.seed import derive_and_store_secrets
+
+                derive_and_store_secrets(ctx, passphrase)
 
 
 @cache.stored(APP_COMMON_SEED_WITHOUT_PASSPHRASE)

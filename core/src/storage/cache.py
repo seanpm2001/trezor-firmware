@@ -1,6 +1,5 @@
 import builtins
 import gc
-from typing import TYPE_CHECKING
 
 from storage.cache_common import SESSIONLESS_FLAG, SessionlessCache
 from trezor import utils
@@ -50,24 +49,3 @@ def get_int_all_sessions(key: int) -> builtins.set[int]:
 
 def get_sessionless_cache() -> SessionlessCache:
     return _SESSIONLESS_CACHE
-
-
-if TYPE_CHECKING:
-    from typing import Callable, ParamSpec, TypeVar
-
-    T = TypeVar("T")
-    P = ParamSpec("P")
-
-
-def check_thp_is_not_used(f: Callable[P, T]) -> Callable[P, T]:
-    """A type-safe decorator to raise an exception when the function is called with THP enabled.
-
-    This decorator should be removed after the caches for Codec_v1 and THP are properly refactored and separated.
-    """
-
-    def inner(*args: P.args, **kwargs: P.kwargs) -> T:
-        if utils.USE_THP:
-            raise Exception("Cannot call this function with the new THP enabled")
-        return f(*args, **kwargs)
-
-    return inner

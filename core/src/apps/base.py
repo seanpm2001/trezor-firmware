@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 import storage.device as storage_device
-from storage.cache import check_thp_is_not_used
 from storage.cache_common import APP_COMMON_BUSY_DEADLINE_MS, APP_COMMON_SEED
 from trezor import TR, config, utils, wire, workflow
 from trezor.enums import HomescreenFormat, MessageType
@@ -273,7 +272,6 @@ async def handle_SetBusy(msg: SetBusy) -> Success:
     return Success()
 
 
-@check_thp_is_not_used
 async def handle_EndSession(msg: EndSession) -> Success:
     from storage.cache_codec import end_current_session
 
