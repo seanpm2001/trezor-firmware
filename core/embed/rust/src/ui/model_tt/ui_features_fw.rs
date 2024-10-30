@@ -6,7 +6,9 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            image::BlendedImage, text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt}, ComponentExt, Empty, Label, Timeout
+            image::BlendedImage,
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
+            ComponentExt, Empty, Label, Timeout,
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -19,8 +21,8 @@ use crate::{
 use super::{
     component::{
         Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet, CancelConfirmMsg, Dialog,
-        Frame, IconDialog, MnemonicKeyboard, PassphraseKeyboard, PinKeyboard, SelectWordCount,
-        Slip39Input,
+        Frame, Homescreen, IconDialog, Lockscreen, MnemonicKeyboard, PassphraseKeyboard,
+        PinKeyboard, SelectWordCount, Slip39Input,
     },
     theme, ModelTTFeatures,
 };
@@ -184,6 +186,17 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn show_homescreen(
+        label: TString<'static>,
+        hold: bool,
+        notification: Option<TString<'static>>,
+        notification_level: u8,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let notification = notification.map(|w| (w, notification_level));
+        let layout = RootComponent::new(Homescreen::new(label, notification, hold));
+        Ok(layout)
+    }
+
     fn show_info(
         title: TString<'static>,
         description: TString<'static>,
@@ -213,6 +226,15 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             theme::button_info(),
         )?;
         Ok(obj)
+    }
+
+    fn show_lockscreen(
+        label: TString<'static>,
+        bootscreen: bool,
+        coinjoin_authorized: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(Lockscreen::new(label, bootscreen, coinjoin_authorized));
+        Ok(layout)
     }
 }
 

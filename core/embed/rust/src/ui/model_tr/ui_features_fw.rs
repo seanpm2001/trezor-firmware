@@ -20,8 +20,8 @@ use crate::{
 
 use super::{
     component::{
-        ButtonDetails, ButtonPage, Frame, PassphraseEntry, PinEntry, ScrollableFrame, SimpleChoice,
-        WordlistEntry, WordlistType,
+        ButtonDetails, ButtonPage, Frame, Homescreen, Lockscreen, PassphraseEntry, PinEntry,
+        ScrollableFrame, SimpleChoice, WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
@@ -189,6 +189,18 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Ok(layout)
     }
 
+    fn show_homescreen(
+        label: TString<'static>,
+        hold: bool,
+        notification: Option<TString<'static>>,
+        notification_level: u8,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let notification = notification.map(|w| (w, notification_level));
+        let loader_description = hold.then_some("Locking the device...".into());
+        let layout = RootComponent::new(Homescreen::new(label, notification, loader_description));
+        Ok(layout)
+    }
+
     fn show_info(
         title: TString<'static>,
         description: TString<'static>,
@@ -209,6 +221,15 @@ impl UIFeaturesFirmware for ModelTRFeatures {
             LayoutObj::new((timeout, content.map(|_| None)))?
         };
         Ok(obj)
+    }
+
+    fn show_lockscreen(
+        label: TString<'static>,
+        bootscreen: bool,
+        coinjoin_authorized: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(Lockscreen::new(label, bootscreen, coinjoin_authorized));
+        Ok(layout)
     }
 }
 

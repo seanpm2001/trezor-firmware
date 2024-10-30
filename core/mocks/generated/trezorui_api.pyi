@@ -166,6 +166,18 @@ def select_word_count(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_homescreen(
+    *,
+    label: str | None,
+    hold: bool,
+    notification: str | None,
+    notification_level: int = 0,
+    skip_first_paint: bool,
+) -> LayoutObj[UiResult]:
+    """Idle homescreen."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_info(
     *,
     title: str,
@@ -174,6 +186,17 @@ def show_info(
     time_ms: int = 0,
 ) -> LayoutObj[UiResult]:
     """Info screen."""
+
+
+# rust/src/ui/api/firmware_upy.rs
+def show_lockscreen(
+    *,
+    label: str | None,
+    bootscreen: bool,
+    skip_first_paint: bool,
+    coinjoin_authorized: bool = False,
+) -> LayoutObj[UiResult]:
+    """Homescreen for locked device."""
 
 
 # rust/src/ui/api/firmware_upy.rs

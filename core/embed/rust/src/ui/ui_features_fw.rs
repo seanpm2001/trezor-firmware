@@ -59,10 +59,23 @@ pub trait UIFeaturesFirmware {
 
     fn select_word_count(recovery_type: RecoveryType) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_homescreen(
+        label: TString<'static>,
+        hold: bool,
+        notification: Option<TString<'static>>,
+        notification_level: u8,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn show_info(
         title: TString<'static>,
         description: TString<'static>,
         button: TString<'static>,
         time_ms: u32,
-    ) -> Result<Gc<LayoutObj>, Error>;
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
+    fn show_lockscreen(
+        label: TString<'static>,
+        bootscreen: bool,
+        coinjoin_authorized: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
 }

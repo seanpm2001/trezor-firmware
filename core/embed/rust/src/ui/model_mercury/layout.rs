@@ -1277,47 +1277,6 @@ extern "C" fn new_show_progress_coinjoin(n_args: usize, args: *const Obj, kwargs
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let label: TString<'static> = kwargs
-            .get(Qstr::MP_QSTR_label)?
-            .try_into_option()?
-            .unwrap_or_else(|| model::FULL_NAME.into());
-        let notification: Option<TString<'static>> =
-            kwargs.get(Qstr::MP_QSTR_notification)?.try_into_option()?;
-        let notification_level: u8 = kwargs.get_or(Qstr::MP_QSTR_notification_level, 0)?;
-        let hold: bool = kwargs.get(Qstr::MP_QSTR_hold)?.try_into()?;
-        let skip_first_paint: bool = kwargs.get(Qstr::MP_QSTR_skip_first_paint)?.try_into()?;
-
-        let notification = notification.map(|w| (w, notification_level));
-        let obj = LayoutObj::new(Homescreen::new(label, notification, hold))?;
-        if skip_first_paint {
-            obj.skip_first_paint();
-        }
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_show_lockscreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let label: TString<'static> = kwargs
-            .get(Qstr::MP_QSTR_label)?
-            .try_into_option()?
-            .unwrap_or_else(|| model::FULL_NAME.into());
-        let bootscreen: bool = kwargs.get(Qstr::MP_QSTR_bootscreen)?.try_into()?;
-        let coinjoin_authorized: bool = kwargs.get_or(Qstr::MP_QSTR_coinjoin_authorized, false)?;
-        let skip_first_paint: bool = kwargs.get(Qstr::MP_QSTR_skip_first_paint)?.try_into()?;
-
-        let obj = LayoutObj::new(Lockscreen::new(label, bootscreen, coinjoin_authorized))?;
-        if skip_first_paint {
-            obj.skip_first_paint();
-        }
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_wait_text(message: Obj) -> Obj {
     let block = || {
         let message: TString<'static> = message.try_into()?;
@@ -1659,27 +1618,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
     ///    time_ms timeout is passed."""
     Qstr::MP_QSTR_show_progress_coinjoin => obj_fn_kw!(0, new_show_progress_coinjoin).as_obj(),
-
-    /// def show_homescreen(
-    ///     *,
-    ///     label: str | None,
-    ///     hold: bool,
-    ///     notification: str | None,
-    ///     notification_level: int = 0,
-    ///     skip_first_paint: bool,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Idle homescreen."""
-    Qstr::MP_QSTR_show_homescreen => obj_fn_kw!(0, new_show_homescreen).as_obj(),
-
-    /// def show_lockscreen(
-    ///     *,
-    ///     label: str | None,
-    ///     bootscreen: bool,
-    ///     skip_first_paint: bool,
-    ///     coinjoin_authorized: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Homescreen for locked device."""
-    Qstr::MP_QSTR_show_lockscreen => obj_fn_kw!(0, new_show_lockscreen).as_obj(),
 
     /// def tutorial() -> LayoutObj[UiResult]:
     ///     """Show user how to interact with the device."""

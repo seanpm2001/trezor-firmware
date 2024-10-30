@@ -20,8 +20,8 @@ use crate::{
 
 use super::{
     component::{
-        Bip39Input, Frame, MnemonicKeyboard, PinKeyboard, SelectWordCount, Slip39Input,
-        SwipeContent, SwipeUpScreen, VerticalMenu,
+        Bip39Input, Frame, Homescreen, Lockscreen, MnemonicKeyboard, PinKeyboard, SelectWordCount,
+        Slip39Input, SwipeContent, SwipeUpScreen, VerticalMenu,
     },
     flow, theme, ModelMercuryFeatures,
 };
@@ -142,6 +142,17 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(layout)
     }
 
+    fn show_homescreen(
+        label: TString<'static>,
+        hold: bool,
+        notification: Option<TString<'static>>,
+        notification_level: u8,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let notification = notification.map(|w| (w, notification_level));
+        let layout = RootComponent::new(Homescreen::new(label, notification, hold));
+        Ok(layout)
+    }
+
     fn show_info(
         title: TString<'static>,
         description: TString<'static>,
@@ -155,5 +166,14 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
                 .with_swipe(Direction::Up, SwipeSettings::default()),
         ))?;
         Ok(obj)
+    }
+
+    fn show_lockscreen(
+        label: TString<'static>,
+        bootscreen: bool,
+        coinjoin_authorized: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(Lockscreen::new(label, bootscreen, coinjoin_authorized));
+        Ok(layout)
     }
 }

@@ -8,6 +8,7 @@ use crate::{
         util,
     },
     strutil::TString,
+    trezorhal::model,
     ui::{
         backlight::BACKLIGHT_LEVELS_OBJ,
         layout::{
@@ -156,7 +157,29 @@ extern "C" fn new_select_word_count(n_args: usize, args: *const Obj, kwargs: *mu
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn show_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+extern "C" fn new_show_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let label: TString<'static> = kwargs
+            .get(Qstr::MP_QSTR_label)?
+            .try_into_option()?
+            .unwrap_or_else(|| model::FULL_NAME.into());
+        let notification: Option<TString<'static>> =
+            kwargs.get(Qstr::MP_QSTR_notification)?.try_into_option()?;
+        let notification_level: u8 = kwargs.get_or(Qstr::MP_QSTR_notification_level, 0)?;
+        let hold: bool = kwargs.get(Qstr::MP_QSTR_hold)?.try_into()?;
+        let skip_first_paint: bool = kwargs.get(Qstr::MP_QSTR_skip_first_paint)?.try_into()?;
+
+        let layout = ModelUI::show_homescreen(label, hold, notification, notification_level)?;
+        let layout_obj = LayoutObj::new_root(layout)?;
+        if skip_first_paint {
+            layout_obj.skip_first_paint();
+        }
+        Ok(layout_obj.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_show_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
         let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
@@ -167,6 +190,26 @@ extern "C" fn show_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Ob
 
         let obj = ModelUI::show_info(title, description, button, time_ms)?;
         Ok(obj.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_show_lockscreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let label: TString<'static> = kwargs
+            .get(Qstr::MP_QSTR_label)?
+            .try_into_option()?
+            .unwrap_or_else(|| model::FULL_NAME.into());
+        let bootscreen: bool = kwargs.get(Qstr::MP_QSTR_bootscreen)?.try_into()?;
+        let coinjoin_authorized: bool = kwargs.get_or(Qstr::MP_QSTR_coinjoin_authorized, false)?;
+        let skip_first_paint: bool = kwargs.get(Qstr::MP_QSTR_skip_first_paint)?.try_into()?;
+
+        let layout = ModelUI::show_lockscreen(label, bootscreen, coinjoin_authorized)?;
+        let layout_obj = LayoutObj::new_root(layout)?;
+        if skip_first_paint {
+            layout_obj.skip_first_paint();
+        }
+        Ok(layout_obj.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
@@ -363,6 +406,17 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     ///     For unlocking a repeated backup, select from 20 or 33."""
     Qstr::MP_QSTR_select_word_count => obj_fn_kw!(0, new_select_word_count).as_obj(),
 
+    /// def show_homescreen(
+    ///     *,
+    ///     label: str | None,
+    ///     hold: bool,
+    ///     notification: str | None,
+    ///     notification_level: int = 0,
+    ///     skip_first_paint: bool,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Idle homescreen."""
+    Qstr::MP_QSTR_show_homescreen => obj_fn_kw!(0, new_show_homescreen).as_obj(),
+
     /// def show_info(
     ///     *,
     ///     title: str,
@@ -371,7 +425,17 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     ///     time_ms: int = 0,
     /// ) -> LayoutObj[UiResult]:
     ///     """Info screen."""
-    Qstr::MP_QSTR_show_info => obj_fn_kw!(0, show_info).as_obj(),
+    Qstr::MP_QSTR_show_info => obj_fn_kw!(0, new_show_info).as_obj(),
+
+    /// def show_lockscreen(
+    ///     *,
+    ///     label: str | None,
+    ///     bootscreen: bool,
+    ///     skip_first_paint: bool,
+    ///     coinjoin_authorized: bool = False,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Homescreen for locked device."""
+    Qstr::MP_QSTR_show_lockscreen => obj_fn_kw!(0, new_show_lockscreen).as_obj(),
 
     /// class BacklightLevels:
     ///     """Backlight levels. Values dynamically update based on user settings."""

@@ -57,7 +57,7 @@ class Homescreen(HomescreenBase):
                 level = 0
 
         super().__init__(
-            layout=trezorui2.show_homescreen(
+            layout=trezorui_api.show_homescreen(
                 label=label,
                 notification=notification,
                 notification_level=level,
@@ -97,7 +97,7 @@ class Lockscreen(HomescreenBase):
             not bootscreen and storage_cache.homescreen_shown is self.RENDER_INDICATOR
         )
         super().__init__(
-            layout=trezorui2.show_lockscreen(
+            layout=trezorui_api.show_lockscreen(
                 label=label,
                 bootscreen=bootscreen,
                 skip_first_paint=skip,

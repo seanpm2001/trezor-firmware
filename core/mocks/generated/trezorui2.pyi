@@ -334,29 +334,6 @@ def show_progress_coinjoin(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_homescreen(
-    *,
-    label: str | None,
-    hold: bool,
-    notification: str | None,
-    notification_level: int = 0,
-    skip_first_paint: bool,
-) -> LayoutObj[UiResult]:
-    """Idle homescreen."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def show_lockscreen(
-    *,
-    label: str | None,
-    bootscreen: bool,
-    skip_first_paint: bool,
-    coinjoin_authorized: bool = False,
-) -> LayoutObj[UiResult]:
-    """Homescreen for locked device."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def tutorial() -> LayoutObj[UiResult]:
     """Show user how to interact with the device."""
 
@@ -750,29 +727,6 @@ def show_progress_coinjoin(
 
 
 # rust/src/ui/model_tr/layout.rs
-def show_homescreen(
-    *,
-    label: str | None,
-    hold: bool,  # unused on TR
-    notification: str | None,
-    notification_level: int = 0,
-    skip_first_paint: bool,
-) -> LayoutObj[UiResult]:
-    """Idle homescreen."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def show_lockscreen(
-    *,
-    label: str | None,
-    bootscreen: bool,
-    skip_first_paint: bool,
-    coinjoin_authorized: bool = False,
-) -> LayoutObj[UiResult]:
-    """Homescreen for locked device."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def show_wait_text(message: str, /) -> None:
     """Show single-line text in the middle of the screen."""
 from trezor import utils
@@ -1127,29 +1081,6 @@ def show_progress_coinjoin(
 ) -> LayoutObj[UiResult]:
     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
    time_ms timeout is passed."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_homescreen(
-    *,
-    label: str | None,
-    hold: bool,
-    notification: str | None,
-    notification_level: int = 0,
-    skip_first_paint: bool,
-) -> LayoutObj[UiResult]:
-    """Idle homescreen."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_lockscreen(
-    *,
-    label: str | None,
-    bootscreen: bool,
-    skip_first_paint: bool,
-    coinjoin_authorized: bool = False,
-) -> LayoutObj[UiResult]:
-    """Homescreen for locked device."""
 
 
 # rust/src/ui/model_tt/layout.rs
