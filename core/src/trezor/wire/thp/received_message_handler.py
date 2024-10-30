@@ -74,7 +74,7 @@ async def handle_received_message(
 
                 print("micropython.mem_info() from received_message_handler.py")
                 micropython.mem_info()
-                print("Allocation count:", micropython.alloc_count())
+                print("Allocation count:", micropython.alloc_count())  # type: ignore ["alloc_count" is not a known attribute of module "micropython"]
             except AttributeError:
                 print(
                     "To show allocation count, create the build with TREZOR_MEMPERF=1"
