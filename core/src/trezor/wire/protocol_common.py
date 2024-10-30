@@ -65,6 +65,9 @@ class Context:
         del msg
         return await self.read((expected_type.MESSAGE_WIRE_TYPE,), expected_type)
 
+    def release(self) -> None:
+        pass
+
     @property
     def cache(self) -> DataCache: ...
 

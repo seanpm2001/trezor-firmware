@@ -273,9 +273,8 @@ async def handle_SetBusy(msg: SetBusy) -> Success:
 
 
 async def handle_EndSession(msg: EndSession) -> Success:
-    from storage.cache_codec import end_current_session
-
-    end_current_session()
+    ctx = context.get_context()
+    ctx.release()
     return Success()
 
 

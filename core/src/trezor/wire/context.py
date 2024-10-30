@@ -165,6 +165,9 @@ class CodecContext(Context):
             memoryview(buffer)[:msg_size],
         )
 
+    def release(self) -> None:
+        cache_codec.end_current_session()
+
     # ACCESS TO CACHE
     @property
     def cache(self) -> DataCache:

@@ -317,9 +317,15 @@ def get_int_all_sessions(key: int) -> builtins.set[int]:
     return values
 
 
-def clear_sessions_with_channel_id(channel_id: bytes):
+def clear_sessions_with_channel_id(channel_id: bytes) -> None:
     for session in _SESSIONS:
         if session.channel_id == channel_id:
+            session.clear()
+
+
+def clear_session(session: SessionThpCache) -> None:
+    for s in _SESSIONS:
+        if s.channel_id == session.channel_id and s.session_id == session.session_id:
             session.clear()
 
 

@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from storage import cache_thp
 from storage.cache_thp import MANAGEMENT_SESSION_ID, SessionThpCache
 from trezor import log, loop, protobuf, utils
 from trezor.wire import message_handler, protocol_common
@@ -185,6 +186,10 @@ class SessionContext(GenericSessionContext):
 
     def set_session_state(self, state: SessionState) -> None:
         self.session_cache.state = bytearray(state.to_bytes(1, "big"))
+
+    def release(self) -> None:
+        if self.session_cache is not None:
+            cache_thp.clear_session(self.session_cache)
 
     # ACCESS TO CACHE
     @property
