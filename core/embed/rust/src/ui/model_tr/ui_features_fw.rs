@@ -8,7 +8,7 @@ use crate::{
     ui::{
         component::{
             text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
-            Component, ComponentExt, Paginate, Timeout,
+            Component, ComponentExt, Label, LineBreaking, Paginate, Timeout,
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -65,6 +65,36 @@ impl UIFeaturesFirmware for ModelTRFeatures {
             verb_cancel,
             hold,
         )
+    }
+
+    fn confirm_firmware_update(
+        description: TString<'static>,
+        fingerprint: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        use super::component::bl_confirm::Confirm;
+        let title = TR::firmware_update__title;
+        let message = Label::left_aligned(description, theme::TEXT_NORMAL).vertically_centered();
+        let fingerprint = Label::left_aligned(
+            fingerprint,
+            theme::TEXT_NORMAL.with_line_breaking(LineBreaking::BreakWordsNoHyphen),
+        )
+        .vertically_centered();
+
+        let layout = RootComponent::new(
+            Confirm::new(
+                theme::BG,
+                title.into(),
+                message,
+                None,
+                TR::buttons__install.as_tstring(),
+                false,
+            )
+            .with_info_screen(
+                TR::firmware_update__title_fingerprint.as_tstring(),
+                fingerprint,
+            ),
+        );
+        Ok(layout)
     }
 
     fn check_homescreen_format(image: BinaryData, _accept_toif: bool) -> bool {

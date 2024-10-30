@@ -69,6 +69,21 @@ extern "C" fn new_confirm_action(n_args: usize, args: *const Obj, kwargs: *mut M
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
+// TODO: there was `no_mangle` attribute in TT, should we apply it?
+extern "C" fn new_confirm_firmware_update(
+    n_args: usize,
+    args: *const Obj,
+    kwargs: *mut Map,
+) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
+        let fingerprint: TString = kwargs.get(Qstr::MP_QSTR_fingerprint)?.try_into()?;
+
+        let layout = ModelUI::confirm_firmware_update(description, fingerprint)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
 
 extern "C" fn new_request_bip39(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
@@ -285,6 +300,14 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm action."""
     Qstr::MP_QSTR_confirm_action => obj_fn_kw!(0, new_confirm_action).as_obj(),
+
+    /// def confirm_firmware_update(
+    ///     *,
+    ///     description: str,
+    ///     fingerprint: str,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Ask whether to update firmware, optionally show fingerprint."""
+    Qstr::MP_QSTR_confirm_firmware_update => obj_fn_kw!(0, new_confirm_firmware_update).as_obj(),
 
     /// def request_bip39(
     ///     *,

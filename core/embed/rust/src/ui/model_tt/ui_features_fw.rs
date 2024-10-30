@@ -6,9 +6,7 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            image::BlendedImage,
-            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
-            ComponentExt, Empty, Timeout,
+            image::BlendedImage, text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt}, ComponentExt, Empty, Label, Timeout
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -66,6 +64,29 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             page = page.with_confirm_style(theme::button_danger())
         }
         let layout = RootComponent::new(Frame::left_aligned(theme::label_title(), title, page));
+        Ok(layout)
+    }
+
+    fn confirm_firmware_update(
+        description: TString<'static>,
+        fingerprint: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        use super::component::bl_confirm::{Confirm, ConfirmTitle};
+
+        let title_str = TR::firmware_update__title.into();
+        let title = Label::left_aligned(title_str, theme::TEXT_BOLD).vertically_centered();
+        let msg = Label::left_aligned(description, theme::TEXT_NORMAL);
+
+        let left = Button::with_text(TR::buttons__cancel.into()).styled(theme::button_default());
+        let right = Button::with_text(TR::buttons__install.into()).styled(theme::button_confirm());
+
+        let layout = RootComponent::new(
+            Confirm::new(theme::BG, left, right, ConfirmTitle::Text(title), msg).with_info(
+                TR::firmware_update__title_fingerprint.into(),
+                fingerprint,
+                theme::button_moreinfo(),
+            ),
+        );
         Ok(layout)
     }
 

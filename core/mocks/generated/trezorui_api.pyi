@@ -97,6 +97,15 @@ def confirm_action(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_firmware_update(
+    *,
+    description: str,
+    fingerprint: str,
+) -> LayoutObj[UiResult]:
+    """Ask whether to update firmware, optionally show fingerprint."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def request_bip39(
     *,
     prompt: str,

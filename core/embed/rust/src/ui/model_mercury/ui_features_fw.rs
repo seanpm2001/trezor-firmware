@@ -54,6 +54,15 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(flow)
     }
 
+    fn confirm_firmware_update(
+        description: TString<'static>,
+        fingerprint: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let flow =
+            flow::confirm_firmware_update::new_confirm_firmware_update(description, fingerprint)?;
+        Ok(flow)
+    }
+
     fn check_homescreen_format(image: BinaryData, __accept_toif: bool) -> bool {
         super::component::check_homescreen_format(image)
     }

@@ -1681,14 +1681,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Homescreen for locked device."""
     Qstr::MP_QSTR_show_lockscreen => obj_fn_kw!(0, new_show_lockscreen).as_obj(),
 
-    /// def confirm_firmware_update(
-    ///     *,
-    ///     description: str,
-    ///     fingerprint: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Ask whether to update firmware, optionally show fingerprint."""
-    Qstr::MP_QSTR_confirm_firmware_update => obj_fn_kw!(0, new_confirm_firmware_update).as_obj(),
-
     /// def tutorial() -> LayoutObj[UiResult]:
     ///     """Show user how to interact with the device."""
     Qstr::MP_QSTR_tutorial => obj_fn_0!(new_show_tutorial).as_obj(),

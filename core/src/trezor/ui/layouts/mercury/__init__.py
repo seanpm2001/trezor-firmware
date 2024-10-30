@@ -1215,7 +1215,7 @@ def confirm_set_new_pin(
 
 def confirm_firmware_update(description: str, fingerprint: str) -> Awaitable[None]:
     return raise_if_not_confirmed(
-        trezorui2.confirm_firmware_update(
+        trezorui_api.confirm_firmware_update(
             description=description, fingerprint=fingerprint
         ),
         "firmware_update",

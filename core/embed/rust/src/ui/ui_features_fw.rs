@@ -20,6 +20,11 @@ pub trait UIFeaturesFirmware {
         prompt_title: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_firmware_update(
+        description: TString<'static>,
+        fingerprint: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn check_homescreen_format(image: BinaryData, accept_toif: bool) -> bool;
 
     fn request_bip39(

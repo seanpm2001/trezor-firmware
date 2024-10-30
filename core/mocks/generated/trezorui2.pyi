@@ -357,15 +357,6 @@ def show_lockscreen(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def confirm_firmware_update(
-    *,
-    description: str,
-    fingerprint: str,
-) -> LayoutObj[UiResult]:
-    """Ask whether to update firmware, optionally show fingerprint."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def tutorial() -> LayoutObj[UiResult]:
     """Show user how to interact with the device."""
 
@@ -782,15 +773,6 @@ def show_lockscreen(
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_firmware_update(
-    *,
-    description: str,
-    fingerprint: str,
-) -> LayoutObj[UiResult]:
-    """Ask whether to update firmware, optionally show fingerprint. Shared with bootloader."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def show_wait_text(message: str, /) -> None:
     """Show single-line text in the middle of the screen."""
 from trezor import utils
@@ -1168,15 +1150,6 @@ def show_lockscreen(
     coinjoin_authorized: bool = False,
 ) -> LayoutObj[UiResult]:
     """Homescreen for locked device."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_firmware_update(
-    *,
-    description: str,
-    fingerprint: str,
-) -> LayoutObj[UiResult]:
-    """Ask whether to update firmware, optionally show fingerprint. Shared with bootloader."""
 
 
 # rust/src/ui/model_tt/layout.rs

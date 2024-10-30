@@ -1401,43 +1401,6 @@ extern "C" fn new_show_lockscreen(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_firmware_update(
-    n_args: usize,
-    args: *const Obj,
-    kwargs: *mut Map,
-) -> Obj {
-    use super::component::bl_confirm::Confirm;
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let fingerprint: TString = kwargs.get(Qstr::MP_QSTR_fingerprint)?.try_into()?;
-
-        let title = TR::firmware_update__title;
-        let message = Label::left_aligned(description, theme::TEXT_NORMAL).vertically_centered();
-        let fingerprint = Label::left_aligned(
-            fingerprint,
-            theme::TEXT_NORMAL.with_line_breaking(LineBreaking::BreakWordsNoHyphen),
-        )
-        .vertically_centered();
-
-        let obj = LayoutObj::new(
-            Confirm::new(
-                theme::BG,
-                title.into(),
-                message,
-                None,
-                TR::buttons__install.as_tstring(),
-                false,
-            )
-            .with_info_screen(
-                TR::firmware_update__title_fingerprint.as_tstring(),
-                fingerprint,
-            ),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_wait_text(message: Obj) -> Obj {
     let block = || {
         let message: TString<'static> = message.try_into()?;
@@ -1767,14 +1730,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Homescreen for locked device."""
     Qstr::MP_QSTR_show_lockscreen => obj_fn_kw!(0, new_show_lockscreen).as_obj(),
-
-    /// def confirm_firmware_update(
-    ///     *,
-    ///     description: str,
-    ///     fingerprint: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Ask whether to update firmware, optionally show fingerprint. Shared with bootloader."""
-    Qstr::MP_QSTR_confirm_firmware_update => obj_fn_kw!(0, new_confirm_firmware_update).as_obj(),
 
     /// def show_wait_text(message: str, /) -> None:
     ///     """Show single-line text in the middle of the screen."""
