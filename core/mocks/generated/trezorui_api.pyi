@@ -217,6 +217,30 @@ def show_lockscreen(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_progress(
+    *,
+    description: str,
+    indeterminate: bool = False,
+    title: str | None = None,
+) -> LayoutObj[UiResult]:
+    """Show progress loader. Please note that the number of lines reserved on screen for
+   description is determined at construction time. If you want multiline descriptions
+   make sure the initial description has at least that amount of lines."""
+
+
+# rust/src/ui/api/firmware_upy.rs
+def show_progress_coinjoin(
+    *,
+    title: str,
+    indeterminate: bool = False,
+    time_ms: int = 0,
+    skip_first_paint: bool = False,
+) -> LayoutObj[UiResult]:
+    """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
+   time_ms timeout is passed."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_wait_text(message: str, /) -> LayoutObj[None]:
     """Show single-line text in the middle of the screen."""
 

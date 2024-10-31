@@ -293,30 +293,6 @@ def show_group_share_success(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_progress(
-    *,
-    title: str,
-    indeterminate: bool = False,
-    description: str = "",
-) -> LayoutObj[UiResult]:
-    """Show progress loader. Please note that the number of lines reserved on screen for
-   description is determined at construction time. If you want multiline descriptions
-   make sure the initial description has at least that amount of lines."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def show_progress_coinjoin(
-    *,
-    title: str,
-    indeterminate: bool = False,
-    time_ms: int = 0,
-    skip_first_paint: bool = False,
-) -> LayoutObj[UiResult]:
-    """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
-   time_ms timeout is passed."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def tutorial() -> LayoutObj[UiResult]:
     """Show user how to interact with the device."""
 
@@ -1009,27 +985,3 @@ def show_remaining_shares(
     pages: Iterable[tuple[str, str]],
 ) -> LayoutObj[UiResult]:
     """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_progress(
-    *,
-    description: str,
-    indeterminate: bool = False,
-    title: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Show progress loader. Please note that the number of lines reserved on screen for
-   description is determined at construction time. If you want multiline descriptions
-   make sure the initial description has at least that amount of lines."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_progress_coinjoin(
-    *,
-    title: str,
-    indeterminate: bool = False,
-    time_ms: int = 0,
-    skip_first_paint: bool = False,
-) -> LayoutObj[UiResult]:
-    """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
-   time_ms timeout is passed."""

@@ -1305,50 +1305,6 @@ extern "C" fn new_show_group_share_success(
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_progress(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let indeterminate: bool = kwargs.get_or(Qstr::MP_QSTR_indeterminate, false)?;
-        let title: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_title)
-            .and_then(Obj::try_into_option)
-            .unwrap_or(None);
-
-        let mut progress = Progress::new(indeterminate, description);
-        if let Some(title) = title {
-            progress = progress.with_title(title);
-        };
-
-        let obj = LayoutObj::new(progress)?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_show_progress_coinjoin(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let indeterminate: bool = kwargs.get_or(Qstr::MP_QSTR_indeterminate, false)?;
-        let time_ms: u32 = kwargs.get_or(Qstr::MP_QSTR_time_ms, 0)?;
-        let skip_first_paint: bool = kwargs.get_or(Qstr::MP_QSTR_skip_first_paint, false)?;
-
-        // The second type parameter is actually not used in `new()` but we need to
-        // provide it.
-        let progress = CoinJoinProgress::new(title, indeterminate);
-        let obj = if time_ms > 0 && indeterminate {
-            let timeout = Timeout::new(time_ms);
-            LayoutObj::new((timeout, progress.map(|_msg| None)))?
-        } else {
-            LayoutObj::new(progress)?
-        };
-        if skip_first_paint {
-            obj.skip_first_paint();
-        }
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -1617,26 +1573,4 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[int]:
     ///     """Shown after successfully finishing a group."""
     Qstr::MP_QSTR_show_group_share_success => obj_fn_kw!(0, new_show_group_share_success).as_obj(),
-
-    /// def show_progress(
-    ///     *,
-    ///     description: str,
-    ///     indeterminate: bool = False,
-    ///     title: str | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Show progress loader. Please note that the number of lines reserved on screen for
-    ///     description is determined at construction time. If you want multiline descriptions
-    ///     make sure the initial description has at least that amount of lines."""
-    Qstr::MP_QSTR_show_progress => obj_fn_kw!(0, new_show_progress).as_obj(),
-
-    /// def show_progress_coinjoin(
-    ///     *,
-    ///     title: str,
-    ///     indeterminate: bool = False,
-    ///     time_ms: int = 0,
-    ///     skip_first_paint: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
-    ///     time_ms timeout is passed."""
-    Qstr::MP_QSTR_show_progress_coinjoin => obj_fn_kw!(0, new_show_progress_coinjoin).as_obj(),
 };

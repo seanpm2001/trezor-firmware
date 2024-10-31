@@ -7,7 +7,9 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            connect::Connect, text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt}, Component, ComponentExt, Label, LineBreaking, Paginate, Timeout
+            connect::Connect,
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
+            Component, ComponentExt, Empty, Label, LineBreaking, Paginate, Timeout,
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -19,8 +21,9 @@ use crate::{
 
 use super::{
     component::{
-        ButtonDetails, ButtonPage, ConfirmHomescreen, Frame, Homescreen, Lockscreen,
-        PassphraseEntry, PinEntry, ScrollableFrame, SimpleChoice, WordlistEntry, WordlistType,
+        ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Frame, Homescreen,
+        Lockscreen, PassphraseEntry, PinEntry, Progress, ScrollableFrame, SimpleChoice,
+        WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
@@ -243,6 +246,39 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Lockscreen::new(label, bootscreen, coinjoin_authorized));
         Ok(layout)
+    }
+
+    fn show_progress(
+        description: TString<'static>,
+        indeterminate: bool,
+        title: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut progress = Progress::new(indeterminate, description);
+        if let Some(title) = title {
+            progress = progress.with_title(title);
+        };
+
+        let layout = RootComponent::new(progress);
+        Ok(layout)
+    }
+
+    fn show_progress_coinjoin(
+        title: TString<'static>,
+        indeterminate: bool,
+        time_ms: u32,
+        skip_first_paint: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let progress = CoinJoinProgress::new(title, indeterminate);
+        let obj = if time_ms > 0 && indeterminate {
+            let timeout = Timeout::new(time_ms);
+            LayoutObj::new((timeout, progress.map(|_msg| None)))?
+        } else {
+            LayoutObj::new(progress)?
+        };
+        if skip_first_paint {
+            obj.skip_first_paint();
+        }
+        Ok(obj)
     }
 
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {

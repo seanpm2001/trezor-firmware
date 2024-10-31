@@ -86,5 +86,18 @@ pub trait UIFeaturesFirmware {
         coinjoin_authorized: bool,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_progress(
+        description: TString<'static>,
+        indeterminate: bool,
+        title: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn show_progress_coinjoin(
+        title: TString<'static>,
+        indeterminate: bool,
+        time_ms: u32,
+        skip_first_paint: bool,
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error>;
 }

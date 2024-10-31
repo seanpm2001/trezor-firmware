@@ -1,7 +1,6 @@
 from typing import TYPE_CHECKING
 
 import storage.cache as storage_cache
-import trezorui2
 import trezorui_api
 from storage.cache_common import APP_COMMON_BUSY_DEADLINE_MS
 from trezor import TR, ui
@@ -118,7 +117,7 @@ class Busyscreen(HomescreenBase):
 
     def __init__(self, delay_ms: int) -> None:
         super().__init__(
-            layout=trezorui2.show_progress_coinjoin(
+            layout=trezorui_api.show_progress_coinjoin(
                 title=TR.coinjoin__waiting_for_others,
                 indeterminate=True,
                 time_ms=delay_ms,
