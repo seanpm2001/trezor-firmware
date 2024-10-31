@@ -6,7 +6,9 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            image::BlendedImage, text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt}, ComponentExt, Empty, Jpeg, Label, Timeout
+            image::BlendedImage,
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
+            ComponentExt, Empty, Jpeg, Label, Timeout,
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},

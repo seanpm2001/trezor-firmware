@@ -1,12 +1,16 @@
 use crate::{
-    io::BinaryData, micropython::{
+    io::BinaryData,
+    micropython::{
         macros::{obj_fn_1, obj_fn_kw, obj_module},
         map::Map,
         module::Module,
         obj::Obj,
         qstr::Qstr,
         util,
-    }, strutil::TString, trezorhal::model, ui::{
+    },
+    strutil::TString,
+    trezorhal::model,
+    ui::{
         backlight::BACKLIGHT_LEVELS_OBJ,
         layout::{
             base::LAYOUT_STATE,
@@ -16,7 +20,7 @@ use crate::{
         },
         ui_features::ModelUI,
         ui_features_fw::UIFeaturesFirmware,
-    }
+    },
 };
 
 // free-standing functions exported to MicroPython mirror `trait

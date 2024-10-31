@@ -71,7 +71,6 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
                 TR::homescreen__set_default,
             )])
             .into_paragraphs();
-            let paragraphs = paragraphs;
 
             new_confirm_action_simple(
                 paragraphs,
@@ -92,16 +91,7 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
                 return Err(value_error!(c"Invalid image."));
             };
 
-            let obj = RootComponent::new(SwipeUpScreen::new(
-                Frame::left_aligned(title, SwipeContent::new(CachedJpeg::new(image, 1)))
-                    .with_cancel_button()
-                    .with_footer(
-                        TR::instructions__swipe_up.into(),
-                        Some(TR::buttons__change.into()),
-                    )
-                    .with_swipe(Direction::Up, SwipeSettings::default()),
-            ));
-            obj
+            flow::confirm_homescreen::new_confirm_homescreen(title, CachedJpeg::new(image, 1))?
         };
         Ok(layout)
     }
