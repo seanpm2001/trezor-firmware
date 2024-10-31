@@ -3,7 +3,6 @@
 
 #define DISPLAY_RESX 380
 #define DISPLAY_RESY 520
-#define TREZOR_FONT_BPP 4
 
 #define WINDOW_WIDTH 400
 #define WINDOW_HEIGHT 600
