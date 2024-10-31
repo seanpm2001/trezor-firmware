@@ -85,4 +85,6 @@ pub trait UIFeaturesFirmware {
         bootscreen: bool,
         coinjoin_authorized: bool,
     ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error>;
 }

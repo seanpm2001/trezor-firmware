@@ -7,8 +7,7 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
-            Component, ComponentExt, Label, LineBreaking, Paginate, Timeout,
+            connect::Connect, text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt}, Component, ComponentExt, Label, LineBreaking, Paginate, Timeout
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -243,6 +242,11 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         coinjoin_authorized: bool,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Lockscreen::new(label, bootscreen, coinjoin_authorized));
+        Ok(layout)
+    }
+
+    fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)
     }
 }

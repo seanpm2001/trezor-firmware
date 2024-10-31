@@ -1214,15 +1214,6 @@ extern "C" fn new_show_progress_coinjoin(n_args: usize, args: *const Obj, kwargs
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_wait_text(message: Obj) -> Obj {
-    let block = || {
-        let message: TString<'static> = message.try_into()?;
-        Ok(LayoutObj::new(Connect::new(message, theme::FG, theme::BG))?.into())
-    };
-
-    unsafe { util::try_or_raise(block) }
-}
-
 extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     #[cfg(feature = "universal_fw")]
     return flow::confirm_fido::new_confirm_fido(n_args, args, kwargs);
@@ -1544,10 +1535,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// def tutorial() -> LayoutObj[UiResult]:
     ///     """Show user how to interact with the device."""
     Qstr::MP_QSTR_tutorial => obj_fn_0!(new_show_tutorial).as_obj(),
-
-    /// def show_wait_text(message: str, /) -> LayoutObj[None]:
-    ///     """Show single-line text in the middle of the screen."""
-    Qstr::MP_QSTR_show_wait_text => obj_fn_1!(new_show_wait_text).as_obj(),
 
     /// def flow_get_address(
     ///     *,

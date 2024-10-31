@@ -248,6 +248,17 @@ extern "C" fn new_show_lockscreen(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_wait_text(message: Obj) -> Obj {
+    let block = || {
+        let message: TString<'static> = message.try_into()?;
+
+        let layout = ModelUI::show_wait_text(message)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+
+    unsafe { util::try_or_raise(block) }
+}
+
 pub extern "C" fn upy_check_homescreen_format(data: Obj) -> Obj {
     let block = || {
         let buffer = data.try_into()?;
@@ -485,6 +496,10 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Homescreen for locked device."""
     Qstr::MP_QSTR_show_lockscreen => obj_fn_kw!(0, new_show_lockscreen).as_obj(),
+
+    /// def show_wait_text(message: str, /) -> LayoutObj[None]:
+    ///     """Show single-line text in the middle of the screen."""
+    Qstr::MP_QSTR_show_wait_text => obj_fn_1!(new_show_wait_text).as_obj(),
 
     /// class BacklightLevels:
     ///     """Backlight levels. Values dynamically update based on user settings."""

@@ -1360,16 +1360,6 @@ extern "C" fn new_show_progress_coinjoin(n_args: usize, args: *const Obj, kwargs
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_wait_text(message: Obj) -> Obj {
-    let block = || {
-        let message: TString<'static> = message.try_into()?;
-        let obj = LayoutObj::new(Connect::new(message, theme::FG, theme::BG))?;
-        Ok(obj.into())
-    };
-
-    unsafe { util::try_or_raise(block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -1681,10 +1671,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
     ///    time_ms timeout is passed."""
     Qstr::MP_QSTR_show_progress_coinjoin => obj_fn_kw!(0, new_show_progress_coinjoin).as_obj(),
-
-    /// def show_wait_text(message: str, /) -> LayoutObj[None]:
-    ///     """Show single-line text in the middle of the screen."""
-    Qstr::MP_QSTR_show_wait_text => obj_fn_1!(new_show_wait_text).as_obj(),
 };
 
 #[cfg(test)]

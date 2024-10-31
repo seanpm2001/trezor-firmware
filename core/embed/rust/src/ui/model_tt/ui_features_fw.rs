@@ -6,6 +6,7 @@ use crate::{
     translations::TR,
     ui::{
         component::{
+            connect::Connect,
             image::BlendedImage,
             text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
             ComponentExt, Empty, Jpeg, Label, Timeout,
@@ -269,6 +270,11 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         coinjoin_authorized: bool,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Lockscreen::new(label, bootscreen, coinjoin_authorized));
+        Ok(layout)
+    }
+
+    fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)
     }
 }

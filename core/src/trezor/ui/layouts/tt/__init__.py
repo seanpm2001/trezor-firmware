@@ -1204,7 +1204,7 @@ def request_passphrase_on_host() -> None:
 
 
 def show_wait_text(message: str) -> None:
-    draw_simple(trezorui2.show_wait_text(message))
+    draw_simple(trezorui_api.show_wait_text(message))
 
 
 async def request_passphrase_on_device(max_len: int) -> str:

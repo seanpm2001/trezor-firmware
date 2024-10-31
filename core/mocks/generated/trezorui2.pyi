@@ -322,11 +322,6 @@ def tutorial() -> LayoutObj[UiResult]:
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_wait_text(message: str, /) -> LayoutObj[None]:
-    """Show single-line text in the middle of the screen."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_get_address(
     *,
     address: str | bytes,
@@ -1038,8 +1033,3 @@ def show_progress_coinjoin(
 ) -> LayoutObj[UiResult]:
     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
    time_ms timeout is passed."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_wait_text(message: str, /) -> LayoutObj[None]:
-    """Show single-line text in the middle of the screen."""

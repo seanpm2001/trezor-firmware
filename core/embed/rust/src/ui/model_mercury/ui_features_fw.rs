@@ -6,6 +6,7 @@ use crate::{
     translations::TR,
     ui::{
         component::{
+            connect::Connect,
             swipe_detect::SwipeSettings,
             text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs},
             CachedJpeg,
@@ -221,6 +222,11 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         coinjoin_authorized: bool,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Lockscreen::new(label, bootscreen, coinjoin_authorized));
+        Ok(layout)
+    }
+
+    fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)
     }
 }

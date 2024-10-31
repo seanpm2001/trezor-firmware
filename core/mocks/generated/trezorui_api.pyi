@@ -217,6 +217,11 @@ def show_lockscreen(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_wait_text(message: str, /) -> LayoutObj[None]:
+    """Show single-line text in the middle of the screen."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 class BacklightLevels:
     """Backlight levels. Values dynamically update based on user settings."""
     MAX: ClassVar[int]
