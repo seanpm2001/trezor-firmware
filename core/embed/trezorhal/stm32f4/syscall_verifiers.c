@@ -218,32 +218,6 @@ access_violation:
   return 0;
 }
 
-int usb_hid_read_blocking__verified(uint8_t iface_num, uint8_t *buf,
-                                    uint32_t len, int timeout) {
-  if (!probe_write_access(buf, len)) {
-    goto access_violation;
-  }
-
-  return usb_hid_read_blocking(iface_num, buf, len, timeout);
-
-access_violation:
-  apptask_access_violation();
-  return 0;
-}
-
-int usb_hid_write_blocking__verified(uint8_t iface_num, const uint8_t *buf,
-                                     uint32_t len, int timeout) {
-  if (!probe_read_access(buf, len)) {
-    goto access_violation;
-  }
-
-  return usb_hid_write_blocking(iface_num, buf, len, timeout);
-
-access_violation:
-  apptask_access_violation();
-  return 0;
-}
-
 // ---------------------------------------------------------------------
 
 int usb_vcp_read__verified(uint8_t iface_num, uint8_t *buf, uint32_t len) {
@@ -271,32 +245,6 @@ access_violation:
   return 0;
 }
 
-int usb_vcp_read_blocking__verified(uint8_t iface_num, uint8_t *buf,
-                                    uint32_t len, int timeout) {
-  if (!probe_write_access(buf, len)) {
-    goto access_violation;
-  }
-
-  return usb_vcp_read_blocking(iface_num, buf, len, timeout);
-
-access_violation:
-  apptask_access_violation();
-  return 0;
-}
-
-int usb_vcp_write_blocking__verified(uint8_t iface_num, const uint8_t *buf,
-                                     uint32_t len, int timeout) {
-  if (!probe_read_access(buf, len)) {
-    goto access_violation;
-  }
-
-  return usb_vcp_write_blocking(iface_num, buf, len, timeout);
-
-access_violation:
-  apptask_access_violation();
-  return 0;
-}
-
 // ---------------------------------------------------------------------
 
 int usb_webusb_read__verified(uint8_t iface_num, uint8_t *buf, uint32_t len) {
@@ -318,32 +266,6 @@ int usb_webusb_write__verified(uint8_t iface_num, const uint8_t *buf,
   }
 
   return usb_webusb_write(iface_num, buf, len);
-
-access_violation:
-  apptask_access_violation();
-  return 0;
-}
-
-int usb_webusb_read_blocking__verified(uint8_t iface_num, uint8_t *buf,
-                                       uint32_t len, int timeout) {
-  if (!probe_write_access(buf, len)) {
-    goto access_violation;
-  }
-
-  return usb_webusb_read_blocking(iface_num, buf, len, timeout);
-
-access_violation:
-  apptask_access_violation();
-  return 0;
-}
-
-int usb_webusb_write_blocking__verified(uint8_t iface_num, const uint8_t *buf,
-                                        uint32_t len, int timeout) {
-  if (!probe_read_access(buf, len)) {
-    goto access_violation;
-  }
-
-  return usb_webusb_write_blocking(iface_num, buf, len, timeout);
 
 access_violation:
   apptask_access_violation();

@@ -229,27 +229,6 @@ __attribute((no_stack_protector)) void syscall_handler(uint32_t *args,
       args[0] = usb_hid_write__verified(iface_num, buf, len);
     } break;
 
-    case SYSCALL_USB_HID_READ_SELECT: {
-      uint32_t timeout = args[0];
-      args[0] = usb_hid_read_select(timeout);
-    } break;
-
-    case SYSCALL_USB_HID_READ_BLOCKING: {
-      uint8_t iface_num = (uint8_t)args[0];
-      uint8_t *buf = (uint8_t *)args[1];
-      uint32_t len = args[2];
-      int timeout = (int)args[3];
-      args[0] = usb_hid_read_blocking__verified(iface_num, buf, len, timeout);
-    } break;
-
-    case SYSCALL_USB_HID_WRITE_BLOCKING: {
-      uint8_t iface_num = (uint8_t)args[0];
-      const uint8_t *buf = (const uint8_t *)args[1];
-      uint32_t len = args[2];
-      int timeout = (int)args[3];
-      args[0] = usb_hid_write_blocking__verified(iface_num, buf, len, timeout);
-    } break;
-
     case SYSCALL_USB_VCP_ADD: {
       const usb_vcp_info_t *vcp_info = (const usb_vcp_info_t *)args[0];
       args[0] = usb_vcp_add(vcp_info);
@@ -279,22 +258,6 @@ __attribute((no_stack_protector)) void syscall_handler(uint32_t *args,
       args[0] = usb_vcp_write__verified(iface_num, buf, len);
     } break;
 
-    case SYSCALL_USB_VCP_READ_BLOCKING: {
-      uint8_t iface_num = (uint8_t)args[0];
-      uint8_t *buf = (uint8_t *)args[1];
-      uint32_t len = args[2];
-      int timeout = (int)args[3];
-      args[0] = usb_vcp_read_blocking__verified(iface_num, buf, len, timeout);
-    } break;
-
-    case SYSCALL_USB_VCP_WRITE_BLOCKING: {
-      uint8_t iface_num = (uint8_t)args[0];
-      const uint8_t *buf = (const uint8_t *)args[1];
-      uint32_t len = args[2];
-      int timeout = (int)args[3];
-      args[0] = usb_vcp_write_blocking__verified(iface_num, buf, len, timeout);
-    } break;
-
     case SYSCALL_USB_WEBUSB_ADD: {
       const usb_webusb_info_t *webusb_info = (const usb_webusb_info_t *)args[0];
       args[0] = usb_webusb_add(webusb_info);
@@ -322,29 +285,6 @@ __attribute((no_stack_protector)) void syscall_handler(uint32_t *args,
       const uint8_t *buf = (const uint8_t *)args[1];
       uint32_t len = args[2];
       args[0] = usb_webusb_write__verified(iface_num, buf, len);
-    } break;
-
-    case SYSCALL_USB_WEBUSB_READ_SELECT: {
-      uint32_t timeout = args[0];
-      args[0] = usb_webusb_read_select(timeout);
-    } break;
-
-    case SYSCALL_USB_WEBUSB_READ_BLOCKING: {
-      uint8_t iface_num = (uint8_t)args[0];
-      uint8_t *buf = (uint8_t *)args[1];
-      uint32_t len = args[2];
-      int timeout = (int)args[3];
-      args[0] =
-          usb_webusb_read_blocking__verified(iface_num, buf, len, timeout);
-    } break;
-
-    case SYSCALL_USB_WEBUSB_WRITE_BLOCKING: {
-      uint8_t iface_num = (uint8_t)args[0];
-      const uint8_t *buf = (const uint8_t *)args[1];
-      uint32_t len = args[2];
-      int timeout = (int)args[3];
-      args[0] =
-          usb_webusb_write_blocking__verified(iface_num, buf, len, timeout);
     } break;
 
 #ifdef USE_SD_CARD
