@@ -605,4 +605,35 @@ secbool firmware_calc_hash(const uint8_t *challenge, size_t challenge_len,
                          (uint32_t)callback_context,
                          SYSCALL_FIRMWARE_CALC_HASH);
 }
-#endif
+
+// =============================================================================
+// gfx_bitblt.h
+// =============================================================================
+
+#include "gfx_bitblt.h"
+
+void gfx_rgb565_fill(const gfx_bitblt_t* bb) {
+  syscall_invoke1((uint32_t)bb, SYSCALL_GFX_RGB565_FILL);
+}
+
+void gfx_rgb565_copy_mono1p(const gfx_bitblt_t* bb) {
+  syscall_invoke1((uint32_t)bb, SYSCALL_GFX_RGB565_COPY_MONO1P);
+}
+
+void gfx_rgb565_copy_mono4(const gfx_bitblt_t* bb) {
+  syscall_invoke1((uint32_t)bb, SYSCALL_GFX_RGB565_COPY_MONO4);
+}
+
+void gfx_rgb565_copy_rgb565(const gfx_bitblt_t* bb) {
+  syscall_invoke1((uint32_t)bb, SYSCALL_GFX_RGB565_COPY_RGB565);
+}
+
+void gfx_rgb565_blend_mono4(const gfx_bitblt_t* bb) {
+  syscall_invoke1((uint32_t)bb, SYSCALL_GFX_RGB565_BLEND_MONO4);
+}
+
+void gfx_rgb565_blend_mono8(const gfx_bitblt_t* bb) {
+  syscall_invoke1((uint32_t)bb, SYSCALL_GFX_RGB565_BLEND_MONO8);
+}
+
+#endif  // KERNEL_MODE

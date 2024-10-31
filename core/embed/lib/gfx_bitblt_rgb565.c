@@ -19,6 +19,8 @@
 
 #include "gfx_bitblt.h"
 
+#ifdef KERNEL_MODE
+
 #if USE_DMA2D
 #include "dma2d_bitblt.h"
 #endif
@@ -156,3 +158,5 @@ void gfx_rgb565_blend_mono8(const gfx_bitblt_t* bb) {
     }
   }
 }
+
+#endif  // KERNEL_MODE

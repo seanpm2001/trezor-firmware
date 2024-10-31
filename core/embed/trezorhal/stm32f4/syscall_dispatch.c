@@ -28,6 +28,7 @@
 #include "display.h"
 #include "entropy.h"
 #include "fwutils.h"
+#include "gfx_bitblt.h"
 #include "haptic.h"
 #include "irq.h"
 #include "mpu.h"
@@ -643,6 +644,36 @@ __attribute((no_stack_protector)) void syscall_handler(uint32_t *args,
       args[0] = firmware_calc_hash__verified(
           challenge, challenge_len, hash, hash_len,
           firmware_hash_callback_wrapper, callback_context);
+    } break;
+
+    case SYSCALL_GFX_RGB565_FILL: {
+      const gfx_bitblt_t *bb = (const gfx_bitblt_t *)args[0];
+      gfx_rgb565_fill(bb);
+    } break;
+
+    case SYSCALL_GFX_RGB565_COPY_MONO1P: {
+      const gfx_bitblt_t *bb = (const gfx_bitblt_t *)args[0];
+      gfx_rgb565_copy_mono1p(bb);
+    } break;
+
+    case SYSCALL_GFX_RGB565_COPY_MONO4: {
+      const gfx_bitblt_t *bb = (const gfx_bitblt_t *)args[0];
+      gfx_rgb565_copy_mono4(bb);
+    } break;
+
+    case SYSCALL_GFX_RGB565_COPY_RGB565: {
+      const gfx_bitblt_t *bb = (const gfx_bitblt_t *)args[0];
+      gfx_rgb565_copy_rgb565(bb);
+    } break;
+
+    case SYSCALL_GFX_RGB565_BLEND_MONO4: {
+      const gfx_bitblt_t *bb = (const gfx_bitblt_t *)args[0];
+      gfx_rgb565_blend_mono4(bb);
+    } break;
+
+    case SYSCALL_GFX_RGB565_BLEND_MONO8: {
+      const gfx_bitblt_t *bb = (const gfx_bitblt_t *)args[0];
+      gfx_rgb565_blend_mono8(bb);
     } break;
 
     default:
