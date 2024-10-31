@@ -60,7 +60,7 @@ async def reset_device(msg: ResetDevice) -> Success:
     # Rendering empty loader so users do not feel a freezing screen
     render_empty_loader(config.StorageMessage.PROCESSING_MSG)
 
-    # wipe storage to make sure the device is in a clear state
+    # wipe storage to make sure the device is in a clear state (except protocol cache)
     storage.reset()
 
     # request and set new PIN

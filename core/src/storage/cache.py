@@ -30,11 +30,12 @@ _SESSIONLESS_CACHE.clear()
 gc.collect()
 
 
-def clear_all() -> None:
+def clear_all(exclude_protocol=False) -> None:
     global autolock_last_touch
     autolock_last_touch = None
     _SESSIONLESS_CACHE.clear()
-    _PROTOCOL_CACHE.clear_all()
+    if not exclude_protocol:
+        _PROTOCOL_CACHE.clear_all()
 
 
 def get_int_all_sessions(key: int) -> builtins.set[int]:

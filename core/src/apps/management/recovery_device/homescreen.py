@@ -56,7 +56,7 @@ async def recovery_process() -> Success:
         storage_recovery.end_progress()
         backup.deactivate_repeated_backup()
         if recovery_type == RecoveryType.NormalRecovery:
-            storage.wipe()
+            storage.wipe(exclude_protocol=True)
         raise wire.ActionCancelled
 
 

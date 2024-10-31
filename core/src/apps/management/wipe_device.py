@@ -35,19 +35,20 @@ async def wipe_device(msg: WipeDevice) -> NoReturn:
 
     # start an empty progress screen so that the screen is not blank while waiting
 
-    await get_context().write_force(Success(message="Device wiped"))
     if __debug__:
         log.debug(__name__, "Device wipe - start")
     render_empty_loader(config.StorageMessage.PROCESSING_MSG)
     # wipe storage
-    storage.wipe()
+    storage.wipe(exclude_protocol=True)
     # erase translations
     translations.deinit()
     translations.erase()
 
+    await get_context().write_force(Success(message="Device wiped"))
+    storage.wipe_cache()
+
     # reload settings
     reload_settings_from_storage()
     loop.clear()
-
     if __debug__:
         log.debug(__name__, "Device wipe - finished")

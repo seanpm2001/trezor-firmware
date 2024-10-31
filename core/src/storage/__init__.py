@@ -2,11 +2,20 @@
 from storage import cache, common, device
 
 
-def wipe() -> None:
+def wipe(exclude_protocol: bool = False) -> None:
+    """
+    Wipes the storage. Using `exclude_protocol=False` destroys the THP communication channel.
+    If the device should communicate after wipe, use `exclude_protocol=True` and clear cache manually later using
+    `wipe_cache()`.
+    """
     from trezor import config
 
     config.wipe()
-    cache.clear_all()
+    cache.clear_all(exclude_protocol=exclude_protocol)
+
+
+def wipe_cache():
+    cache.clear_all(exclude_protocol=False)
 
 
 def init_unlocked() -> None:
@@ -26,7 +35,7 @@ def reset() -> None:
     Wipes storage but keeps the device id unchanged.
     """
     device_id = device.get_device_id()
-    wipe()
+    wipe(exclude_protocol=True)
     common.set(common.APP_DEVICE, device.DEVICE_ID, device_id.encode(), public=True)
 
 
