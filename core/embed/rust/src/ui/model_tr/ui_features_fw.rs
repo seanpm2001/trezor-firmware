@@ -197,6 +197,12 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Ok(layout)
     }
 
+    fn set_brightness(current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"setting brightness not supported",
+        ))
+    }
+
     fn show_homescreen(
         label: TString<'static>,
         hold: bool,

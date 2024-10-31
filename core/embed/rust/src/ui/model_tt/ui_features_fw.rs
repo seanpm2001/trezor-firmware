@@ -22,7 +22,7 @@ use super::{
     component::{
         check_homescreen_format, Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet,
         CancelConfirmMsg, Dialog, Frame, Homescreen, IconDialog, Lockscreen, MnemonicKeyboard,
-        PassphraseKeyboard, PinKeyboard, SelectWordCount, Slip39Input,
+        PassphraseKeyboard, PinKeyboard, SelectWordCount, SetBrightnessDialog, Slip39Input,
     },
     theme, ModelTTFeatures,
 };
@@ -206,6 +206,18 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             title,
             Dialog::new(paragraphs, content),
         ));
+        Ok(layout)
+    }
+
+    fn set_brightness(current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(Frame::centered(
+            theme::label_title(),
+            TR::brightness__title.into(),
+            SetBrightnessDialog::new(
+                current_brightness.unwrap_or(theme::backlight::get_backlight_normal()),
+            ),
+        ));
+
         Ok(layout)
     }
 

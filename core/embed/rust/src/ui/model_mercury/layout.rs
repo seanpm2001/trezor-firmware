@@ -603,15 +603,6 @@ extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_set_brightness(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let current: Option<u8> = kwargs.get(Qstr::MP_QSTR_current)?.try_into_option()?;
-        let flow = flow::set_brightness::new_set_brightness(current)?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_info_with_cancel(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1498,13 +1489,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Number input with + and - buttons, description, and context menu with cancel and
     ///     info."""
     Qstr::MP_QSTR_flow_request_number => obj_fn_kw!(0, new_request_number).as_obj(),
-
-    /// def set_brightness(
-    ///     *,
-    ///     current: int | None = None
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Show the brightness configuration dialog."""
-    Qstr::MP_QSTR_set_brightness => obj_fn_kw!(0, new_set_brightness).as_obj(),
 
     /// def show_checklist(
     ///     *,

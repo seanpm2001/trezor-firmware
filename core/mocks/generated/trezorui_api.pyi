@@ -175,6 +175,14 @@ def select_word_count(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def set_brightness(
+    *,
+    current: int | None = None
+) -> LayoutObj[UiResult]:
+    """Show the brightness configuration dialog."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_homescreen(
     *,
     label: str | None,

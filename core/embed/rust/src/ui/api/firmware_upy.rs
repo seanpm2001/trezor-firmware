@@ -12,9 +12,10 @@ use crate::{
     trezorhal::model,
     ui::{
         backlight::BACKLIGHT_LEVELS_OBJ,
+        component::Empty,
         layout::{
             base::LAYOUT_STATE,
-            obj::{LayoutObj, ATTACH_TYPE_OBJ},
+            obj::{ComponentMsgObj, LayoutObj, ATTACH_TYPE_OBJ},
             result::{CANCELLED, CONFIRMED, INFO},
             util::{upy_disable_animation, RecoveryType},
         },
@@ -22,6 +23,14 @@ use crate::{
         ui_features_fw::UIFeaturesFirmware,
     },
 };
+
+/// Dummy implementation so that we can use `Empty` in a return type of unimplemented trait
+/// function
+impl ComponentMsgObj for Empty {
+    fn msg_try_into_obj(&self, _msg: Self::Msg) -> Result<Obj, crate::error::Error> {
+        Ok(Obj::const_none())
+    }
+}
 
 // free-standing functions exported to MicroPython mirror `trait
 // UIFeaturesFirmware`
@@ -167,6 +176,16 @@ extern "C" fn new_select_word_count(n_args: usize, args: *const Obj, kwargs: *mu
         let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
 
         let layout = ModelUI::select_word_count(recovery_type)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_set_brightness(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let current: Option<u8> = kwargs.get(Qstr::MP_QSTR_current)?.try_into_option()?;
+
+        let layout = ModelUI::set_brightness(current)?;
         Ok(LayoutObj::new_root(layout)?.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
@@ -428,6 +447,13 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     ///     """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
     ///     For unlocking a repeated backup, select from 20 or 33."""
     Qstr::MP_QSTR_select_word_count => obj_fn_kw!(0, new_select_word_count).as_obj(),
+
+    /// def set_brightness(
+    ///     *,
+    ///     current: int | None = None
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Show the brightness configuration dialog."""
+    Qstr::MP_QSTR_set_brightness => obj_fn_kw!(0, new_set_brightness).as_obj(),
 
     /// def show_homescreen(
     ///     *,

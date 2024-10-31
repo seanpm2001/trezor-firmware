@@ -64,6 +64,8 @@ pub trait UIFeaturesFirmware {
 
     fn select_word_count(recovery_type: RecoveryType) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn set_brightness(current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn show_homescreen(
         label: TString<'static>,
         hold: bool,

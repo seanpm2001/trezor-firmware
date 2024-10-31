@@ -184,6 +184,11 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(layout)
     }
 
+    fn set_brightness(current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error> {
+        let flow = flow::set_brightness::new_set_brightness(current_brightness)?;
+        Ok(flow)
+    }
+
     fn show_homescreen(
         label: TString<'static>,
         hold: bool,

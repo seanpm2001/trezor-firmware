@@ -1317,7 +1317,7 @@ def confirm_firmware_update(description: str, fingerprint: str) -> Awaitable[Non
 
 async def set_brightness(current: int | None = None) -> None:
     await interact(
-        trezorui2.set_brightness(current=current),
+        trezorui_api.set_brightness(current=current),
         "set_brightness",
         BR_CODE_OTHER,
     )
