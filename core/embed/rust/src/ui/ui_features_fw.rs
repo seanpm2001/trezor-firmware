@@ -25,6 +25,11 @@ pub trait UIFeaturesFirmware {
         image: BinaryData<'static>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_coinjoin(
+        max_rounds: TString<'static>,
+        max_feerate: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn confirm_firmware_update(
         description: TString<'static>,
         fingerprint: TString<'static>,

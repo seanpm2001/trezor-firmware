@@ -207,15 +207,6 @@ def confirm_with_info(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def confirm_coinjoin(
-    *,
-    max_rounds: str,
-    max_feerate: str,
-) -> LayoutObj[UiResult]:
-    """Confirm coinjoin authorization."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_prompt_backup() -> LayoutObj[UiResult]:
     """Prompt a user to create backup with an option to skip."""
 
@@ -524,15 +515,6 @@ def confirm_more(
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_coinjoin(
-    *,
-    max_rounds: str,
-    max_feerate: str,
-) -> LayoutObj[UiResult]:
-    """Confirm coinjoin authorization."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def show_share_words(
     *,
     share_words: Iterable[str],
@@ -814,15 +796,6 @@ def confirm_more(
 ) -> LayoutObj[UiResult]:
     """Confirm long content with the possibility to go back from any page.
     Meant to be used with confirm_with_info."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_coinjoin(
-    *,
-    max_rounds: str,
-    max_feerate: str,
-) -> LayoutObj[UiResult]:
-    """Confirm coinjoin authorization."""
 
 
 # rust/src/ui/model_tt/layout.rs

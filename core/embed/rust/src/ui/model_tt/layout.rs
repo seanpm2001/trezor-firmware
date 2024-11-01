@@ -1044,28 +1044,6 @@ extern "C" fn new_confirm_more(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_coinjoin(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let max_rounds: TString = kwargs.get(Qstr::MP_QSTR_max_rounds)?.try_into()?;
-        let max_feerate: TString = kwargs.get(Qstr::MP_QSTR_max_feerate)?.try_into()?;
-
-        let paragraphs = Paragraphs::new([
-            Paragraph::new(&theme::TEXT_NORMAL, TR::coinjoin__max_rounds),
-            Paragraph::new(&theme::TEXT_MONO, max_rounds),
-            Paragraph::new(&theme::TEXT_NORMAL, TR::coinjoin__max_mining_fee),
-            Paragraph::new(&theme::TEXT_MONO, max_feerate),
-        ]);
-
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            TR::coinjoin__title.into(),
-            ButtonPage::new(paragraphs, theme::BG).with_hold()?,
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1391,14 +1369,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm long content with the possibility to go back from any page.
     ///     Meant to be used with confirm_with_info."""
     Qstr::MP_QSTR_confirm_more => obj_fn_kw!(0, new_confirm_more).as_obj(),
-
-    /// def confirm_coinjoin(
-    ///     *,
-    ///     max_rounds: str,
-    ///     max_feerate: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm coinjoin authorization."""
-    Qstr::MP_QSTR_confirm_coinjoin => obj_fn_kw!(0, new_confirm_coinjoin).as_obj(),
 
     /// def show_share_words(
     ///     *,

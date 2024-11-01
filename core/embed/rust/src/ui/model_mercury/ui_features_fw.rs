@@ -103,6 +103,35 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(layout)
     }
 
+    fn confirm_coinjoin(
+        max_rounds: TString<'static>,
+        max_feerate: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let paragraphs = ParagraphVecShort::from_iter([
+            Paragraph::new(&theme::TEXT_NORMAL, TR::coinjoin__max_rounds),
+            Paragraph::new(&theme::TEXT_MONO, max_rounds),
+            Paragraph::new(&theme::TEXT_NORMAL, TR::coinjoin__max_mining_fee),
+            Paragraph::new(&theme::TEXT_MONO, max_feerate),
+        ])
+        .into_paragraphs();
+
+        let flow = flow::new_confirm_action_simple(
+            paragraphs,
+            ConfirmActionExtra::Menu(ConfirmActionMenuStrings::new()),
+            ConfirmActionStrings::new(
+                TR::coinjoin__title.into(),
+                None,
+                None,
+                Some(TR::coinjoin__title.into()),
+            ),
+            true,
+            None,
+            0,
+            false,
+        )?;
+        Ok(flow)
+    }
+
     fn confirm_firmware_update(
         description: TString<'static>,
         fingerprint: TString<'static>,

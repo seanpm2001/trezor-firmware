@@ -995,7 +995,7 @@ def confirm_modify_fee(
 
 def confirm_coinjoin(max_rounds: int, max_fee_per_vbyte: str) -> Awaitable[None]:
     return raise_if_not_confirmed(
-        trezorui2.confirm_coinjoin(
+        trezorui_api.confirm_coinjoin(
             max_rounds=str(max_rounds),
             max_feerate=max_fee_per_vbyte,
         ),

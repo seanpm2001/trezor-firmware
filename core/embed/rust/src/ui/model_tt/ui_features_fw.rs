@@ -99,6 +99,25 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn confirm_coinjoin(
+        max_rounds: TString<'static>,
+        max_feerate: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let paragraphs = Paragraphs::new([
+            Paragraph::new(&theme::TEXT_NORMAL, TR::coinjoin__max_rounds),
+            Paragraph::new(&theme::TEXT_MONO, max_rounds),
+            Paragraph::new(&theme::TEXT_NORMAL, TR::coinjoin__max_mining_fee),
+            Paragraph::new(&theme::TEXT_MONO, max_feerate),
+        ]);
+
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            TR::coinjoin__title.into(),
+            ButtonPage::new(paragraphs, theme::BG).with_hold()?,
+        ));
+        Ok(layout)
+    }
+
     fn confirm_firmware_update(
         description: TString<'static>,
         fingerprint: TString<'static>,

@@ -1004,32 +1004,6 @@ extern "C" fn new_confirm_more(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_coinjoin(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let max_rounds: TString = kwargs.get(Qstr::MP_QSTR_max_rounds)?.try_into()?;
-        let max_feerate: TString = kwargs.get(Qstr::MP_QSTR_max_feerate)?.try_into()?;
-
-        // Decreasing bottom padding between paragraphs to fit one screen
-        let paragraphs = Paragraphs::new([
-            Paragraph::new(&theme::TEXT_BOLD, TR::coinjoin__max_rounds).with_bottom_padding(2),
-            Paragraph::new(&theme::TEXT_MONO, max_rounds),
-            Paragraph::new(&theme::TEXT_BOLD, TR::coinjoin__max_mining_fee)
-                .with_bottom_padding(2)
-                .no_break(),
-            Paragraph::new(&theme::TEXT_MONO, max_feerate).with_bottom_padding(2),
-        ]);
-
-        content_in_button_page(
-            TR::coinjoin__title.into(),
-            paragraphs,
-            TR::buttons__hold_to_confirm.into(),
-            None,
-            true,
-        )
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = |_args: &[Obj], kwargs: &Map| {
         let share_words_obj: Obj = kwargs.get(Qstr::MP_QSTR_share_words)?;
@@ -1312,14 +1286,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm long content with the possibility to go back from any page.
     ///     Meant to be used with confirm_with_info."""
     Qstr::MP_QSTR_confirm_more => obj_fn_kw!(0, new_confirm_more).as_obj(),
-
-    /// def confirm_coinjoin(
-    ///     *,
-    ///     max_rounds: str,
-    ///     max_feerate: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm coinjoin authorization."""
-    Qstr::MP_QSTR_confirm_coinjoin => obj_fn_kw!(0, new_confirm_coinjoin).as_obj(),
 
     /// def show_share_words(
     ///     *,

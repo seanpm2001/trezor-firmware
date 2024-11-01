@@ -97,6 +97,15 @@ def confirm_action(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_coinjoin(
+    *,
+    max_rounds: str,
+    max_feerate: str,
+) -> LayoutObj[UiResult]:
+    """Confirm coinjoin authorization."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_firmware_update(
     *,
     description: str,
