@@ -1,21 +1,26 @@
 # make sure to import cache unconditionally at top level so that it is imported (and retained) together with the storage module
+from typing import TYPE_CHECKING
+
 from storage import cache, common, device
 
+if TYPE_CHECKING:
+    from typing import Tuple
 
-def wipe(exclude_protocol: bool = False) -> None:
+
+def wipe(excluded: Tuple[bytes, bytes] | None) -> None:
     """
-    Wipes the storage. Using `exclude_protocol=False` destroys the THP communication channel.
+    TODO REPHRASE SO THAT IT IS TRUE! Wipes the storage. Using `exclude_protocol=False` destroys the THP communication channel.
     If the device should communicate after wipe, use `exclude_protocol=True` and clear cache manually later using
     `wipe_cache()`.
     """
     from trezor import config
 
     config.wipe()
-    cache.clear_all(exclude_protocol=exclude_protocol)
+    cache.clear_all(excluded)
 
 
 def wipe_cache():
-    cache.clear_all(exclude_protocol=False)
+    cache.clear_all()
 
 
 def init_unlocked() -> None:
@@ -30,12 +35,12 @@ def init_unlocked() -> None:
         common.set_bool(common.APP_DEVICE, device.INITIALIZED, True, public=True)
 
 
-def reset() -> None:
+def reset(excluded: Tuple[bytes, bytes] | None) -> None:
     """
     Wipes storage but keeps the device id unchanged.
     """
     device_id = device.get_device_id()
-    wipe(exclude_protocol=True)
+    wipe(excluded)
     common.set(common.APP_DEVICE, device.DEVICE_ID, device_id.encode(), public=True)
 
 

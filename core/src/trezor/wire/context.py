@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 
 from storage import cache, cache_codec
 from storage.cache_common import SESSIONLESS_FLAG, InvalidSessionError
-from trezor import log, loop, protobuf
+from trezor import log, loop, protobuf, utils
 from trezor.wire import codec_v1
 
 from .protocol_common import Context, Message
@@ -31,6 +31,7 @@ if TYPE_CHECKING:
         Container,
         Coroutine,
         Generator,
+        Tuple,
         TypeVar,
         overload,
     )
@@ -266,6 +267,17 @@ def with_context(ctx: Context, workflow: loop.Task) -> Generator:
             send_exc = e
         else:
             send_exc = None
+
+
+def try_get_ctx_ids() -> Tuple[bytes, bytes] | None:
+    ids = None
+    if utils.USE_THP:
+        from trezor.wire.thp.session_context import GenericSessionContext
+
+        ctx = get_context()
+        if isinstance(ctx, GenericSessionContext):
+            ids = (ctx.channel_id, ctx.session_id.to_bytes(1, "big"))
+    return ids
 
 
 # ACCESS TO CACHE

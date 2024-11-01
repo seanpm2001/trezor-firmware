@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from trezor.wire.context import get_context
+from trezor.wire.context import get_context, try_get_ctx_ids
 
 if TYPE_CHECKING:
     from typing import NoReturn
@@ -39,7 +39,7 @@ async def wipe_device(msg: WipeDevice) -> NoReturn:
         log.debug(__name__, "Device wipe - start")
     render_empty_loader(config.StorageMessage.PROCESSING_MSG)
     # wipe storage
-    storage.wipe(exclude_protocol=True)
+    storage.wipe(excluded=try_get_ctx_ids())
     # erase translations
     translations.deinit()
     translations.erase()

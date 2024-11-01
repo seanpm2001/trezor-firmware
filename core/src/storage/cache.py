@@ -1,8 +1,12 @@
 import builtins
 import gc
+from typing import TYPE_CHECKING
 
 from storage.cache_common import SESSIONLESS_FLAG, SessionlessCache
 from trezor import utils
+
+if TYPE_CHECKING:
+    from typing import Tuple
 
 # XXX
 # Allocation notes:
@@ -30,11 +34,15 @@ _SESSIONLESS_CACHE.clear()
 gc.collect()
 
 
-def clear_all(exclude_protocol=False) -> None:
+def clear_all(excluded: Tuple[bytes, bytes] | None = None) -> None:
     global autolock_last_touch
     autolock_last_touch = None
     _SESSIONLESS_CACHE.clear()
-    if not exclude_protocol:
+
+    if utils.USE_THP and excluded is not None:
+        # If we want to keep THP connection alive, we do not clear communication keys
+        cache_thp.clear_all_except_one_session_keys(excluded)
+    else:
         _PROTOCOL_CACHE.clear_all()
 
 

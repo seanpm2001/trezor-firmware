@@ -6,9 +6,7 @@ from storage.cache_common import DataCache
 from trezor import utils
 
 if TYPE_CHECKING:
-    from typing import TypeVar
-
-    T = TypeVar("T")
+    from typing import Tuple
 
 if __debug__:
     from trezor import log
@@ -27,10 +25,11 @@ BROADCAST_CHANNEL_ID = const(0xFFFF)
 KEY_LENGTH = const(32)
 TAG_LENGTH = const(16)
 _UNALLOCATED_STATE = const(0)
+_MANAGEMENT_STATE = const(2)
 MANAGEMENT_SESSION_ID = const(0)
 
 
-class ConnectionCache(DataCache):
+class ThpDataCache(DataCache):
     def __init__(self) -> None:
         self.channel_id = bytearray(_CHANNEL_ID_LENGTH)
         self.last_usage = 0
@@ -42,7 +41,7 @@ class ConnectionCache(DataCache):
         super().clear()
 
 
-class ChannelCache(ConnectionCache):
+class ChannelCache(ThpDataCache):
     def __init__(self) -> None:
         self.host_ephemeral_pubkey = bytearray(KEY_LENGTH)
         self.state = bytearray(_CHANNEL_STATE_LENGTH)
@@ -62,11 +61,13 @@ class ChannelCache(ConnectionCache):
         self.state[:] = bytearray(
             int.to_bytes(0, _CHANNEL_STATE_LENGTH, "big")
         )  # Set state to UNALLOCATED
-        # TODO clear all keys
+        self.host_ephemeral_pubkey[:] = bytearray(KEY_LENGTH)
+        self.state[:] = bytearray(_CHANNEL_STATE_LENGTH)
+        self.iface[:] = bytearray(1)
         super().clear()
 
 
-class SessionThpCache(ConnectionCache):
+class SessionThpCache(ThpDataCache):
     def __init__(self) -> None:
         self.session_id = bytearray(SESSION_ID_LENGTH)
         self.state = bytearray(_SESSION_STATE_LENGTH)
@@ -334,3 +335,22 @@ def clear_all() -> None:
         session.clear()
     for channel in _CHANNELS:
         channel.clear()
+
+
+def clear_all_except_one_session_keys(excluded: Tuple[bytes, bytes]) -> None:
+    cid, sid = excluded
+
+    for channel in _CHANNELS:
+        if channel.channel_id != cid:
+            channel.clear()
+
+    for session in _SESSIONS:
+        if session.channel_id != cid and session.session_id != sid:
+            session.clear()
+        else:
+            s_last_usage = session.last_usage
+            session.clear()
+            session.last_usage = s_last_usage
+            session.state = bytearray(_MANAGEMENT_STATE.to_bytes(1, "big"))
+            session.session_id[:] = bytearray(sid)
+            session.channel_id[:] = bytearray(cid)

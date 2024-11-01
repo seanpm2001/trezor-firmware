@@ -56,7 +56,9 @@ async def recovery_process() -> Success:
         storage_recovery.end_progress()
         backup.deactivate_repeated_backup()
         if recovery_type == RecoveryType.NormalRecovery:
-            storage.wipe(exclude_protocol=True)
+            from trezor.wire.context import try_get_ctx_ids
+
+            storage.wipe(excluded=try_get_ctx_ids())
         raise wire.ActionCancelled
 
 
