@@ -255,11 +255,6 @@ def show_group_share_success(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def tutorial() -> LayoutObj[UiResult]:
-    """Show user how to interact with the device."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_get_address(
     *,
     address: str | bytes,
@@ -452,11 +447,6 @@ def confirm_summary(
     verb_cancel: str | None = None,
 ) -> LayoutObj[UiResult]:
     """Confirm summary of a transaction."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def tutorial() -> LayoutObj[UiResult]:
-    """Show user how to interact with the device."""
 
 
 # rust/src/ui/model_tr/layout.rs

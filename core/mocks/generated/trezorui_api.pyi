@@ -282,6 +282,11 @@ def show_wait_text(message: str, /) -> LayoutObj[None]:
 
 
 # rust/src/ui/api/firmware_upy.rs
+def tutorial() -> LayoutObj[UiResult]:
+    """Show user how to interact with the device."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 class BacklightLevels:
     """Backlight levels. Values dynamically update based on user settings."""
     MAX: ClassVar[int]

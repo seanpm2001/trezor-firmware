@@ -120,4 +120,6 @@ pub trait UIFeaturesFirmware {
     ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
 
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn tutorial() -> Result<impl LayoutMaybeTrace, Error>;
 }

@@ -731,95 +731,6 @@ extern "C" fn new_confirm_address(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-/// General pattern of most tutorial screens.
-/// (title, text, btn_layout, btn_actions, text_y_offset)
-fn tutorial_screen(
-    title: TString<'static>,
-    text: TR,
-    btn_layout: ButtonLayout,
-    btn_actions: ButtonActions,
-) -> Page {
-    let ops = OpTextLayout::new(theme::TEXT_NORMAL).text_normal(text);
-    let formatted = FormattedText::new(ops).vertically_centered();
-    Page::new(btn_layout, btn_actions, formatted).with_title(title)
-}
-
-extern "C" fn tutorial(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = |_args: &[Obj], _kwargs: &Map| {
-        const PAGE_COUNT: usize = 7;
-
-        let get_page = move |page_index| {
-            // Lazy-loaded list of screens to show, with custom content,
-            // buttons and actions triggered by these buttons.
-            // Cancelling the first screen will point to the last one,
-            // which asks for confirmation whether user wants to
-            // really cancel the tutorial.
-            match page_index {
-                // title, text, btn_layout, btn_actions
-                0 => tutorial_screen(
-                    TR::tutorial__title_hello.into(),
-                    TR::tutorial__welcome_press_right,
-                    ButtonLayout::cancel_none_arrow(),
-                    ButtonActions::last_none_next(),
-                ),
-                1 => tutorial_screen(
-                    "".into(),
-                    TR::tutorial__use_trezor,
-                    ButtonLayout::arrow_none_arrow(),
-                    ButtonActions::prev_none_next(),
-                ),
-                2 => tutorial_screen(
-                    TR::buttons__hold_to_confirm.into(),
-                    TR::tutorial__press_and_hold,
-                    ButtonLayout::arrow_none_htc(TR::buttons__hold_to_confirm.into()),
-                    ButtonActions::prev_none_next(),
-                ),
-                3 => tutorial_screen(
-                    TR::tutorial__title_screen_scroll.into(),
-                    TR::tutorial__scroll_down,
-                    ButtonLayout::arrow_none_text(TR::buttons__continue.into()),
-                    ButtonActions::prev_none_next(),
-                ),
-                4 => tutorial_screen(
-                    TR::buttons__confirm.into(),
-                    TR::tutorial__middle_click,
-                    ButtonLayout::none_armed_none(TR::buttons__confirm.into()),
-                    ButtonActions::none_next_none(),
-                ),
-                5 => tutorial_screen(
-                    TR::tutorial__title_tutorial_complete.into(),
-                    TR::tutorial__ready_to_use,
-                    ButtonLayout::text_none_text(
-                        TR::buttons__again.into(),
-                        TR::buttons__continue.into(),
-                    ),
-                    ButtonActions::beginning_none_confirm(),
-                ),
-                6 => tutorial_screen(
-                    TR::tutorial__title_skip.into(),
-                    TR::tutorial__sure_you_want_skip,
-                    ButtonLayout::arrow_none_text(TR::buttons__skip.into()),
-                    ButtonActions::beginning_none_cancel(),
-                ),
-                _ => unreachable!(),
-            }
-        };
-
-        let pages = FlowPages::new(get_page, PAGE_COUNT);
-
-        // Setting the ignore-second-button to mimic all the Choice pages, to teach user
-        // that they should really press both buttons at the same time to achieve
-        // middle-click.
-        let obj = LayoutObj::new(
-            Flow::new(pages)
-                .with_scrollbar(false)
-                .with_ignore_second_button_ms(constant::IGNORE_OTHER_BTN_MS),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_modify_fee(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let sign: i32 = kwargs.get(Qstr::MP_QSTR_sign)?.try_into()?;
@@ -1333,10 +1244,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm summary of a transaction."""
     Qstr::MP_QSTR_confirm_summary => obj_fn_kw!(0, new_confirm_summary).as_obj(),
-
-    /// def tutorial() -> LayoutObj[UiResult]:
-    ///     """Show user how to interact with the device."""
-    Qstr::MP_QSTR_tutorial => obj_fn_kw!(0, tutorial).as_obj(),
 
     /// def confirm_modify_fee(
     ///     *,

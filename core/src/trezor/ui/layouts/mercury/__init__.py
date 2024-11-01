@@ -1236,7 +1236,7 @@ def set_brightness(current: int | None = None) -> Awaitable[None]:
 def tutorial(br_code: ButtonRequestType = BR_CODE_OTHER) -> Awaitable[None]:
     """Showing users how to interact with the device."""
     return raise_if_not_confirmed(
-        trezorui2.tutorial(),
+        trezorui_api.tutorial(),
         "tutorial",
         br_code,
     )

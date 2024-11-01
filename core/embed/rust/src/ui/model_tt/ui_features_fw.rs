@@ -440,6 +440,12 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)
     }
+
+    fn tutorial() -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTTFeatures>, Error>(Error::ValueError(
+            c"tutorial not supported",
+        ))
+    }
 }
 
 fn new_show_modal(

@@ -1021,15 +1021,6 @@ extern "C" fn new_prompt_backup() -> Obj {
     unsafe { util::try_or_raise(block) }
 }
 
-extern "C" fn new_show_tutorial() -> Obj {
-    let block = || {
-        let flow = flow::show_tutorial::new_show_tutorial()?;
-        let obj = LayoutObj::new_root(flow)?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_or_raise(block) }
-}
-
 extern "C" fn new_show_group_share_success(
     n_args: usize,
     args: *const Obj,
@@ -1320,10 +1311,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Shown after successfully finishing a group."""
     Qstr::MP_QSTR_show_group_share_success => obj_fn_kw!(0, new_show_group_share_success).as_obj(),
-
-    /// def tutorial() -> LayoutObj[UiResult]:
-    ///     """Show user how to interact with the device."""
-    Qstr::MP_QSTR_tutorial => obj_fn_0!(new_show_tutorial).as_obj(),
 
     /// def flow_get_address(
     ///     *,

@@ -359,4 +359,9 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)
     }
+
+    fn tutorial() -> Result<impl LayoutMaybeTrace, Error> {
+        let flow = flow::show_tutorial::new_show_tutorial()?;
+        Ok(flow)
+    }
 }

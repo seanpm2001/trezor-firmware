@@ -513,7 +513,7 @@ async def confirm_output(
 
 def tutorial(br_code: ButtonRequestType = BR_CODE_OTHER) -> Awaitable[ui.UiResult]:
     """Showing users how to interact with the device."""
-    return interact(trezorui2.tutorial(), "tutorial", br_code)
+    return interact(trezorui_api.tutorial(), "tutorial", br_code)
 
 
 async def should_show_payment_request_details(
