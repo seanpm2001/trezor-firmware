@@ -1056,47 +1056,6 @@ extern "C" fn new_prompt_backup() -> Obj {
     unsafe { util::try_or_raise(block) }
 }
 
-extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let _button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let active: usize = kwargs.get(Qstr::MP_QSTR_active)?.try_into()?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let mut paragraphs = ParagraphVecLong::new();
-        for (i, item) in IterBuf::new().try_iterate(items)?.enumerate() {
-            let style = match i.cmp(&active) {
-                Ordering::Less => &theme::TEXT_CHECKLIST_DONE,
-                Ordering::Equal => &theme::TEXT_CHECKLIST_SELECTED,
-                Ordering::Greater => &theme::TEXT_CHECKLIST_DEFAULT,
-            };
-            let text: TString = item.try_into()?;
-            paragraphs.add(Paragraph::new(style, text));
-        }
-
-        let checklist_content = Checklist::from_paragraphs(
-            theme::ICON_CHEVRON_RIGHT,
-            theme::ICON_BULLET_CHECKMARK,
-            active,
-            paragraphs
-                .into_paragraphs()
-                .with_spacing(theme::CHECKLIST_SPACING),
-        )
-        .with_check_width(theme::CHECKLIST_CHECK_WIDTH)
-        .with_numerals()
-        .with_icon_done_color(theme::GREEN)
-        .with_done_offset(theme::CHECKLIST_DONE_OFFSET);
-
-        let obj = LayoutObj::new(SwipeUpScreen::new(
-            Frame::left_aligned(title, SwipeContent::new(checklist_content))
-                .with_footer(TR::instructions__swipe_up.into(), None)
-                .with_swipe(Direction::Up, SwipeSettings::default()),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_tutorial() -> Obj {
     let block = || {
         let flow = flow::show_tutorial::new_show_tutorial()?;
@@ -1386,17 +1345,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Show wallet backup words preceded by an instruction screen and followed by
     ///     confirmation."""
     Qstr::MP_QSTR_flow_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
-
-    /// def show_checklist(
-    ///     *,
-    ///     title: str,
-    ///     items: Iterable[str],
-    ///     active: int,
-    ///     button: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Checklist of backup steps. Active index is highlighted, previous items have check
-    ///    mark next to them."""
-    Qstr::MP_QSTR_show_checklist => obj_fn_kw!(0, new_show_checklist).as_obj(),
 
     /// def flow_continue_recovery(
     ///     *,

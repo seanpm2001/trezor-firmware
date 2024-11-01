@@ -98,7 +98,7 @@ async def slip39_show_checklist(
 ) -> None:
     items = _slip_39_checklist_items(step, advanced, count, threshold)
     result = await interact(
-        trezorui2.show_checklist(
+        trezorui_api.show_checklist(
             title=TR.reset__title_shamir_backup,
             button=TR.buttons__continue,
             active=step,

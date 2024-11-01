@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use crate::{
     error::{value_error, Error},
     io::BinaryData,
@@ -8,7 +10,10 @@ use crate::{
         component::{
             connect::Connect,
             image::BlendedImage,
-            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
+            text::paragraphs::{
+                Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
+                Paragraphs, VecExt,
+            },
             ComponentExt, Empty, Jpeg, Label, Never, Timeout,
         },
         layout::{
@@ -237,6 +242,45 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             ),
         ));
 
+        Ok(layout)
+    }
+
+    fn show_checklist(
+        title: TString<'static>,
+        button: TString<'static>,
+        active: usize,
+        items: [TString<'static>; 3],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecLong::new();
+        for (i, item) in items.into_iter().enumerate() {
+            let style = match i.cmp(&active) {
+                Ordering::Less => &theme::TEXT_CHECKLIST_DONE,
+                Ordering::Equal => &theme::TEXT_CHECKLIST_SELECTED,
+                Ordering::Greater => &theme::TEXT_CHECKLIST_DEFAULT,
+            };
+            paragraphs.add(Paragraph::new(style, item));
+        }
+
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title,
+            Dialog::new(
+                Checklist::from_paragraphs(
+                    theme::ICON_LIST_CURRENT,
+                    theme::ICON_LIST_CHECK,
+                    active,
+                    paragraphs
+                        .into_paragraphs()
+                        .with_spacing(theme::CHECKLIST_SPACING),
+                )
+                .with_check_width(theme::CHECKLIST_CHECK_WIDTH)
+                .with_current_offset(theme::CHECKLIST_CURRENT_OFFSET)
+                .with_done_offset(theme::CHECKLIST_DONE_OFFSET),
+                theme::button_bar(Button::with_text(button).map(|msg| {
+                    (matches!(msg, ButtonMsg::Clicked)).then(|| CancelConfirmMsg::Confirmed)
+                })),
+            ),
+        ));
         Ok(layout)
     }
 

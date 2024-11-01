@@ -122,7 +122,7 @@ def slip39_show_checklist(
     )
 
     return raise_if_not_confirmed(
-        trezorui2.show_checklist(
+        trezorui_api.show_checklist(
             title=TR.reset__slip39_checklist_title,
             button=TR.buttons__continue,
             active=step,

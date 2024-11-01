@@ -1155,49 +1155,6 @@ extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let active: usize = kwargs.get(Qstr::MP_QSTR_active)?.try_into()?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let mut paragraphs = ParagraphVecLong::new();
-        for (i, item) in IterBuf::new().try_iterate(items)?.enumerate() {
-            let style = match i.cmp(&active) {
-                Ordering::Less => &theme::TEXT_CHECKLIST_DONE,
-                Ordering::Equal => &theme::TEXT_CHECKLIST_SELECTED,
-                Ordering::Greater => &theme::TEXT_CHECKLIST_DEFAULT,
-            };
-            let text: TString = item.try_into()?;
-            paragraphs.add(Paragraph::new(style, text));
-        }
-
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            title,
-            Dialog::new(
-                Checklist::from_paragraphs(
-                    theme::ICON_LIST_CURRENT,
-                    theme::ICON_LIST_CHECK,
-                    active,
-                    paragraphs
-                        .into_paragraphs()
-                        .with_spacing(theme::CHECKLIST_SPACING),
-                )
-                .with_check_width(theme::CHECKLIST_CHECK_WIDTH)
-                .with_current_offset(theme::CHECKLIST_CURRENT_OFFSET)
-                .with_done_offset(theme::CHECKLIST_DONE_OFFSET),
-                theme::button_bar(Button::with_text(button).map(|msg| {
-                    (matches!(msg, ButtonMsg::Clicked)).then(|| CancelConfirmMsg::Confirmed)
-                })),
-            ),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1528,17 +1485,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show mnemonic for backup. Expects the words pre-divided into individual pages."""
     Qstr::MP_QSTR_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
-
-    /// def show_checklist(
-    ///     *,
-    ///     title: str,
-    ///     items: Iterable[str],
-    ///     active: int,
-    ///     button: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Checklist of backup steps. Active index is highlighted, previous items have check
-    ///    mark next to them."""
-    Qstr::MP_QSTR_show_checklist => obj_fn_kw!(0, new_show_checklist).as_obj(),
 
     /// def confirm_recovery(
     ///     *,

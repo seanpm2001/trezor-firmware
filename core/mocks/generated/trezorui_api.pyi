@@ -197,6 +197,18 @@ def set_brightness(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_checklist(
+    *,
+    title: str,
+    items: Iterable[str],
+    active: int,
+    button: str,
+) -> LayoutObj[UiResult]:
+    """Checklist of backup steps. Active index is highlighted, previous items have check
+   mark next to them. Limited to 3 items."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_homescreen(
     *,
     label: str | None,

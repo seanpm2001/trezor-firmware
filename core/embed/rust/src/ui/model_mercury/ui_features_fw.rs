@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use crate::{
     error::{value_error, Error},
     io::BinaryData,
@@ -8,7 +10,10 @@ use crate::{
         component::{
             connect::Connect,
             swipe_detect::SwipeSettings,
-            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs},
+            text::paragraphs::{
+                Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
+                Paragraphs, VecExt,
+            },
             CachedJpeg, ComponentExt, Never, Timeout,
         },
         geometry::Direction,
@@ -216,6 +221,43 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
     fn set_brightness(current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error> {
         let flow = flow::set_brightness::new_set_brightness(current_brightness)?;
         Ok(flow)
+    }
+
+    fn show_checklist(
+        title: TString<'static>,
+        button: TString<'static>,
+        active: usize,
+        items: [TString<'static>; 3],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecLong::new();
+        for (i, item) in items.into_iter().enumerate() {
+            let style = match i.cmp(&active) {
+                Ordering::Less => &theme::TEXT_CHECKLIST_DONE,
+                Ordering::Equal => &theme::TEXT_CHECKLIST_SELECTED,
+                Ordering::Greater => &theme::TEXT_CHECKLIST_DEFAULT,
+            };
+            paragraphs.add(Paragraph::new(style, item));
+        }
+
+        let checklist_content = Checklist::from_paragraphs(
+            theme::ICON_CHEVRON_RIGHT,
+            theme::ICON_BULLET_CHECKMARK,
+            active,
+            paragraphs
+                .into_paragraphs()
+                .with_spacing(theme::CHECKLIST_SPACING),
+        )
+        .with_check_width(theme::CHECKLIST_CHECK_WIDTH)
+        .with_numerals()
+        .with_icon_done_color(theme::GREEN)
+        .with_done_offset(theme::CHECKLIST_DONE_OFFSET);
+
+        let layout = RootComponent::new(SwipeUpScreen::new(
+            Frame::left_aligned(title, SwipeContent::new(checklist_content))
+                .with_footer(TR::instructions__swipe_up.into(), None)
+                .with_swipe(Direction::Up, SwipeSettings::default()),
+        ));
+        Ok(layout)
     }
 
     fn show_homescreen(

@@ -245,18 +245,6 @@ def flow_show_share_words(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_checklist(
-    *,
-    title: str,
-    items: Iterable[str],
-    active: int,
-    button: str,
-) -> LayoutObj[UiResult]:
-    """Checklist of backup steps. Active index is highlighted, previous items have check
-   mark next to them."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_continue_recovery(
     *,
     first_screen: bool,
@@ -587,18 +575,6 @@ def show_share_words(
 
 
 # rust/src/ui/model_tr/layout.rs
-def show_checklist(
-    *,
-    title: str,  # unused on TR
-    items: Iterable[str],
-    active: int,
-    button: str,
-) -> LayoutObj[UiResult]:
-    """Checklist of backup steps. Active index is highlighted, previous items have check
-    mark next to them."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_recovery(
     *,
     title: str,  # unused on TR
@@ -904,18 +880,6 @@ def show_share_words(
     pages: Iterable[str],
 ) -> LayoutObj[UiResult]:
     """Show mnemonic for backup. Expects the words pre-divided into individual pages."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_checklist(
-    *,
-    title: str,
-    items: Iterable[str],
-    active: int,
-    button: str,
-) -> LayoutObj[UiResult]:
-    """Checklist of backup steps. Active index is highlighted, previous items have check
-   mark next to them."""
 
 
 # rust/src/ui/model_tt/layout.rs

@@ -75,6 +75,13 @@ pub trait UIFeaturesFirmware {
 
     fn set_brightness(current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_checklist(
+        title: TString<'static>,
+        button: TString<'static>,
+        active: usize,
+        items: [TString<'static>; 3],
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn show_homescreen(
         label: TString<'static>,
         hold: bool,

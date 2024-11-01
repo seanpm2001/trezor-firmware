@@ -227,6 +227,21 @@ extern "C" fn new_set_brightness(n_args: usize, args: *const Obj, kwargs: *mut M
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
+        let active: usize = kwargs.get(Qstr::MP_QSTR_active)?.try_into()?;
+        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
+
+        let items: [TString<'static>; 3] = util::iter_into_array(items)?;
+
+        let layout = ModelUI::show_checklist(title, button, active, items)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let label: TString<'static> = kwargs
@@ -542,6 +557,17 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show the brightness configuration dialog."""
     Qstr::MP_QSTR_set_brightness => obj_fn_kw!(0, new_set_brightness).as_obj(),
+
+    /// def show_checklist(
+    ///     *,
+    ///     title: str,
+    ///     items: Iterable[str],
+    ///     active: int,
+    ///     button: str,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Checklist of backup steps. Active index is highlighted, previous items have check
+    ///    mark next to them. Limited to 3 items."""
+    Qstr::MP_QSTR_show_checklist => obj_fn_kw!(0, new_show_checklist).as_obj(),
 
     /// def show_homescreen(
     ///     *,

@@ -1,3 +1,5 @@
+use core::cmp::Ordering;
+
 use crate::{
     error::Error,
     io::BinaryData,
@@ -8,7 +10,10 @@ use crate::{
     ui::{
         component::{
             connect::Connect,
-            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
+            text::paragraphs::{
+                Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
+                Paragraphs, VecExt,
+            },
             Component, ComponentExt, Empty, Label, LineBreaking, Paginate, Timeout,
         },
         layout::{
@@ -217,6 +222,42 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
             c"setting brightness not supported",
         ))
+    }
+
+    fn show_checklist(
+        title: TString<'static>,
+        button: TString<'static>,
+        active: usize,
+        items: [TString<'static>; 3],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecLong::new();
+        for (i, item) in items.into_iter().enumerate() {
+            let style = match i.cmp(&active) {
+                Ordering::Less => &theme::TEXT_NORMAL,
+                Ordering::Equal => &theme::TEXT_BOLD,
+                Ordering::Greater => &theme::TEXT_NORMAL,
+            };
+            paragraphs.add(Paragraph::new(style, item));
+        }
+        let confirm_btn = Some(ButtonDetails::text(button));
+
+        let layout = RootComponent::new(
+            ButtonPage::new(
+                Checklist::from_paragraphs(
+                    theme::ICON_ARROW_RIGHT_FAT,
+                    theme::ICON_TICK_FAT,
+                    active,
+                    paragraphs
+                        .into_paragraphs()
+                        .with_spacing(theme::CHECKLIST_SPACING),
+                )
+                .with_check_width(theme::CHECKLIST_CHECK_WIDTH)
+                .with_current_offset(theme::CHECKLIST_CURRENT_OFFSET),
+                theme::BG,
+            )
+            .with_confirm_btn(confirm_btn),
+        );
+        Ok(layout)
     }
 
     fn show_homescreen(
