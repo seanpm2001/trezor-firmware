@@ -190,11 +190,6 @@ def show_success(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_mismatch(*, title: str) -> LayoutObj[UiResult]:
-    """Warning modal, receiving address mismatch."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def show_simple(
     *,
     title: str | None,
@@ -529,11 +524,6 @@ def show_passphrase() -> LayoutObj[UiResult]:
 
 
 # rust/src/ui/model_tr/layout.rs
-def show_mismatch(*, title: str) -> LayoutObj[UiResult]:
-    """Warning modal, receiving address mismatch."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_with_info(
     *,
     title: str,
@@ -823,11 +813,6 @@ def show_success(
     time_ms: int = 0,
 ) -> LayoutObj[UiResult]:
     """Success modal. No buttons shown when `button` is empty string."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_mismatch(*, title: str) -> LayoutObj[UiResult]:
-    """Warning modal, receiving address mismatch."""
 
 
 # rust/src/ui/model_tt/layout.rs

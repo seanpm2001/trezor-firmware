@@ -335,6 +335,42 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn show_mismatch(title: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
+        let description: TString = TR::addr_mismatch__contact_support_at.into();
+        let url: TString = TR::addr_mismatch__support_url.into();
+        let button: TString = TR::buttons__quit.into();
+
+        let icon = BlendedImage::new(
+            theme::IMAGE_BG_OCTAGON,
+            theme::IMAGE_FG_WARN,
+            theme::WARN_COLOR,
+            theme::FG,
+            theme::BG,
+        );
+        let layout = RootComponent::new(
+            IconDialog::new(
+                icon,
+                title,
+                Button::cancel_confirm(
+                    Button::with_icon(theme::ICON_BACK),
+                    Button::with_text(button).styled(theme::button_reset()),
+                    true,
+                ),
+            )
+            .with_paragraph(
+                Paragraph::new(&theme::TEXT_NORMAL, description)
+                    .centered()
+                    .with_bottom_padding(
+                        theme::TEXT_NORMAL.text_font.text_height()
+                            - theme::TEXT_DEMIBOLD.text_font.text_height(),
+                    ),
+            )
+            .with_text(&theme::TEXT_DEMIBOLD, url),
+        );
+
+        Ok(layout)
+    }
+
     fn show_progress(
         description: TString<'static>,
         indeterminate: bool,

@@ -295,6 +295,27 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(layout)
     }
 
+    fn show_mismatch(title: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
+        let description: TString = TR::addr_mismatch__contact_support_at.into();
+        let url: TString = TR::addr_mismatch__support_url.into();
+        let button: TString = TR::buttons__quit.into();
+
+        let paragraphs = ParagraphVecShort::from_iter([
+            Paragraph::new(&theme::TEXT_NORMAL, description).centered(),
+            Paragraph::new(&theme::TEXT_DEMIBOLD, url).centered(),
+        ])
+        .into_paragraphs();
+
+        let layout = RootComponent::new(SwipeUpScreen::new(
+            Frame::left_aligned(title, SwipeContent::new(paragraphs))
+                .with_cancel_button()
+                .with_footer(TR::instructions__swipe_up.into(), Some(button))
+                .with_swipe(Direction::Up, SwipeSettings::default()),
+        ));
+
+        Ok(layout)
+    }
+
     fn show_progress(
         description: TString<'static>,
         indeterminate: bool,

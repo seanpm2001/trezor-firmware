@@ -958,46 +958,6 @@ extern "C" fn new_show_success(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_mismatch(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: TString = TR::addr_mismatch__contact_support_at.into();
-        let url: TString = TR::addr_mismatch__support_url.into();
-        let button: TString = TR::buttons__quit.into();
-
-        let icon = BlendedImage::new(
-            theme::IMAGE_BG_OCTAGON,
-            theme::IMAGE_FG_WARN,
-            theme::WARN_COLOR,
-            theme::FG,
-            theme::BG,
-        );
-        let obj = LayoutObj::new(
-            IconDialog::new(
-                icon,
-                title,
-                Button::cancel_confirm(
-                    Button::with_icon(theme::ICON_BACK),
-                    Button::with_text(button).styled(theme::button_reset()),
-                    true,
-                ),
-            )
-            .with_paragraph(
-                Paragraph::new(&theme::TEXT_NORMAL, description)
-                    .centered()
-                    .with_bottom_padding(
-                        theme::TEXT_NORMAL.text_font.text_height()
-                            - theme::TEXT_DEMIBOLD.text_font.text_height(),
-                    ),
-            )
-            .with_text(&theme::TEXT_DEMIBOLD, url),
-        )?;
-
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_simple(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: Option<TString> = kwargs.get(Qstr::MP_QSTR_title)?.try_into_option()?;
@@ -1434,10 +1394,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Success modal. No buttons shown when `button` is empty string."""
     Qstr::MP_QSTR_show_success => obj_fn_kw!(0, new_show_success).as_obj(),
-
-    /// def show_mismatch(*, title: str) -> LayoutObj[UiResult]:
-    ///     """Warning modal, receiving address mismatch."""
-    Qstr::MP_QSTR_show_mismatch => obj_fn_kw!(0, new_show_mismatch).as_obj(),
 
     /// def show_simple(
     ///     *,

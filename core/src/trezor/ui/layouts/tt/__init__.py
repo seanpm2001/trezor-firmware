@@ -297,7 +297,7 @@ async def show_address(
 
         else:
             result = await interact(
-                trezorui2.show_mismatch(title=mismatch_title),
+                trezorui_api.show_mismatch(title=mismatch_title),
                 None,
                 raise_on_cancel=None,
             )
@@ -1152,7 +1152,7 @@ async def confirm_signverify(
             await with_info(address_layout, info_layout, br_name, br_code=BR_CODE_OTHER)
         except ActionCancelled:
             result = await interact(
-                trezorui2.show_mismatch(title=TR.addr_mismatch__mismatch),
+                trezorui_api.show_mismatch(title=TR.addr_mismatch__mismatch),
                 None,
                 raise_on_cancel=None,
             )

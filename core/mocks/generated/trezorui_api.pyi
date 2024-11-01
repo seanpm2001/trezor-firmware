@@ -243,6 +243,11 @@ def show_lockscreen(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_mismatch(*, title: str) -> LayoutObj[UiResult]:
+    """Warning of receiving address mismatch."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_progress(
     *,
     description: str,

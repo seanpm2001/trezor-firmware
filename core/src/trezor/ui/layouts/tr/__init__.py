@@ -314,7 +314,7 @@ async def show_address(
         # User pressed left cancel button, show mismatch dialogue.
         else:
             result = await interact(
-                trezorui2.show_mismatch(title=mismatch_title),
+                trezorui_api.show_mismatch(title=mismatch_title),
                 None,
                 raise_on_cancel=None,
             )

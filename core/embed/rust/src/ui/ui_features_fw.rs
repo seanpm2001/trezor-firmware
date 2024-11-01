@@ -102,6 +102,8 @@ pub trait UIFeaturesFirmware {
         coinjoin_authorized: bool,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_mismatch(title: TString<'static>) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn show_progress(
         description: TString<'static>,
         indeterminate: bool,

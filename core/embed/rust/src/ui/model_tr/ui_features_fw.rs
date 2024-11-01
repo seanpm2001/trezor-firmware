@@ -10,25 +10,27 @@ use crate::{
     ui::{
         component::{
             connect::Connect,
-            text::paragraphs::{
-                Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
-                Paragraphs, VecExt,
+            text::{
+                op::OpTextLayout,
+                paragraphs::{
+                    Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
+                    Paragraphs, VecExt,
+                },
             },
-            Component, ComponentExt, Empty, Label, LineBreaking, Paginate, Timeout,
+            Component, ComponentExt, Empty, FormattedText, Label, LineBreaking, Paginate, Timeout,
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
             util::RecoveryType,
         },
+        model_tr::component::{ButtonActions, ButtonLayout, Page},
         ui_features_fw::UIFeaturesFirmware,
     },
 };
 
 use super::{
     component::{
-        ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Frame, Homescreen,
-        Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress, ScrollableFrame,
-        SimpleChoice, WordlistEntry, WordlistType,
+        ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Flow, FlowPages, Frame, Homescreen, Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress, ScrollableFrame, SimpleChoice, WordlistEntry, WordlistType
     },
     theme, ModelTRFeatures,
 };
@@ -301,6 +303,28 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Lockscreen::new(label, bootscreen, coinjoin_authorized));
         Ok(layout)
+    }
+
+    fn show_mismatch(title: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
+        let get_page = move |page_index| {
+            assert!(page_index == 0);
+
+            let btn_layout = ButtonLayout::arrow_none_text(TR::buttons__quit.into());
+            let btn_actions = ButtonActions::cancel_none_confirm();
+            let ops = OpTextLayout::new(theme::TEXT_NORMAL)
+                .text_bold_upper(title)
+                .newline()
+                .newline_half()
+                .text_normal(TR::addr_mismatch__contact_support_at)
+                .newline()
+                .text_bold(TR::addr_mismatch__support_url);
+            let formatted = FormattedText::new(ops);
+            Page::new(btn_layout, btn_actions, formatted)
+        };
+        let pages = FlowPages::new(get_page, 1);
+
+        let obj = RootComponent::new(Flow::new(pages));
+        Ok(obj)
     }
 
     fn show_progress(
