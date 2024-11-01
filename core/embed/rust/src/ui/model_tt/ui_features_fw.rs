@@ -122,6 +122,37 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
+        let (title, button) = if recovery {
+            (
+                TR::recovery__title_recover.into(),
+                TR::reset__button_recover.into(),
+            )
+        } else {
+            (
+                TR::reset__title_create_wallet.into(),
+                TR::reset__button_create.into(),
+            )
+        };
+        let par_array: [Paragraph<'static>; 3] = [
+            Paragraph::new(&theme::TEXT_NORMAL, TR::reset__by_continuing).with_bottom_padding(17), /* simulating a carriage return */
+            Paragraph::new(&theme::TEXT_NORMAL, TR::reset__more_info_at),
+            Paragraph::new(&theme::TEXT_DEMIBOLD, TR::reset__tos_link),
+        ];
+        let paragraphs = Paragraphs::new(par_array);
+        let buttons = Button::cancel_confirm(
+            Button::with_icon(theme::ICON_CANCEL),
+            Button::with_text(button).styled(theme::button_confirm()),
+            true,
+        );
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title,
+            Dialog::new(paragraphs, buttons),
+        ));
+        Ok(layout)
+    }
+
     fn check_homescreen_format(image: BinaryData, accept_toif: bool) -> bool {
         super::component::check_homescreen_format(image, false)
     }

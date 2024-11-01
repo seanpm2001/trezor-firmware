@@ -30,6 +30,8 @@ pub trait UIFeaturesFirmware {
         fingerprint: TString<'static>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn check_homescreen_format(image: BinaryData, accept_toif: bool) -> bool;
 
     fn request_bip39(

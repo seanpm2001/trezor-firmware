@@ -63,11 +63,6 @@ def confirm_properties(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def flow_confirm_reset(recovery: bool) -> LayoutObj[UiResult]:
-    """Confirm TOS before creating wallet creation or wallet recovery."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_confirm_set_new_pin(
     *,
     title: str,
@@ -375,15 +370,6 @@ def confirm_properties(
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_reset_device(
-    *,
-    title: str,
-    button: str,
-) -> LayoutObj[UiResult]:
-    """Confirm TOS before device setup."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_backup() -> LayoutObj[UiResult]:
     """Strongly recommend user to do backup."""
 
@@ -672,15 +658,6 @@ def confirm_properties(
 ) -> LayoutObj[UiResult]:
     """Confirm list of key-value pairs. The third component in the tuple should be True if
     the value is to be rendered as binary with monospace font, False otherwise."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_reset_device(
-    *,
-    title: str,
-    button: str,
-) -> LayoutObj[UiResult]:
-    """Confirm TOS before device setup."""
 
 
 # rust/src/ui/model_tt/layout.rs

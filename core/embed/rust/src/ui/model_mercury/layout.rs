@@ -402,16 +402,6 @@ extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_reset(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let recovery: bool = kwargs.get(Qstr::MP_QSTR_recovery)?.try_into()?;
-
-        let flow = flow::confirm_reset::new_confirm_reset(recovery)?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_set_new_pin(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1153,10 +1143,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm list of key-value pairs. The third component in the tuple should be True if
     ///     the value is to be rendered as binary with monospace font, False otherwise."""
     Qstr::MP_QSTR_confirm_properties => obj_fn_kw!(0, new_confirm_properties).as_obj(),
-
-    /// def flow_confirm_reset(recovery: bool) -> LayoutObj[UiResult]:
-    ///     """Confirm TOS before creating wallet creation or wallet recovery."""
-    Qstr::MP_QSTR_flow_confirm_reset => obj_fn_kw!(0, new_confirm_reset).as_obj(),
 
     // TODO: supply more arguments for Wipe code setting when figma done
     /// def flow_confirm_set_new_pin(

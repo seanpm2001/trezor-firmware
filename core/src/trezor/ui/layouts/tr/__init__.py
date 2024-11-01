@@ -109,19 +109,10 @@ def confirm_single(
 
 
 def confirm_reset_device(
-    title: str,
     recovery: bool = False,
 ) -> Awaitable[None]:
-    if recovery:
-        button = TR.reset__button_recover
-    else:
-        button = TR.reset__button_create
-
     return raise_if_not_confirmed(
-        trezorui2.confirm_reset_device(
-            title=title,
-            button=button,
-        ),
+        trezorui_api.confirm_reset_device(recovery=recovery),
         "recover_device" if recovery else "setup_device",
         ButtonRequestType.ProtectCall if recovery else ButtonRequestType.ResetDevice,
     )

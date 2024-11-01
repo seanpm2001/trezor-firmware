@@ -30,7 +30,9 @@ use crate::{
 
 use super::{
     component::{
-        ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Flow, FlowPages, Frame, Homescreen, Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress, ScrollableFrame, SimpleChoice, WordlistEntry, WordlistType
+        ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Flow, FlowPages, Frame,
+        Homescreen, Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress, ScrollableFrame,
+        SimpleChoice, WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
@@ -112,6 +114,29 @@ impl UIFeaturesFirmware for ModelTRFeatures {
             ),
         );
         Ok(layout)
+    }
+
+    fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
+        let (title, button) = if recovery {
+            (
+                TR::recovery__title_recover.into(),
+                TR::reset__button_recover.into(),
+            )
+        } else {
+            (
+                TR::reset__title_create_wallet.into(),
+                TR::reset__button_create.into(),
+            )
+        };
+        let ops = OpTextLayout::new(theme::TEXT_NORMAL)
+            .text_normal(TR::reset__by_continuing)
+            .next_page()
+            .text_normal(TR::reset__more_info_at)
+            .newline()
+            .text_bold(TR::reset__tos_link);
+        let formatted = FormattedText::new(ops).vertically_centered();
+
+        content_in_button_page(title, formatted, button, Some("".into()), false)
     }
 
     fn check_homescreen_format(image: BinaryData, _accept_toif: bool) -> bool {

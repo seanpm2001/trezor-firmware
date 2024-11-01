@@ -112,6 +112,11 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(flow)
     }
 
+    fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
+        let flow = flow::confirm_reset::new_confirm_reset(recovery)?;
+        Ok(flow)
+    }
+
     fn check_homescreen_format(image: BinaryData, __accept_toif: bool) -> bool {
         super::component::check_homescreen_format(image)
     }

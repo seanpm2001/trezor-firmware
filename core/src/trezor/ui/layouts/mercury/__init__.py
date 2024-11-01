@@ -89,8 +89,10 @@ def confirm_single(
     )
 
 
-def confirm_reset_device(_title: str, recovery: bool = False) -> Awaitable[None]:
-    return raise_if_not_confirmed(trezorui2.flow_confirm_reset(recovery=recovery), None)
+def confirm_reset_device(recovery: bool = False) -> Awaitable[None]:
+    return raise_if_not_confirmed(
+        trezorui_api.confirm_reset_device(recovery=recovery), None
+    )
 
 
 async def show_wallet_created_success() -> None:

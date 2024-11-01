@@ -373,24 +373,6 @@ extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let button: TString<'static> = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-
-        let ops = OpTextLayout::new(theme::TEXT_NORMAL)
-            .text_normal(TR::reset__by_continuing)
-            .next_page()
-            .text_normal(TR::reset__more_info_at)
-            .newline()
-            .text_bold(TR::reset__tos_link);
-        let formatted = FormattedText::new(ops).vertically_centered();
-
-        content_in_button_page(title, formatted, button, Some("".into()), false)
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_backup(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], _kwargs: &Map| {
         let get_page = move |page_index| match page_index {
@@ -1274,14 +1256,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     the value is to be rendered as binary with monospace font, False otherwise.
     ///     This only concerns the text style, you need to decode the value to UTF-8 in python."""
     Qstr::MP_QSTR_confirm_properties => obj_fn_kw!(0, new_confirm_properties).as_obj(),
-
-    /// def confirm_reset_device(
-    ///     *,
-    ///     title: str,
-    ///     button: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm TOS before device setup."""
-    Qstr::MP_QSTR_confirm_reset_device => obj_fn_kw!(0, new_confirm_reset_device).as_obj(),
 
     /// def confirm_backup() -> LayoutObj[UiResult]:
     ///     """Strongly recommend user to do backup."""

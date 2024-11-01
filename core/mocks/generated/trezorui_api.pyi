@@ -115,6 +115,11 @@ def confirm_homescreen(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
+    """Confirm TOS before creating wallet creation or wallet recovery."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def request_bip39(
     *,
     prompt: str,
