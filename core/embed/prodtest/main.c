@@ -17,17 +17,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <trezor_bsp.h>
+#include <trezor_model.h>
+#include <trezor_rtl.h>
+
 #include <ctype.h>
 #include <stdlib.h>
-#include <string.h>
 #include <sys/types.h>
-
-#include STM32_HAL_H
 
 #include "board_capabilities.h"
 #include "bootutils.h"
 #include "button.h"
-#include "common.h"
 #include "display.h"
 #include "display_draw.h"
 #include "display_utils.h"
@@ -35,15 +35,14 @@
 #include "flash_otp.h"
 #include "fwutils.h"
 #include "image.h"
-#include "model.h"
 #include "mpu.h"
 #include "prodtest_common.h"
 #include "random_delays.h"
 #include "rsod.h"
 #include "sbu.h"
 #include "sdcard.h"
-#include "secbool.h"
 #include "system.h"
+#include "systick.h"
 #include "systimer.h"
 #include "touch.h"
 #include "usb.h"

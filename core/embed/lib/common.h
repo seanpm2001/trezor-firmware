@@ -17,18 +17,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TREZORHAL_DISPLAY_FB_H
-#define TREZORHAL_DISPLAY_FB_H
+#ifndef LIB_COMMON_H
 
-#include <trezor_types.h>
+// This header is included in storage modules that expect to find common
+// functions like `ensure()`, `error_shutdown()`, or `hal_delay()`.
+//
+// Do not include this header or add dependencies to it unless required by
+// storage.
 
-#ifdef XFRAMEBUFFER
+#include "error_handling.h"
+#include "systick.h"
 
-// Clears both physical frame buffers
-void display_physical_fb_clear(void);
-
-void display_ensure_refreshed(void);
-
-#endif  // XFRAMEBUFFER
-
-#endif  // TREZORHAL_DISPLAY_FB_H
+#endif  // LIB_COMMON_H

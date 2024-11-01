@@ -20,11 +20,9 @@
 #ifndef TREZORHAL_FLASH_H
 #define TREZORHAL_FLASH_H
 
-#include <stdint.h>
-#include <stdlib.h>
+#include <trezor_types.h>
 
 #include "flash_ll.h"
-#include "secbool.h"
 
 #ifdef USE_FLASH_BURST
 

@@ -17,18 +17,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TREZORHAL_DISPLAY_FB_H
-#define TREZORHAL_DISPLAY_FB_H
+#ifndef TREZOR_BSP_H
+#define TREZOR_BSP_H
 
-#include <trezor_types.h>
+// Trezor 'board support package' (BSP) header file that includes
+// all necessary headers for the specific board including STM32 HAL and
+// pin definitions.
+//
+// This file should by only included by driver implementations and
+// should not be included by application code.
 
-#ifdef XFRAMEBUFFER
+#include TREZOR_BOARD
 
-// Clears both physical frame buffers
-void display_physical_fb_clear(void);
+#ifndef TREZOR_EMULATOR
+#include STM32_HAL_H
+#endif
 
-void display_ensure_refreshed(void);
-
-#endif  // XFRAMEBUFFER
-
-#endif  // TREZORHAL_DISPLAY_FB_H
+#endif  // TREZOR_BOARD_H
