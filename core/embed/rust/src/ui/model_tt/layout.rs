@@ -713,83 +713,6 @@ extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_modify_output(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let sign: i32 = kwargs.get(Qstr::MP_QSTR_sign)?.try_into()?;
-        let amount_change: TString = kwargs.get(Qstr::MP_QSTR_amount_change)?.try_into()?;
-        let amount_new: TString = kwargs.get(Qstr::MP_QSTR_amount_new)?.try_into()?;
-
-        let description = if sign < 0 {
-            TR::modify_amount__decrease_amount
-        } else {
-            TR::modify_amount__increase_amount
-        };
-
-        let paragraphs = Paragraphs::new([
-            Paragraph::new(&theme::TEXT_NORMAL, description),
-            Paragraph::new(&theme::TEXT_MONO, amount_change),
-            Paragraph::new(&theme::TEXT_NORMAL, TR::modify_amount__new_amount),
-            Paragraph::new(&theme::TEXT_MONO, amount_new),
-        ]);
-
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            TR::modify_amount__title.into(),
-            ButtonPage::new(paragraphs, theme::BG)
-                .with_cancel_confirm(Some("^".into()), Some(TR::buttons__continue.into())),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_confirm_modify_fee(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let sign: i32 = kwargs.get(Qstr::MP_QSTR_sign)?.try_into()?;
-        let user_fee_change: TString = kwargs.get(Qstr::MP_QSTR_user_fee_change)?.try_into()?;
-        let total_fee_new: TString = kwargs.get(Qstr::MP_QSTR_total_fee_new)?.try_into()?;
-
-        let (description, change, total_label) = match sign {
-            s if s < 0 => (
-                TR::modify_fee__decrease_fee,
-                user_fee_change,
-                TR::modify_fee__new_transaction_fee,
-            ),
-            s if s > 0 => (
-                TR::modify_fee__increase_fee,
-                user_fee_change,
-                TR::modify_fee__new_transaction_fee,
-            ),
-            _ => (
-                TR::modify_fee__no_change,
-                "".into(),
-                TR::modify_fee__transaction_fee,
-            ),
-        };
-
-        let paragraphs = Paragraphs::new([
-            Paragraph::new(&theme::TEXT_NORMAL, description),
-            Paragraph::new(&theme::TEXT_MONO, change),
-            Paragraph::new(&theme::TEXT_NORMAL, total_label),
-            Paragraph::new(&theme::TEXT_MONO, total_fee_new),
-        ]);
-
-        let obj = LayoutObj::new(
-            Frame::left_aligned(
-                theme::label_title(),
-                title,
-                ButtonPage::new(paragraphs, theme::BG)
-                    .with_hold()?
-                    .with_swipe_left(),
-            )
-            .with_info_button(),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 fn new_show_modal(
     kwargs: &Map,
     icon: BlendedImage,
@@ -1270,26 +1193,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm summary of a transaction."""
     Qstr::MP_QSTR_confirm_summary => obj_fn_kw!(0, new_confirm_summary).as_obj(),
-
-    /// def confirm_modify_output(
-    ///     *,
-    ///     sign: int,
-    ///     amount_change: str,
-    ///     amount_new: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Decrease or increase output amount."""
-    Qstr::MP_QSTR_confirm_modify_output => obj_fn_kw!(0, new_confirm_modify_output).as_obj(),
-
-    /// def confirm_modify_fee(
-    ///     *,
-    ///     title: str,
-    ///     sign: int,
-    ///     user_fee_change: str,
-    ///     total_fee_new: str,
-    ///     fee_rate_amount: str | None,  # ignored
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Decrease or increase transaction fee."""
-    Qstr::MP_QSTR_confirm_modify_fee => obj_fn_kw!(0, new_confirm_modify_fee).as_obj(),
 
     /// def confirm_fido(
     ///     *,

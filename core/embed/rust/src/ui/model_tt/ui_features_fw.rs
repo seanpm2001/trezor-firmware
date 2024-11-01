@@ -141,6 +141,78 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn confirm_modify_fee(
+        title: TString<'static>,
+        sign: i32,
+        user_fee_change: TString<'static>,
+        total_fee_new: TString<'static>,
+        fee_rate_amount: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let (description, change, total_label) = match sign {
+            s if s < 0 => (
+                TR::modify_fee__decrease_fee,
+                user_fee_change,
+                TR::modify_fee__new_transaction_fee,
+            ),
+            s if s > 0 => (
+                TR::modify_fee__increase_fee,
+                user_fee_change,
+                TR::modify_fee__new_transaction_fee,
+            ),
+            _ => (
+                TR::modify_fee__no_change,
+                "".into(),
+                TR::modify_fee__transaction_fee,
+            ),
+        };
+
+        let paragraphs = Paragraphs::new([
+            Paragraph::new(&theme::TEXT_NORMAL, description),
+            Paragraph::new(&theme::TEXT_MONO, change),
+            Paragraph::new(&theme::TEXT_NORMAL, total_label),
+            Paragraph::new(&theme::TEXT_MONO, total_fee_new),
+        ]);
+
+        let layout = RootComponent::new(
+            Frame::left_aligned(
+                theme::label_title(),
+                title,
+                ButtonPage::new(paragraphs, theme::BG)
+                    .with_hold()?
+                    .with_swipe_left(),
+            )
+            .with_info_button(),
+        );
+        Ok(layout)
+    }
+
+    fn confirm_modify_output(
+        sign: i32,
+        amount_change: TString<'static>,
+        amount_new: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let description = if sign < 0 {
+            TR::modify_amount__decrease_amount
+        } else {
+            TR::modify_amount__increase_amount
+        };
+
+        let paragraphs = Paragraphs::new([
+            Paragraph::new(&theme::TEXT_NORMAL, description),
+            Paragraph::new(&theme::TEXT_MONO, amount_change),
+            Paragraph::new(&theme::TEXT_NORMAL, TR::modify_amount__new_amount),
+            Paragraph::new(&theme::TEXT_MONO, amount_new),
+        ]);
+
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            TR::modify_amount__title.into(),
+            ButtonPage::new(paragraphs, theme::BG)
+                .with_cancel_confirm(Some("^".into()), Some(TR::buttons__continue.into())),
+        ));
+        Ok(layout)
+    }
+
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
         let (title, button) = if recovery {
             (

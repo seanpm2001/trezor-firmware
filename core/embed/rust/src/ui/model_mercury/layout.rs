@@ -671,87 +671,6 @@ extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Ma
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_modify_output(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let sign: i32 = kwargs.get(Qstr::MP_QSTR_sign)?.try_into()?;
-        let amount_change: TString = kwargs.get(Qstr::MP_QSTR_amount_change)?.try_into()?;
-        let amount_new: TString = kwargs.get(Qstr::MP_QSTR_amount_new)?.try_into()?;
-
-        let description = if sign < 0 {
-            TR::modify_amount__decrease_amount
-        } else {
-            TR::modify_amount__increase_amount
-        };
-
-        let paragraphs = ParagraphVecShort::from_iter([
-            Paragraph::new(&theme::TEXT_NORMAL, description),
-            Paragraph::new(&theme::TEXT_MONO, amount_change),
-            Paragraph::new(&theme::TEXT_NORMAL, TR::modify_amount__new_amount),
-            Paragraph::new(&theme::TEXT_MONO, amount_new),
-        ])
-        .into_paragraphs();
-
-        let obj = LayoutObj::new(SwipeUpScreen::new(
-            Frame::left_aligned(TR::modify_amount__title.into(), paragraphs)
-                .with_cancel_button()
-                .with_footer(TR::instructions__swipe_up.into(), None)
-                .with_swipe(Direction::Up, SwipeSettings::default()),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_confirm_modify_fee(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let sign: i32 = kwargs.get(Qstr::MP_QSTR_sign)?.try_into()?;
-        let user_fee_change: TString = kwargs.get(Qstr::MP_QSTR_user_fee_change)?.try_into()?;
-        let total_fee_new: TString = kwargs.get(Qstr::MP_QSTR_total_fee_new)?.try_into()?;
-
-        let (description, change, total_label) = match sign {
-            s if s < 0 => (
-                TR::modify_fee__decrease_fee,
-                user_fee_change,
-                TR::modify_fee__new_transaction_fee,
-            ),
-            s if s > 0 => (
-                TR::modify_fee__increase_fee,
-                user_fee_change,
-                TR::modify_fee__new_transaction_fee,
-            ),
-            _ => (
-                TR::modify_fee__no_change,
-                "".into(),
-                TR::modify_fee__transaction_fee,
-            ),
-        };
-
-        let paragraphs = ParagraphVecShort::from_iter([
-            Paragraph::new(&theme::TEXT_SUB_GREY, description),
-            Paragraph::new(&theme::TEXT_MONO, change),
-            Paragraph::new(&theme::TEXT_SUB_GREY, total_label),
-            Paragraph::new(&theme::TEXT_MONO, total_fee_new),
-        ]);
-
-        let flow = flow::new_confirm_action_simple(
-            paragraphs.into_paragraphs(),
-            ConfirmActionExtra::Menu(
-                ConfirmActionMenuStrings::new()
-                    .with_verb_info(Some(TR::words__title_information.into())),
-            ),
-            ConfirmActionStrings::new(title, None, None, Some(title)),
-            true,
-            None,
-            0,
-            false,
-        )?;
-
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_error(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1137,26 +1056,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm value. Merge of confirm_total and confirm_output."""
     Qstr::MP_QSTR_confirm_value => obj_fn_kw!(0, new_confirm_value).as_obj(),
-
-    /// def confirm_modify_output(
-    ///     *,
-    ///     sign: int,
-    ///     amount_change: str,
-    ///     amount_new: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Decrease or increase output amount."""
-    Qstr::MP_QSTR_confirm_modify_output => obj_fn_kw!(0, new_confirm_modify_output).as_obj(),
-
-    /// def confirm_modify_fee(
-    ///     *,
-    ///     title: str,
-    ///     sign: int,
-    ///     user_fee_change: str,
-    ///     total_fee_new: str,
-    ///     fee_rate_amount: str | None,  # ignored
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Decrease or increase transaction fee."""
-    Qstr::MP_QSTR_confirm_modify_fee => obj_fn_kw!(0, new_confirm_modify_fee).as_obj(),
 
     /// def confirm_fido(
     ///     *,

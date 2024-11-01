@@ -1025,7 +1025,7 @@ async def confirm_modify_output(
 
         try:
             await interact(
-                trezorui2.confirm_modify_output(
+                trezorui_api.confirm_modify_output(
                     sign=sign,
                     amount_change=amount_change,
                     amount_new=amount_new,
@@ -1048,7 +1048,7 @@ def confirm_modify_fee(
     total_fee_new: str,
     fee_rate_amount: str | None = None,
 ) -> Awaitable[None]:
-    fee_layout = trezorui2.confirm_modify_fee(
+    fee_layout = trezorui_api.confirm_modify_fee(
         title=title,
         sign=sign,
         user_fee_change=user_fee_change,

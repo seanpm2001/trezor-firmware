@@ -101,28 +101,6 @@ def confirm_value(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def confirm_modify_output(
-    *,
-    sign: int,
-    amount_change: str,
-    amount_new: str,
-) -> LayoutObj[UiResult]:
-    """Decrease or increase output amount."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def confirm_modify_fee(
-    *,
-    title: str,
-    sign: int,
-    user_fee_change: str,
-    total_fee_new: str,
-    fee_rate_amount: str | None,  # ignored
-) -> LayoutObj[UiResult]:
-    """Decrease or increase transaction fee."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def confirm_fido(
     *,
     title: str,
@@ -395,16 +373,6 @@ def confirm_joint_total(
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_modify_output(
-    *,
-    sign: int,
-    amount_change: str,
-    amount_new: str,
-) -> LayoutObj[UiResult]:
-    """Decrease or increase output amount."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_output_address(
     *,
     address: str,
@@ -438,18 +406,6 @@ def confirm_summary(
     verb_cancel: str | None = None,
 ) -> LayoutObj[UiResult]:
     """Confirm summary of a transaction."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_modify_fee(
-    *,
-    title: str,  # ignored
-    sign: int,
-    user_fee_change: str,
-    total_fee_new: str,
-    fee_rate_amount: str | None,
-) -> LayoutObj[UiResult]:
-    """Decrease or increase transaction fee."""
 
 
 # rust/src/ui/model_tr/layout.rs
@@ -689,28 +645,6 @@ def confirm_summary(
     verb_cancel: str | None = None,
 ) -> LayoutObj[UiResult]:
     """Confirm summary of a transaction."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_modify_output(
-    *,
-    sign: int,
-    amount_change: str,
-    amount_new: str,
-) -> LayoutObj[UiResult]:
-    """Decrease or increase output amount."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_modify_fee(
-    *,
-    title: str,
-    sign: int,
-    user_fee_change: str,
-    total_fee_new: str,
-    fee_rate_amount: str | None,  # ignored
-) -> LayoutObj[UiResult]:
-    """Decrease or increase transaction fee."""
 
 
 # rust/src/ui/model_tt/layout.rs

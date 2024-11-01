@@ -141,6 +141,81 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(flow)
     }
 
+    fn confirm_modify_fee(
+        title: TString<'static>,
+        sign: i32,
+        user_fee_change: TString<'static>,
+        total_fee_new: TString<'static>,
+        fee_rate_amount: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let (description, change, total_label) = match sign {
+            s if s < 0 => (
+                TR::modify_fee__decrease_fee,
+                user_fee_change,
+                TR::modify_fee__new_transaction_fee,
+            ),
+            s if s > 0 => (
+                TR::modify_fee__increase_fee,
+                user_fee_change,
+                TR::modify_fee__new_transaction_fee,
+            ),
+            _ => (
+                TR::modify_fee__no_change,
+                "".into(),
+                TR::modify_fee__transaction_fee,
+            ),
+        };
+
+        let paragraphs = ParagraphVecShort::from_iter([
+            Paragraph::new(&theme::TEXT_SUB_GREY, description),
+            Paragraph::new(&theme::TEXT_MONO, change),
+            Paragraph::new(&theme::TEXT_SUB_GREY, total_label),
+            Paragraph::new(&theme::TEXT_MONO, total_fee_new),
+        ]);
+
+        let flow = flow::new_confirm_action_simple(
+            paragraphs.into_paragraphs(),
+            ConfirmActionExtra::Menu(
+                ConfirmActionMenuStrings::new()
+                    .with_verb_info(Some(TR::words__title_information.into())),
+            ),
+            ConfirmActionStrings::new(title, None, None, Some(title)),
+            true,
+            None,
+            0,
+            false,
+        )?;
+        Ok(flow)
+    }
+
+    fn confirm_modify_output(
+        sign: i32,
+        amount_change: TString<'static>,
+        amount_new: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let description = if sign < 0 {
+            TR::modify_amount__decrease_amount
+        } else {
+            TR::modify_amount__increase_amount
+        };
+
+        let paragraphs = ParagraphVecShort::from_iter([
+            Paragraph::new(&theme::TEXT_NORMAL, description),
+            Paragraph::new(&theme::TEXT_MONO, amount_change),
+            Paragraph::new(&theme::TEXT_NORMAL, TR::modify_amount__new_amount),
+            Paragraph::new(&theme::TEXT_MONO, amount_new),
+        ])
+        .into_paragraphs();
+
+        let layout = RootComponent::new(SwipeUpScreen::new(
+            Frame::left_aligned(TR::modify_amount__title.into(), paragraphs)
+                .with_cancel_button()
+                .with_footer(TR::instructions__swipe_up.into(), None)
+                .with_swipe(Direction::Up, SwipeSettings::default()),
+        ));
+        Ok(layout)
+    }
+
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
         let flow = flow::confirm_reset::new_confirm_reset(recovery)?;
         Ok(flow)

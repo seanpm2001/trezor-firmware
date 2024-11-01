@@ -122,6 +122,41 @@ extern "C" fn new_confirm_homescreen(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_confirm_modify_fee(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let sign: i32 = kwargs.get(Qstr::MP_QSTR_sign)?.try_into()?;
+        let user_fee_change: TString = kwargs.get(Qstr::MP_QSTR_user_fee_change)?.try_into()?;
+        let total_fee_new: TString = kwargs.get(Qstr::MP_QSTR_total_fee_new)?.try_into()?;
+        let fee_rate_amount: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_fee_rate_amount)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+
+        let layout = ModelUI::confirm_modify_fee(
+            title,
+            sign,
+            user_fee_change,
+            total_fee_new,
+            fee_rate_amount,
+        )?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_confirm_modify_output(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let sign: i32 = kwargs.get(Qstr::MP_QSTR_sign)?.try_into()?;
+        let amount_change: TString = kwargs.get(Qstr::MP_QSTR_amount_change)?.try_into()?;
+        let amount_new: TString = kwargs.get(Qstr::MP_QSTR_amount_new)?.try_into()?;
+
+        let layout = ModelUI::confirm_modify_output(sign, amount_change, amount_new)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let recovery: bool = kwargs.get(Qstr::MP_QSTR_recovery)?.try_into()?;
@@ -531,6 +566,26 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm homescreen."""
     Qstr::MP_QSTR_confirm_homescreen => obj_fn_kw!(0, new_confirm_homescreen).as_obj(),
+
+    /// def confirm_modify_fee(
+    ///     *,
+    ///     title: str,
+    ///     sign: int,
+    ///     user_fee_change: str,
+    ///     total_fee_new: str,
+    ///     fee_rate_amount: str | None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Decrease or increase transaction fee."""
+    Qstr::MP_QSTR_confirm_modify_fee => obj_fn_kw!(0, new_confirm_modify_fee).as_obj(),
+
+    /// def confirm_modify_output(
+    ///     *,
+    ///     sign: int,
+    ///     amount_change: str,
+    ///     amount_new: str,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Decrease or increase output amount."""
+    Qstr::MP_QSTR_confirm_modify_output => obj_fn_kw!(0, new_confirm_modify_output).as_obj(),
 
     /// def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
     ///     """Confirm TOS before creating wallet creation or wallet recovery."""

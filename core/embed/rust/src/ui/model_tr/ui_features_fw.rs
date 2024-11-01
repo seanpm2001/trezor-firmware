@@ -142,6 +142,68 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Ok(layout)
     }
 
+    fn confirm_modify_fee(
+        title: TString<'static>,
+        sign: i32,
+        user_fee_change: TString<'static>,
+        total_fee_new: TString<'static>,
+        fee_rate_amount: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let (description, change) = match sign {
+            s if s < 0 => (TR::modify_fee__decrease_fee, user_fee_change),
+            s if s > 0 => (TR::modify_fee__increase_fee, user_fee_change),
+            _ => (TR::modify_fee__no_change, "".into()),
+        };
+
+        let mut paragraphs_vec = ParagraphVecShort::new();
+        paragraphs_vec
+            .add(Paragraph::new(&theme::TEXT_BOLD, description))
+            .add(Paragraph::new(&theme::TEXT_MONO, change))
+            .add(Paragraph::new(&theme::TEXT_BOLD, TR::modify_fee__transaction_fee).no_break())
+            .add(Paragraph::new(&theme::TEXT_MONO, total_fee_new));
+
+        if let Some(fee_rate_amount) = fee_rate_amount {
+            paragraphs_vec
+                .add(Paragraph::new(&theme::TEXT_BOLD, TR::modify_fee__fee_rate).no_break())
+                .add(Paragraph::new(&theme::TEXT_MONO, fee_rate_amount));
+        }
+
+        content_in_button_page(
+            TR::modify_fee__title.into(),
+            paragraphs_vec.into_paragraphs(),
+            TR::buttons__confirm.into(),
+            Some("".into()),
+            false,
+        )
+    }
+
+    fn confirm_modify_output(
+        sign: i32,
+        amount_change: TString<'static>,
+        amount_new: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let description = if sign < 0 {
+            TR::modify_amount__decrease_amount
+        } else {
+            TR::modify_amount__increase_amount
+        };
+
+        let paragraphs = Paragraphs::new([
+            Paragraph::new(&theme::TEXT_NORMAL, description),
+            Paragraph::new(&theme::TEXT_MONO, amount_change).break_after(),
+            Paragraph::new(&theme::TEXT_BOLD, TR::modify_amount__new_amount),
+            Paragraph::new(&theme::TEXT_MONO, amount_new),
+        ]);
+
+        content_in_button_page(
+            TR::modify_amount__title.into(),
+            paragraphs,
+            TR::buttons__confirm.into(),
+            Some("".into()),
+            false,
+        )
+    }
+
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
         let (title, button) = if recovery {
             (

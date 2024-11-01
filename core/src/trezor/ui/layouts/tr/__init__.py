@@ -1029,7 +1029,7 @@ async def confirm_modify_output(
         description=f"{TR.words__address}:",
     )
 
-    modify_layout = trezorui2.confirm_modify_output(
+    modify_layout = trezorui_api.confirm_modify_output(
         sign=sign,
         amount_change=amount_change,
         amount_new=amount_new,
@@ -1063,7 +1063,7 @@ def confirm_modify_fee(
     fee_rate_amount: str | None = None,
 ) -> Awaitable[None]:
     return raise_if_not_confirmed(
-        trezorui2.confirm_modify_fee(
+        trezorui_api.confirm_modify_fee(
             title=title,
             sign=sign,
             user_fee_change=user_fee_change,

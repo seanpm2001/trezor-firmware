@@ -124,6 +124,28 @@ def confirm_homescreen(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_modify_fee(
+    *,
+    title: str,
+    sign: int,
+    user_fee_change: str,
+    total_fee_new: str,
+    fee_rate_amount: str | None,
+) -> LayoutObj[UiResult]:
+    """Decrease or increase transaction fee."""
+
+
+# rust/src/ui/api/firmware_upy.rs
+def confirm_modify_output(
+    *,
+    sign: int,
+    amount_change: str,
+    amount_new: str,
+) -> LayoutObj[UiResult]:
+    """Decrease or increase output amount."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
     """Confirm TOS before creating wallet creation or wallet recovery."""
 
