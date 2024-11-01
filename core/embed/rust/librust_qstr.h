@@ -253,7 +253,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_flow_continue_recovery;
   MP_QSTR_flow_get_address;
   MP_QSTR_flow_prompt_backup;
-  MP_QSTR_flow_request_number;
   MP_QSTR_flow_show_share_words;
   MP_QSTR_get_language;
   MP_QSTR_get_transition_out;
@@ -280,7 +279,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_icon_name;
   MP_QSTR_image;
   MP_QSTR_indeterminate;
-  MP_QSTR_info;
   MP_QSTR_info_button;
   MP_QSTR_init;
   MP_QSTR_inputs__back;
@@ -346,6 +344,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_modify_fee__no_change;
   MP_QSTR_modify_fee__title;
   MP_QSTR_modify_fee__transaction_fee;
+  MP_QSTR_more_info_callback;
   MP_QSTR_multiple_pages_texts;
   MP_QSTR_notification;
   MP_QSTR_notification_level;

@@ -134,6 +134,42 @@ extern "C" fn new_request_slip39(n_args: usize, args: *const Obj, kwargs: *mut M
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_request_number(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let count: u32 = kwargs.get(Qstr::MP_QSTR_count)?.try_into()?;
+        let min_count: u32 = kwargs.get(Qstr::MP_QSTR_min_count)?.try_into()?;
+        let max_count: u32 = kwargs.get(Qstr::MP_QSTR_max_count)?.try_into()?;
+        let description: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_description)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let more_info_callback: Option<Obj> = kwargs
+            .get(Qstr::MP_QSTR_more_info_callback)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+
+        let more_info_cb = more_info_callback.and_then(|callback| {
+            let cb = move |n: u32| {
+                let text = callback.call_with_n_args(&[n.try_into().unwrap()]).unwrap();
+                TString::try_from(text).unwrap()
+            };
+            Some(cb)
+        });
+
+        let layout = ModelUI::request_number(
+            title,
+            count,
+            min_count,
+            max_count,
+            description,
+            more_info_cb,
+        )?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_request_pin(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let prompt: TString = kwargs.get(Qstr::MP_QSTR_prompt)?.try_into()?;
@@ -450,6 +486,19 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[str]:
     ///    """SLIP39 word input keyboard."""
     Qstr::MP_QSTR_request_slip39 => obj_fn_kw!(0, new_request_slip39).as_obj(),
+
+    /// def request_number(
+    ///     *,
+    ///     title: str,
+    ///     count: int,
+    ///     min_count: int,
+    ///     max_count: int,
+    ///     description: str | None = None,
+    ///     more_info_callback: Callable[[int], str] | None = None,
+    /// ) -> LayoutObj[tuple[UiResult, int]]:
+    ///     """Number input with + and - buttons, optional static description and optional dynamic
+    ///     description."""
+    Qstr::MP_QSTR_request_number => obj_fn_kw!(0, new_request_number).as_obj(),
 
     /// def request_pin(
     ///     *,

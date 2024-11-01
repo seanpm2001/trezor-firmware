@@ -1056,41 +1056,6 @@ extern "C" fn new_prompt_backup() -> Obj {
     unsafe { util::try_or_raise(block) }
 }
 
-extern "C" fn new_request_number(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let count: u32 = kwargs.get(Qstr::MP_QSTR_count)?.try_into()?;
-        let min_count: u32 = kwargs.get(Qstr::MP_QSTR_min_count)?.try_into()?;
-        let max_count: u32 = kwargs.get(Qstr::MP_QSTR_max_count)?.try_into()?;
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let info_cb: Obj = kwargs.get(Qstr::MP_QSTR_info)?;
-        assert!(info_cb != Obj::const_none());
-        let br_code: u16 = kwargs.get(Qstr::MP_QSTR_br_code)?.try_into()?;
-        let br_name: TString = kwargs.get(Qstr::MP_QSTR_br_name)?.try_into()?;
-
-        let mp_info_closure = move |num: u32| {
-            // TODO: Handle error
-            let text = info_cb
-                .call_with_n_args(&[num.try_into().unwrap()])
-                .unwrap();
-            TString::try_from(text).unwrap()
-        };
-
-        let flow = flow::request_number::new_request_number(
-            title,
-            count,
-            min_count,
-            max_count,
-            description,
-            mp_info_closure,
-            br_code,
-            br_name,
-        )?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1421,21 +1386,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Show wallet backup words preceded by an instruction screen and followed by
     ///     confirmation."""
     Qstr::MP_QSTR_flow_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
-
-    /// def flow_request_number(
-    ///     *,
-    ///     title: str,
-    ///     count: int,
-    ///     min_count: int,
-    ///     max_count: int,
-    ///     description: str,
-    ///     info: Callable[[int], str] | None = None,
-    ///     br_code: ButtonRequestType,
-    ///     br_name: str,
-    /// ) -> LayoutObj[tuple[UiResult, int]]:
-    ///     """Number input with + and - buttons, description, and context menu with cancel and
-    ///     info."""
-    Qstr::MP_QSTR_flow_request_number => obj_fn_kw!(0, new_request_number).as_obj(),
 
     /// def show_checklist(
     ///     *,

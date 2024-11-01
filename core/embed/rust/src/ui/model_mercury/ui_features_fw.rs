@@ -6,7 +6,10 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            connect::Connect, swipe_detect::SwipeSettings, text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs}, CachedJpeg, ComponentExt, Never, Timeout
+            connect::Connect,
+            swipe_detect::SwipeSettings,
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs},
+            CachedJpeg, ComponentExt, Never, Timeout,
         },
         geometry::Direction,
         layout::{
@@ -133,6 +136,33 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         ));
 
         Ok(layout)
+    }
+
+    fn request_number(
+        title: TString<'static>,
+        count: u32,
+        min_count: u32,
+        max_count: u32,
+        description: Option<TString<'static>>,
+        more_info_callback: Option<impl Fn(u32) -> TString<'static> + 'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        debug_assert!(
+            description.is_some(),
+            "Description is required for request_number"
+        );
+        debug_assert!(
+            more_info_callback.is_some(),
+            "More info callback is required for request_number"
+        );
+        let flow = flow::request_number::new_request_number(
+            title,
+            count,
+            min_count,
+            max_count,
+            description.unwrap(),
+            more_info_callback.unwrap(),
+        )?;
+        Ok(flow)
     }
 
     fn request_pin(

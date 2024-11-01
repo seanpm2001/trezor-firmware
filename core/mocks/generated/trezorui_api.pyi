@@ -135,6 +135,20 @@ def request_slip39(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def request_number(
+    *,
+    title: str,
+    count: int,
+    min_count: int,
+    max_count: int,
+    description: str | None = None,
+    more_info_callback: Callable[[int], str] | None = None,
+) -> LayoutObj[tuple[UiResult, int]]:
+    """Number input with + and - buttons, optional static description and optional dynamic
+    description."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def request_pin(
     *,
     prompt: str,

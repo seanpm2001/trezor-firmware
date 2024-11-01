@@ -22,8 +22,8 @@ use crate::{
 use super::{
     component::{
         ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Frame, Homescreen,
-        Lockscreen, PassphraseEntry, PinEntry, Progress, ScrollableFrame, SimpleChoice,
-        WordlistEntry, WordlistType,
+        Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress, ScrollableFrame,
+        SimpleChoice, WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
@@ -139,6 +139,20 @@ impl UIFeaturesFirmware for ModelTRFeatures {
                     .map(|s| WordlistEntry::prefilled_word(s, WordlistType::Slip39, can_go_back)),
             )
             .with_title_centered(),
+        );
+        Ok(layout)
+    }
+
+    fn request_number(
+        title: TString<'static>,
+        count: u32,
+        min_count: u32,
+        max_count: u32,
+        _description: Option<TString<'static>>,
+        _more_info_callback: Option<impl Fn(u32) -> TString<'static> + 'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(
+            Frame::new(title, NumberInput::new(min_count, max_count, count)).with_title_centered(),
         );
         Ok(layout)
     }

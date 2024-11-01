@@ -1183,21 +1183,6 @@ extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_request_number(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let min_count: u32 = kwargs.get(Qstr::MP_QSTR_min_count)?.try_into()?;
-        let max_count: u32 = kwargs.get(Qstr::MP_QSTR_max_count)?.try_into()?;
-        let count: u32 = kwargs.get(Qstr::MP_QSTR_count)?.try_into()?;
-
-        let obj = LayoutObj::new(
-            Frame::new(title, NumberInput::new(min_count, max_count, count)).with_title_centered(),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let button: TString<'static> = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
@@ -1532,17 +1517,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Shows a backup seed."""
     Qstr::MP_QSTR_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
-
-    /// def request_number(
-    ///     *,
-    ///     title: str,
-    ///     count: int,
-    ///     min_count: int,
-    ///     max_count: int,
-    ///     description: Callable[[int], str] | None = None,  # unused on TR
-    /// ) -> LayoutObj[tuple[UiResult, int]]:
-    ///     """Number input with + and - buttons, description, and info button."""
-    Qstr::MP_QSTR_request_number => obj_fn_kw!(0, new_request_number).as_obj(),
 
     /// def show_checklist(
     ///     *,

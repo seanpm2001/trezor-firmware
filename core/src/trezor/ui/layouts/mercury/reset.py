@@ -155,17 +155,17 @@ async def _prompt_number(
     br_name: str,
 ) -> int:
     result = await interact(
-        trezorui2.flow_request_number(
+        trezorui_api.request_number(
             title=title,
-            description=description,
             count=count,
             min_count=min_count,
             max_count=max_count,
-            info=info,
-            br_code=ButtonRequestType.ResetDevice,
-            br_name=br_name,
+            description=description,
+            more_info_callback=info,
         ),
-        None,
+        br_name,
+        ButtonRequestType.ResetDevice,
+        raise_on_cancel=None,
     )
 
     if __debug__ and result is CONFIRMED:

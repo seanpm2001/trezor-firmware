@@ -245,22 +245,6 @@ def flow_show_share_words(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def flow_request_number(
-    *,
-    title: str,
-    count: int,
-    min_count: int,
-    max_count: int,
-    description: str,
-    info: Callable[[int], str] | None = None,
-    br_code: ButtonRequestType,
-    br_name: str,
-) -> LayoutObj[tuple[UiResult, int]]:
-    """Number input with + and - buttons, description, and context menu with cancel and
-    info."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def show_checklist(
     *,
     title: str,
@@ -603,18 +587,6 @@ def show_share_words(
 
 
 # rust/src/ui/model_tr/layout.rs
-def request_number(
-    *,
-    title: str,
-    count: int,
-    min_count: int,
-    max_count: int,
-    description: Callable[[int], str] | None = None,  # unused on TR
-) -> LayoutObj[tuple[UiResult, int]]:
-    """Number input with + and - buttons, description, and info button."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def show_checklist(
     *,
     title: str,  # unused on TR
@@ -932,18 +904,6 @@ def show_share_words(
     pages: Iterable[str],
 ) -> LayoutObj[UiResult]:
     """Show mnemonic for backup. Expects the words pre-divided into individual pages."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def request_number(
-    *,
-    title: str,
-    count: int,
-    min_count: int,
-    max_count: int,
-    description: Callable[[int], str] | None = None,
-) -> LayoutObj[tuple[UiResult, int]]:
-    """Number input with + and - buttons, description, and info button."""
 
 
 # rust/src/ui/model_tt/layout.rs

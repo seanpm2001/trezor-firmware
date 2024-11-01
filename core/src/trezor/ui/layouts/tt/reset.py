@@ -140,12 +140,13 @@ async def _prompt_number(
     max_count: int,
     br_name: str,
 ) -> int:
-    num_input = trezorui2.request_number(
+    num_input = trezorui_api.request_number(
         title=title,
-        description=description,
         count=count,
         min_count=min_count,
         max_count=max_count,
+        description=None,
+        more_info_callback=description,
     )
 
     while True:

@@ -44,6 +44,15 @@ pub trait UIFeaturesFirmware {
         can_go_back: bool,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn request_number(
+        title: TString<'static>,
+        count: u32,
+        min_count: u32,
+        max_count: u32,
+        description: Option<TString<'static>>,
+        more_info_callback: Option<impl Fn(u32) -> TString<'static> + 'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn request_pin(
         prompt: TString<'static>,
         subprompt: TString<'static>,

@@ -6,7 +6,10 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            connect::Connect, image::BlendedImage, text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt}, ComponentExt, Empty, Jpeg, Label, Never, Timeout
+            connect::Connect,
+            image::BlendedImage,
+            text::paragraphs::{Paragraph, ParagraphSource, ParagraphVecShort, Paragraphs, VecExt},
+            ComponentExt, Empty, Jpeg, Label, Never, Timeout,
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -18,7 +21,10 @@ use crate::{
 
 use super::{
     component::{
-        check_homescreen_format, Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet, CancelConfirmMsg, CoinJoinProgress, Dialog, Frame, Homescreen, IconDialog, Lockscreen, MnemonicKeyboard, PassphraseKeyboard, PinKeyboard, Progress, SelectWordCount, SetBrightnessDialog, Slip39Input
+        check_homescreen_format, Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet,
+        CancelConfirmMsg, CoinJoinProgress, Dialog, Frame, Homescreen, IconDialog, Lockscreen,
+        MnemonicKeyboard, NumberInputDialog, PassphraseKeyboard, PinKeyboard, Progress,
+        SelectWordCount, SetBrightnessDialog, Slip39Input,
     },
     theme, ModelTTFeatures,
 };
@@ -139,6 +145,23 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             can_go_back,
         ));
 
+        Ok(layout)
+    }
+
+    fn request_number(
+        title: TString<'static>,
+        count: u32,
+        min_count: u32,
+        max_count: u32,
+        _description: Option<TString<'static>>,
+        more_info_callback: Option<impl Fn(u32) -> TString<'static> + 'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        debug_assert!(more_info_callback.is_some());
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title,
+            NumberInputDialog::new(min_count, max_count, count, more_info_callback.unwrap())?,
+        ));
         Ok(layout)
     }
 
