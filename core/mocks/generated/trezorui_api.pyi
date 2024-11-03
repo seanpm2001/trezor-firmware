@@ -245,6 +245,14 @@ def show_checklist(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_group_share_success(
+    *,
+    lines: Iterable[str],
+) -> LayoutObj[UiResult]:
+   """Shown after successfully finishing a group."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_homescreen(
     *,
     label: str | None,

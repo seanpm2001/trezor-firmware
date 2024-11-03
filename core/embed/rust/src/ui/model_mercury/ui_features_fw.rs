@@ -16,7 +16,7 @@ use crate::{
             },
             CachedJpeg, ComponentExt, Never, Timeout,
         },
-        geometry::Direction,
+        geometry::{self, Direction},
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
             util::RecoveryType,
@@ -363,6 +363,26 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
 
         let layout = RootComponent::new(SwipeUpScreen::new(
             Frame::left_aligned(title, SwipeContent::new(checklist_content))
+                .with_footer(TR::instructions__swipe_up.into(), None)
+                .with_swipe(Direction::Up, SwipeSettings::default()),
+        ));
+        Ok(layout)
+    }
+
+    fn show_group_share_success(
+        lines: [TString<'static>; 4],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let paragraphs = ParagraphVecShort::from_iter([
+            Paragraph::new(&theme::TEXT_NORMAL_GREY_EXTRA_LIGHT, lines[0]).centered(),
+            Paragraph::new(&theme::TEXT_DEMIBOLD, lines[1]).centered(),
+            Paragraph::new(&theme::TEXT_NORMAL_GREY_EXTRA_LIGHT, lines[2]).centered(),
+            Paragraph::new(&theme::TEXT_DEMIBOLD, lines[3]).centered(),
+        ])
+        .into_paragraphs()
+        .with_placement(geometry::LinearPlacement::vertical().align_at_center());
+
+        let layout = RootComponent::new(SwipeUpScreen::new(
+            Frame::left_aligned("".into(), SwipeContent::new(paragraphs))
                 .with_footer(TR::instructions__swipe_up.into(), None)
                 .with_swipe(Direction::Up, SwipeSettings::default()),
         ));

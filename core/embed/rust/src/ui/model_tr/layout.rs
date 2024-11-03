@@ -992,35 +992,6 @@ extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_group_share_success(
-    n_args: usize,
-    args: *const Obj,
-    kwargs: *mut Map,
-) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let lines_iterable: Obj = kwargs.get(Qstr::MP_QSTR_lines)?;
-        let lines: [TString; 4] = util::iter_into_array(lines_iterable)?;
-
-        let [l0, l1, l2, l3] = lines;
-
-        let paragraphs = Paragraphs::new([
-            Paragraph::new(&theme::TEXT_MONO, l0),
-            Paragraph::new(&theme::TEXT_BOLD, l1),
-            Paragraph::new(&theme::TEXT_MONO, l2),
-            Paragraph::new(&theme::TEXT_BOLD, l3),
-        ]);
-
-        content_in_button_page(
-            "".into(),
-            paragraphs,
-            TR::buttons__continue.into(),
-            None,
-            false,
-        )
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -1216,11 +1187,4 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_confirm_recovery => obj_fn_kw!(0, new_confirm_recovery).as_obj(),
-
-    /// def show_group_share_success(
-    ///     *,
-    ///     lines: Iterable[str],
-    /// ) -> LayoutObj[int]:
-    ///     """Shown after successfully finishing a group."""
-    Qstr::MP_QSTR_show_group_share_success => obj_fn_kw!(0, new_show_group_share_success).as_obj(),
 };

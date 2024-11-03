@@ -103,6 +103,10 @@ pub trait UIFeaturesFirmware {
         items: [TString<'static>; 3],
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_group_share_success(
+        lines: [TString<'static>; 4],
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn show_homescreen(
         label: TString<'static>,
         hold: bool,

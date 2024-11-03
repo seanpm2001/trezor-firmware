@@ -65,7 +65,7 @@ def show_group_share_success(
     share_index: int, group_index: int
 ) -> Awaitable[ui.UiResult]:
     return interact(
-        trezorui2.show_group_share_success(
+        trezorui_api.show_group_share_success(
             lines=[
                 TR.recovery__you_have_entered,
                 TR.recovery__share_num_template.format(share_index + 1),

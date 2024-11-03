@@ -907,35 +907,6 @@ extern "C" fn new_prompt_backup() -> Obj {
     unsafe { util::try_or_raise(block) }
 }
 
-extern "C" fn new_show_group_share_success(
-    n_args: usize,
-    args: *const Obj,
-    kwargs: *mut Map,
-) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let lines_iterable: Obj = kwargs.get(Qstr::MP_QSTR_lines)?;
-        let lines: [TString; 4] = util::iter_into_array(lines_iterable)?;
-
-        let paragraphs = ParagraphVecShort::from_iter([
-            Paragraph::new(&theme::TEXT_NORMAL_GREY_EXTRA_LIGHT, lines[0]).centered(),
-            Paragraph::new(&theme::TEXT_DEMIBOLD, lines[1]).centered(),
-            Paragraph::new(&theme::TEXT_NORMAL_GREY_EXTRA_LIGHT, lines[2]).centered(),
-            Paragraph::new(&theme::TEXT_DEMIBOLD, lines[3]).centered(),
-        ])
-        .into_paragraphs()
-        .with_placement(geometry::LinearPlacement::vertical().align_at_center());
-
-        let obj = LayoutObj::new(SwipeUpScreen::new(
-            Frame::left_aligned("".into(), SwipeContent::new(paragraphs))
-                .with_footer(TR::instructions__swipe_up.into(), None)
-                .with_swipe(Direction::Up, SwipeSettings::default()),
-        ))?;
-
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     #[cfg(feature = "universal_fw")]
     return flow::confirm_fido::new_confirm_fido(n_args, args, kwargs);
@@ -1162,13 +1133,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_flow_continue_recovery => obj_fn_kw!(0, new_continue_recovery).as_obj(),
-
-    /// def show_group_share_success(
-    ///     *,
-    ///     lines: Iterable[str]
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Shown after successfully finishing a group."""
-    Qstr::MP_QSTR_show_group_share_success => obj_fn_kw!(0, new_show_group_share_success).as_obj(),
 
     /// def flow_get_address(
     ///     *,

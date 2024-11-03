@@ -375,6 +375,24 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Ok(layout)
     }
 
+    fn show_group_share_success(
+        lines: [TString<'static>; 4],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let paragraphs = Paragraphs::new([
+            Paragraph::new(&theme::TEXT_MONO, lines[0]),
+            Paragraph::new(&theme::TEXT_BOLD, lines[1]),
+            Paragraph::new(&theme::TEXT_MONO, lines[2]),
+            Paragraph::new(&theme::TEXT_BOLD, lines[3]),
+        ]);
+        content_in_button_page(
+            "".into(),
+            paragraphs,
+            TR::buttons__continue.into(),
+            None,
+            false,
+        )
+    }
+
     fn show_homescreen(
         label: TString<'static>,
         hold: bool,

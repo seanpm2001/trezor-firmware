@@ -406,6 +406,18 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn show_group_share_success(
+        lines: [TString<'static>; 4],
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(IconDialog::new_shares(
+            lines,
+            theme::button_bar(Button::with_text(TR::buttons__continue.into()).map(|msg| {
+                (matches!(msg, ButtonMsg::Clicked)).then(|| CancelConfirmMsg::Confirmed)
+            })),
+        ));
+        Ok(layout)
+    }
+
     fn show_homescreen(
         label: TString<'static>,
         hold: bool,

@@ -216,14 +216,6 @@ def flow_continue_recovery(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_group_share_success(
-    *,
-    lines: Iterable[str]
-) -> LayoutObj[UiResult]:
-    """Shown after successfully finishing a group."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_get_address(
     *,
     address: str | bytes,
@@ -488,44 +480,7 @@ def confirm_recovery(
     info_button: bool,  # unused on TR
     show_instructions: bool,
 ) -> LayoutObj[UiResult]:
-    """Device recovery homescreen."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def show_group_share_success(
-    *,
-    lines: Iterable[str],
-) -> LayoutObj[int]:
-    """Shown after successfully finishing a group."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def show_progress(
-    *,
-    description: str,
-    indeterminate: bool = False,
-    title: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Show progress loader. Please note that the number of lines reserved on screen for
-    description is determined at construction time. If you want multiline descriptions
-    make sure the initial description has at least that amount of lines."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def show_progress_coinjoin(
-    *,
-    title: str,
-    indeterminate: bool = False,
-    time_ms: int = 0,
-    skip_first_paint: bool = False,
-) -> LayoutObj[UiResult]:
-    """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
-    time_ms timeout is passed."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def show_wait_text(message: str, /) -> None:
-    """Show single-line text in the middle of the screen."""
+   """Device recovery homescreen."""
 from trezor import utils
 from trezorui_api import *
 
@@ -752,14 +707,6 @@ def confirm_recovery(
     show_instructions: bool = False,  # unused on TT
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_group_share_success(
-    *,
-    lines: Iterable[str]
-) -> LayoutObj[UiResult]:
-    """Shown after successfully finishing a group."""
 
 
 # rust/src/ui/model_tt/layout.rs

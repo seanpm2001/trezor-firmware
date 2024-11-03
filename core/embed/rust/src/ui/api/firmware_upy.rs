@@ -299,6 +299,21 @@ extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut M
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_group_share_success(
+    n_args: usize,
+    args: *const Obj,
+    kwargs: *mut Map,
+) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let lines_iterable: Obj = kwargs.get(Qstr::MP_QSTR_lines)?;
+        let lines: [TString; 4] = util::iter_into_array(lines_iterable)?;
+
+        let layout = ModelUI::show_group_share_success(lines)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_homescreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let label: TString<'static> = kwargs
@@ -675,6 +690,13 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     ///     """Checklist of backup steps. Active index is highlighted, previous items have check
     ///    mark next to them. Limited to 3 items."""
     Qstr::MP_QSTR_show_checklist => obj_fn_kw!(0, new_show_checklist).as_obj(),
+
+    /// def show_group_share_success(
+    ///     *,
+    ///     lines: Iterable[str],
+    /// ) -> LayoutObj[UiResult]:
+    ///    """Shown after successfully finishing a group."""
+    Qstr::MP_QSTR_show_group_share_success => obj_fn_kw!(0, new_show_group_share_success).as_obj(),
 
     /// def show_homescreen(
     ///     *,
