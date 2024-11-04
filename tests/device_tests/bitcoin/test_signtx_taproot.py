@@ -318,7 +318,6 @@ def test_attack_script_type(session: Session):
     # correct input types and amounts are revelaled only in step6_sign_segwit_inputs()
     # to get a valid signature. This results in a transaction which pays a fee much
     # larger than what the user confirmed.
-    raise Exception("THIS TEST FAILS, TO DO FIX")
     inp1 = messages.TxInputType(
         address_n=parse_path("m/84h/1h/0h/1/0"),
         amount=7_289_000,
