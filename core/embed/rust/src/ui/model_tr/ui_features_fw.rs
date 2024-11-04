@@ -491,6 +491,14 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Ok(obj)
     }
 
+    fn show_remaining_shares(
+        pages_iterable: crate::micropython::obj::Obj, // TODO: replace Obj
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"show remaining shares not supported",
+        ))
+    }
+
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)

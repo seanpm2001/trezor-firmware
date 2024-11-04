@@ -409,6 +409,15 @@ extern "C" fn new_show_progress_coinjoin(n_args: usize, args: *const Obj, kwargs
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_remaining_shares(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let pages_iterable: Obj = kwargs.get(Qstr::MP_QSTR_pages)?;
+        let layout = ModelUI::show_remaining_shares(pages_iterable)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_wait_text(message: Obj) -> Obj {
     let block = || {
         let message: TString<'static> = message.try_into()?;
@@ -754,6 +763,13 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     ///     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
     ///    time_ms timeout is passed."""
     Qstr::MP_QSTR_show_progress_coinjoin => obj_fn_kw!(0, new_show_progress_coinjoin).as_obj(),
+
+    /// def show_remaining_shares(
+    ///     *,
+    ///     pages: Iterable[tuple[str, str]],
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
+    Qstr::MP_QSTR_show_remaining_shares => obj_fn_kw!(0, new_show_remaining_shares).as_obj(),
 
     /// def show_wait_text(message: str, /) -> LayoutObj[None]:
     ///     """Show single-line text in the middle of the screen."""

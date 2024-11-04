@@ -1034,31 +1034,6 @@ extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_remaining_shares(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let pages_iterable: Obj = kwargs.get(Qstr::MP_QSTR_pages)?;
-
-        let mut paragraphs = ParagraphVecLong::new();
-        for page in IterBuf::new().try_iterate(pages_iterable)? {
-            let [title, description]: [TString; 2] = util::iter_into_array(page)?;
-            paragraphs
-                .add(Paragraph::new(&theme::TEXT_DEMIBOLD, title))
-                .add(Paragraph::new(&theme::TEXT_NORMAL, description).break_after());
-        }
-
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            TR::recovery__title_remaining_shares.into(),
-            ButtonPage::new(paragraphs.into_paragraphs(), theme::BG)
-                .with_cancel_confirm(None, Some(TR::buttons__continue.into()))
-                .with_confirm_style(theme::button_default())
-                .without_cancel(),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -1272,13 +1247,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_confirm_recovery => obj_fn_kw!(0, new_confirm_recovery).as_obj(),
-
-    /// def show_remaining_shares(
-    ///     *,
-    ///     pages: Iterable[tuple[str, str]],
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
-    Qstr::MP_QSTR_show_remaining_shares => obj_fn_kw!(0, new_show_remaining_shares).as_obj(),
 };
 
 #[cfg(test)]

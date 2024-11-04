@@ -539,6 +539,29 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(obj)
     }
 
+    fn show_remaining_shares(
+        pages_iterable: crate::micropython::obj::Obj, // TODO: replace Obj
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecLong::new();
+        for page in crate::micropython::iter::IterBuf::new().try_iterate(pages_iterable)? {
+            let [title, description]: [TString; 2] =
+                crate::micropython::util::iter_into_array(page)?;
+            paragraphs
+                .add(Paragraph::new(&theme::TEXT_DEMIBOLD, title))
+                .add(Paragraph::new(&theme::TEXT_NORMAL, description).break_after());
+        }
+
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            TR::recovery__title_remaining_shares.into(),
+            ButtonPage::new(paragraphs.into_paragraphs(), theme::BG)
+                .with_cancel_confirm(None, Some(TR::buttons__continue.into()))
+                .with_confirm_style(theme::button_default())
+                .without_cancel(),
+        ));
+        Ok(layout)
+    }
+
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)

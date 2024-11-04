@@ -8,13 +8,10 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            connect::Connect,
-            swipe_detect::SwipeSettings,
-            text::paragraphs::{
+            connect::Connect, swipe_detect::SwipeSettings, text::paragraphs::{
                 Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
                 Paragraphs, VecExt,
-            },
-            CachedJpeg, ComponentExt, Never, Timeout,
+            }, CachedJpeg, ComponentExt, Empty, Never, Timeout
         },
         geometry::{self, Direction},
         layout::{
@@ -477,6 +474,15 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
             obj.skip_first_paint();
         }
         Ok(obj)
+    }
+
+    fn show_remaining_shares(
+        pages_iterable: crate::micropython::obj::Obj, // TODO: replace Obj
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        // Mercury: remaining shares is a part of `continue_recovery` flow
+        Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
+            c"show remaining shares not supported",
+        ))
     }
 
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {

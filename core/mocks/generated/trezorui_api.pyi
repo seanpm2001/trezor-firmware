@@ -316,6 +316,14 @@ def show_progress_coinjoin(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_remaining_shares(
+    *,
+    pages: Iterable[tuple[str, str]],
+) -> LayoutObj[UiResult]:
+    """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_wait_text(message: str, /) -> LayoutObj[None]:
     """Show single-line text in the middle of the screen."""
 

@@ -82,7 +82,7 @@ def show_remaining_shares(
             pages.append((title, words))
 
     return interact(
-        trezorui2.show_remaining_shares(pages=pages),
+        trezorui_api.show_remaining_shares(pages=pages),
         "show_shares",
         ButtonRequestType.Other,
     )

@@ -1,4 +1,4 @@
-use crate::{error::Error, io::BinaryData, micropython::gc::Gc, strutil::TString};
+use crate::{error::Error, io::BinaryData, micropython::{gc::Gc, obj::Obj}, strutil::TString};
 
 use super::layout::{
     obj::{LayoutMaybeTrace, LayoutObj},
@@ -141,6 +141,10 @@ pub trait UIFeaturesFirmware {
         time_ms: u32,
         skip_first_paint: bool,
     ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
+    fn show_remaining_shares(
+        pages_iterable: Obj, // TODO: replace Obj
+    ) -> Result<impl LayoutMaybeTrace, Error>;
 
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error>;
 

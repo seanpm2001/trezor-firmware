@@ -707,11 +707,3 @@ def confirm_recovery(
     show_instructions: bool = False,  # unused on TT
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_remaining_shares(
-    *,
-    pages: Iterable[tuple[str, str]],
-) -> LayoutObj[UiResult]:
-    """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
