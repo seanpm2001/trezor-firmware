@@ -6,6 +6,8 @@ from storage import cache, common, device
 if TYPE_CHECKING:
     from typing import Tuple
 
+    pass
+
 
 def wipe(excluded: Tuple[bytes, bytes] | None) -> None:
     """

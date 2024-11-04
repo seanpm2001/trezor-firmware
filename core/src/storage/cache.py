@@ -8,6 +8,8 @@ from trezor import utils
 if TYPE_CHECKING:
     from typing import Tuple
 
+    pass
+
 # XXX
 # Allocation notes:
 # Instantiation of a DataCache subclass should make as little garbage as possible, so

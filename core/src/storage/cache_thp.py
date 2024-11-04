@@ -3,13 +3,16 @@ from micropython import const
 from typing import TYPE_CHECKING
 
 from storage.cache_common import DataCache
-from trezor import utils
 
 if TYPE_CHECKING:
     from typing import Tuple
 
+    pass
+
 if __debug__:
     from trezor import log
+
+    pass
 
 # THP specific constants
 _MAX_CHANNELS_COUNT = const(10)
@@ -69,6 +72,8 @@ class ChannelCache(ThpDataCache):
 
 class SessionThpCache(ThpDataCache):
     def __init__(self) -> None:
+        from trezor import utils
+
         self.session_id = bytearray(SESSION_ID_LENGTH)
         self.state = bytearray(_SESSION_STATE_LENGTH)
         if utils.BITCOIN_ONLY:
