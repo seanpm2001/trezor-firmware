@@ -1017,10 +1017,10 @@ class SessionDebugWrapper(Session):
 
     def _write(self, msg: t.Any) -> None:
         print("writing message:", type(msg))
-        self._session._write(msg)
+        self._session._write(self._filter_message(msg))
 
     def _read(self) -> t.Any:
-        resp = self._session._read()
+        resp = self._filter_message(self._session._read())
         print("reading message:", type(resp))
         if self.actual_responses is not None:
             self.actual_responses.append(resp)
@@ -1109,6 +1109,14 @@ class SessionDebugWrapper(Session):
             raise RuntimeError("Must be called inside 'with' statement")
 
         self.filters[message_type] = callback
+
+    def _filter_message(self, msg: protobuf.MessageType) -> protobuf.MessageType:
+        message_type = msg.__class__
+        callback = self.filters.get(message_type)
+        if callable(callback):
+            return callback(deepcopy(msg))
+        else:
+            return msg
 
     def reset_debug_features(self) -> None:
         """Prepare the debugging session for a new testcase.
