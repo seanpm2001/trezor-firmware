@@ -5,13 +5,13 @@ from storage.cache_thp import MANAGEMENT_SESSION_ID, SessionThpCache
 from trezor import log, loop, protobuf, utils
 from trezor.wire import message_handler, protocol_common
 from trezor.wire.context import UnexpectedMessageException
-from trezor.wire.message_handler import AVOID_RESTARTING_FOR, failure, find_handler
+from trezor.wire.message_handler import failure, find_handler
 
 from ..protocol_common import Context, Message
 from . import SessionState
 
 if TYPE_CHECKING:
-    from typing import Any, Awaitable, Container
+    from typing import Awaitable, Container
 
     from storage.cache_common import DataCache
 
@@ -43,8 +43,10 @@ class GenericSessionContext(Context):
         next_message: Message | None = None
 
         while True:
+            message = next_message
+            next_message = None
             try:
-                if await self._handle_message(next_message):
+                if await self._handle_message(message):
                     loop.schedule(self.handle())
                     return
             except UnexpectedMessageException as unexpected:
@@ -71,50 +73,26 @@ class GenericSessionContext(Context):
     ) -> bool:
 
         try:
-            message = await self._get_message(self.incoming_message, next_message)
+            if next_message is not None:
+                # Process the message from previous run.
+                message = next_message
+                next_message = None
+            else:
+                # Wait for a new message from wire
+                message = await self.incoming_message
+
         except protocol_common.WireError as e:
             if __debug__ and utils.ALLOW_DEBUG_MESSAGES:
                 log.exception(__name__, e)
             await self.write(failure(e))
             return _REPEAT_LOOP
 
-        try:
-            await message_handler.handle_single_message(
-                self,
-                message,
-                self.handler_finder,
-            )
-        except UnexpectedMessageException:
-            raise
-        except Exception as exc:
-            # Log and ignore. The session handler can only exit explicitly in the
-            # following finally block.
-            if __debug__:
-                log.exception(__name__, exc)
-        finally:
-            # Unload modules imported by the workflow.  Should not raise.
-            # This is not done for the debug session because the snapshot taken
-            # in a debug session would clear modules which are in use by the
-            # workflow running on wire.
-            # TODO utils.unimport_end(modules)
-
-            if next_message is None and message.type not in AVOID_RESTARTING_FOR:
-                # Shut down the loop if there is no next message waiting.
-                return _EXIT_LOOP  # pylint: disable=lost-exception
-            return _REPEAT_LOOP  # pylint: disable=lost-exception
-
-    async def _get_message(
-        self, take: Awaitable[Any], next_message: Message | None
-    ) -> Message:
-        if next_message is None:
-            # If the previous run did not keep an unprocessed message for us,
-            # wait for a new one.
-            message: Message = await take
-        else:
-            # Process the message from previous run.
-            message = next_message
-            next_message = None
-        return message
+        await message_handler.handle_single_message(
+            self,
+            message,
+            self.handler_finder,
+        )
+        return _EXIT_LOOP
 
     async def read(
         self,
