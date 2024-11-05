@@ -439,8 +439,6 @@ HEXDATA = "0123456789abcd000023456789abcd010003456789abcd020000456789abcd0300000
 )
 @pytest.mark.models("core", skip="mercury", reason="Not yet implemented in new UI")
 def test_signtx_data_pagination(session: Session, flow):
-    raise Exception("TEST DOES NOT WORK - TODO FIX")
-
     def _sign_tx_call():
         ethereum.sign_tx(
             session,
@@ -455,12 +453,12 @@ def test_signtx_data_pagination(session: Session, flow):
             data=bytes.fromhex(HEXDATA),
         )
 
-    with session.client as client:
+    with session, session.client as client:
         client.watch_layout()
         client.set_input_flow(flow(client))
         _sign_tx_call()
 
-    with session.client as client, pytest.raises(exceptions.Cancelled):
+    with session, session.client as client, pytest.raises(exceptions.Cancelled):
         client.watch_layout()
         client.set_input_flow(flow(client, cancel=True))
         _sign_tx_call()
