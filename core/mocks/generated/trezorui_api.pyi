@@ -245,6 +245,29 @@ def show_checklist(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_danger(
+    *,
+    title: str,
+    description: str,
+    value: str = "",
+    verb_cancel: str | None = None,
+) -> LayoutObj[UiResult]:
+    """Warning modal that makes it easier to cancel than to continue."""
+
+
+# rust/src/ui/api/firmware_upy.rs
+def show_error(
+    *,
+    title: str,
+    button: str,
+    description: str = "",
+    allow_cancel: bool = True,
+    time_ms: int = 0,
+) -> LayoutObj[UiResult]:
+    """Error modal. No buttons shown when `button` is empty string."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_group_share_success(
     *,
     lines: Iterable[str],
@@ -324,8 +347,34 @@ def show_remaining_shares(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_success(
+    *,
+    title: str,
+    button: str,
+    description: str = "",
+    allow_cancel: bool = True,
+    time_ms: int = 0,
+) -> LayoutObj[UiResult]:
+    """Success modal. No buttons shown when `button` is empty string."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_wait_text(message: str, /) -> LayoutObj[None]:
     """Show single-line text in the middle of the screen."""
+
+
+# rust/src/ui/api/firmware_upy.rs
+def show_warning(
+    *,
+    title: str,
+    button: str,
+    value: str = "",
+    description: str = "",
+    allow_cancel: bool = True,
+    time_ms: int = 0,
+    danger: bool = False,  # unused on TT
+) -> LayoutObj[UiResult]:
+    """Warning modal. TT: No buttons shown when `button` is empty string. TR: middle button and centered text."""
 
 
 # rust/src/ui/api/firmware_upy.rs

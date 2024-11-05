@@ -8,10 +8,13 @@ use crate::{
     translations::TR,
     ui::{
         component::{
-            connect::Connect, swipe_detect::SwipeSettings, text::paragraphs::{
+            connect::Connect,
+            swipe_detect::SwipeSettings,
+            text::paragraphs::{
                 Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
                 Paragraphs, VecExt,
-            }, CachedJpeg, ComponentExt, Empty, Never, Timeout
+            },
+            CachedJpeg, ComponentExt, Empty, Never, Timeout,
         },
         geometry::{self, Direction},
         layout::{
@@ -25,8 +28,8 @@ use crate::{
 use super::{
     component::{
         check_homescreen_format, Bip39Input, CoinJoinProgress, Frame, Homescreen, Lockscreen,
-        MnemonicKeyboard, PinKeyboard, Progress, SelectWordCount, Slip39Input, SwipeContent,
-        SwipeUpScreen, VerticalMenu,
+        MnemonicKeyboard, PinKeyboard, Progress, SelectWordCount, Slip39Input, StatusScreen,
+        SwipeContent, SwipeUpScreen, VerticalMenu,
     },
     flow::{
         self, new_confirm_action_simple, ConfirmActionExtra, ConfirmActionMenu,
@@ -366,6 +369,41 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(layout)
     }
 
+    fn show_danger(
+        title: TString<'static>,
+        description: TString<'static>,
+        value: TString<'static>,
+        verb_cancel: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let flow = flow::show_danger::new_show_danger(title, description, value, verb_cancel)?;
+        Ok(flow)
+    }
+
+    fn show_error(
+        title: TString<'static>,
+        button: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let content = Paragraphs::new(Paragraph::new(&theme::TEXT_MAIN_GREY_LIGHT, description));
+        let frame = if allow_cancel {
+            Frame::left_aligned(title, SwipeContent::new(content))
+                .with_cancel_button()
+                .with_danger()
+                .with_footer(TR::instructions__swipe_up.into(), None)
+                .with_swipe(Direction::Up, SwipeSettings::default())
+        } else {
+            Frame::left_aligned(title, SwipeContent::new(content))
+                .with_danger()
+                .with_footer(TR::instructions__swipe_up.into(), None)
+                .with_swipe(Direction::Up, SwipeSettings::default())
+        };
+
+        let obj = LayoutObj::new(SwipeUpScreen::new(frame))?;
+        Ok(obj)
+    }
+
     fn show_group_share_success(
         lines: [TString<'static>; 4],
     ) -> Result<impl LayoutMaybeTrace, Error> {
@@ -485,9 +523,68 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         ))
     }
 
+    fn show_success(
+        title: TString<'static>,
+        button: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        // description used in the Footer
+        let description = if description.is_empty() {
+            None
+        } else {
+            Some(description)
+        };
+        let content = StatusScreen::new_success(title);
+        let layout = LayoutObj::new(SwipeUpScreen::new(
+            Frame::left_aligned(
+                TR::words__title_success.into(),
+                SwipeContent::new(content).with_no_attach_anim(),
+            )
+            .with_footer(TR::instructions__swipe_up.into(), description)
+            .with_result_icon(theme::ICON_BULLET_CHECKMARK, theme::GREEN_LIGHT)
+            .with_swipe(Direction::Up, SwipeSettings::default()),
+        ))?;
+        Ok(layout)
+    }
+
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)
+    }
+
+    fn show_warning(
+        title: TString<'static>,
+        button: TString<'static>,
+        value: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+        danger: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let action = if button.is_empty() {
+            None
+        } else {
+            Some(button)
+        };
+        let content = ParagraphVecShort::from_iter([
+            Paragraph::new(&theme::TEXT_MAIN_GREY_LIGHT, description),
+            Paragraph::new(&theme::TEXT_MAIN_GREY_EXTRA_LIGHT, value),
+        ])
+        .into_paragraphs();
+
+        let frame = Frame::left_aligned(title, SwipeContent::new(content))
+            .with_footer(TR::instructions__swipe_up.into(), action)
+            .with_swipe(Direction::Up, SwipeSettings::default());
+
+        let frame_with_icon = if danger {
+            frame.with_danger_icon()
+        } else {
+            frame.with_warning_low_icon()
+        };
+
+        Ok(LayoutObj::new(SwipeUpScreen::new(frame_with_icon))?)
     }
 
     fn tutorial() -> Result<impl LayoutMaybeTrace, Error> {

@@ -1,4 +1,9 @@
-use crate::{error::Error, io::BinaryData, micropython::{gc::Gc, obj::Obj}, strutil::TString};
+use crate::{
+    error::Error,
+    io::BinaryData,
+    micropython::{gc::Gc, obj::Obj},
+    strutil::TString,
+};
 
 use super::layout::{
     obj::{LayoutMaybeTrace, LayoutObj},
@@ -103,6 +108,21 @@ pub trait UIFeaturesFirmware {
         items: [TString<'static>; 3],
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_danger(
+        title: TString<'static>,
+        description: TString<'static>,
+        value: TString<'static>,
+        verb_cancel: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn show_error(
+        title: TString<'static>,
+        button: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
     fn show_group_share_success(
         lines: [TString<'static>; 4],
     ) -> Result<impl LayoutMaybeTrace, Error>;
@@ -146,7 +166,25 @@ pub trait UIFeaturesFirmware {
         pages_iterable: Obj, // TODO: replace Obj
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_success(
+        title: TString<'static>,
+        button: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn show_warning(
+        title: TString<'static>,
+        button: TString<'static>,
+        value: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+        danger: bool,
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
 
     fn tutorial() -> Result<impl LayoutMaybeTrace, Error>;
 }

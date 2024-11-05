@@ -135,7 +135,7 @@ async def show_recovery_warning(
 ) -> None:
     button = button or TR.buttons__try_again  # def_arg
     await raise_if_not_confirmed(
-        trezorui2.show_warning(
+        trezorui_api.show_warning(
             title=content or TR.words__warning,
             value=subheader or "",
             button=button,

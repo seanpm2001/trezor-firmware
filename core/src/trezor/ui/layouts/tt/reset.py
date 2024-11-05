@@ -355,7 +355,7 @@ def show_reset_warning(
 ) -> Awaitable[trezorui_api.UiResult]:
     button = button or TR.buttons__try_again  # def_arg
     return interact(
-        trezorui2.show_warning(
+        trezorui_api.show_warning(
             title=subheader or "",
             description=content,
             button=button,

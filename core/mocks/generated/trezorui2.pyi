@@ -114,55 +114,6 @@ def confirm_fido(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_error(
-    *,
-    title: str,
-    button: str = "CONTINUE",
-    description: str = "",
-    allow_cancel: bool = False,
-    time_ms: int = 0,
-) -> LayoutObj[UiResult]:
-    """Error modal. No buttons shown when `button` is empty string."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def show_warning(
-    *,
-    title: str,
-    button: str = "CONTINUE",
-    value: str = "",
-    description: str = "",
-    allow_cancel: bool = False,
-    time_ms: int = 0,
-    danger: bool = False,
-) -> LayoutObj[UiResult]:
-    """Warning modal. No buttons shown when `button` is empty string."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def show_danger(
-    *,
-    title: str,
-    description: str,
-    value: str = "",
-    verb_cancel: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Warning modal that makes it easier to cancel than to continue."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def show_success(
-    *,
-    title: str,
-    button: str = "CONTINUE",
-    description: str = "",
-    allow_cancel: bool = False,
-    time_ms: int = 0,
-) -> LayoutObj[UiResult]:
-    """Success screen. Description is used in the footer."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def show_simple(
     *,
     title: str | None,
@@ -424,16 +375,6 @@ def multiple_pages_texts(
 
 
 # rust/src/ui/model_tr/layout.rs
-def show_warning(
-    *,
-    button: str,
-    warning: str,
-    description: str,
-) -> LayoutObj[UiResult]:
-    """Warning modal with middle button and centered text."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def show_passphrase() -> LayoutObj[UiResult]:
     """Show passphrase on host dialog."""
 
@@ -613,44 +554,6 @@ def confirm_fido(
     """FIDO confirmation.
     Returns page index in case of confirmation and CANCELLED otherwise.
     """
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_error(
-    *,
-    title: str,
-    button: str = "CONTINUE",
-    description: str = "",
-    allow_cancel: bool = False,
-    time_ms: int = 0,
-) -> LayoutObj[UiResult]:
-    """Error modal. No buttons shown when `button` is empty string."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_warning(
-    *,
-    title: str,
-    button: str = "CONTINUE",
-    value: str = "",
-    description: str = "",
-    allow_cancel: bool = False,
-    time_ms: int = 0,
-    danger: bool = False,  # unused on TT
-) -> LayoutObj[UiResult]:
-    """Warning modal. No buttons shown when `button` is empty string."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_success(
-    *,
-    title: str,
-    button: str = "CONTINUE",
-    description: str = "",
-    allow_cancel: bool = False,
-    time_ms: int = 0,
-) -> LayoutObj[UiResult]:
-    """Success modal. No buttons shown when `button` is empty string."""
 
 
 # rust/src/ui/model_tt/layout.rs

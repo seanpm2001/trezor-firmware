@@ -136,7 +136,7 @@ def confirm_path_warning(path: str, path_type: str | None = None) -> Awaitable[N
         else f"{TR.words__unknown} {path_type.lower()}."
     )
     return raise_if_not_confirmed(
-        trezorui2.show_warning(
+        trezorui_api.show_warning(
             title=title,
             value=path,
             description=TR.words__continue_anyway_question,
@@ -331,7 +331,7 @@ async def show_error_and_raise(
 ) -> NoReturn:
     button = button or TR.buttons__try_again  # def_arg
     await interact(
-        trezorui2.show_error(
+        trezorui_api.show_error(
             title=subheader or "",
             description=content,
             button=button,
@@ -355,7 +355,7 @@ def show_warning(
 ) -> Awaitable[None]:
     button = button or TR.buttons__continue  # def_arg
     return raise_if_not_confirmed(
-        trezorui2.show_warning(
+        trezorui_api.show_warning(
             title=content,
             description=subheader or "",
             button=button,
@@ -389,7 +389,7 @@ def show_success(
 ) -> Awaitable[None]:
     button = button or TR.buttons__continue  # def_arg
     return raise_if_not_confirmed(
-        trezorui2.show_success(
+        trezorui_api.show_success(
             title=content,
             description=subheader or "",
             button=button,
@@ -1176,7 +1176,7 @@ def error_popup(
 
     if subtitle:
         title += f"\n{subtitle}"
-    layout = trezorui2.show_error(
+    layout = trezorui_api.show_error(
         title=title,
         description=description.format(description_param),
         button=button,

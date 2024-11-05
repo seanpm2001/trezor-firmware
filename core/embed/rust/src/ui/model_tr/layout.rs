@@ -820,38 +820,6 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_warning(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let button: TString<'static> = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let warning: TString = kwargs.get(Qstr::MP_QSTR_warning)?.try_into()?;
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-
-        let get_page = move |page_index| {
-            assert!(page_index == 0);
-
-            let btn_layout = ButtonLayout::none_armed_none(button);
-            let btn_actions = ButtonActions::none_confirm_none();
-            let mut ops = OpTextLayout::new(theme::TEXT_NORMAL);
-            ops = ops.alignment(geometry::Alignment::Center);
-            if !warning.is_empty() {
-                ops = ops.text_bold_upper(warning);
-                if !description.is_empty() {
-                    ops = ops.newline();
-                }
-            }
-            if !description.is_empty() {
-                ops = ops.text_normal(description);
-            }
-            let formatted = FormattedText::new(ops).vertically_centered();
-            Page::new(btn_layout, btn_actions, formatted)
-        };
-        let pages = FlowPages::new(get_page, 1);
-        let obj = LayoutObj::new(Flow::new(pages))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_passphrase() -> Obj {
     let block = move || {
         let text: TString = TR::passphrase__please_enter.into();
@@ -1133,15 +1101,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show multiple texts, each on its own page."""
     Qstr::MP_QSTR_multiple_pages_texts => obj_fn_kw!(0, new_multiple_pages_texts).as_obj(),
-
-    /// def show_warning(
-    ///     *,
-    ///     button: str,
-    ///     warning: str,
-    ///     description: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Warning modal with middle button and centered text."""
-    Qstr::MP_QSTR_show_warning => obj_fn_kw!(0, new_show_warning).as_obj(),
 
     /// def show_passphrase() -> LayoutObj[UiResult]:
     ///     """Show passphrase on host dialog."""

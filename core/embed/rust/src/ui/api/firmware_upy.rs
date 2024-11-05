@@ -299,6 +299,36 @@ extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut M
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_danger(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
+        let value: TString = kwargs.get_or(Qstr::MP_QSTR_value, "".into())?;
+        let verb_cancel: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb_cancel)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+
+        let layout = ModelUI::show_danger(title, description, value, verb_cancel)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_show_error(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
+        let description: TString = kwargs.get_or(Qstr::MP_QSTR_description, "".into())?;
+        let allow_cancel: bool = kwargs.get_or(Qstr::MP_QSTR_allow_cancel, true)?;
+        let time_ms: u32 = kwargs.get_or(Qstr::MP_QSTR_time_ms, 0)?;
+
+        let layout = ModelUI::show_error(title, button, description, allow_cancel, time_ms)?;
+        Ok(layout.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_group_share_success(
     n_args: usize,
     args: *const Obj,
@@ -418,6 +448,20 @@ extern "C" fn new_show_remaining_shares(n_args: usize, args: *const Obj, kwargs:
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_success(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
+        let description: TString = kwargs.get_or(Qstr::MP_QSTR_description, TString::empty())?;
+        let allow_cancel: bool = kwargs.get_or(Qstr::MP_QSTR_allow_cancel, false)?;
+        let time_ms: u32 = kwargs.get_or(Qstr::MP_QSTR_time_ms, 0)?;
+
+        let layout = ModelUI::show_success(title, button, description, allow_cancel, time_ms)?;
+        Ok(layout.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_wait_text(message: Obj) -> Obj {
     let block = || {
         let message: TString<'static> = message.try_into()?;
@@ -427,6 +471,30 @@ extern "C" fn new_show_wait_text(message: Obj) -> Obj {
     };
 
     unsafe { util::try_or_raise(block) }
+}
+
+extern "C" fn new_show_warning(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
+        let value: TString = kwargs.get_or(Qstr::MP_QSTR_value, "".into())?;
+        let description: TString = kwargs.get_or(Qstr::MP_QSTR_description, "".into())?;
+        let allow_cancel: bool = kwargs.get_or(Qstr::MP_QSTR_allow_cancel, true)?;
+        let time_ms: u32 = kwargs.get_or(Qstr::MP_QSTR_time_ms, 0)?;
+        let danger: bool = kwargs.get_or(Qstr::MP_QSTR_danger, false)?;
+
+        let layout = ModelUI::show_warning(
+            title,
+            button,
+            value,
+            description,
+            allow_cancel,
+            time_ms,
+            danger,
+        )?;
+        Ok(layout.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
 extern "C" fn new_tutorial(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
@@ -700,6 +768,27 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     ///    mark next to them. Limited to 3 items."""
     Qstr::MP_QSTR_show_checklist => obj_fn_kw!(0, new_show_checklist).as_obj(),
 
+    /// def show_danger(
+    ///     *,
+    ///     title: str,
+    ///     description: str,
+    ///     value: str = "",
+    ///     verb_cancel: str | None = None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Warning modal that makes it easier to cancel than to continue."""
+    Qstr::MP_QSTR_show_danger => obj_fn_kw!(0, new_show_danger).as_obj(),
+
+    /// def show_error(
+    ///     *,
+    ///     title: str,
+    ///     button: str,
+    ///     description: str = "",
+    ///     allow_cancel: bool = True,
+    ///     time_ms: int = 0,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Error modal. No buttons shown when `button` is empty string."""
+    Qstr::MP_QSTR_show_error => obj_fn_kw!(0, new_show_error).as_obj(),
+
     /// def show_group_share_success(
     ///     *,
     ///     lines: Iterable[str],
@@ -771,9 +860,33 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     ///     """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
     Qstr::MP_QSTR_show_remaining_shares => obj_fn_kw!(0, new_show_remaining_shares).as_obj(),
 
+    /// def show_success(
+    ///     *,
+    ///     title: str,
+    ///     button: str,
+    ///     description: str = "",
+    ///     allow_cancel: bool = True,
+    ///     time_ms: int = 0,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Success modal. No buttons shown when `button` is empty string."""
+    Qstr::MP_QSTR_show_success => obj_fn_kw!(0, new_show_success).as_obj(),
+
     /// def show_wait_text(message: str, /) -> LayoutObj[None]:
     ///     """Show single-line text in the middle of the screen."""
     Qstr::MP_QSTR_show_wait_text => obj_fn_1!(new_show_wait_text).as_obj(),
+
+    /// def show_warning(
+    ///     *,
+    ///     title: str,
+    ///     button: str,
+    ///     value: str = "",
+    ///     description: str = "",
+    ///     allow_cancel: bool = True,
+    ///     time_ms: int = 0,
+    ///     danger: bool = False,  # unused on TT
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Warning modal. TT: No buttons shown when `button` is empty string. TR: middle button and centered text."""
+    Qstr::MP_QSTR_show_warning => obj_fn_kw!(0, new_show_warning).as_obj(),
 
     /// def tutorial() -> LayoutObj[UiResult]:
     ///     """Show user how to interact with the device."""

@@ -301,7 +301,7 @@ async def show_intro_backup(single_share: bool, num_of_words: int | None) -> Non
 
 def show_warning_backup() -> Awaitable[ui.UiResult]:
     return interact(
-        trezorui2.show_warning(
+        trezorui_api.show_warning(
             title=TR.words__important,
             value=TR.reset__never_make_digital_copy,
             button="",
@@ -328,7 +328,7 @@ def show_reset_warning(
     br_code: ButtonRequestType = ButtonRequestType.Warning,
 ) -> Awaitable[None]:
     return raise_if_not_confirmed(
-        trezorui2.show_warning(
+        trezorui_api.show_warning(
             title=subheader or "",
             description=content,
             value="",

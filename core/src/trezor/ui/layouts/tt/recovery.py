@@ -185,7 +185,7 @@ def show_recovery_warning(
     button = button or TR.buttons__try_again  # def_arg
 
     return interact(
-        trezorui2.show_warning(
+        trezorui_api.show_warning(
             title=content,
             description=subheader or "",
             button=button,

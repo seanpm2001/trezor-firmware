@@ -19,6 +19,7 @@ use crate::{
             },
             Component, ComponentExt, Empty, FormattedText, Label, LineBreaking, Paginate, Timeout,
         },
+        geometry,
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
             util::RecoveryType,
@@ -375,6 +376,27 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Ok(layout)
     }
 
+    fn show_danger(
+        _title: TString<'static>,
+        _description: TString<'static>,
+        _value: TString<'static>,
+        _verb_cancel: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"show_danger not supported",
+        ))
+    }
+
+    fn show_error(
+        title: TString<'static>,
+        button: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        Err::<Gc<LayoutObj>, Error>(Error::ValueError(c"show error not supported"))
+    }
+
     fn show_group_share_success(
         lines: [TString<'static>; 4],
     ) -> Result<impl LayoutMaybeTrace, Error> {
@@ -499,9 +521,52 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         ))
     }
 
+    fn show_success(
+        title: TString<'static>,
+        button: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        Err::<Gc<LayoutObj>, Error>(Error::ValueError(c"show success not supported"))
+    }
+
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)
+    }
+
+    fn show_warning(
+        title: TString<'static>,
+        button: TString<'static>,
+        value: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+        danger: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let get_page = move |page_index| {
+            assert!(page_index == 0);
+
+            let btn_layout = ButtonLayout::none_armed_none(button);
+            let btn_actions = ButtonActions::none_confirm_none();
+            let mut ops = OpTextLayout::new(theme::TEXT_NORMAL);
+            ops = ops.alignment(geometry::Alignment::Center);
+            if !value.is_empty() {
+                ops = ops.text_bold_upper(value);
+                if !description.is_empty() {
+                    ops = ops.newline();
+                }
+            }
+            if !description.is_empty() {
+                ops = ops.text_normal(description);
+            }
+            let formatted = FormattedText::new(ops).vertically_centered();
+            Page::new(btn_layout, btn_actions, formatted)
+        };
+        let pages = FlowPages::new(get_page, 1);
+        let obj = LayoutObj::new(Flow::new(pages))?;
+        Ok(obj)
     }
 
     fn tutorial() -> Result<impl LayoutMaybeTrace, Error> {

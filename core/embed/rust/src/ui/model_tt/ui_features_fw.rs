@@ -406,6 +406,43 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn show_danger(
+        _title: TString<'static>,
+        _description: TString<'static>,
+        _value: TString<'static>,
+        _verb_cancel: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTTFeatures>, Error>(Error::ValueError(
+            c"show_danger not supported",
+        ))
+    }
+
+    fn show_error(
+        title: TString<'static>,
+        button: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let icon = BlendedImage::new(
+            theme::IMAGE_BG_CIRCLE,
+            theme::IMAGE_FG_ERROR,
+            theme::ERROR_COLOR,
+            theme::FG,
+            theme::BG,
+        );
+        new_show_modal(
+            title,
+            TString::empty(),
+            description,
+            button,
+            allow_cancel,
+            time_ms,
+            icon,
+            theme::button_default(),
+        )
+    }
+
     fn show_group_share_success(
         lines: [TString<'static>; 4],
     ) -> Result<impl LayoutMaybeTrace, Error> {
@@ -447,7 +484,7 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             theme::FG,
             theme::BG,
         );
-        let obj = new_show_modal(
+        new_show_modal(
             title,
             TString::empty(),
             description,
@@ -456,8 +493,7 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             time_ms,
             icon,
             theme::button_info(),
-        )?;
-        Ok(obj)
+        )
     }
 
     fn show_lockscreen(
@@ -562,9 +598,63 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn show_success(
+        title: TString<'static>,
+        button: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let icon = BlendedImage::new(
+            theme::IMAGE_BG_CIRCLE,
+            theme::IMAGE_FG_SUCCESS,
+            theme::SUCCESS_COLOR,
+            theme::FG,
+            theme::BG,
+        );
+        new_show_modal(
+            title,
+            TString::empty(),
+            description,
+            button,
+            allow_cancel,
+            time_ms,
+            icon,
+            theme::button_confirm(),
+        )
+    }
+
     fn show_wait_text(text: TString<'static>) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(Connect::new(text, theme::FG, theme::BG));
         Ok(layout)
+    }
+
+    fn show_warning(
+        title: TString<'static>,
+        button: TString<'static>,
+        value: TString<'static>,
+        description: TString<'static>,
+        allow_cancel: bool,
+        time_ms: u32,
+        danger: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let icon = BlendedImage::new(
+            theme::IMAGE_BG_OCTAGON,
+            theme::IMAGE_FG_WARN,
+            theme::WARN_COLOR,
+            theme::FG,
+            theme::BG,
+        );
+        new_show_modal(
+            title,
+            value,
+            description,
+            button,
+            allow_cancel,
+            0,
+            icon,
+            theme::button_reset(),
+        )
     }
 
     fn tutorial() -> Result<impl LayoutMaybeTrace, Error> {

@@ -401,9 +401,10 @@ def show_warning(
         content = content + "\n"
 
     return interact(
-        trezorui2.show_warning(  # type: ignore [Argument missing for parameter "title"]
+        trezorui_api.show_warning(  # type: ignore [Argument missing for parameter "title"]
+            title="",
             button=button,
-            warning=content,  # type: ignore [No parameter named "warning"]
+            value=content,
             description=subheader or "",
         ),
         br_name,

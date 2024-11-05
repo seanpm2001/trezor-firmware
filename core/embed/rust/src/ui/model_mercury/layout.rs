@@ -671,32 +671,6 @@ extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Ma
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_error(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let allow_cancel: bool = kwargs.get(Qstr::MP_QSTR_allow_cancel)?.try_into()?;
-
-        let content = Paragraphs::new(Paragraph::new(&theme::TEXT_MAIN_GREY_LIGHT, description));
-        let frame = if allow_cancel {
-            Frame::left_aligned(title, SwipeContent::new(content))
-                .with_cancel_button()
-                .with_danger()
-                .with_footer(TR::instructions__swipe_up.into(), None)
-                .with_swipe(Direction::Up, SwipeSettings::default())
-        } else {
-            Frame::left_aligned(title, SwipeContent::new(content))
-                .with_danger()
-                .with_footer(TR::instructions__swipe_up.into(), None)
-                .with_swipe(Direction::Up, SwipeSettings::default())
-        };
-
-        let frame = SwipeUpScreen::new(frame);
-        Ok(LayoutObj::new(frame)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -725,58 +699,6 @@ extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut
             text_confirm,
         )?;
         Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_show_warning(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: TString = kwargs.get_or(Qstr::MP_QSTR_description, "".into())?;
-        let value: TString = kwargs.get_or(Qstr::MP_QSTR_value, "".into())?;
-        let action: Option<TString> = kwargs.get(Qstr::MP_QSTR_button)?.try_into_option()?;
-        let danger: bool = kwargs.get_or(Qstr::MP_QSTR_danger, false)?;
-
-        let content = ParagraphVecShort::from_iter([
-            Paragraph::new(&theme::TEXT_MAIN_GREY_LIGHT, description),
-            Paragraph::new(&theme::TEXT_MAIN_GREY_EXTRA_LIGHT, value),
-        ])
-        .into_paragraphs();
-
-        let frame = Frame::left_aligned(title, SwipeContent::new(content))
-            .with_footer(TR::instructions__swipe_up.into(), action)
-            .with_swipe(Direction::Up, SwipeSettings::default());
-
-        let frame_with_icon = if danger {
-            frame.with_danger_icon()
-        } else {
-            frame.with_warning_low_icon()
-        };
-
-        Ok(LayoutObj::new(SwipeUpScreen::new(frame_with_icon))?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_show_success(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_description)?
-            .try_into_option()?
-            .and_then(|desc: TString| if desc.is_empty() { None } else { Some(desc) });
-
-        let content = StatusScreen::new_success(title);
-        let obj = LayoutObj::new(SwipeUpScreen::new(
-            Frame::left_aligned(
-                TR::words__title_success.into(),
-                SwipeContent::new(content).with_no_attach_anim(),
-            )
-            .with_footer(TR::instructions__swipe_up.into(), description)
-            .with_result_icon(ICON_BULLET_CHECKMARK, theme::GREEN_LIGHT)
-            .with_swipe(Direction::Up, SwipeSettings::default()),
-        ))?;
-        Ok(obj.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
@@ -914,22 +836,6 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
     panic!();
 }
 
-extern "C" fn new_show_danger(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let value: TString = kwargs.get_or(Qstr::MP_QSTR_value, "".into())?;
-        let verb_cancel: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_cancel)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-
-        let flow = flow::show_danger::new_show_danger(title, description, value, verb_cancel)?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -1040,51 +946,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     Returns page index in case of confirmation and CANCELLED otherwise.
     ///     """
     Qstr::MP_QSTR_confirm_fido => obj_fn_kw!(0, new_confirm_fido).as_obj(),
-
-    /// def show_error(
-    ///     *,
-    ///     title: str,
-    ///     button: str = "CONTINUE",
-    ///     description: str = "",
-    ///     allow_cancel: bool = False,
-    ///     time_ms: int = 0,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Error modal. No buttons shown when `button` is empty string."""
-    Qstr::MP_QSTR_show_error => obj_fn_kw!(0, new_show_error).as_obj(),
-
-    /// def show_warning(
-    ///     *,
-    ///     title: str,
-    ///     button: str = "CONTINUE",
-    ///     value: str = "",
-    ///     description: str = "",
-    ///     allow_cancel: bool = False,
-    ///     time_ms: int = 0,
-    ///     danger: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Warning modal. No buttons shown when `button` is empty string."""
-    Qstr::MP_QSTR_show_warning => obj_fn_kw!(0, new_show_warning).as_obj(),
-
-    /// def show_danger(
-    ///     *,
-    ///     title: str,
-    ///     description: str,
-    ///     value: str = "",
-    ///     verb_cancel: str | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Warning modal that makes it easier to cancel than to continue."""
-    Qstr::MP_QSTR_show_danger => obj_fn_kw!(0, new_show_danger).as_obj(),
-
-    /// def show_success(
-    ///     *,
-    ///     title: str,
-    ///     button: str = "CONTINUE",
-    ///     description: str = "",
-    ///     allow_cancel: bool = False,
-    ///     time_ms: int = 0,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Success screen. Description is used in the footer."""
-    Qstr::MP_QSTR_show_success => obj_fn_kw!(0, new_show_success).as_obj(),
 
     /// def show_simple(
     ///     *,

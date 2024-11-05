@@ -713,89 +713,6 @@ extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-fn new_show_modal(
-    kwargs: &Map,
-    icon: BlendedImage,
-    button_style: ButtonStyleSheet,
-) -> Result<Obj, Error> {
-    let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-    let value: TString = kwargs.get_or(Qstr::MP_QSTR_value, "".into())?;
-    let description: TString = kwargs.get_or(Qstr::MP_QSTR_description, "".into())?;
-    let button: TString = kwargs.get_or(Qstr::MP_QSTR_button, TR::buttons__continue.into())?;
-    let allow_cancel: bool = kwargs.get_or(Qstr::MP_QSTR_allow_cancel, true)?;
-    let time_ms: u32 = kwargs.get_or(Qstr::MP_QSTR_time_ms, 0)?;
-
-    let no_buttons = button.is_empty();
-    let obj = if no_buttons && time_ms == 0 {
-        // No buttons and no timer, used when we only want to draw the dialog once and
-        // then throw away the layout object.
-        LayoutObj::new(
-            IconDialog::new(icon, title, Empty)
-                .with_value(value)
-                .with_description(description),
-        )?
-        .into()
-    } else if no_buttons && time_ms > 0 {
-        // Timeout, no buttons.
-        LayoutObj::new(
-            IconDialog::new(
-                icon,
-                title,
-                Timeout::new(time_ms).map(|_| Some(CancelConfirmMsg::Confirmed)),
-            )
-            .with_value(value)
-            .with_description(description),
-        )?
-        .into()
-    } else if allow_cancel {
-        // Two buttons.
-        LayoutObj::new(
-            IconDialog::new(
-                icon,
-                title,
-                Button::cancel_confirm(
-                    Button::with_icon(theme::ICON_CANCEL),
-                    Button::with_text(button).styled(button_style),
-                    false,
-                ),
-            )
-            .with_value(value)
-            .with_description(description),
-        )?
-        .into()
-    } else {
-        // Single button.
-        LayoutObj::new(
-            IconDialog::new(
-                icon,
-                title,
-                theme::button_bar(Button::with_text(button).styled(button_style).map(|msg| {
-                    (matches!(msg, ButtonMsg::Clicked)).then(|| CancelConfirmMsg::Confirmed)
-                })),
-            )
-            .with_value(value)
-            .with_description(description),
-        )?
-        .into()
-    };
-
-    Ok(obj)
-}
-
-extern "C" fn new_show_error(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let icon = BlendedImage::new(
-            theme::IMAGE_BG_CIRCLE,
-            theme::IMAGE_FG_ERROR,
-            theme::ERROR_COLOR,
-            theme::FG,
-            theme::BG,
-        );
-        new_show_modal(kwargs, icon, theme::button_default())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -823,34 +740,6 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
 
         let obj = LayoutObj::new(Frame::centered(theme::label_title(), title, fido_page))?;
         Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_show_warning(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let icon = BlendedImage::new(
-            theme::IMAGE_BG_OCTAGON,
-            theme::IMAGE_FG_WARN,
-            theme::WARN_COLOR,
-            theme::FG,
-            theme::BG,
-        );
-        new_show_modal(kwargs, icon, theme::button_reset())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_show_success(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let icon = BlendedImage::new(
-            theme::IMAGE_BG_CIRCLE,
-            theme::IMAGE_FG_SUCCESS,
-            theme::SUCCESS_COLOR,
-            theme::FG,
-            theme::BG,
-        );
-        new_show_modal(kwargs, icon, theme::button_confirm())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
@@ -1161,41 +1050,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     Returns page index in case of confirmation and CANCELLED otherwise.
     ///     """
     Qstr::MP_QSTR_confirm_fido => obj_fn_kw!(0, new_confirm_fido).as_obj(),
-
-    /// def show_error(
-    ///     *,
-    ///     title: str,
-    ///     button: str = "CONTINUE",
-    ///     description: str = "",
-    ///     allow_cancel: bool = False,
-    ///     time_ms: int = 0,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Error modal. No buttons shown when `button` is empty string."""
-    Qstr::MP_QSTR_show_error => obj_fn_kw!(0, new_show_error).as_obj(),
-
-    /// def show_warning(
-    ///     *,
-    ///     title: str,
-    ///     button: str = "CONTINUE",
-    ///     value: str = "",
-    ///     description: str = "",
-    ///     allow_cancel: bool = False,
-    ///     time_ms: int = 0,
-    ///     danger: bool = False,  # unused on TT
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Warning modal. No buttons shown when `button` is empty string."""
-    Qstr::MP_QSTR_show_warning => obj_fn_kw!(0, new_show_warning).as_obj(),
-
-    /// def show_success(
-    ///     *,
-    ///     title: str,
-    ///     button: str = "CONTINUE",
-    ///     description: str = "",
-    ///     allow_cancel: bool = False,
-    ///     time_ms: int = 0,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Success modal. No buttons shown when `button` is empty string."""
-    Qstr::MP_QSTR_show_success => obj_fn_kw!(0, new_show_success).as_obj(),
 
     /// def show_simple(
     ///     *,

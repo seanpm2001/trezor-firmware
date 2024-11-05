@@ -735,7 +735,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_verb_info;
   MP_QSTR_verify;
   MP_QSTR_version;
-  MP_QSTR_warning;
   MP_QSTR_wipe__info;
   MP_QSTR_wipe__title;
   MP_QSTR_wipe__want_to_wipe;
