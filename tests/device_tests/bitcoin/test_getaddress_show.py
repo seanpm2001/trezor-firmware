@@ -248,7 +248,6 @@ def test_show_multisig_xpubs(
     xpubs: list[str],
     ignore_xpub_magic: bool,
 ):
-    raise Exception("Does not work")
     nodes = [
         btc.get_public_node(
             session,
@@ -265,7 +264,7 @@ def test_show_multisig_xpubs(
     )
 
     for i in range(3):
-        with session.client as client:
+        with session, session.client as client:
             IF = InputFlowShowMultisigXPUBs(client, address, xpubs, i)
             client.set_input_flow(IF.get())
             client.debug.synchronize_at("Homescreen")
