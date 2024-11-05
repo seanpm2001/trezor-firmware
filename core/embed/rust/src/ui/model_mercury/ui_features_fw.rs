@@ -14,7 +14,7 @@ use crate::{
                 Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
                 Paragraphs, VecExt,
             },
-            CachedJpeg, ComponentExt, Empty, Never, Timeout,
+            Border, CachedJpeg, ComponentExt, Empty, Never, Timeout,
         },
         geometry::{self, Direction},
         layout::{
@@ -521,6 +521,18 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
             c"show remaining shares not supported",
         ))
+    }
+
+    fn show_simple(
+        text: TString<'static>,
+        _title: Option<TString<'static>>,
+        _button: Option<TString<'static>>,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let obj = LayoutObj::new(Border::new(
+            theme::borders(),
+            Paragraphs::new(Paragraph::new(&theme::TEXT_DEMIBOLD, text)),
+        ))?;
+        Ok(obj)
     }
 
     fn show_success(

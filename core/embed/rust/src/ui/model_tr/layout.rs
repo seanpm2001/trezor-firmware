@@ -820,28 +820,6 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_passphrase() -> Obj {
-    let block = move || {
-        let text: TString = TR::passphrase__please_enter.into();
-        let paragraph = Paragraph::new(&theme::TEXT_NORMAL, text).centered();
-        let content = Paragraphs::new([paragraph]);
-        let obj = LayoutObj::new(content)?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_or_raise(block) }
-}
-
-extern "C" fn new_show_waiting_text(message: Obj) -> Obj {
-    let block = || {
-        let text: TString = message.try_into()?;
-        let paragraph = Paragraph::new(&theme::TEXT_NORMAL, text).centered();
-        let content = Paragraphs::new([paragraph]);
-        let obj = LayoutObj::new(content)?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_or_raise(block) }
-}
-
 extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1101,10 +1079,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show multiple texts, each on its own page."""
     Qstr::MP_QSTR_multiple_pages_texts => obj_fn_kw!(0, new_multiple_pages_texts).as_obj(),
-
-    /// def show_passphrase() -> LayoutObj[UiResult]:
-    ///     """Show passphrase on host dialog."""
-    Qstr::MP_QSTR_show_passphrase => obj_fn_0!(new_show_passphrase).as_obj(),
 
     /// def confirm_with_info(
     ///     *,

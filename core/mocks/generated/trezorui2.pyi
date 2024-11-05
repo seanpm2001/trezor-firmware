@@ -114,16 +114,6 @@ def confirm_fido(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_simple(
-    *,
-    title: str | None,
-    description: str = "",
-    button: str = "",
-) -> LayoutObj[UiResult]:
-    """Simple dialog with text and one button."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def confirm_with_info(
     *,
     title: str,
@@ -375,11 +365,6 @@ def multiple_pages_texts(
 
 
 # rust/src/ui/model_tr/layout.rs
-def show_passphrase() -> LayoutObj[UiResult]:
-    """Show passphrase on host dialog."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_with_info(
     *,
     title: str,
@@ -554,16 +539,6 @@ def confirm_fido(
     """FIDO confirmation.
     Returns page index in case of confirmation and CANCELLED otherwise.
     """
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_simple(
-    *,
-    title: str | None,
-    description: str = "",
-    button: str = "",
-) -> LayoutObj[UiResult]:
-    """Simple dialog with text and one button."""
 
 
 # rust/src/ui/model_tt/layout.rs

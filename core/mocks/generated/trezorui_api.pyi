@@ -347,6 +347,16 @@ def show_remaining_shares(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_simple(
+    *,
+    text: str,
+    title: str | None = None,
+    button: str | None = None,
+) -> LayoutObj[UiResult]:
+    """Simple dialog with text. TT: optional button."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_success(
     *,
     title: str,

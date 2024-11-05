@@ -166,6 +166,12 @@ pub trait UIFeaturesFirmware {
         pages_iterable: Obj, // TODO: replace Obj
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_simple(
+        text: TString<'static>,
+        title: Option<TString<'static>>,
+        button: Option<TString<'static>>,
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
     fn show_success(
         title: TString<'static>,
         button: TString<'static>,

@@ -744,53 +744,6 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_simple(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: Option<TString> = kwargs.get(Qstr::MP_QSTR_title)?.try_into_option()?;
-        let description: TString = kwargs.get_or(Qstr::MP_QSTR_description, "".into())?;
-        let button: TString = kwargs.get_or(Qstr::MP_QSTR_button, "".into())?;
-
-        let obj = if let Some(t) = title {
-            LayoutObj::new(Frame::left_aligned(
-                theme::label_title(),
-                t,
-                Dialog::new(
-                    Paragraphs::new([Paragraph::new(&theme::TEXT_NORMAL, description)]),
-                    theme::button_bar(Button::with_text(button).map(|msg| {
-                        (matches!(msg, ButtonMsg::Clicked)).then(|| CancelConfirmMsg::Confirmed)
-                    })),
-                ),
-            ))?
-            .into()
-        } else if !button.is_empty() {
-            LayoutObj::new(Border::new(
-                theme::borders(),
-                Dialog::new(
-                    Paragraphs::new([Paragraph::new(&theme::TEXT_NORMAL, description)]),
-                    theme::button_bar(Button::with_text(button).map(|msg| {
-                        (matches!(msg, ButtonMsg::Clicked)).then(|| CancelConfirmMsg::Confirmed)
-                    })),
-                ),
-            ))?
-            .into()
-        } else {
-            LayoutObj::new(Border::new(
-                theme::borders(),
-                Dialog::new(
-                    Paragraphs::new(
-                        [Paragraph::new(&theme::TEXT_DEMIBOLD, description).centered()],
-                    ),
-                    Empty,
-                ),
-            ))?
-            .into()
-        };
-
-        Ok(obj)
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1050,15 +1003,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     Returns page index in case of confirmation and CANCELLED otherwise.
     ///     """
     Qstr::MP_QSTR_confirm_fido => obj_fn_kw!(0, new_confirm_fido).as_obj(),
-
-    /// def show_simple(
-    ///     *,
-    ///     title: str | None,
-    ///     description: str = "",
-    ///     button: str = "",
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Simple dialog with text and one button."""
-    Qstr::MP_QSTR_show_simple => obj_fn_kw!(0, new_show_simple).as_obj(),
 
     /// def confirm_with_info(
     ///     *,

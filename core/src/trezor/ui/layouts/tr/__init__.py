@@ -1166,7 +1166,12 @@ def error_popup(
 
 
 def request_passphrase_on_host() -> None:
-    draw_simple(trezorui2.show_passphrase())
+    draw_simple(
+        trezorui_api.show_simple(
+            title=None,
+            text=TR.passphrase__please_enter,
+        )
+    )
 
 
 def show_wait_text(message: str) -> None:

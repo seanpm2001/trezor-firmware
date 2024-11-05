@@ -14,7 +14,7 @@ use crate::{
                 Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
                 Paragraphs, VecExt,
             },
-            ComponentExt, Empty, Jpeg, Label, Never, Timeout,
+            Border, ComponentExt, Empty, Jpeg, Label, Never, Timeout,
         },
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -596,6 +596,44 @@ impl UIFeaturesFirmware for ModelTTFeatures {
                 .without_cancel(),
         ));
         Ok(layout)
+    }
+
+    fn show_simple(
+        text: TString<'static>,
+        title: Option<TString<'static>>,
+        button: Option<TString<'static>>,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let button = button.unwrap_or(TString::empty());
+        if let Some(t) = title {
+            LayoutObj::new(Frame::left_aligned(
+                theme::label_title(),
+                t,
+                Dialog::new(
+                    Paragraphs::new([Paragraph::new(&theme::TEXT_NORMAL, text)]),
+                    theme::button_bar(Button::with_text(button).map(|msg| {
+                        (matches!(msg, ButtonMsg::Clicked)).then(|| CancelConfirmMsg::Confirmed)
+                    })),
+                ),
+            ))
+        } else if !button.is_empty() {
+            LayoutObj::new(Border::new(
+                theme::borders(),
+                Dialog::new(
+                    Paragraphs::new([Paragraph::new(&theme::TEXT_NORMAL, text)]),
+                    theme::button_bar(Button::with_text(button).map(|msg| {
+                        (matches!(msg, ButtonMsg::Clicked)).then(|| CancelConfirmMsg::Confirmed)
+                    })),
+                ),
+            ))
+        } else {
+            LayoutObj::new(Border::new(
+                theme::borders(),
+                Dialog::new(
+                    Paragraphs::new([Paragraph::new(&theme::TEXT_DEMIBOLD, text).centered()]),
+                    Empty,
+                ),
+            ))
+        }
     }
 
     fn show_success(

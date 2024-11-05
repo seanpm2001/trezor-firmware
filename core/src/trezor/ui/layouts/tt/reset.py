@@ -168,9 +168,9 @@ async def _prompt_number(
             return value
 
         await interact(
-            trezorui2.show_simple(
+            trezorui_api.show_simple(
                 title=None,
-                description=info(value),
+                text=info(value),
                 button=TR.buttons__ok_i_understand,
             ),
             None,

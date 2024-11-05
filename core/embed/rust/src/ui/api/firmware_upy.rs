@@ -448,6 +448,24 @@ extern "C" fn new_show_remaining_shares(n_args: usize, args: *const Obj, kwargs:
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_simple(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let text: TString = kwargs.get(Qstr::MP_QSTR_text)?.try_into()?;
+        let title: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_title)
+            .and_then(Obj::try_into_option)
+            .unwrap_or(None);
+        let button: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_button)
+            .and_then(Obj::try_into_option)
+            .unwrap_or(None);
+
+        let obj = ModelUI::show_simple(text, title, button)?;
+        Ok(obj.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_success(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -859,6 +877,15 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
     Qstr::MP_QSTR_show_remaining_shares => obj_fn_kw!(0, new_show_remaining_shares).as_obj(),
+
+    /// def show_simple(
+    ///     *,
+    ///     text: str,
+    ///     title: str | None = None,
+    ///     button: str | None = None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Simple dialog with text. TT: optional button."""
+    Qstr::MP_QSTR_show_simple => obj_fn_kw!(0, new_show_simple).as_obj(),
 
     /// def show_success(
     ///     *,

@@ -521,6 +521,17 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         ))
     }
 
+    fn show_simple(
+        text: TString<'static>,
+        _title: Option<TString<'static>>,
+        _button: Option<TString<'static>>,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let paragraph = Paragraph::new(&theme::TEXT_NORMAL, text).centered();
+        let content = Paragraphs::new([paragraph]);
+        let obj = LayoutObj::new(content)?;
+        Ok(obj)
+    }
+
     fn show_success(
         title: TString<'static>,
         button: TString<'static>,
