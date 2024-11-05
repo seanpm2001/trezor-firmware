@@ -20,6 +20,7 @@ import pytest
 
 from trezorlib import btc, device, messages
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.tools import parse_path
 
@@ -797,11 +798,11 @@ def test_get_address(session: Session):
         )
 
 
-def test_multisession_authorization(session: Session):
-    raise Exception("Test is not functional with the new session handling")  # TODO
+def test_multisession_authorization(client: Client):
     # Authorize CoinJoin with www.example1.com in session 1.
+    session1 = client.get_session()
     btc.authorize_coinjoin(
-        session,
+        session1,
         coordinator="www.example1.com",
         max_rounds=10,
         max_coordinator_fee_rate=500_000,  # 0.5 %
@@ -810,14 +811,14 @@ def test_multisession_authorization(session: Session):
         coin_name="Testnet",
         script_type=messages.InputScriptType.SPENDTAPROOT,
     )
-
+    session2 = client.get_session()
     # Open a second session.
     # session_id1 = session.session_id
     # TODO client.init_device(new_session=True)
 
     # Authorize CoinJoin with www.example2.com in session 2.
     btc.authorize_coinjoin(
-        session,
+        session2,
         coordinator="www.example2.com",
         max_rounds=10,
         max_coordinator_fee_rate=500_000,  # 0.5 %
@@ -830,7 +831,7 @@ def test_multisession_authorization(session: Session):
     # Requesting a preauthorized ownership proof for www.example1.com should fail in session 2.
     with pytest.raises(TrezorFailure, match="Unauthorized operation"):
         ownership_proof, _ = btc.get_ownership_proof(
-            session,
+            session2,
             "Testnet",
             parse_path("m/10025h/1h/0h/1h/1/0"),
             script_type=messages.InputScriptType.SPENDTAPROOT,
@@ -841,7 +842,7 @@ def test_multisession_authorization(session: Session):
 
     # Requesting a preauthorized ownership proof for www.example2.com should succeed in session 2.
     ownership_proof, _ = btc.get_ownership_proof(
-        session,
+        session2,
         "Testnet",
         parse_path("m/10025h/1h/0h/1h/1/0"),
         script_type=messages.InputScriptType.SPENDTAPROOT,
@@ -861,7 +862,7 @@ def test_multisession_authorization(session: Session):
 
     # Requesting a preauthorized ownership proof for www.example1.com should succeed in session 1.
     ownership_proof, _ = btc.get_ownership_proof(
-        session,
+        session1,
         "Testnet",
         parse_path("m/10025h/1h/0h/1h/1/0"),
         script_type=messages.InputScriptType.SPENDTAPROOT,
@@ -878,7 +879,7 @@ def test_multisession_authorization(session: Session):
     # Requesting a preauthorized ownership proof for www.example2.com should fail in session 1.
     with pytest.raises(TrezorFailure, match="Unauthorized operation"):
         ownership_proof, _ = btc.get_ownership_proof(
-            session,
+            session1,
             "Testnet",
             parse_path("m/10025h/1h/0h/1h/1/0"),
             script_type=messages.InputScriptType.SPENDTAPROOT,
@@ -888,12 +889,12 @@ def test_multisession_authorization(session: Session):
         )
 
     # Cancel the authorization in session 1.
-    device.cancel_authorization(session)
+    device.cancel_authorization(session1)
 
     # Requesting a preauthorized ownership proof should fail now.
     with pytest.raises(TrezorFailure, match="No preauthorized operation"):
         ownership_proof, _ = btc.get_ownership_proof(
-            session,
+            session1,
             "Testnet",
             parse_path("m/10025h/1h/0h/1h/1/0"),
             script_type=messages.InputScriptType.SPENDTAPROOT,
@@ -907,7 +908,7 @@ def test_multisession_authorization(session: Session):
 
     # Requesting a preauthorized ownership proof for www.example2.com should still succeed in session 2.
     ownership_proof, _ = btc.get_ownership_proof(
-        session,
+        session2,
         "Testnet",
         parse_path("m/10025h/1h/0h/1h/1/0"),
         script_type=messages.InputScriptType.SPENDTAPROOT,
