@@ -26,7 +26,6 @@ from ...common import MNEMONIC_SLIP39_BASIC_20_3of6
 
 pytestmark = [
     pytest.mark.altcoin,
-    pytest.mark.cardano,
     pytest.mark.models("core"),
 ]
 
@@ -39,20 +38,17 @@ def test_bad_session(session: Session):
 
 
 def test_ledger_available_without_cardano(session: Session):
-    # session.init_device(new_session=True, derive_cardano=False)
     get_public_key(session, ADDRESS_N, derivation_type=D.LEDGER)
 
 
-@pytest.mark.cardano
+@pytest.mark.cardano  # derive_cardano=True
 def test_ledger_available_with_cardano(session: Session):
-    # session.init_device(new_session=True, derive_cardano=True)
     get_public_key(session, ADDRESS_N, derivation_type=D.LEDGER)
 
 
 @pytest.mark.setup_client(mnemonic=MNEMONIC_SLIP39_BASIC_20_3of6)
 @pytest.mark.parametrize("derivation_type", D)  # try ALL derivation types
 def test_derivation_irrelevant_on_slip39(session: Session, derivation_type):
-    # session.init_device(new_session=True, derive_cardano=False)
     pubkey = get_public_key(session, ADDRESS_N, derivation_type=D.ICARUS)
     test_pubkey = get_public_key(session, ADDRESS_N, derivation_type=derivation_type)
     assert pubkey == test_pubkey
