@@ -653,10 +653,6 @@ def test_cancel_authorization(session: Session):
 
 
 def test_get_public_key(session: Session):
-    raise Exception(
-        "Test fails on: unlock_path_mac = device.unlock_path(session, n=SLIP25_PATH)"
-    )  # TODO
-
     ACCOUNT_PATH = parse_path("m/10025h/1h/0h/1h")
     EXPECTED_XPUB = "tpubDEMKm4M3S2Grx5DHTfbX9et5HQb9KhdjDCkUYdH9gvVofvPTE6yb2MH52P9uc4mx6eFohUmfN1f4hhHNK28GaZnWRXr3b8KkfFcySo1SmXU"
 
@@ -712,9 +708,6 @@ def test_get_public_key(session: Session):
 
 
 def test_get_address(session: Session):
-    raise Exception(
-        "Test fails on: unlock_path_mac = device.unlock_path(session, SLIP25_PATH)"
-    )  # TODO
 
     # Ensure that the SLIP-0025 external chain is inaccessible without user confirmation.
     with pytest.raises(TrezorFailure, match="Forbidden key path"):
