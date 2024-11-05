@@ -146,8 +146,6 @@ async def _get_keychain_bip39(derivation_type: CardanoDerivationType) -> Keychai
     from trezor.enums import CardanoDerivationType
     from trezor.wire import context
 
-    from apps.common.seed import derive_and_store_roots_legacy
-
     if not device.is_initialized():
         raise wire.NotInitialized("Device is not initialized")
 
@@ -165,10 +163,11 @@ async def _get_keychain_bip39(derivation_type: CardanoDerivationType) -> Keychai
 
     # _get_secret
     secret = context.cache_get(cache_entry)
-    if secret is None:
-        await derive_and_store_roots_legacy()
-        secret = context.cache_get(cache_entry)
-        assert secret is not None
+    assert secret is not None
+    # if secret is None:
+    #     await derive_and_store_roots_legacy()
+    #     secret = context.cache_get(cache_entry)
+    #     assert secret is not None
 
     root = cardano.from_secret(secret)
     return Keychain(root)
