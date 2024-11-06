@@ -22,6 +22,7 @@ from enum import IntEnum
 from pathlib import Path
 from time import sleep
 
+import cryptography
 import pytest
 import xdist
 from _pytest.python import IdMaker
@@ -138,6 +139,10 @@ def emulator(request: pytest.FixtureRequest) -> t.Generator["Emulator", None, No
 
 @pytest.fixture(scope="session")
 def _raw_client(request: pytest.FixtureRequest) -> Client:
+    return _get_raw_client(request)
+
+
+def _get_raw_client(request: pytest.FixtureRequest) -> Client:
     # In case tests run in parallel, each process has its own emulator/client.
     # Requesting the emulator fixture only if relevant.
     if request.session.config.getoption("control_emulators"):
@@ -306,10 +311,17 @@ def client(
     if sd_marker:
         should_format = sd_marker.kwargs.get("formatted", True)
         _raw_client.debug.erase_sd_card(format=should_format)
-    session = _raw_client.get_management_session()
 
-    wipe_device(session)
-    sleep(1)  # Makes tests more stable (wait for wipe to finish)
+    while True:
+        try:
+            session = _raw_client.get_management_session()
+            wipe_device(session)
+            sleep(1)  # Makes tests more stable (wait for wipe to finish)
+            break
+        except cryptography.exceptions.InvalidTag:
+            # Get a new client
+            _raw_client = _get_raw_client(request)
+
     from trezorlib.transport.thp import channel_database
 
     channel_database.clear_stored_channels()

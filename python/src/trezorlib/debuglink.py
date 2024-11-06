@@ -1272,8 +1272,12 @@ class TrezorClientDebugLink(TrezorClient):
     def layout_type(self) -> LayoutType:
         return self.debug.layout_type
 
+    def get_new_client(self) -> TrezorClientDebugLink:
+        return TrezorClientDebugLink(self.transport, self.debug.allow_interactions)
+
     def reset_debug_features(self) -> None:
-        """Prepare the debugging client for a new testcase.
+        """
+        Prepare the debugging client for a new testcase.
 
         Clears all debugging state that might have been modified by a testcase.
         """
