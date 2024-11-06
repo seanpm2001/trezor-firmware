@@ -1883,9 +1883,11 @@ class InputFlowBip39RecoveryDryRun(InputFlowBase):
 
 
 class InputFlowBip39RecoveryDryRunInvalid(InputFlowBase):
-    def __init__(self, client: Client):
-        super().__init__(client)
+
+    def __init__(self, session: Session):
+        super().__init__(session.client)
         self.invalid_mnemonic = ["stick"] * 12
+        self.session = session
 
     def input_flow_common(self) -> BRGeneratorType:
         yield from self.REC.confirm_dry_run()
@@ -1894,7 +1896,7 @@ class InputFlowBip39RecoveryDryRunInvalid(InputFlowBase):
         yield from self.REC.warning_invalid_recovery_seed()
 
         yield
-        self.client.cancel()
+        self.session.cancel()
 
 
 class InputFlowBip39Recovery(InputFlowBase):
@@ -1977,15 +1979,17 @@ class InputFlowSlip39AdvancedRecoveryNoAbort(InputFlowBase):
 
 
 class InputFlowSlip39AdvancedRecoveryThresholdReached(InputFlowBase):
+
     def __init__(
         self,
-        client: Client,
+        session: Session,
         first_share: list[str],
         second_share: list[str],
     ):
-        super().__init__(client)
+        super().__init__(session.client)
         self.first_share = first_share
         self.second_share = second_share
+        self.session = session
 
     def input_flow_common(self) -> BRGeneratorType:
         yield from self.REC.confirm_recovery()
@@ -1997,19 +2001,21 @@ class InputFlowSlip39AdvancedRecoveryThresholdReached(InputFlowBase):
         yield from self.REC.warning_group_threshold_reached()
 
         yield
-        self.client.cancel()
+        self.session.cancel()
 
 
 class InputFlowSlip39AdvancedRecoveryShareAlreadyEntered(InputFlowBase):
+
     def __init__(
         self,
-        client: Client,
+        session: Session,
         first_share: list[str],
         second_share: list[str],
     ):
-        super().__init__(client)
+        super().__init__(session.client)
         self.first_share = first_share
         self.second_share = second_share
+        self.session = session
 
     def input_flow_common(self) -> BRGeneratorType:
         yield from self.REC.confirm_recovery()
@@ -2021,7 +2027,7 @@ class InputFlowSlip39AdvancedRecoveryShareAlreadyEntered(InputFlowBase):
         yield from self.REC.warning_share_already_entered()
 
         yield
-        self.client.cancel()
+        self.session.cancel()
 
 
 class InputFlowSlip39BasicRecoveryDryRun(InputFlowBase):
@@ -2120,10 +2126,12 @@ class InputFlowSlip39BasicRecoveryNoAbort(InputFlowBase):
 
 
 class InputFlowSlip39BasicRecoveryInvalidFirstShare(InputFlowBase):
-    def __init__(self, client: Client):
-        super().__init__(client)
+
+    def __init__(self, session: Session):
+        super().__init__(session.client)
         self.first_invalid = ["slush"] * 20
         self.second_invalid = ["slush"] * 33
+        self.session = session
 
     def input_flow_common(self) -> BRGeneratorType:
         yield from self.REC.confirm_recovery()
@@ -2135,16 +2143,18 @@ class InputFlowSlip39BasicRecoveryInvalidFirstShare(InputFlowBase):
         yield from self.REC.warning_invalid_recovery_share()
 
         yield
-        self.client.cancel()
+        self.session.cancel()
 
 
 class InputFlowSlip39BasicRecoveryInvalidSecondShare(InputFlowBase):
-    def __init__(self, client: Client, shares: list[str]):
-        super().__init__(client)
+
+    def __init__(self, session: Session, shares: list[str]):
+        super().__init__(session.client)
         self.shares = shares
         self.first_share = shares[0].split(" ")
         self.invalid_share = self.first_share[:3] + ["slush"] * 17
         self.second_share = shares[1].split(" ")
+        self.session = session
 
     def input_flow_common(self) -> BRGeneratorType:
         yield from self.REC.confirm_recovery()
@@ -2157,16 +2167,18 @@ class InputFlowSlip39BasicRecoveryInvalidSecondShare(InputFlowBase):
         yield from self.REC.success_more_shares_needed(1)
 
         yield
-        self.client.cancel()
+        self.session.cancel()
 
 
 class InputFlowSlip39BasicRecoveryWrongNthWord(InputFlowBase):
-    def __init__(self, client: Client, share: list[str], nth_word: int):
-        super().__init__(client)
+
+    def __init__(self, session: Session, share: list[str], nth_word: int):
+        super().__init__(session.client)
         self.share = share
         self.nth_word = nth_word
         # Invalid share - just enough words to trigger the warning
         self.modified_share = share[:nth_word] + [self.share[-1]]
+        self.session = session
 
     def input_flow_common(self) -> BRGeneratorType:
         yield from self.REC.confirm_recovery()
@@ -2177,15 +2189,17 @@ class InputFlowSlip39BasicRecoveryWrongNthWord(InputFlowBase):
         yield from self.REC.warning_share_from_another_shamir()
 
         yield
-        self.client.cancel()
+        self.session.cancel()
 
 
 class InputFlowSlip39BasicRecoverySameShare(InputFlowBase):
-    def __init__(self, client: Client, share: list[str]):
-        super().__init__(client)
+
+    def __init__(self, session: Session, share: list[str]):
+        super().__init__(session.client)
         self.share = share
         # Second duplicate share - only 4 words are needed to verify it
         self.duplicate_share = self.share[:4]
+        self.session = session
 
     def input_flow_common(self) -> BRGeneratorType:
         yield from self.REC.confirm_recovery()
@@ -2196,7 +2210,7 @@ class InputFlowSlip39BasicRecoverySameShare(InputFlowBase):
         yield from self.REC.warning_share_already_entered()
 
         yield
-        self.client.cancel()
+        self.session.cancel()
 
 
 class InputFlowResetSkipBackup(InputFlowBase):
