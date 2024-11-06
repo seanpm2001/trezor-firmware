@@ -74,7 +74,10 @@ VECTORS = [
 @pytest.mark.models("core")
 @pytest.mark.parametrize("backup_type, backup_flow", VECTORS)
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_skip_backup_msg(session: Session, backup_type, backup_flow):
+    assert session.features.initialized is False
+
     with WITH_MOCK_URANDOM, session:
         device.reset(
             session,
@@ -92,16 +95,14 @@ def test_skip_backup_msg(session: Session, backup_type, backup_flow):
 
     secret = backup_flow(session)
 
-    raise Exception("NOT VALID TEST, INIT IS REMOVED, NEEDS TO BE REMADE")
-
-    session.init_device()
+    session = session.client.get_session()
     assert session.features.initialized is True
     assert session.features.backup_availability == BackupAvailability.NotAvailable
     assert session.features.unfinished_backup is False
     assert session.features.backup_type is backup_type
 
     assert secret is not None
-    state = session.debug.state()
+    state = session.client.debug.state()
     assert state.mnemonic_type is backup_type
     assert state.mnemonic_secret == secret
 
@@ -109,8 +110,11 @@ def test_skip_backup_msg(session: Session, backup_type, backup_flow):
 @pytest.mark.models("core")
 @pytest.mark.parametrize("backup_type, backup_flow", VECTORS)
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_skip_backup_manual(session: Session, backup_type: BackupType, backup_flow):
-    with WITH_MOCK_URANDOM, session.client as client:
+    assert session.features.initialized is False
+
+    with WITH_MOCK_URANDOM, session, session.client as client:
         IF = InputFlowResetSkipBackup(client)
         client.set_input_flow(IF.get())
         device.reset(
@@ -128,15 +132,13 @@ def test_skip_backup_manual(session: Session, backup_type: BackupType, backup_fl
 
     secret = backup_flow(session)
 
-    raise Exception("NOT VALID TEST, init_device IS REMOVED, NEEDS TO BE REMADE")
-
-    session.init_device()
+    session = session.client.get_session()
     assert session.features.initialized is True
     assert session.features.backup_availability == BackupAvailability.NotAvailable
     assert session.features.unfinished_backup is False
     assert session.features.backup_type is backup_type
 
     assert secret is not None
-    state = session.debug.state()
+    state = session.client.debug.state()
     assert state.mnemonic_type is backup_type
     assert state.mnemonic_secret == secret

@@ -18,6 +18,7 @@ import pytest
 
 from trezorlib import btc, device, messages
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.messages import BackupType
 from trezorlib.tools import parse_path
 
@@ -27,12 +28,17 @@ from ...input_flows import InputFlowBip39Recovery, InputFlowBip39ResetBackup
 
 @pytest.mark.models("core")
 @pytest.mark.setup_client(uninitialized=True)
-def test_reset_recovery(session: Session):
+def test_reset_recovery(client: Client):
+    session = client.get_management_session()
     mnemonic = reset(session)
+    session = client.get_session()
     address_before = btc.get_address(session, "Bitcoin", parse_path("m/44h/0h/0h/0/0"))
 
     device.wipe(session)
+    client = client.get_new_client()
+    session = client.get_management_session()
     recover(session, mnemonic)
+    session = client.get_session()
     address_after = btc.get_address(session, "Bitcoin", parse_path("m/44h/0h/0h/0/0"))
     assert address_before == address_after
 

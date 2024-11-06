@@ -28,6 +28,7 @@ STRENGTH = 128
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_reset_device_skip_backup(session: Session):
     debug = session.client.debug
     ret = session.call_raw(
@@ -96,6 +97,7 @@ def test_reset_device_skip_backup(session: Session):
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_reset_device_skip_backup_break(session: Session):
     debug = session.client.debug
     ret = session.call_raw(

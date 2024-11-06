@@ -18,7 +18,7 @@ import pytest
 from shamir_mnemonic import shamir
 
 from trezorlib import device
-from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.messages import BackupAvailability, BackupType
 
@@ -30,14 +30,14 @@ pytestmark = pytest.mark.models("core")
 
 # TODO: test with different options
 @pytest.mark.setup_client(uninitialized=True)
-def test_reset_device_slip39_advanced(session: Session):
+def test_reset_device_slip39_advanced(client: Client):
     strength = 128
     member_threshold = 3
 
-    with WITH_MOCK_URANDOM, session.client as client:
+    with WITH_MOCK_URANDOM, client:
         IF = InputFlowSlip39AdvancedResetRecovery(client, False)
         client.set_input_flow(IF.get())
-
+        session = client.get_management_session()
         # No PIN, no passphrase, don't display random
         device.reset(
             session,
@@ -49,12 +49,12 @@ def test_reset_device_slip39_advanced(session: Session):
         )
 
     # generate secret locally
-    internal_entropy = session.client.debug.state().reset_entropy
+    internal_entropy = client.debug.state().reset_entropy
     secret = generate_entropy(strength, internal_entropy, EXTERNAL_ENTROPY)
 
     # validate that all combinations will result in the correct master secret
     validate_mnemonics(IF.mnemonics, member_threshold, secret)
-
+    session = client.get_session()
     # Check if device is properly initialized
     assert session.features.initialized is True
     assert session.features.backup_availability == BackupAvailability.NotAvailable

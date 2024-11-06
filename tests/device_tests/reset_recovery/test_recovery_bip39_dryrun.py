@@ -87,9 +87,9 @@ def test_invalid_seed_t1(session: Session):
 
 @pytest.mark.models("core")
 def test_invalid_seed_core(session: Session):
-    with session.client as client:
+    with session, session.client as client:
         client.watch_layout()
-        IF = InputFlowBip39RecoveryDryRunInvalid(client)
+        IF = InputFlowBip39RecoveryDryRunInvalid(session)
         client.set_input_flow(IF.get())
         with pytest.raises(exceptions.Cancelled):
             return device.recover(
@@ -99,6 +99,7 @@ def test_invalid_seed_core(session: Session):
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_uninitialized(session: Session):
     with pytest.raises(exceptions.TrezorFailure, match="not initialized"):
         do_recover(session, ["all"] * 12)

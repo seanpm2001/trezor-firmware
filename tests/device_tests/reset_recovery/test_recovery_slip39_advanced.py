@@ -28,7 +28,7 @@ from ...input_flows import (
     InputFlowSlip39AdvancedRecoveryThresholdReached,
 )
 
-pytestmark = pytest.mark.models("core")
+pytestmark = [pytest.mark.models("core"), pytest.mark.uninitialized_session]
 
 EXTRA_GROUP_SHARE = [
     "eraser senior decision smug corner ruin rescue cubic angel tackle skin skunk program roster trash rumor slush angel flea amazing"
@@ -120,9 +120,9 @@ def test_same_share(session: Session):
     # second share is first 4 words of first
     second_share = MNEMONIC_SLIP39_ADVANCED_20[1].split(" ")[:4]
 
-    with session.client as client:
+    with session, session.client as client:
         IF = InputFlowSlip39AdvancedRecoveryShareAlreadyEntered(
-            client, first_share, second_share
+            session, first_share, second_share
         )
         client.set_input_flow(IF.get())
         with pytest.raises(exceptions.Cancelled):
@@ -136,9 +136,9 @@ def test_group_threshold_reached(session: Session):
     # second share is first 3 words of first
     second_share = MNEMONIC_SLIP39_ADVANCED_20[0].split(" ")[:3]
 
-    with session.client as client:
+    with session, session.client as client:
         IF = InputFlowSlip39AdvancedRecoveryThresholdReached(
-            client, first_share, second_share
+            session, first_share, second_share
         )
         client.set_input_flow(IF.get())
         with pytest.raises(exceptions.Cancelled):

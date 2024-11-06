@@ -18,6 +18,7 @@ import pytest
 
 from trezorlib import btc, device, messages
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.messages import BackupType
 from trezorlib.tools import parse_path
 
@@ -30,8 +31,10 @@ from ...input_flows import (
 
 @pytest.mark.models("core")
 @pytest.mark.setup_client(uninitialized=True)
-def test_reset_recovery(session: Session):
+def test_reset_recovery(client: Client):
+    session = client.get_management_session()
     mnemonics = reset(session)
+    session = client.get_session()
     address_before = btc.get_address(session, "Bitcoin", parse_path("m/44h/0h/0h/0/0"))
     # we're generating 3of5 groups 3of5 shares each
     test_combinations = [
@@ -49,8 +52,12 @@ def test_reset_recovery(session: Session):
         + mnemonics[22:25],
     ]
     for combination in test_combinations:
+        session = client.get_management_session()
         device.wipe(session)
+        client = client.get_new_client()
+        session = client.get_management_session()
         recover(session, combination)
+        session = client.get_session()
         address_after = btc.get_address(
             session, "Bitcoin", parse_path("m/44h/0h/0h/0/0")
         )

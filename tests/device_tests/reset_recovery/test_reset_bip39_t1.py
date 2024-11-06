@@ -92,16 +92,19 @@ def reset_device(session: Session, strength: int):
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_reset_device_128(session: Session):
     reset_device(session, 128)
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_reset_device_192(session: Session):
     reset_device(session, 192)
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_reset_device_256_pin(session: Session):
     debug = session.client.debug
     strength = 256
@@ -182,6 +185,7 @@ def test_reset_device_256_pin(session: Session):
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_failed_pin(session: Session):
     debug = session.client.debug
     strength = 128

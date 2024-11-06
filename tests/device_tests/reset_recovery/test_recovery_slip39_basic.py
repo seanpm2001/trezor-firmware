@@ -36,7 +36,7 @@ from ...input_flows import (
     InputFlowSlip39BasicRecoveryWrongNthWord,
 )
 
-pytestmark = pytest.mark.models("core")
+pytestmark = [pytest.mark.models("core"), pytest.mark.uninitialized_session]
 
 MNEMONIC_SLIP39_BASIC_20_1of1 = [
     "academic academic academic academic academic academic academic academic academic academic academic academic academic academic academic academic academic rebuild aquatic spew"
@@ -146,8 +146,8 @@ def test_noabort(session: Session):
 
 @pytest.mark.setup_client(uninitialized=True)
 def test_invalid_mnemonic_first_share(session: Session):
-    with session.client as client:
-        IF = InputFlowSlip39BasicRecoveryInvalidFirstShare(client)
+    with session, session.client as client:
+        IF = InputFlowSlip39BasicRecoveryInvalidFirstShare(session)
         client.set_input_flow(IF.get())
         with pytest.raises(exceptions.Cancelled):
             device.recover(session, pin_protection=False, label="label")
@@ -157,9 +157,9 @@ def test_invalid_mnemonic_first_share(session: Session):
 
 @pytest.mark.setup_client(uninitialized=True)
 def test_invalid_mnemonic_second_share(session: Session):
-    with session.client as client:
+    with session, session.client as client:
         IF = InputFlowSlip39BasicRecoveryInvalidSecondShare(
-            client, MNEMONIC_SLIP39_BASIC_20_3of6
+            session, MNEMONIC_SLIP39_BASIC_20_3of6
         )
         client.set_input_flow(IF.get())
         with pytest.raises(exceptions.Cancelled):
@@ -172,8 +172,8 @@ def test_invalid_mnemonic_second_share(session: Session):
 @pytest.mark.parametrize("nth_word", range(3))
 def test_wrong_nth_word(session: Session, nth_word: int):
     share = MNEMONIC_SLIP39_BASIC_20_3of6[0].split(" ")
-    with session.client as client:
-        IF = InputFlowSlip39BasicRecoveryWrongNthWord(client, share, nth_word)
+    with session, session.client as client:
+        IF = InputFlowSlip39BasicRecoveryWrongNthWord(session, share, nth_word)
         client.set_input_flow(IF.get())
         with pytest.raises(exceptions.Cancelled):
             device.recover(session, pin_protection=False, label="label")
@@ -182,8 +182,8 @@ def test_wrong_nth_word(session: Session, nth_word: int):
 @pytest.mark.setup_client(uninitialized=True)
 def test_same_share(session: Session):
     share = MNEMONIC_SLIP39_BASIC_20_3of6[0].split(" ")
-    with session.client as client:
-        IF = InputFlowSlip39BasicRecoverySameShare(client, share)
+    with session, session.client as client:
+        IF = InputFlowSlip39BasicRecoverySameShare(session, share)
         client.set_input_flow(IF.get())
         with pytest.raises(exceptions.Cancelled):
             device.recover(session, pin_protection=False, label="label")

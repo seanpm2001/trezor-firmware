@@ -48,12 +48,12 @@ def reset_device(session: Session, strength: int):
         )
 
     # generate secret locally
-    internal_entropy = session.debug.state().reset_entropy
+    internal_entropy = session.client.debug.state().reset_entropy
     secret = generate_entropy(strength, internal_entropy, EXTERNAL_ENTROPY)
 
     # validate that all combinations will result in the correct master secret
     validate_mnemonics(IF.mnemonics, member_threshold, secret)
-
+    session = session.client.get_session()
     # Check if device is properly initialized
     assert session.features.initialized is True
     assert session.features.backup_availability == BackupAvailability.NotAvailable
@@ -67,11 +67,13 @@ def reset_device(session: Session, strength: int):
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_reset_device_slip39_basic(session: Session):
     reset_device(session, 128)
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_reset_device_slip39_basic_256(session: Session):
     reset_device(session, 256)
 
