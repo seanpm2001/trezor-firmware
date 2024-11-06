@@ -131,7 +131,9 @@ class ProtocolV2(ProtocolAndChannel):
         self.sync_bit_send = 0
         self.sync_bit_receive = 0
         # Send channel allocation request
-        channel_id_request_nonce = os.urandom(8)
+        # Note that [:8] on the following line is required when tests use
+        # WITH_MOCK_URANDOM. Without [:8] such tests will (almost always) fail.
+        channel_id_request_nonce = os.urandom(8)[:8]
         thp_io.write_payload_to_wire_and_add_checksum(
             self.transport,
             MessageHeader.get_channel_allocation_request_header(12),
@@ -151,7 +153,9 @@ class ProtocolV2(ProtocolAndChannel):
 
         # Send handshake init request
         ha_init_req_header = MessageHeader(0, self.channel_id, 36)
-        host_ephemeral_privkey = curve25519.get_private_key(os.urandom(32))
+        # Note that [:32] on the following line is required when tests use
+        # WITH_MOCK_URANDOM. Without [:32] such tests will (almost always) fail.
+        host_ephemeral_privkey = curve25519.get_private_key(os.urandom(32)[:32])
         host_ephemeral_pubkey = curve25519.get_public_key(host_ephemeral_privkey)
 
         thp_io.write_payload_to_wire_and_add_checksum(
