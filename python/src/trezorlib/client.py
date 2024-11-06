@@ -116,6 +116,11 @@ class TrezorClient:
         passphrase: str | None = None,
         derive_cardano: bool = False,
     ) -> Session:
+        """
+        Returns initialized session (with derived seed).
+
+        Will fail if the device is not initialized
+        """
         from .transport.session import SessionV1, SessionV2
 
         if isinstance(self.protocol, ProtocolV1):
