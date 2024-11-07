@@ -1,7 +1,7 @@
 use crate::{
     error::Error,
     io::BinaryData,
-    micropython::{gc::Gc, obj::Obj},
+    micropython::{gc::Gc, list::List, obj::Obj},
     strutil::TString,
 };
 
@@ -33,6 +33,13 @@ pub trait UIFeaturesFirmware {
     fn confirm_coinjoin(
         max_rounds: TString<'static>,
         max_feerate: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn confirm_fido(
+        title: TString<'static>,
+        app_name: TString<'static>,
+        icon: Option<TString<'static>>,
+        accounts: Gc<List>, // TODO: replace Gc<List>
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
     fn confirm_firmware_update(

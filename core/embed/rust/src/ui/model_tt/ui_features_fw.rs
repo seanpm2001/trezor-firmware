@@ -3,7 +3,7 @@ use core::cmp::Ordering;
 use crate::{
     error::{value_error, Error},
     io::BinaryData,
-    micropython::gc::Gc,
+    micropython::{gc::Gc, list::List},
     strutil::TString,
     translations::TR,
     ui::{
@@ -27,8 +27,8 @@ use crate::{
 use super::{
     component::{
         check_homescreen_format, Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet,
-        CancelConfirmMsg, CoinJoinProgress, Dialog, Frame, Homescreen, IconDialog, Lockscreen,
-        MnemonicKeyboard, NumberInputDialog, PassphraseKeyboard, PinKeyboard, Progress,
+        CancelConfirmMsg, CoinJoinProgress, Dialog, FidoConfirm, Frame, Homescreen, IconDialog,
+        Lockscreen, MnemonicKeyboard, NumberInputDialog, PassphraseKeyboard, PinKeyboard, Progress,
         SelectWordCount, SetBrightnessDialog, Slip39Input,
     },
     theme, ModelTTFeatures,
@@ -115,6 +115,34 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             TR::coinjoin__title.into(),
             ButtonPage::new(paragraphs, theme::BG).with_hold()?,
         ));
+        Ok(layout)
+    }
+
+    fn confirm_fido(
+        title: TString<'static>,
+        app_name: TString<'static>,
+        icon: Option<TString<'static>>,
+        accounts: Gc<List>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        // Cache the page count so that we can move `accounts` into the closure.
+        let page_count = accounts.len();
+        // Closure to lazy-load the information on given page index.
+        // Done like this to allow arbitrarily many pages without
+        // the need of any allocation here in Rust.
+        let get_page = move |page_index| {
+            let account = unwrap!(accounts.get(page_index));
+            account.try_into().unwrap_or_else(|_| "".into())
+        };
+
+        let controls = Button::cancel_confirm(
+            Button::with_icon(theme::ICON_CANCEL),
+            Button::with_text(TR::buttons__confirm.into()).styled(theme::button_confirm()),
+            true,
+        );
+
+        let fido_page = FidoConfirm::new(app_name, get_page, page_count, icon, controls);
+
+        let layout = RootComponent::new(Frame::centered(theme::label_title(), title, fido_page));
         Ok(layout)
     }
 

@@ -1,4 +1,3 @@
-import trezorui2
 import trezorui_api
 from trezor import ui
 from trezor.enums import ButtonRequestType
@@ -13,7 +12,7 @@ async def confirm_fido(
     accounts: list[str | None],
 ) -> int:
     """Webauthn confirmation for one or more credentials."""
-    confirm = trezorui2.confirm_fido(
+    confirm = trezorui_api.confirm_fido(
         title=header,
         app_name=app_name,
         icon_name=icon_name,

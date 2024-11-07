@@ -106,6 +106,19 @@ def confirm_coinjoin(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_fido(
+    *,
+    title: str,
+    app_name: str,
+    icon_name: str | None,
+    accounts: list[str | None],
+) -> LayoutObj[int | UiResult]:
+    """FIDO confirmation.
+    Returns page index in case of confirmation and CANCELLED otherwise.
+    """
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_firmware_update(
     *,
     description: str,

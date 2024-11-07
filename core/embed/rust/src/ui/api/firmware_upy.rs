@@ -1,6 +1,8 @@
 use crate::{
     io::BinaryData,
     micropython::{
+        gc::Gc,
+        list::List,
         macros::{obj_fn_1, obj_fn_kw, obj_module},
         map::Map,
         module::Module,
@@ -87,6 +89,19 @@ extern "C" fn new_confirm_coinjoin(n_args: usize, args: *const Obj, kwargs: *mut
         let max_feerate: TString = kwargs.get(Qstr::MP_QSTR_max_feerate)?.try_into()?;
 
         let layout = ModelUI::confirm_coinjoin(max_rounds, max_feerate)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let app_name: TString = kwargs.get(Qstr::MP_QSTR_app_name)?.try_into()?;
+        let icon: Option<TString> = kwargs.get(Qstr::MP_QSTR_icon_name)?.try_into_option()?;
+        let accounts: Gc<List> = kwargs.get(Qstr::MP_QSTR_accounts)?.try_into()?;
+
+        let layout = ModelUI::confirm_fido(title, app_name, icon, accounts)?;
         Ok(LayoutObj::new_root(layout)?.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
@@ -691,6 +706,19 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm coinjoin authorization."""
     Qstr::MP_QSTR_confirm_coinjoin => obj_fn_kw!(0, new_confirm_coinjoin).as_obj(),
+
+    /// def confirm_fido(
+    ///     *,
+    ///     title: str,
+    ///     app_name: str,
+    ///     icon_name: str | None,
+    ///     accounts: list[str | None],
+    /// ) -> LayoutObj[int | UiResult]:
+    ///     """FIDO confirmation.
+    ///
+    ///     Returns page index in case of confirmation and CANCELLED otherwise.
+    ///     """
+    Qstr::MP_QSTR_confirm_fido => obj_fn_kw!(0, new_confirm_fido).as_obj(),
 
     /// def confirm_firmware_update(
     ///     *,

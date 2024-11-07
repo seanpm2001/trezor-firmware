@@ -713,37 +713,6 @@ extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let app_name: TString = kwargs.get(Qstr::MP_QSTR_app_name)?.try_into()?;
-        let icon: Option<TString> = kwargs.get(Qstr::MP_QSTR_icon_name)?.try_into_option()?;
-        let accounts: Gc<List> = kwargs.get(Qstr::MP_QSTR_accounts)?.try_into()?;
-
-        // Cache the page count so that we can move `accounts` into the closure.
-        let page_count = accounts.len();
-        // Closure to lazy-load the information on given page index.
-        // Done like this to allow arbitrarily many pages without
-        // the need of any allocation here in Rust.
-        let get_page = move |page_index| {
-            let account = unwrap!(accounts.get(page_index));
-            account.try_into().unwrap_or_else(|_| "".into())
-        };
-
-        let controls = Button::cancel_confirm(
-            Button::with_icon(theme::ICON_CANCEL),
-            Button::with_text(TR::buttons__confirm.into()).styled(theme::button_confirm()),
-            true,
-        );
-
-        let fido_page = FidoConfirm::new(app_name, get_page, page_count, icon, controls);
-
-        let obj = LayoutObj::new(Frame::centered(theme::label_title(), title, fido_page))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -946,19 +915,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm summary of a transaction."""
     Qstr::MP_QSTR_confirm_summary => obj_fn_kw!(0, new_confirm_summary).as_obj(),
-
-    /// def confirm_fido(
-    ///     *,
-    ///     title: str,
-    ///     app_name: str,
-    ///     icon_name: str | None,
-    ///     accounts: list[str | None],
-    /// ) -> LayoutObj[int | UiResult]:
-    ///     """FIDO confirmation.
-    ///
-    ///     Returns page index in case of confirmation and CANCELLED otherwise.
-    ///     """
-    Qstr::MP_QSTR_confirm_fido => obj_fn_kw!(0, new_confirm_fido).as_obj(),
 
     /// def confirm_with_info(
     ///     *,

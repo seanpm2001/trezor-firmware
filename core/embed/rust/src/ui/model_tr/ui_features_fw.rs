@@ -4,7 +4,7 @@ use crate::{
     error::Error,
     io::BinaryData,
     maybe_trace::MaybeTrace,
-    micropython::gc::Gc,
+    micropython::{gc::Gc, list::List},
     strutil::TString,
     translations::TR,
     ui::{
@@ -111,6 +111,68 @@ impl UIFeaturesFirmware for ModelTRFeatures {
             None,
             true,
         )
+    }
+
+    fn confirm_fido(
+        title: TString<'static>,
+        app_name: TString<'static>,
+        icon: Option<TString<'static>>,
+        accounts: Gc<List>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        // Cache the page count so that we can move `accounts` into the closure.
+        let page_count = accounts.len();
+
+        // Closure to lazy-load the information on given page index.
+        // Done like this to allow arbitrarily many pages without
+        // the need of any allocation here in Rust.
+        let get_page = move |page_index| {
+            let account_obj = unwrap!(accounts.get(page_index));
+            let account = TString::try_from(account_obj).unwrap_or_else(|_| TString::empty());
+
+            let (btn_layout, btn_actions) = if page_count == 1 {
+                // There is only one page
+                (
+                    ButtonLayout::cancel_none_text(TR::buttons__confirm.into()),
+                    ButtonActions::cancel_none_confirm(),
+                )
+            } else if page_index == 0 {
+                // First page
+                (
+                    ButtonLayout::cancel_armed_arrow(TR::buttons__select.into()),
+                    ButtonActions::cancel_confirm_next(),
+                )
+            } else if page_index == page_count - 1 {
+                // Last page
+                (
+                    ButtonLayout::arrow_armed_none(TR::buttons__select.into()),
+                    ButtonActions::prev_confirm_none(),
+                )
+            } else {
+                // Page in the middle
+                (
+                    ButtonLayout::arrow_armed_arrow(TR::buttons__select.into()),
+                    ButtonActions::prev_confirm_next(),
+                )
+            };
+
+            let ops = OpTextLayout::new(theme::TEXT_NORMAL)
+                .newline()
+                .text_normal(app_name)
+                .newline()
+                .text_bold(account);
+            let formatted = FormattedText::new(ops);
+
+            Page::new(btn_layout, btn_actions, formatted)
+        };
+
+        let pages = FlowPages::new(get_page, page_count);
+        // Returning the page index in case of confirmation.
+        let obj = RootComponent::new(
+            Flow::new(pages)
+                .with_common_title(title)
+                .with_return_confirmed_index(),
+        );
+        Ok(obj)
     }
 
     fn confirm_firmware_update(

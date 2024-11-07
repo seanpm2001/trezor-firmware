@@ -101,19 +101,6 @@ def confirm_value(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def confirm_fido(
-    *,
-    title: str,
-    app_name: str,
-    icon_name: str | None,
-    accounts: list[str | None],
-) -> LayoutObj[int | UiResult]:
-    """FIDO confirmation.
-    Returns page index in case of confirmation and CANCELLED otherwise.
-    """
-
-
-# rust/src/ui/model_mercury/layout.rs
 def confirm_with_info(
     *,
     title: str,
@@ -330,19 +317,6 @@ def confirm_summary(
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_fido(
-    *,
-    title: str,
-    app_name: str,
-    icon_name: str | None,  # unused on TR
-    accounts: list[str | None],
-) -> LayoutObj[int | UiResult]:
-    """FIDO confirmation.
-    Returns page index in case of confirmation and CANCELLED otherwise.
-    """
-
-
-# rust/src/ui/model_tr/layout.rs
 def multiple_pages_texts(
     *,
     title: str,
@@ -501,19 +475,6 @@ def confirm_summary(
     verb_cancel: str | None = None,
 ) -> LayoutObj[UiResult]:
     """Confirm summary of a transaction."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_fido(
-    *,
-    title: str,
-    app_name: str,
-    icon_name: str | None,
-    accounts: list[str | None],
-) -> LayoutObj[int | UiResult]:
-    """FIDO confirmation.
-    Returns page index in case of confirmation and CANCELLED otherwise.
-    """
 
 
 # rust/src/ui/model_tt/layout.rs

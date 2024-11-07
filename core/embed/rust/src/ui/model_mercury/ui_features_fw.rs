@@ -3,7 +3,7 @@ use core::cmp::Ordering;
 use crate::{
     error::{value_error, Error},
     io::BinaryData,
-    micropython::{gc::Gc, util},
+    micropython::{gc::Gc, list::List, util},
     strutil::TString,
     translations::TR,
     ui::{
@@ -130,6 +130,22 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
             false,
         )?;
         Ok(flow)
+    }
+
+    fn confirm_fido(
+        title: TString<'static>,
+        app_name: TString<'static>,
+        icon: Option<TString<'static>>,
+        accounts: Gc<List>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        #[cfg(feature = "universal_fw")]
+        return Ok(flow::confirm_fido::new_confirm_fido(
+            title, app_name, icon, accounts,
+        )?);
+        #[cfg(not(feature = "universal_fw"))]
+        Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
+            c"confirm_fido not used in bitcoin-only firmware",
+        ))
     }
 
     fn confirm_firmware_update(

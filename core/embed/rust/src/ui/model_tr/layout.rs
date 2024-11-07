@@ -756,70 +756,6 @@ extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let app_name: TString = kwargs.get(Qstr::MP_QSTR_app_name)?.try_into()?;
-        let accounts: Gc<List> = kwargs.get(Qstr::MP_QSTR_accounts)?.try_into()?;
-
-        // Cache the page count so that we can move `accounts` into the closure.
-        let page_count = accounts.len();
-
-        // Closure to lazy-load the information on given page index.
-        // Done like this to allow arbitrarily many pages without
-        // the need of any allocation here in Rust.
-        let get_page = move |page_index| {
-            let account_obj = unwrap!(accounts.get(page_index));
-            let account = TString::try_from(account_obj).unwrap_or_else(|_| TString::empty());
-
-            let (btn_layout, btn_actions) = if page_count == 1 {
-                // There is only one page
-                (
-                    ButtonLayout::cancel_none_text(TR::buttons__confirm.into()),
-                    ButtonActions::cancel_none_confirm(),
-                )
-            } else if page_index == 0 {
-                // First page
-                (
-                    ButtonLayout::cancel_armed_arrow(TR::buttons__select.into()),
-                    ButtonActions::cancel_confirm_next(),
-                )
-            } else if page_index == page_count - 1 {
-                // Last page
-                (
-                    ButtonLayout::arrow_armed_none(TR::buttons__select.into()),
-                    ButtonActions::prev_confirm_none(),
-                )
-            } else {
-                // Page in the middle
-                (
-                    ButtonLayout::arrow_armed_arrow(TR::buttons__select.into()),
-                    ButtonActions::prev_confirm_next(),
-                )
-            };
-
-            let ops = OpTextLayout::new(theme::TEXT_NORMAL)
-                .newline()
-                .text_normal(app_name)
-                .newline()
-                .text_bold(account);
-            let formatted = FormattedText::new(ops);
-
-            Page::new(btn_layout, btn_actions, formatted)
-        };
-
-        let pages = FlowPages::new(get_page, page_count);
-        // Returning the page index in case of confirmation.
-        let obj = LayoutObj::new(
-            Flow::new(pages)
-                .with_common_title(title)
-                .with_return_confirmed_index(),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1019,19 +955,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm summary of a transaction."""
     Qstr::MP_QSTR_confirm_summary => obj_fn_kw!(0, new_confirm_summary).as_obj(),
-
-    /// def confirm_fido(
-    ///     *,
-    ///     title: str,
-    ///     app_name: str,
-    ///     icon_name: str | None,  # unused on TR
-    ///     accounts: list[str | None],
-    /// ) -> LayoutObj[int | UiResult]:
-    ///     """FIDO confirmation.
-    ///
-    ///     Returns page index in case of confirmation and CANCELLED otherwise.
-    ///     """
-    Qstr::MP_QSTR_confirm_fido => obj_fn_kw!(0, new_confirm_fido).as_obj(),
 
     /// def multiple_pages_texts(
     ///     *,

@@ -783,12 +783,6 @@ extern "C" fn new_prompt_backup() -> Obj {
     unsafe { util::try_or_raise(block) }
 }
 
-extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    #[cfg(feature = "universal_fw")]
-    return flow::confirm_fido::new_confirm_fido(n_args, args, kwargs);
-    #[cfg(not(feature = "universal_fw"))]
-    panic!();
-}
 
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
@@ -887,19 +881,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm value. Merge of confirm_total and confirm_output."""
     Qstr::MP_QSTR_confirm_value => obj_fn_kw!(0, new_confirm_value).as_obj(),
-
-    /// def confirm_fido(
-    ///     *,
-    ///     title: str,
-    ///     app_name: str,
-    ///     icon_name: str | None,
-    ///     accounts: list[str | None],
-    /// ) -> LayoutObj[int | UiResult]:
-    ///     """FIDO confirmation.
-    ///
-    ///     Returns page index in case of confirmation and CANCELLED otherwise.
-    ///     """
-    Qstr::MP_QSTR_confirm_fido => obj_fn_kw!(0, new_confirm_fido).as_obj(),
 
     /// def confirm_with_info(
     ///     *,
