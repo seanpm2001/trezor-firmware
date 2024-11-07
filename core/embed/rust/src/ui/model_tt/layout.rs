@@ -832,50 +832,6 @@ extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
-        let info_button: bool = kwargs.get_or(Qstr::MP_QSTR_info_button, false)?;
-
-        let paragraphs = Paragraphs::new([
-            Paragraph::new(&theme::TEXT_DEMIBOLD, title),
-            Paragraph::new(&theme::TEXT_NORMAL, description),
-        ])
-        .with_spacing(theme::RECOVERY_SPACING);
-
-        let notification = match recovery_type {
-            RecoveryType::DryRun => TR::recovery__title_dry_run.into(),
-            RecoveryType::UnlockRepeatedBackup => TR::recovery__title_dry_run.into(),
-            _ => TR::recovery__title.into(),
-        };
-
-        let obj = if info_button {
-            LayoutObj::new(Frame::left_aligned(
-                theme::label_title(),
-                notification,
-                Dialog::new(
-                    paragraphs,
-                    Button::cancel_info_confirm(
-                        TR::buttons__continue.into(),
-                        TR::buttons__more_info.into(),
-                    ),
-                ),
-            ))?
-        } else {
-            LayoutObj::new(Frame::left_aligned(
-                theme::label_title(),
-                notification,
-                Dialog::new(paragraphs, Button::cancel_confirm_text(None, Some(button))),
-            ))?
-        };
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -1033,18 +989,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show mnemonic for backup. Expects the words pre-divided into individual pages."""
     Qstr::MP_QSTR_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
-
-    /// def confirm_recovery(
-    ///     *,
-    ///     title: str,
-    ///     description: str,
-    ///     button: str,
-    ///     recovery_type: RecoveryType,
-    ///     info_button: bool = False,
-    ///     show_instructions: bool = False,  # unused on TT
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Device recovery homescreen."""
-    Qstr::MP_QSTR_confirm_recovery => obj_fn_kw!(0, new_confirm_recovery).as_obj(),
 };
 
 #[cfg(test)]

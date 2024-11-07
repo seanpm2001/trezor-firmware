@@ -248,6 +248,49 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         super::component::check_homescreen_format(image, false)
     }
 
+    fn continue_recovery_homepage(
+        text: TString<'static>,
+        subtext: Option<TString<'static>>,
+        button: Option<TString<'static>>,
+        recovery_type: RecoveryType,
+        _show_instructions: bool,
+        remaining_shares: Option<crate::micropython::obj::Obj>,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let paragraphs = Paragraphs::new([
+            Paragraph::new(&theme::TEXT_DEMIBOLD, text),
+            Paragraph::new(&theme::TEXT_NORMAL, subtext.unwrap_or(TString::empty())),
+        ])
+        .with_spacing(theme::RECOVERY_SPACING);
+
+        let notification = match recovery_type {
+            RecoveryType::DryRun => TR::recovery__title_dry_run.into(),
+            RecoveryType::UnlockRepeatedBackup => TR::recovery__title_dry_run.into(),
+            _ => TR::recovery__title.into(),
+        };
+
+        // Model T shows remaining shares info in a separate layout
+        let show_info_button = remaining_shares.is_some();
+        if show_info_button {
+            LayoutObj::new(Frame::left_aligned(
+                theme::label_title(),
+                notification,
+                Dialog::new(
+                    paragraphs,
+                    Button::cancel_info_confirm(
+                        TR::buttons__continue.into(),
+                        TR::buttons__more_info.into(),
+                    ),
+                ),
+            ))
+        } else {
+            LayoutObj::new(Frame::left_aligned(
+                theme::label_title(),
+                notification,
+                Dialog::new(paragraphs, Button::cancel_confirm_text(None, button)),
+            ))
+        }
+    }
+
     fn request_bip39(
         prompt: TString<'static>,
         prefill_word: TString<'static>,

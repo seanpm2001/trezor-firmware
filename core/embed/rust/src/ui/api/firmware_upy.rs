@@ -167,6 +167,37 @@ extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_continue_recovery_homepage(
+    n_args: usize,
+    args: *const Obj,
+    kwargs: *mut Map,
+) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let text: TString = kwargs.get(Qstr::MP_QSTR_text)?.try_into()?; // #shares entered
+        let subtext: Option<TString> = kwargs.get(Qstr::MP_QSTR_subtext)?.try_into_option()?; // #shares remaining
+        let button: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_button)
+            .and_then(Obj::try_into_option)
+            .unwrap_or(None);
+        let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
+        let show_instructions: bool = kwargs.get_or(Qstr::MP_QSTR_show_instructions, false)?;
+        let remaining_shares: Option<Obj> = kwargs
+            .get(Qstr::MP_QSTR_remaining_shares)?
+            .try_into_option()?; // info about remaining shares
+
+        let obj = ModelUI::continue_recovery_homepage(
+            text,
+            subtext,
+            button,
+            recovery_type,
+            show_instructions,
+            remaining_shares,
+        )?;
+        Ok(obj.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_request_bip39(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let prompt: TString = kwargs.get(Qstr::MP_QSTR_prompt)?.try_into()?;
@@ -700,6 +731,18 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
     ///     """Confirm TOS before creating wallet creation or wallet recovery."""
     Qstr::MP_QSTR_confirm_reset_device => obj_fn_kw!(0, new_confirm_reset_device).as_obj(),
+
+    /// def continue_recovery_homepage(
+    ///     *,
+    ///     text: str,
+    ///     subtext: str | None,
+    ///     button: str | None,
+    ///     recovery_type: RecoveryType,
+    ///     show_instructions: bool = False,  # unused on TT
+    ///     remaining_shares: Iterable[tuple[str, str]] | None = None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Device recovery homescreen."""
+    Qstr::MP_QSTR_continue_recovery_homepage => obj_fn_kw!(0, new_continue_recovery_homepage).as_obj(),
 
     /// def request_bip39(
     ///     *,

@@ -123,13 +123,13 @@ async def continue_recovery(
     if subtext:
         text += f"\n\n{subtext}"
 
-    homepage = trezorui2.confirm_recovery(
-        title="",
-        description=text,
+    homepage = trezorui_api.continue_recovery_homepage(
+        text=text,
+        subtext=None,
         button=button_label,
         recovery_type=recovery_type,
-        info_button=False,
         show_instructions=show_instructions,
+        remaining_shares=None,
     )
     while True:
         result = await interact(

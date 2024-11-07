@@ -100,7 +100,7 @@ async def show_group_share_success(share_index: int, group_index: int) -> None:
 
 
 async def continue_recovery(
-    button_label: str,  # unused on mercury
+    _button_label: str,  # unused on mercury
     text: str,
     subtext: str | None,
     recovery_type: RecoveryType,
@@ -108,12 +108,13 @@ async def continue_recovery(
     remaining_shares_info: "RemainingSharesInfo | None" = None,
 ) -> bool:
     result = await interact(
-        trezorui2.flow_continue_recovery(
-            first_screen=show_instructions,
-            recovery_type=recovery_type,
+        trezorui_api.continue_recovery_homepage(
             text=text,
             subtext=subtext,
-            pages=(
+            button=None,
+            recovery_type=recovery_type,
+            show_instructions=show_instructions,
+            remaining_shares=(
                 format_remaining_shares_info(remaining_shares_info)
                 if remaining_shares_info
                 else None

@@ -151,6 +151,19 @@ def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
 
 
 # rust/src/ui/api/firmware_upy.rs
+def continue_recovery_homepage(
+    *,
+    text: str,
+    subtext: str | None,
+    button: str | None,
+    recovery_type: RecoveryType,
+    show_instructions: bool = False,  # unused on TT
+    remaining_shares: Iterable[tuple[str, str]] | None = None,
+) -> LayoutObj[UiResult]:
+    """Device recovery homescreen."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def request_bip39(
     *,
     prompt: str,

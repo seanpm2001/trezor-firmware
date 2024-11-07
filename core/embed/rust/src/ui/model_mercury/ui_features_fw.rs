@@ -3,7 +3,7 @@ use core::cmp::Ordering;
 use crate::{
     error::{value_error, Error},
     io::BinaryData,
-    micropython::gc::Gc,
+    micropython::{gc::Gc, util},
     strutil::TString,
     translations::TR,
     ui::{
@@ -223,6 +223,36 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
 
     fn check_homescreen_format(image: BinaryData, __accept_toif: bool) -> bool {
         super::component::check_homescreen_format(image)
+    }
+
+    fn continue_recovery_homepage(
+        text: TString<'static>,
+        subtext: Option<TString<'static>>,
+        _button: Option<TString<'static>>,
+        recovery_type: RecoveryType,
+        show_instructions: bool,
+        remaining_shares: Option<crate::micropython::obj::Obj>,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let pages_vec = if let Some(pages_obj) = remaining_shares {
+            let mut vec = ParagraphVecLong::new();
+            for page in crate::micropython::iter::IterBuf::new().try_iterate(pages_obj)? {
+                let [title, description]: [TString; 2] = util::iter_into_array(page)?;
+                vec.add(Paragraph::new(&theme::TEXT_SUB_GREY, title))
+                    .add(Paragraph::new(&theme::TEXT_MONO_GREY_LIGHT, description).break_after());
+            }
+            Some(vec)
+        } else {
+            None
+        };
+
+        let flow = flow::continue_recovery_homepage::new_continue_recovery_homepage(
+            text,
+            subtext,
+            recovery_type,
+            show_instructions,
+            pages_vec,
+        )?;
+        LayoutObj::new_root(flow)
     }
 
     fn request_bip39(
@@ -519,7 +549,7 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
     ) -> Result<impl LayoutMaybeTrace, Error> {
         // Mercury: remaining shares is a part of `continue_recovery` flow
         Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
-            c"show remaining shares not supported",
+            c"show_remaining_shares not implemented",
         ))
     }
 

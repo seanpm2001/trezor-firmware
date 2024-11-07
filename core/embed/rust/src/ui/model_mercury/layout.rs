@@ -739,38 +739,6 @@ extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mu
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_continue_recovery(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let first_screen: bool = kwargs.get(Qstr::MP_QSTR_first_screen)?.try_into()?;
-        let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
-        let text: TString = kwargs.get(Qstr::MP_QSTR_text)?.try_into()?; // #shares entered
-        let subtext: Option<TString> = kwargs.get(Qstr::MP_QSTR_subtext)?.try_into_option()?; // #shares remaining
-        let pages: Option<Obj> = kwargs.get(Qstr::MP_QSTR_pages)?.try_into_option()?; // info about remaining shares
-
-        let pages_vec = if let Some(pages_obj) = pages {
-            let mut vec = ParagraphVecLong::new();
-            for page in IterBuf::new().try_iterate(pages_obj)? {
-                let [title, description]: [TString; 2] = util::iter_into_array(page)?;
-                vec.add(Paragraph::new(&theme::TEXT_SUB_GREY, title))
-                    .add(Paragraph::new(&theme::TEXT_MONO_GREY_LIGHT, description).break_after());
-            }
-            Some(vec)
-        } else {
-            None
-        };
-
-        let flow = flow::continue_recovery::new_continue_recovery(
-            first_screen,
-            recovery_type,
-            text,
-            subtext,
-            pages_vec,
-        )?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_get_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -960,17 +928,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Show wallet backup words preceded by an instruction screen and followed by
     ///     confirmation."""
     Qstr::MP_QSTR_flow_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
-
-    /// def flow_continue_recovery(
-    ///     *,
-    ///     first_screen: bool,
-    ///     recovery_type: RecoveryType,
-    ///     text: str,
-    ///     subtext: str | None = None,
-    ///     pages: Iterable[tuple[str, str]] | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Device recovery homescreen."""
-    Qstr::MP_QSTR_flow_continue_recovery => obj_fn_kw!(0, new_continue_recovery).as_obj(),
 
     /// def flow_get_address(
     ///     *,

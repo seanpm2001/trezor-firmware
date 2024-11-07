@@ -51,13 +51,13 @@ async def request_word(
     return word
 
 
-def show_remaining_shares(
-    groups: set[tuple[str, ...]],
-    shares_remaining: list[int],
-    group_threshold: int,
-) -> Awaitable[trezorui_api.UiResult]:
+def format_remaining_shares_info(
+    remaining_shares_info: "RemainingSharesInfo",
+) -> list[tuple[str, str]]:
     from trezor import strings
     from trezor.crypto.slip39 import MAX_SHARE_COUNT
+
+    groups, shares_remaining, group_threshold = remaining_shares_info
 
     pages: list[tuple[str, str]] = []
     completed_groups = shares_remaining.count(0)
@@ -81,6 +81,12 @@ def show_remaining_shares(
             words = "\n".join(group)
             pages.append((title, words))
 
+    return pages
+
+
+def show_remaining_shares(
+    pages: list[tuple[str, str]],
+) -> Awaitable[trezorui_api.UiResult]:
     return interact(
         trezorui_api.show_remaining_shares(pages=pages),
         "show_shares",
@@ -146,12 +152,17 @@ async def continue_recovery(
     else:
         description = subtext or ""
 
-    homepage = trezorui2.confirm_recovery(
-        title=text,
-        description=description,
+    remaining_shares = (
+        format_remaining_shares_info(remaining_shares_info)
+        if remaining_shares_info
+        else None
+    )
+    homepage = trezorui_api.continue_recovery_homepage(
+        text=text,
+        subtext=description,
         button=button_label,
         recovery_type=recovery_type,
-        info_button=remaining_shares_info is not None,
+        remaining_shares=remaining_shares,
     )
 
     while True:
@@ -164,8 +175,8 @@ async def continue_recovery(
 
         if result is trezorui_api.CONFIRMED:
             return True
-        elif result is trezorui_api.INFO and remaining_shares_info is not None:
-            await show_remaining_shares(*remaining_shares_info)
+        elif result is trezorui_api.INFO and remaining_shares is not None:
+            await show_remaining_shares(remaining_shares)
         else:
             try:
                 await _confirm_abort(recovery_type != RecoveryType.NormalRecovery)

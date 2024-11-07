@@ -56,6 +56,15 @@ pub trait UIFeaturesFirmware {
 
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn continue_recovery_homepage(
+        text: TString<'static>,
+        subtext: Option<TString<'static>>,
+        button: Option<TString<'static>>,
+        recovery_type: RecoveryType,
+        show_instructions: bool,
+        remaining_shares: Option<Obj>, // TODO: replace Obj
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
     fn check_homescreen_format(image: BinaryData, accept_toif: bool) -> bool;
 
     fn request_bip39(

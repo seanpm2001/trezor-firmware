@@ -232,6 +232,45 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         super::component::check_homescreen_format(image)
     }
 
+    fn continue_recovery_homepage(
+        text: TString<'static>,
+        _subtext: Option<TString<'static>>,
+        button: Option<TString<'static>>,
+        recovery_type: RecoveryType,
+        show_instructions: bool,
+        _remaining_shares: Option<crate::micropython::obj::Obj>,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let mut paragraphs = ParagraphVecShort::new();
+        let button = button.unwrap_or(TString::empty());
+        paragraphs.add(Paragraph::new(&theme::TEXT_NORMAL, text));
+        if show_instructions {
+            paragraphs
+                .add(Paragraph::new(
+                    &theme::TEXT_NORMAL,
+                    TR::recovery__enter_each_word,
+                ))
+                .add(Paragraph::new(
+                    &theme::TEXT_NORMAL,
+                    TR::recovery__cursor_will_change,
+                ));
+        }
+
+        let title = match recovery_type {
+            RecoveryType::DryRun => TR::recovery__title_dry_run,
+            RecoveryType::UnlockRepeatedBackup => TR::recovery__title_dry_run,
+            _ => TR::recovery__title,
+        };
+
+        let layout = content_in_button_page(
+            title.into(),
+            paragraphs.into_paragraphs(),
+            button,
+            Some("".into()),
+            false,
+        )?;
+        LayoutObj::new_root(layout)
+    }
+
     fn request_bip39(
         prompt: TString<'static>,
         prefill_word: TString<'static>,

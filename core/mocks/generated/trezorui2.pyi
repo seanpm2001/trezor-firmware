@@ -145,18 +145,6 @@ def flow_show_share_words(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def flow_continue_recovery(
-    *,
-    first_screen: bool,
-    recovery_type: RecoveryType,
-    text: str,
-    subtext: str | None = None,
-    pages: Iterable[tuple[str, str]] | None = None,
-) -> LayoutObj[UiResult]:
-    """Device recovery homescreen."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_get_address(
     *,
     address: str | bytes,
@@ -394,19 +382,6 @@ def show_share_words(
     share_words: Iterable[str],
 ) -> LayoutObj[UiResult]:
     """Shows a backup seed."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_recovery(
-    *,
-    title: str,  # unused on TR
-    description: str,
-    button: str,
-    recovery_type: RecoveryType,
-    info_button: bool,  # unused on TR
-    show_instructions: bool,
-) -> LayoutObj[UiResult]:
-   """Device recovery homescreen."""
 from trezor import utils
 from trezorui_api import *
 
@@ -572,16 +547,3 @@ def show_share_words(
     pages: Iterable[str],
 ) -> LayoutObj[UiResult]:
     """Show mnemonic for backup. Expects the words pre-divided into individual pages."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_recovery(
-    *,
-    title: str,
-    description: str,
-    button: str,
-    recovery_type: RecoveryType,
-    info_button: bool = False,
-    show_instructions: bool = False,  # unused on TT
-) -> LayoutObj[UiResult]:
-    """Device recovery homescreen."""

@@ -900,44 +900,6 @@ extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_recovery(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let button: TString<'static> = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let recovery_type: RecoveryType = kwargs.get(Qstr::MP_QSTR_recovery_type)?.try_into()?;
-        let show_instructions: bool = kwargs.get(Qstr::MP_QSTR_show_instructions)?.try_into()?;
-
-        let mut paragraphs = ParagraphVecShort::new();
-        paragraphs.add(Paragraph::new(&theme::TEXT_NORMAL, description));
-        if show_instructions {
-            paragraphs
-                .add(Paragraph::new(
-                    &theme::TEXT_NORMAL,
-                    TR::recovery__enter_each_word,
-                ))
-                .add(Paragraph::new(
-                    &theme::TEXT_NORMAL,
-                    TR::recovery__cursor_will_change,
-                ));
-        }
-
-        let title = match recovery_type {
-            RecoveryType::DryRun => TR::recovery__title_dry_run,
-            RecoveryType::UnlockRepeatedBackup => TR::recovery__title_dry_run,
-            _ => TR::recovery__title,
-        };
-
-        content_in_button_page(
-            title.into(),
-            paragraphs.into_paragraphs(),
-            button,
-            Some("".into()),
-            false,
-        )
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -1108,16 +1070,4 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Shows a backup seed."""
     Qstr::MP_QSTR_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
-
-    /// def confirm_recovery(
-    ///     *,
-    ///     title: str,  # unused on TR
-    ///     description: str,
-    ///     button: str,
-    ///     recovery_type: RecoveryType,
-    ///     info_button: bool,  # unused on TR
-    ///     show_instructions: bool,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Device recovery homescreen."""
-    Qstr::MP_QSTR_confirm_recovery => obj_fn_kw!(0, new_confirm_recovery).as_obj(),
 };

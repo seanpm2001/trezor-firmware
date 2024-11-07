@@ -202,7 +202,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_confirm_output_address;
   MP_QSTR_confirm_output_amount;
   MP_QSTR_confirm_properties;
-  MP_QSTR_confirm_recovery;
   MP_QSTR_confirm_reset_device;
   MP_QSTR_confirm_summary;
   MP_QSTR_confirm_total__fee_rate;
@@ -212,6 +211,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_confirm_total__title_sending_from;
   MP_QSTR_confirm_value;
   MP_QSTR_confirm_with_info;
+  MP_QSTR_continue_recovery_homepage;
   MP_QSTR_count;
   MP_QSTR_current;
   MP_QSTR_danger;
@@ -246,10 +246,8 @@ static void _librust_qstrs(void) {
   MP_QSTR_fingerprint;
   MP_QSTR_firmware_update__title;
   MP_QSTR_firmware_update__title_fingerprint;
-  MP_QSTR_first_screen;
   MP_QSTR_flow_confirm_output;
   MP_QSTR_flow_confirm_set_new_pin;
-  MP_QSTR_flow_continue_recovery;
   MP_QSTR_flow_get_address;
   MP_QSTR_flow_prompt_backup;
   MP_QSTR_flow_show_share_words;
@@ -478,6 +476,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_recovery__x_of_y_entered_template;
   MP_QSTR_recovery__you_have_entered;
   MP_QSTR_recovery_type;
+  MP_QSTR_remaining_shares;
   MP_QSTR_request_bip39;
   MP_QSTR_request_complete_repaint;
   MP_QSTR_request_number;
