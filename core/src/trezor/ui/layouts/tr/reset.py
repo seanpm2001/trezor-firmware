@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-import trezorui2
 from trezor import TR
 from trezor.enums import ButtonRequestType
 import trezorui_api
@@ -50,8 +49,9 @@ async def show_share_words(
         )
 
         result = await interact(
-            trezorui2.show_share_words(  # type: ignore [Arguments missing for parameters]
-                share_words=share_words,  # type: ignore [No parameter named "share_words"]
+            trezorui_api.show_share_words(
+                words=share_words,
+                title=None,
             ),
             br_name,
             br_code,

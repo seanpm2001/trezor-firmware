@@ -1,6 +1,5 @@
 from typing import Awaitable, Callable, Sequence
 
-import trezorui2
 import trezorui_api
 from trezor import TR
 from trezor.enums import ButtonRequestType
@@ -8,30 +7,6 @@ from trezor.enums import ButtonRequestType
 from ..common import interact, raise_if_not_confirmed
 
 CONFIRMED = trezorui_api.CONFIRMED  # global_import_cache
-
-
-def _split_share_into_pages(share_words: Sequence[str], per_page: int = 4) -> list[str]:
-    pages: list[str] = []
-    current = ""
-    fill = 2
-
-    for i, word in enumerate(share_words):
-        if i % per_page == 0:
-            if i != 0:
-                pages.append(current)
-            current = ""
-
-            # Align numbers to the right.
-            lastnum = i + per_page + 1
-            fill = 1 if lastnum < 10 else 2
-        else:
-            current += "\n"
-        current += f"{i + 1:>{fill}}. {word}"
-
-    if current:
-        pages.append(current)
-
-    return pages
 
 
 def show_share_words(
@@ -48,12 +23,10 @@ def show_share_words(
             group_index + 1, share_index + 1
         )
 
-    pages = _split_share_into_pages(share_words)
-
     return raise_if_not_confirmed(
-        trezorui2.show_share_words(
+        trezorui_api.show_share_words(
+            words=share_words,
             title=title,
-            pages=pages,
         ),
         "backup_words",
         ButtonRequestType.ResetDevice,

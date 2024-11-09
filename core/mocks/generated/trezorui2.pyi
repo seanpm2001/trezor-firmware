@@ -118,20 +118,6 @@ def flow_prompt_backup() -> LayoutObj[UiResult]:
 
 
 # rust/src/ui/model_mercury/layout.rs
-def flow_show_share_words(
-    *,
-    title: str,
-    subtitle: str,
-    words: Iterable[str],
-    description: str,
-    text_info: Iterable[str],
-    text_confirm: str,
-) -> LayoutObj[UiResult]:
-    """Show wallet backup words preceded by an instruction screen and followed by
-    confirmation."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_get_address(
     *,
     address: str | bytes,
@@ -348,14 +334,6 @@ def confirm_more(
 ) -> object:
     """Confirm long content with the possibility to go back from any page.
     Meant to be used with confirm_with_info."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def show_share_words(
-    *,
-    share_words: Iterable[str],
-) -> LayoutObj[UiResult]:
-    """Shows a backup seed."""
 from trezor import utils
 from trezorui_api import *
 
@@ -499,12 +477,3 @@ def confirm_more(
 ) -> LayoutObj[UiResult]:
     """Confirm long content with the possibility to go back from any page.
     Meant to be used with confirm_with_info."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_share_words(
-    *,
-    title: str,
-    pages: Iterable[str],
-) -> LayoutObj[UiResult]:
-    """Show mnemonic for backup. Expects the words pre-divided into individual pages."""

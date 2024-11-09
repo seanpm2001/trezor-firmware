@@ -4,6 +4,7 @@ use crate::{
     micropython::{gc::Gc, list::List, obj::Obj},
     strutil::TString,
 };
+use heapless::Vec;
 
 use super::layout::{
     obj::{LayoutMaybeTrace, LayoutObj},
@@ -180,6 +181,20 @@ pub trait UIFeaturesFirmware {
 
     fn show_remaining_shares(
         pages_iterable: Obj, // TODO: replace Obj
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn show_share_words(
+        words: Vec<TString<'static>, 33>,
+        title: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    // TODO: merge with `show_share_words` instead of having specific version for mercury
+    fn show_share_words_mercury(
+        words: Vec<TString<'static>, 33>,
+        subtitle: Option<TString<'static>>,
+        instructions: Obj,                     // TODO: replace Obj
+        text_footer: Option<TString<'static>>, // footer description at instruction screen
+        text_confirm: TString<'static>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
     fn show_simple(

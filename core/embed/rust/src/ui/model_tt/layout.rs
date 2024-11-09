@@ -778,29 +778,6 @@ extern "C" fn new_confirm_more(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let pages: Obj = kwargs.get(Qstr::MP_QSTR_pages)?;
-
-        let mut paragraphs = ParagraphVecLong::new();
-        for page in IterBuf::new().try_iterate(pages)? {
-            let text: TString = page.try_into()?;
-            paragraphs.add(Paragraph::new(&theme::TEXT_MONO, text).break_after());
-        }
-
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            title,
-            ButtonPage::new(paragraphs.into_paragraphs(), theme::BG)
-                .with_hold()?
-                .without_cancel(),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -937,14 +914,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm long content with the possibility to go back from any page.
     ///     Meant to be used with confirm_with_info."""
     Qstr::MP_QSTR_confirm_more => obj_fn_kw!(0, new_confirm_more).as_obj(),
-
-    /// def show_share_words(
-    ///     *,
-    ///     title: str,
-    ///     pages: Iterable[str],
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Show mnemonic for backup. Expects the words pre-divided into individual pages."""
-    Qstr::MP_QSTR_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
 };
 
 #[cfg(test)]

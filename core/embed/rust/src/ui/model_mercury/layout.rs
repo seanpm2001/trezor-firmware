@@ -671,38 +671,6 @@ extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Ma
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let subtitle: TString = kwargs.get(Qstr::MP_QSTR_subtitle)?.try_into()?;
-        let share_words_obj: Obj = kwargs.get(Qstr::MP_QSTR_words)?;
-        let share_words_vec: Vec<TString, 33> = util::iter_into_vec(share_words_obj)?;
-        let description: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_description)?
-            .try_into_option()?
-            .and_then(|desc: TString| if desc.is_empty() { None } else { Some(desc) });
-        let text_info: Obj = kwargs.get(Qstr::MP_QSTR_text_info)?;
-        let text_confirm: TString = kwargs.get(Qstr::MP_QSTR_text_confirm)?.try_into()?;
-
-        let mut instructions_paragraphs = ParagraphVecShort::new();
-        for item in IterBuf::new().try_iterate(text_info)? {
-            let text: TString = item.try_into()?;
-            instructions_paragraphs.add(Paragraph::new(&theme::TEXT_MAIN_GREY_LIGHT, text));
-        }
-
-        let flow = flow::show_share_words::new_show_share_words(
-            title,
-            subtitle,
-            share_words_vec,
-            description,
-            instructions_paragraphs,
-            text_confirm,
-        )?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -896,19 +864,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// def flow_prompt_backup() -> LayoutObj[UiResult]:
     ///     """Prompt a user to create backup with an option to skip."""
     Qstr::MP_QSTR_flow_prompt_backup => obj_fn_0!(new_prompt_backup).as_obj(),
-
-    /// def flow_show_share_words(
-    ///     *,
-    ///     title: str,
-    ///     subtitle: str,
-    ///     words: Iterable[str],
-    ///     description: str,
-    ///     text_info: Iterable[str],
-    ///     text_confirm: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Show wallet backup words preceded by an instruction screen and followed by
-    ///     confirmation."""
-    Qstr::MP_QSTR_flow_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
 
     /// def flow_get_address(
     ///     *,

@@ -29,7 +29,7 @@ use super::{
         check_homescreen_format, Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet,
         CancelConfirmMsg, CoinJoinProgress, Dialog, FidoConfirm, Frame, Homescreen, IconDialog,
         Lockscreen, MnemonicKeyboard, NumberInputDialog, PassphraseKeyboard, PinKeyboard, Progress,
-        SelectWordCount, SetBrightnessDialog, Slip39Input,
+        SelectWordCount, SetBrightnessDialog, ShareWords, Slip39Input,
     },
     theme, ModelTTFeatures,
 };
@@ -644,6 +644,32 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             obj.skip_first_paint();
         }
         Ok(obj)
+    }
+
+    fn show_share_words(
+        words: heapless::Vec<TString<'static>, 33>,
+        title: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title.unwrap_or(TString::empty()),
+            ButtonPage::new(ShareWords::new(words), theme::BG)
+                .with_hold()?
+                .without_cancel(),
+        ));
+        Ok(layout)
+    }
+
+    fn show_share_words_mercury(
+        _words: heapless::Vec<TString<'static>, 33>,
+        _subtitle: Option<TString<'static>>,
+        _instructions: crate::micropython::obj::Obj,
+        _text_footer: Option<TString<'static>>,
+        _text_confirm: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTTFeatures>, Error>(Error::ValueError(
+            c"use show_share_words",
+        ))
     }
 
     fn show_remaining_shares(

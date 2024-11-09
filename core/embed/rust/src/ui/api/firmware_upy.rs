@@ -2,6 +2,7 @@ use crate::{
     io::BinaryData,
     micropython::{
         gc::Gc,
+        iter::IterBuf,
         list::List,
         macros::{obj_fn_1, obj_fn_kw, obj_module},
         map::Map,
@@ -25,6 +26,7 @@ use crate::{
         ui_features_fw::UIFeaturesFirmware,
     },
 };
+use heapless::Vec;
 
 /// Dummy implementation so that we can use `Empty` in a return type of unimplemented trait
 /// function
@@ -494,6 +496,54 @@ extern "C" fn new_show_remaining_shares(n_args: usize, args: *const Obj, kwargs:
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let words: Obj = kwargs.get(Qstr::MP_QSTR_words)?;
+        let title: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_title)
+            .and_then(Obj::try_into_option)
+            .unwrap_or(None);
+
+        let words: Vec<TString, 33> = util::iter_into_vec(words)?;
+
+        let layout = ModelUI::show_share_words(words, title)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_show_share_words_mercury(
+    n_args: usize,
+    args: *const Obj,
+    kwargs: *mut Map,
+) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let words: Obj = kwargs.get(Qstr::MP_QSTR_words)?;
+        let subtitle: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_subtitle)
+            .and_then(Obj::try_into_option)
+            .unwrap_or(None);
+        let instructions: Obj = kwargs.get(Qstr::MP_QSTR_instructions)?;
+        let text_footer: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_description)
+            .and_then(Obj::try_into_option)
+            .unwrap_or(None);
+        let text_confirm: TString = kwargs.get(Qstr::MP_QSTR_text_confirm)?.try_into()?;
+
+        let words: Vec<TString, 33> = util::iter_into_vec(words)?;
+
+        let layout = ModelUI::show_share_words_mercury(
+            words,
+            subtitle,
+            instructions,
+            text_footer,
+            text_confirm,
+        )?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_simple(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let text: TString = kwargs.get(Qstr::MP_QSTR_text)?.try_into()?;
@@ -948,6 +998,26 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
     Qstr::MP_QSTR_show_remaining_shares => obj_fn_kw!(0, new_show_remaining_shares).as_obj(),
+
+    /// def show_share_words(
+    ///     *,
+    ///     words: Iterable[str],
+    ///     title: str | None = None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Show mnemonic for backup."""
+    Qstr::MP_QSTR_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
+
+    /// def show_share_words_mercury(
+    ///     *,
+    ///     words: Iterable[str],
+    ///     subtitle: str | None,
+    ///     instructions: Iterable[str],
+    ///     text_footer: str | None,
+    ///     text_confirm: str,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Show mnemonic for wallet backup preceded by an instruction screen and followed by a
+    ///     confirmation screen."""
+    Qstr::MP_QSTR_show_share_words_mercury => obj_fn_kw!(0, new_show_share_words_mercury).as_obj(),
 
     /// def show_simple(
     ///     *,

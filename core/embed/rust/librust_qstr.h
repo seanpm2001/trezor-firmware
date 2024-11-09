@@ -250,7 +250,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_flow_confirm_set_new_pin;
   MP_QSTR_flow_get_address;
   MP_QSTR_flow_prompt_backup;
-  MP_QSTR_flow_show_share_words;
   MP_QSTR_get_language;
   MP_QSTR_get_transition_out;
   MP_QSTR_haptic_feedback__disable;
@@ -286,6 +285,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_inputs__return;
   MP_QSTR_inputs__show;
   MP_QSTR_inputs__space;
+  MP_QSTR_instructions;
   MP_QSTR_instructions__continue_holding;
   MP_QSTR_instructions__continue_in_app;
   MP_QSTR_instructions__enter_next_share;
@@ -635,7 +635,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_set_brightness;
   MP_QSTR_setting__adjust;
   MP_QSTR_setting__apply;
-  MP_QSTR_share_words;
   MP_QSTR_share_words__words_in_order;
   MP_QSTR_share_words__wrote_down_all;
   MP_QSTR_show_address_details;
@@ -653,6 +652,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_show_progress_coinjoin;
   MP_QSTR_show_remaining_shares;
   MP_QSTR_show_share_words;
+  MP_QSTR_show_share_words_mercury;
   MP_QSTR_show_simple;
   MP_QSTR_show_success;
   MP_QSTR_show_wait_text;
@@ -678,7 +678,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_summary_title;
   MP_QSTR_text;
   MP_QSTR_text_confirm;
-  MP_QSTR_text_info;
   MP_QSTR_text_mono;
   MP_QSTR_time_ms;
   MP_QSTR_timer;

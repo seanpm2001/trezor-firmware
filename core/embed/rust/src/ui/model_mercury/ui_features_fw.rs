@@ -560,6 +560,38 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(obj)
     }
 
+    fn show_share_words(
+        words: heapless::Vec<TString<'static>, 33>,
+        _title: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
+            c"use flow_share_words instead",
+        ))
+    }
+
+    fn show_share_words_mercury(
+        words: heapless::Vec<TString<'static>, 33>,
+        subtitle: Option<TString<'static>>,
+        instructions: crate::micropython::obj::Obj,
+        text_footer: Option<TString<'static>>,
+        text_confirm: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut instructions_paragraphs = ParagraphVecShort::new();
+        for item in crate::micropython::iter::IterBuf::new().try_iterate(instructions)? {
+            let text: TString = item.try_into()?;
+            instructions_paragraphs.add(Paragraph::new(&theme::TEXT_MAIN_GREY_LIGHT, text));
+        }
+
+        let flow = flow::show_share_words::new_show_share_words(
+            words,
+            subtitle.unwrap_or(TString::empty()),
+            instructions_paragraphs,
+            text_footer,
+            text_confirm,
+        )?;
+        Ok(flow)
+    }
+
     fn show_remaining_shares(
         pages_iterable: crate::micropython::obj::Obj, // TODO: replace Obj
     ) -> Result<impl LayoutMaybeTrace, Error> {

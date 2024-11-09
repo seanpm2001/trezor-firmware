@@ -373,6 +373,28 @@ def show_remaining_shares(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_share_words(
+    *,
+    words: Iterable[str],
+    title: str | None = None,
+) -> LayoutObj[UiResult]:
+    """Show mnemonic for backup."""
+
+
+# rust/src/ui/api/firmware_upy.rs
+def show_share_words_mercury(
+    *,
+    words: Iterable[str],
+    subtitle: str | None,
+    instructions: Iterable[str],
+    text_footer: str | None,
+    text_confirm: str,
+) -> LayoutObj[UiResult]:
+    """Show mnemonic for wallet backup preceded by an instruction screen and followed by a
+    confirmation screen."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_simple(
     *,
     text: str,

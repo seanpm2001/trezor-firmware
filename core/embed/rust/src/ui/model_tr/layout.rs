@@ -817,25 +817,6 @@ extern "C" fn new_confirm_more(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_share_words(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = |_args: &[Obj], kwargs: &Map| {
-        let share_words_obj: Obj = kwargs.get(Qstr::MP_QSTR_share_words)?;
-        let share_words: Vec<TString, 33> = util::iter_into_vec(share_words_obj)?;
-
-        let cancel_btn = Some(ButtonDetails::up_arrow_icon());
-        let confirm_btn =
-            Some(ButtonDetails::text(TR::buttons__hold_to_confirm.into()).with_default_duration());
-
-        let obj = LayoutObj::new(
-            ButtonPage::new(ShareWords::new(share_words), theme::BG)
-                .with_cancel_btn(cancel_btn)
-                .with_confirm_btn(confirm_btn),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -986,11 +967,4 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm long content with the possibility to go back from any page.
     ///     Meant to be used with confirm_with_info."""
     Qstr::MP_QSTR_confirm_more => obj_fn_kw!(0, new_confirm_more).as_obj(),
-
-    /// def show_share_words(
-    ///     *,
-    ///     share_words: Iterable[str],
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Shows a backup seed."""
-    Qstr::MP_QSTR_show_share_words => obj_fn_kw!(0, new_show_share_words).as_obj(),
 };

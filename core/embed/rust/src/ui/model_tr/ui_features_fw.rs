@@ -36,7 +36,7 @@ use super::{
     component::{
         ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Flow, FlowPages, Frame,
         Homescreen, Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress, ScrollableFrame,
-        SimpleChoice, WordlistEntry, WordlistType,
+        ShareWords, SimpleChoice, WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
@@ -612,6 +612,34 @@ impl UIFeaturesFirmware for ModelTRFeatures {
             obj.skip_first_paint();
         }
         Ok(obj)
+    }
+
+    fn show_share_words(
+        words: heapless::Vec<TString<'static>, 33>,
+        _title: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let cancel_btn = Some(ButtonDetails::up_arrow_icon());
+        let confirm_btn =
+            Some(ButtonDetails::text(TR::buttons__hold_to_confirm.into()).with_default_duration());
+
+        let layout = RootComponent::new(
+            ButtonPage::new(ShareWords::new(words), theme::BG)
+                .with_cancel_btn(cancel_btn)
+                .with_confirm_btn(confirm_btn),
+        );
+        Ok(layout)
+    }
+
+    fn show_share_words_mercury(
+        _words: heapless::Vec<TString<'static>, 33>,
+        _subtitle: Option<TString<'static>>,
+        _instructions: crate::micropython::obj::Obj,
+        _text_footer: Option<TString<'static>>,
+        _text_confirm: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"use show_share_words",
+        ))
     }
 
     fn show_remaining_shares(
