@@ -308,7 +308,7 @@ def with_session(
 
     # the return type of @click.pass_obj is improperly specified and pyright doesn't
     # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
-    return function_with_session  # type: ignore [is incompatible with return type]
+    return function_with_session
 
 
 def with_management_session(
@@ -329,7 +329,7 @@ def with_management_session(
 
     # the return type of @click.pass_obj is improperly specified and pyright doesn't
     # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
-    return function_with_management_session  # type: ignore [is incompatible with return type]
+    return function_with_management_session
 
 
 def with_client(
@@ -367,7 +367,7 @@ def with_client(
 
     # the return type of @click.pass_obj is improperly specified and pyright doesn't
     # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
-    return trezorctl_command_with_client  # type: ignore [is incompatible with return type]
+    return trezorctl_command_with_client
 
 
 # def with_client(
