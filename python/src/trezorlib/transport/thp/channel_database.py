@@ -3,12 +3,27 @@ import logging
 import os
 import typing as t
 
+from appdirs import user_cache_dir, user_config_dir
+
 from ..thp.channel_data import ChannelData
 from .protocol_and_channel import ProtocolAndChannel
 
 LOG = logging.getLogger(__name__)
 
-FILE_PATH = "channel_data.json"
+APP_NAME = "@trezor"  # TODO
+DATA_PATH = os.path.join(user_cache_dir(appname=APP_NAME), "channel_data.json")
+CONFIG_PATH = os.path.join(user_config_dir(appname=APP_NAME), "config.json")
+
+
+class ChannelDatabase:  # TODO not finished
+    should_store: bool = False
+
+    def __init__(
+        self, config_path: str = CONFIG_PATH, data_path: str = DATA_PATH
+    ) -> None:
+        if not os.path.exists(CONFIG_PATH):
+            with open(CONFIG_PATH, "w") as f:
+                json.dump([], f)
 
 
 def load_stored_channels() -> t.List[ChannelData]:
@@ -39,28 +54,29 @@ def dict_to_channel_data(dict: t.Dict) -> ChannelData:
 
 
 def ensure_file_exists() -> None:
-    LOG.debug("checking if file %s exists", FILE_PATH)
-    if not os.path.exists(FILE_PATH):
-        LOG.debug("File %s does not exist. Creating a new one.", FILE_PATH)
-        with open(FILE_PATH, "w") as f:
+    LOG.debug("checking if file %s exists", DATA_PATH)
+    if not os.path.exists(DATA_PATH):
+        os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
+        LOG.debug("File %s does not exist. Creating a new one.", DATA_PATH)
+        with open(DATA_PATH, "w") as f:
             json.dump([], f)
 
 
 def clear_stored_channels() -> None:
-    LOG.debug("Clearing contents of %s - to empty list.", FILE_PATH)
-    with open(FILE_PATH, "w") as f:
+    LOG.debug("Clearing contents of %s - to empty list.", DATA_PATH)
+    with open(DATA_PATH, "w") as f:
         json.dump([], f)
 
 
 def read_all_channels() -> t.List:
     ensure_file_exists()
-    with open(FILE_PATH, "r") as f:
+    with open(DATA_PATH, "r") as f:
         return json.load(f)
 
 
 def save_all_channels(channels: t.List[t.Dict]) -> None:
     LOG.debug("saving all channels")
-    with open(FILE_PATH, "w") as f:
+    with open(DATA_PATH, "w") as f:
         json.dump(channels, f, indent=4)
 
 
