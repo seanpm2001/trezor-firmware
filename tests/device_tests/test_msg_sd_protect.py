@@ -18,6 +18,7 @@ import pytest
 
 from trezorlib import debuglink, device
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.messages import SdProtectOperationType as Op
 
@@ -66,14 +67,16 @@ def test_refresh(session: Session):
     assert session.features.sd_protection is False
 
 
-def test_wipe(session: Session):
+def test_wipe(client: Client):
+    session = client.get_management_session()
     # Enable SD protection
     device.sd_protect(session, Op.ENABLE)
     assert session.features.sd_protection is True
 
     # Wipe device (this wipes internal storage)
-    raise Exception("TEST FAILS AFTER WIPE DEVICE")
     device.wipe(session)
+    client = client.get_new_client()
+    session = client.get_management_session()
     assert session.features.sd_protection is False
 
     # Restore device to working status

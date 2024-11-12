@@ -24,6 +24,7 @@ import pytest
 from trezorlib import debuglink, device, exceptions, messages, models
 from trezorlib._internal import translations
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.debuglink import message_filters
 
 from ..translations import (
@@ -78,7 +79,7 @@ def _check_ping_screen_texts(session: Session, title: str, right_button: str) ->
     if session.model in (models.T2T1, models.T3T1):
         right_button = "-"
 
-    with session.client as client:
+    with session, session.client as client:
         client.watch_layout(True)
         client.set_input_flow(ping_input_flow(session, title, right_button))
         ping = session.call(messages.Ping(message="ahoj!", button_protection=True))
@@ -181,7 +182,6 @@ def test_error_invalid_signature(session: Session):
 
 @pytest.mark.parametrize("lang", LANGUAGES)
 def test_full_language_change(session: Session, lang: str):
-    raise Exception("Investigate why it fails")
     assert session.features.language == "en-US"
     assert session.features.language_version_matches is True
 
@@ -198,8 +198,8 @@ def test_full_language_change(session: Session, lang: str):
     _check_ping_screen_texts(session, get_ping_title("en"), get_ping_button("en"))
 
 
-def test_language_is_removed_after_wipe(session: Session):
-    raise Exception("Test is not ressurected after")
+def test_language_is_removed_after_wipe(client: Client):
+    session = Session(client.get_session())
     assert session.features.language == "en-US"
 
     _check_ping_screen_texts(session, get_ping_title("en"), get_ping_button("en"))
@@ -212,6 +212,8 @@ def test_language_is_removed_after_wipe(session: Session):
 
     # Wipe device
     device.wipe(session)
+    client = client.get_new_client()
+    session = Session(client.get_management_session())
     assert session.features.language == "en-US"
 
     # Load it again
@@ -228,7 +230,6 @@ def test_language_is_removed_after_wipe(session: Session):
 
 
 def test_translations_renders_on_screen(session: Session):
-    raise Exception("Investigate why it fails")
 
     czech_data = get_lang_json("cs")
 
@@ -237,9 +238,9 @@ def test_translations_renders_on_screen(session: Session):
 
     # Normal english
     _check_ping_screen_texts(session, get_ping_title("en"), get_ping_button("en"))
-
     # Normal czech
     set_language(session, "cs")
+
     assert session.features.language == "cs-CZ"
     _check_ping_screen_texts(session, get_ping_title("cs"), get_ping_button("cs"))
 
@@ -264,7 +265,6 @@ def test_translations_renders_on_screen(session: Session):
 
 
 def test_reject_update(session: Session):
-    raise Exception("Investigate why it fails")
 
     assert session.features.language == "en-US"
     lang = "cs"
@@ -297,13 +297,14 @@ def _maybe_confirm_set_language(
     expected_responses_silent: list[Any] = [
         messages.TranslationDataRequest(data_offset=off, data_length=len)
         for off, len in chunks(language_data, CHUNK_SIZE)
-    ] + [message_filters.Success(), message_filters.Features()]
+    ] + [message_filters.Success()]
+    # , message_filters.Features()]
 
     expected_responses_confirm = expected_responses_silent[:]
     # confirmation after first TranslationDataRequest
     expected_responses_confirm.insert(1, message_filters.ButtonRequest())
     # success screen before Success / Features
-    expected_responses_confirm.insert(-2, message_filters.ButtonRequest())
+    expected_responses_confirm.insert(-1, message_filters.ButtonRequest())
 
     if is_displayed:
         expected_responses = expected_responses_confirm
@@ -336,6 +337,7 @@ def _maybe_confirm_set_language(
     ],
 )
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_silent_first_install(session: Session, show_display: bool, is_displayed: bool):
     assert not session.features.initialized
     _maybe_confirm_set_language(session, "cs", show_display, is_displayed)
@@ -358,6 +360,7 @@ def test_switch_from_english_not_silent(session: Session):
 
 
 @pytest.mark.setup_client(uninitialized=True)
+@pytest.mark.uninitialized_session
 def test_switch_language(session: Session):
     assert not session.features.initialized
     assert session.features.language == "en-US"
@@ -384,7 +387,6 @@ def test_header_trailing_data(session: Session):
 
     (this ensures forwards compatibility if we extend the header)
     """
-    raise Exception("Investigate why it fails")
 
     assert session.features.language == "en-US"
     lang = "cs"

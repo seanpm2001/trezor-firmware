@@ -40,6 +40,7 @@ def _assert_busy(session: Session, should_be_busy: bool, screen: str = "Homescre
 
 @pytest.mark.setup_client(pin=PIN)
 def test_busy_state(session: Session):
+    session.lock()
     _assert_busy(session, False, "Lockscreen")
     assert session.features.unlocked is False
 
@@ -67,6 +68,7 @@ def test_busy_state(session: Session):
 
 @pytest.mark.models("core")
 def test_busy_expiry_core(session: Session):
+    session.lock()
     WAIT_TIME_MS = 1500
     TOLERANCE = 1000
 
@@ -78,6 +80,7 @@ def test_busy_expiry_core(session: Session):
     _assert_busy(session, True)
 
     # Wait until the layout changes
+    time.sleep(0.1)  # Improves stability of the test for devices with THP
     session.client.debug.wait_layout()
     end = time.monotonic()
 

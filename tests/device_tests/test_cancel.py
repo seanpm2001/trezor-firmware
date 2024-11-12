@@ -37,8 +37,6 @@ from ..common import TEST_ADDRESS_N
     ],
 )
 def test_cancel_message_via_cancel(session: Session, message):
-    raise Exception("TREZOR FW CANNOT HANDLE CANCEL FOR NOW, TODO FIX")
-
     def input_flow():
         yield
         session.cancel()
@@ -62,8 +60,6 @@ def test_cancel_message_via_cancel(session: Session, message):
     ],
 )
 def test_cancel_message_via_initialize(session: Session, message):
-    raise Exception("TREZOR FW CANNOT HANDLE CANCEL FOR NOW, TODO FIX")
-
     resp = session.call_raw(message)
     assert isinstance(resp, m.ButtonRequest)
 
@@ -83,8 +79,6 @@ def test_cancel_on_paginated(session: Session):
     # would get stuck waiting for the _raw_read result.
     # I'm not spending the effort to modify the testcase to cause a _failure_ if that
     # happens again. Just be advised that this should not get stuck.
-
-    raise Exception("TREZOR FW CANNOT HANDLE CANCEL FOR NOW, TODO FIX")
 
     message = m.SignMessage(
         message=b"hello" * 64,

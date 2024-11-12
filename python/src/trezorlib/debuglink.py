@@ -31,12 +31,12 @@ from pathlib import Path
 
 from mnemonic import Mnemonic
 
-from . import mapping, messages, models, protobuf
+from . import btc, mapping, messages, models, protobuf
 from .client import TrezorClient
 from .exceptions import TrezorFailure
 from .log import DUMP_BYTES
 from .messages import DebugWaitType
-from .tools import expect
+from .tools import expect, parse_path
 from .transport.session import Session
 from .transport.thp.protocol_v1 import ProtocolV1
 
@@ -62,6 +62,7 @@ if t.TYPE_CHECKING:
 
 
 EXPECTED_RESPONSES_CONTEXT_LINES = 3
+PASSPHRASE_TEST_PATH = parse_path("44h/1h/0h/0/0")
 
 LOG = logging.getLogger(__name__)
 
@@ -1091,6 +1092,10 @@ class SessionDebugWrapper(Session):
     def cancel(self) -> None:
         self._write(messages.Cancel())
 
+    def ensure_unlocked(self) -> None:
+        btc.get_address(self, "Testnet", PASSPHRASE_TEST_PATH)
+        self.refresh_features()
+
     def set_filter(
         self,
         message_type: t.Type[protobuf.MessageType],
@@ -1312,6 +1317,13 @@ class TrezorClientDebugLink(TrezorClient):
         pass
         # TODO is this needed?
         # self.debug.close()
+
+    def get_session(
+        self, passphrase: str | None = None, derive_cardano: bool = False
+    ) -> Session:
+        if passphrase is not None:
+            passphrase = Mnemonic.normalize_string(passphrase)
+        return super().get_session(passphrase, derive_cardano)
 
     def set_filter(
         self,

@@ -93,8 +93,9 @@ def test_change_pin(session: Session):
             br_count = 6
         else:
             br_count = 5
-        client.set_expected_responses(
-            [messages.ButtonRequest] * br_count + [messages.Success, messages.Features]
+        session.set_expected_responses(
+            [messages.ButtonRequest] * br_count
+            + [messages.Success]  # , messages.Features]
         )
         device.change_pin(session)
 
@@ -150,7 +151,7 @@ def test_set_failed(session: Session):
 @pytest.mark.setup_client(pin=PIN4)
 def test_change_failed(session: Session):
     assert session.features.pin_protection is True
-    raise Exception("Trezor FW fails to handle CANCEL message")
+
     # Check current PIN value
     _check_pin(session, PIN4)
 

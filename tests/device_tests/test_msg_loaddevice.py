@@ -18,6 +18,7 @@ import pytest
 
 from trezorlib import debuglink, device, models
 from trezorlib.debuglink import SessionDebugWrapper as Session
+from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.messages import BackupType
 
 from ..common import (
@@ -99,7 +100,7 @@ def test_load_device_slip39_advanced(session: Session):
     assert session.features.backup_type == BackupType.Slip39_Advanced
 
 
-def test_load_device_utf(session: Session):
+def test_load_device_utf(client: Client):
     words_nfkd = "Pr\u030ci\u0301s\u030cerne\u030c z\u030clut\u030couc\u030cky\u0301 ku\u030an\u030c u\u0301pe\u030cl d\u030ca\u0301belske\u0301 o\u0301dy za\u0301ker\u030cny\u0301 uc\u030cen\u030c be\u030cz\u030ci\u0301 pode\u0301l zo\u0301ny u\u0301lu\u030a"
     words_nfc = "P\u0159\xed\u0161ern\u011b \u017elu\u0165ou\u010dk\xfd k\u016f\u0148 \xfap\u011bl \u010f\xe1belsk\xe9 \xf3dy z\xe1ke\u0159n\xfd u\u010de\u0148 b\u011b\u017e\xed pod\xe9l z\xf3ny \xfal\u016f"
     words_nfkc = "P\u0159\xed\u0161ern\u011b \u017elu\u0165ou\u010dk\xfd k\u016f\u0148 \xfap\u011bl \u010f\xe1belsk\xe9 \xf3dy z\xe1ke\u0159n\xfd u\u010de\u0148 b\u011b\u017e\xed pod\xe9l z\xf3ny \xfal\u016f"
@@ -113,7 +114,7 @@ def test_load_device_utf(session: Session):
     passphrase_nfd = (
         "Neuve\u030cr\u030citelne\u030c bezpec\u030cne\u0301 hesli\u0301c\u030cko"
     )
-
+    session = client.get_management_session()
     debuglink.load_device(
         session,
         mnemonic=words_nfkd,
@@ -122,13 +123,13 @@ def test_load_device_utf(session: Session):
         label="test",
         skip_checksum=True,
     )
-    session: Session = session.client.get_session()
-    session.client.use_passphrase(passphrase_nfkd)
+    session: Session = session.client.get_session(passphrase=passphrase_nfkd)
+    session.client.use_passphrase(passphrase_nfkd)  # TODO is needed?
     address_nfkd = get_test_address(session)
 
-    raise Exception("TEST WILL FAIL AFTER WIPE")
     device.wipe(session)
-
+    client = client.get_new_client()
+    session = client.get_management_session()
     debuglink.load_device(
         session,
         mnemonic=words_nfc,
@@ -137,10 +138,13 @@ def test_load_device_utf(session: Session):
         label="test",
         skip_checksum=True,
     )
-    session.client.use_passphrase(passphrase_nfc)
+    session = client.get_session(passphrase=passphrase_nfc)
+    session.client.use_passphrase(passphrase_nfc)  # TODO is needed?
     address_nfc = get_test_address(session)
 
     device.wipe(session)
+    client = client.get_new_client()
+    session = client.get_management_session()
     debuglink.load_device(
         session,
         mnemonic=words_nfkc,
@@ -149,10 +153,13 @@ def test_load_device_utf(session: Session):
         label="test",
         skip_checksum=True,
     )
-    session.client.use_passphrase(passphrase_nfkc)
+    session = client.get_session(passphrase=passphrase_nfkc)
+    session.client.use_passphrase(passphrase_nfkc)  # TODO is needed?
     address_nfkc = get_test_address(session)
 
     device.wipe(session)
+    client = client.get_new_client()
+    session = client.get_management_session()
     debuglink.load_device(
         session,
         mnemonic=words_nfd,
@@ -161,9 +168,9 @@ def test_load_device_utf(session: Session):
         label="test",
         skip_checksum=True,
     )
-    session.client.use_passphrase(passphrase_nfd)
+    session = client.get_session(passphrase=passphrase_nfd)
+    session.client.use_passphrase(passphrase_nfd)  # TODO is needed?
     address_nfd = get_test_address(session)
-
     assert address_nfkd == address_nfc
     assert address_nfkd == address_nfkc
     assert address_nfkd == address_nfd

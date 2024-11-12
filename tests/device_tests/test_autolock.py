@@ -45,13 +45,14 @@ def set_autolock_delay(session: Session, delay):
                 pin_request(session),
                 messages.ButtonRequest,
                 messages.Success,
-                messages.Features,
+                # messages.Features,
             ]
         )
         device.apply_settings(session, auto_lock_delay_ms=delay)
 
 
 def test_apply_auto_lock_delay(session: Session):
+    session.lock()
     set_autolock_delay(session, 10 * 1000)
 
     time.sleep(0.1)  # sleep less than auto-lock delay
@@ -79,11 +80,14 @@ def test_apply_auto_lock_delay(session: Session):
     ],
 )
 def test_apply_auto_lock_delay_valid(session: Session, seconds):
+    session.lock()
     set_autolock_delay(session, seconds * 1000)
     assert session.features.auto_lock_delay_ms == seconds * 1000
 
 
 def test_autolock_default_value(session: Session):
+    session.lock()
+
     assert session.features.auto_lock_delay_ms is None
     with session, session.client as client:
         client.use_pin_sequence([PIN4])
@@ -97,6 +101,8 @@ def test_autolock_default_value(session: Session):
     [0, 1, 9, 536871, 2**22],
 )
 def test_apply_auto_lock_delay_out_of_range(session: Session, seconds):
+    session.lock()
+
     with session, session.client as client:
         client.use_pin_sequence([PIN4])
         session.set_expected_responses(
@@ -113,6 +119,8 @@ def test_apply_auto_lock_delay_out_of_range(session: Session, seconds):
 
 @pytest.mark.models("core")
 def test_autolock_cancels_ui(session: Session):
+    session.lock()
+
     set_autolock_delay(session, 10 * 1000)
 
     resp = session.call_raw(
@@ -136,6 +144,8 @@ def test_autolock_cancels_ui(session: Session):
 
 
 def test_autolock_ignores_initialize(session: Session):
+    session.lock()
+
     set_autolock_delay(session, 10 * 1000)
 
     assert session.features.unlocked is True
@@ -152,6 +162,8 @@ def test_autolock_ignores_initialize(session: Session):
 
 
 def test_autolock_ignores_getaddress(session: Session):
+    session.lock()
+
     set_autolock_delay(session, 10 * 1000)
 
     assert session.features.unlocked is True

@@ -55,12 +55,11 @@ def _set_expected_responses(session: Session):
     if session.model is models.T1B1:
         session.set_expected_responses(EXPECTED_RESPONSES_PIN_T1)
     else:
-        session.set_expected_responses(EXPECTED_RESPONSES_NOPIN)
-        # TODO Why is not the device locked now? What is the expected behaviour?
-        # session.set_expected_responses(EXPECTED_RESPONSES_PIN_TT)
+        session.set_expected_responses(EXPECTED_RESPONSES_PIN_TT)
 
 
 def test_apply_settings(session: Session):
+    session.lock()
     assert session.features.label == "test"
 
     with session:
@@ -72,10 +71,8 @@ def test_apply_settings(session: Session):
 
 @pytest.mark.models("core")
 def test_apply_settings_rotation(session: Session):
-    assert (
-        session.features.display_rotation is None
-        or session.features.display_rotation == 0
-    )
+    session.lock()
+    assert session.features.display_rotation is None
 
     with session:
         _set_expected_responses(session)
@@ -86,6 +83,7 @@ def test_apply_settings_rotation(session: Session):
 
 @pytest.mark.setup_client(pin=PIN4, passphrase=False)
 def test_apply_settings_passphrase(session: Session):
+    session.lock()
     with session:
         _set_expected_responses(session)
         device.apply_settings(session, use_passphrase=True)
@@ -389,13 +387,12 @@ def test_safety_checks(session: Session):
 
 @pytest.mark.models("core")
 def test_experimental_features(session: Session):
+    session.lock()
+
     def experimental_call():
         misc.get_nonce(session)
 
-    assert (
-        session.features.experimental_features is None
-        or session.features.experimental_features is False
-    )
+    assert session.features.experimental_features is None
 
     # unlock
     with session:

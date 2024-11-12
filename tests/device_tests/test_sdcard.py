@@ -53,9 +53,9 @@ def test_sd_no_format(session: Session):
 @pytest.mark.sd_card
 @pytest.mark.setup_client(pin="1234")
 def test_sd_protect_unlock(session: Session):
-    raise Exception("FAILS, NOT SURE WHY")
     debug = session.client.debug
     layout = debug.read_layout
+    session.lock()
 
     def input_flow_enable_sd_protect():
         # debug.press_yes()
@@ -101,7 +101,7 @@ def test_sd_protect_unlock(session: Session):
         TR.assert_in(layout().text_content(), "pin__changed")
         debug.press_yes()
 
-    with session.client as client:
+    with session, session.client as client:
         client.watch_layout()
         client.set_input_flow(input_flow_change_pin)
         device.change_pin(session)

@@ -55,16 +55,14 @@ def _ensure_unlocked(session: Session, pin: str):
         client.use_pin_sequence([pin])
         btc.get_address(session, "Testnet", PASSPHRASE_TEST_PATH)
 
-    # session.init_device()
+    session.refresh_features()
 
 
 @pytest.mark.setup_client(pin=PIN4)
 def test_set_remove_wipe_code(session: Session):
+    session.lock()
     # Test set wipe code.
-    assert (
-        session.features.wipe_code_protection is None
-        or session.features.wipe_code_protection is False
-    )  # TODO??
+    assert session.features.wipe_code_protection is None
     _ensure_unlocked(session, PIN4)
     assert session.features.wipe_code_protection is False
 
