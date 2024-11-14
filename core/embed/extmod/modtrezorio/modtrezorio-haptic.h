@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "haptic.h"
+#include <io/haptic.h>
 
 /// package: trezorio.haptic
 

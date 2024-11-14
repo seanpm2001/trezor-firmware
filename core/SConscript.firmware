@@ -194,20 +194,21 @@ CPPPATH_MOD += [
 ]
 SOURCE_MOD += [
     'embed/extmod/modtrezorui/modtrezorui.c',
-    'embed/lib/display_utils.c',
-    'embed/lib/error_handling.c',
-    'embed/lib/fonts/font_bitmap.c',
-    'embed/lib/fonts/fonts.c',
-    'embed/lib/gfx_color.c',
-    'embed/lib/gfx_bitblt_rgb565.c',
-    'embed/lib/gfx_bitblt_rgba8888.c',
-    'embed/lib/gfx_bitblt_mono8.c',
-    'embed/lib/image.c',
-    'embed/lib/mini_printf.c',
-    'embed/lib/rsod.c',
-    'embed/lib/terminal.c',
-    'embed/lib/translations.c',
-    'embed/lib/gfx_draw.c',
+    'embed/gfx/bitblt/gfx_bitblt.c',
+    'embed/gfx/bitblt/gfx_bitblt_rgb565.c',
+    'embed/gfx/bitblt/gfx_bitblt_rgba8888.c',
+    'embed/gfx/bitblt/gfx_bitblt_mono8.c',
+    'embed/gfx/fonts/font_bitmap.c',
+    'embed/gfx/fonts/fonts.c',
+    'embed/gfx/gfx_color.c',
+    'embed/gfx/gfx_draw.c',
+    'embed/gfx/terminal.c',
+    'embed/io/display/display_utils.c',
+    'embed/utl/image/image.c',
+    'embed/utl/translations/translations.c',
+    'embed/utl/rsod/rsod.c',
+    'embed/rtl/error_handling.c',
+    'embed/rtl/mini_printf.c',
     'vendor/micropython/lib/uzlib/adler32.c',
     'vendor/micropython/lib/uzlib/crc32.c',
     'vendor/micropython/lib/uzlib/tinflate.c',
@@ -380,11 +381,11 @@ FEATURES_AVAILABLE = models.configure_board(TREZOR_MODEL, HW_REVISION, FEATURES_
 FILE_SUFFIX= env.get('ENV')['SUFFIX']
 
 SOURCE_FIRMWARE = [
-    'embed/firmware/header.S',
-    'embed/firmware/main.c',
-    'embed/firmware/mphalport.c',
-    'embed/firmware/nlrthumb.c',
-    f'embed/trezorhal/{FILE_SUFFIX}/startup_stage_4.s',
+    'embed/prj/firmware/header.S',
+    'embed/prj/firmware/main.c',
+    'embed/prj/firmware/mphalport.c',
+    'embed/prj/firmware/nlrthumb.c',
+    f'embed/sys/startup/{FILE_SUFFIX}/startup_stage_4.s',
 ]
 
 if 'sd_card' in FEATURES_AVAILABLE:
@@ -413,10 +414,14 @@ env.Replace(
 ALLPATHS = [
         '.',
         'embed/rust',
-        'embed/firmware',
-        'embed/lib',
+        'embed/prj/firmware',
+        'embed/rtl/inc',
         'embed/models',
-        'embed/trezorhal',
+        'embed/gfx/inc',
+        'embed/sys/bsp/inc',
+        'embed/utl/image/inc',
+        'embed/utl/rsod/inc',
+        'embed/utl/translations/inc',
         'embed/extmod/modtrezorui',
         'vendor/micropython',
     ] + CPPPATH_MOD + PATH_HAL
@@ -802,7 +807,7 @@ tools.embed_raw_binary(
         obj_program,
         env,
         'vendorheader',
-        'embed/firmware/vendorheader.o',
+        'embed/prj/firmware/vendorheader.o',
         VENDORHEADER,
         )
 
@@ -840,7 +845,7 @@ env.Depends(program_elf, rust)
 BINARY_NAME = f"build/firmware/firmware-{MODEL_IDENTIFIER}"
 if not EVERYTHING:
     BINARY_NAME += "-btconly"
-BINARY_NAME += "-" + tools.get_version('embed/firmware/version.h')
+BINARY_NAME += "-" + tools.get_version('embed/prj/firmware/version.h')
 BINARY_NAME += "-" + tools.get_git_revision_short_hash()
 BINARY_NAME += "-dirty" if tools.get_git_modified() else ""
 BINARY_NAME += ".bin"

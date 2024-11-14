@@ -9,10 +9,9 @@ use crate::ui::{
 /// Waits for the DMA2D peripheral transfer to complete.
 pub fn wait_for_transfer() {
     // SAFETY:
-    // `ffi::dma2d_wait()` is always safe to call.
-    #[cfg(feature = "dma2d")]
+    // `ffi::gfx_bitblt_wait()` is always safe to call.
     unsafe {
-        ffi::dma2d_wait()
+        ffi::gfx_bitblt_wait()
     }
 }
 

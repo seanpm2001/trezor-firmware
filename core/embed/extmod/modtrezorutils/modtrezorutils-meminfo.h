@@ -34,9 +34,9 @@
 #include "py/objstr.h"
 #include "py/objtype.h"
 
+#include <io/usb.h>
 #include "embed/extmod/trezorobj.h"
 #include "embed/rust/librust.h"
-#include "embed/trezorhal/usb.h"
 
 #define WORDS_PER_BLOCK ((MICROPY_BYTES_PER_GC_BLOCK) / MP_BYTES_PER_OBJ_WORD)
 #define BYTES_PER_BLOCK (MICROPY_BYTES_PER_GC_BLOCK)

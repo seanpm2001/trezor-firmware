@@ -23,7 +23,7 @@
 #include "py/objstr.h"
 #include "py/runtime.h"
 
-#include "image.h"
+#include <utl/image.h>
 #include "version.h"
 
 #if MICROPY_PY_TREZORUTILS
@@ -31,14 +31,14 @@
 #include "embed/extmod/modtrezorutils/modtrezorutils-meminfo.h"
 #include "embed/extmod/trezorobj.h"
 
+#include <io/usb.h>
+#include <sys/bootutils.h>
+#include <utl/fwutils.h>
+#include <utl/unit_properties.h>
 #include "blake2s.h"
-#include "bootutils.h"
-#include "fwutils.h"
-#include "unit_properties.h"
-#include "usb.h"
 
 #if USE_OPTIGA && !defined(TREZOR_EMULATOR)
-#include "secret.h"
+#include <sec/secret.h>
 #endif
 
 static void ui_progress(void *context, uint32_t current, uint32_t total) {

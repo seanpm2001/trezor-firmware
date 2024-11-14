@@ -5,10 +5,10 @@ set -u
 base_branch=main
 fail=0
 subdirs="core
-    core/embed/boardloader
-    core/embed/bootloader
-    core/embed/bootloader_ci
-    core/embed/prodtest
+    core/embed/prj/boardloader
+    core/embed/prj/bootloader
+    core/embed/prj/bootloader_ci
+    core/embed/prj/prodtest
     legacy/bootloader
     legacy/firmware
     legacy/intermediate_fw

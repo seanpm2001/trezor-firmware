@@ -20,9 +20,12 @@
 #include <trezor_model.h>
 #include <trezor_types.h>
 
-#include "button.h"
-#include "display.h"
-#include "systick.h"
+#include <io/display.h>
+#include <sys/systick.h>
+
+#ifdef USE_BUTTON
+#include <io/button.h>
+#endif
 
 #include "embed/extmod/trezorobj.h"
 

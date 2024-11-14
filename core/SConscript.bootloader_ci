@@ -57,20 +57,21 @@ CPPPATH_MOD += [
 ]
 SOURCE_MOD += [
     'embed/extmod/modtrezorcrypto/rand.c',
-    'embed/lib/display_utils.c',
-    'embed/lib/error_handling.c',
-    'embed/lib/flash_utils.c',
-    'embed/lib/fonts/font_bitmap.c',
-    'embed/lib/fonts/fonts.c',
-    'embed/lib/gfx_color.c',
-    'embed/lib/gfx_bitblt_mono8.c',
-    'embed/lib/gfx_bitblt_rgb565.c',
-    'embed/lib/gfx_bitblt_rgba8888.c',
-    'embed/lib/image.c',
-    'embed/lib/mini_printf.c',
-    'embed/lib/rsod.c',
-    'embed/lib/terminal.c',
-    'embed/lib/gfx_draw.c',
+    'embed/gfx/bitblt/gfx_bitblt.c',
+    'embed/gfx/bitblt/gfx_bitblt_mono8.c',
+    'embed/gfx/bitblt/gfx_bitblt_rgb565.c',
+    'embed/gfx/bitblt/gfx_bitblt_rgba8888.c',
+    'embed/gfx/fonts/font_bitmap.c',
+    'embed/gfx/fonts/fonts.c',
+    'embed/gfx/gfx_color.c',
+    'embed/gfx/gfx_draw.c',
+    'embed/gfx/terminal.c',
+    'embed/io/display/display_utils.c',
+    'embed/utl/flash/flash_utils.c',
+    'embed/utl/image/image.c',
+    'embed/utl/rsod/rsod.c',
+    'embed/rtl/error_handling.c',
+    'embed/rtl/mini_printf.c',
     'vendor/micropython/lib/uzlib/adler32.c',
     'vendor/micropython/lib/uzlib/crc32.c',
     'vendor/micropython/lib/uzlib/tinflate.c',
@@ -94,13 +95,13 @@ FEATURES_AVAILABLE = models.configure_board(TREZOR_MODEL, HW_REVISION, FEATURES_
 FILE_SUFFIX= env.get('ENV')['SUFFIX']
 
 SOURCE_BOOTLOADER = [
-    f'embed/trezorhal/{FILE_SUFFIX}/startup_stage_1.s',
-    'embed/bootloader_ci/header.S',
-    'embed/bootloader_ci/bootui.c',
-    'embed/bootloader_ci/main.c',
-    'embed/bootloader_ci/messages.c',
-    'embed/bootloader_ci/protob/messages.pb.c',
-    'embed/bootloader_ci/version_check.c',
+    f'embed/sys/startup/{FILE_SUFFIX}/startup_stage_1.s',
+    'embed/prj/bootloader_ci/header.S',
+    'embed/prj/bootloader_ci/bootui.c',
+    'embed/prj/bootloader_ci/main.c',
+    'embed/prj/bootloader_ci/messages.c',
+    'embed/prj/bootloader_ci/protob/messages.pb.c',
+    'embed/prj/bootloader_ci/version_check.c',
 ]
 
 env.Replace(
@@ -132,12 +133,15 @@ env.Replace(
     CCFLAGS_QSTR='-DNO_QSTR -DN_X64 -DN_X86 -DN_THUMB',
     LINKFLAGS=f'-T build/bootloader_ci/memory.ld -Wl,--gc-sections -Wl,-Map=build/bootloader_ci/bootloader.map -Wl,--warn-common',
     CPPPATH=[
-        'embed/bootloader_ci',
-        'embed/bootloader_ci/nanopb',
-        'embed/bootloader_ci/protob',
-        'embed/lib',
+        'embed/prj/bootloader_ci',
+        'embed/prj/bootloader_ci/nanopb',
+        'embed/prj/bootloader_ci/protob',
+        'embed/rtl/inc',
         'embed/models',
-        'embed/trezorhal',
+        'embed/gfx/inc',
+        'embed/sys/bsp/inc',
+        'embed/utl/image/inc',
+        'embed/utl/rsod/inc',
         'embed/extmod/modtrezorui',
         'vendor/nanopb',
     ] + CPPPATH_MOD + PATH_HAL,
@@ -195,7 +199,7 @@ program_elf = env.Command(
 env.Depends(program_elf, linkerscript_gen)
 
 BINARY_NAME = f"build/bootloader_ci/bootloader_ci-{models.get_model_identifier(TREZOR_MODEL)}"
-BINARY_NAME += "-" + tools.get_version('embed/bootloader_ci/version.h')
+BINARY_NAME += "-" + tools.get_version('embed/prj/bootloader_ci/version.h')
 BINARY_NAME += "-" + tools.get_git_revision_short_hash()
 BINARY_NAME += "-dirty" if tools.get_git_modified() else ""
 BINARY_NAME += ".bin"

@@ -21,8 +21,8 @@
 
 #include "py/objstr.h"
 
-#include "optiga.h"
-#include "optiga_commands.h"
+#include <sec/optiga.h>
+#include <sec/optiga_commands.h>
 
 /// package: trezorcrypto.optiga
 

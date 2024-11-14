@@ -24,7 +24,7 @@
 // clang-format off
 #include "ff.h"
 #include "diskio.h"
-#include "sdcard.h"
+#include <io/sdcard.h>
 // clang-format on
 
 /// package: trezorio.fatfs

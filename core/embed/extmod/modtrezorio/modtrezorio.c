@@ -27,9 +27,15 @@
 
 #if MICROPY_PY_TREZORIO
 
-#include "button.h"
-#include "touch.h"
-#include "usb.h"
+#ifdef USE_BUTTON
+#include <io/button.h>
+#endif
+
+#ifdef USE_TOUCH
+#include <io/touch.h>
+#endif
+
+#include <io/usb.h>
 
 // Whether USB data pins were connected on last check (USB configured)
 bool usb_connected_previously = true;

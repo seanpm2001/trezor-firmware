@@ -80,11 +80,11 @@ def _categories_func(row: DataRow) -> str | None:
         ),
         "Other apps": lambda row: row.source_definition.startswith("src/apps/"),
         "Rest of src/": lambda row: row.source_definition.startswith("src/"),
-        "Fonts": lambda row: row.source_definition.startswith("embed/lib/fonts/"),
+        "Fonts": lambda row: row.source_definition.startswith("embed/gfx/fonts/"),
         "Embed firmware": lambda row: row.source_definition.startswith(
-            "embed/firmware/"
+            "embed/prj/firmware/"
         ),
-        "Trezorhal": lambda row: row.source_definition.startswith("embed/trezorhal/"),
+        "Trezorhal": lambda row: row.source_definition.startswith("embed/io/"),
         "Trezorio": lambda row: row.source_definition.startswith(
             "embed/extmod/modtrezorio/"
         ),
@@ -95,7 +95,7 @@ def _categories_func(row: DataRow) -> str | None:
             "embed/extmod/modtrezorutils/"
         ),
         "Embed extmod": lambda row: row.source_definition.startswith("embed/extmod/"),
-        "Embed lib": lambda row: row.source_definition.startswith("embed/lib/"),
+        "Embed rtl": lambda row: row.source_definition.startswith("embed/rtl/"),
         "Rust": lambda row: (
             row.language == "Rust"
             or row.source_definition.startswith(("embed/rust/", "/cargo/registry"))

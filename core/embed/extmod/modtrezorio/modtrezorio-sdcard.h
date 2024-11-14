@@ -20,7 +20,7 @@
 #include "embed/extmod/trezorobj.h"
 #include "py/mperrno.h"
 
-#include "sdcard.h"
+#include <io/sdcard.h>
 
 /// package: trezorio.sdcard
 

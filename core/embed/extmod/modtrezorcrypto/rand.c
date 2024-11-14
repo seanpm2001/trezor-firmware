@@ -18,6 +18,6 @@
  */
 
 #include "rand.h"
-#include "rng.h"
+#include <sec/rng.h>
 
 uint32_t random32(void) { return rng_get(); }

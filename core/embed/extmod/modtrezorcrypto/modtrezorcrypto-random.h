@@ -24,7 +24,7 @@
 #include "rand.h"
 
 #if USE_OPTIGA
-#include "optiga.h"
+#include <sec/optiga.h>
 #endif
 
 /// package: trezorcrypto.random
