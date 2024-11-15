@@ -1,8 +1,14 @@
 import builtins
 import gc
+from typing import TYPE_CHECKING
 
-from storage import cache_codec
 from storage.cache_common import SESSIONLESS_FLAG, SessionlessCache
+from trezor import utils
+
+if TYPE_CHECKING:
+    from typing import Tuple
+
+    pass
 
 # XXX
 # Allocation notes:
@@ -14,7 +20,15 @@ from storage.cache_common import SESSIONLESS_FLAG, SessionlessCache
 
 _SESSIONLESS_CACHE = SessionlessCache()
 
-_PROTOCOL_CACHE = cache_codec
+
+if utils.USE_THP:
+    from storage import cache_thp
+
+    _PROTOCOL_CACHE = cache_thp
+else:
+    from storage import cache_codec
+
+    _PROTOCOL_CACHE = cache_codec
 
 _PROTOCOL_CACHE.initialize()
 _SESSIONLESS_CACHE.clear()
@@ -22,12 +36,17 @@ _SESSIONLESS_CACHE.clear()
 gc.collect()
 
 
-def clear_all() -> None:
+def clear_all(excluded: Tuple[bytes, bytes] | None = None) -> None:
     from .cache_common import clear
 
     clear()
     _SESSIONLESS_CACHE.clear()
-    _PROTOCOL_CACHE.clear_all()
+
+    if utils.USE_THP and excluded is not None:
+        # If we want to keep THP connection alive, we do not clear communication keys
+        cache_thp.clear_all_except_one_session_keys(excluded)
+    else:
+        _PROTOCOL_CACHE.clear_all()
 
 
 def get_int_all_sessions(key: int) -> builtins.set[int]:
