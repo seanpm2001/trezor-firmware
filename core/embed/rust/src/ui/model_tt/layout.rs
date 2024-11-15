@@ -1731,7 +1731,7 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///         """Calls drop on contents of the root component."""
     ///
     /// class UiResult:
-    ///     """Result of an UI operation."""
+    ///     """Result of a UI operation."""
     ///     pass
     ///
     /// mock:global
