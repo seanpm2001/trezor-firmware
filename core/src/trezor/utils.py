@@ -35,6 +35,10 @@ from typing import TYPE_CHECKING
 
 DISABLE_ANIMATION = 0
 
+DISABLE_ENCRYPTION: bool = False
+
+ALLOW_DEBUG_MESSAGES: bool = True
+
 if __debug__:
     if EMULATOR:
         import uos
@@ -111,6 +115,7 @@ def presize_module(modname: str, size: int) -> None:
 
 
 if __debug__:
+    from ubinascii import hexlify
 
     def mem_dump(filename: str) -> None:
         from micropython import mem_info
@@ -126,6 +131,9 @@ if __debug__:
             mem_info()
         else:
             mem_info(True)
+
+    def get_bytes_as_str(a: bytes) -> str:
+        return hexlify(a).decode("utf-8")
 
 
 def ensure(cond: bool, msg: str | None = None) -> None:

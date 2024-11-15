@@ -11,6 +11,7 @@ trezor = {path = "./python", develop = true}
 scons = "*"
 protobuf = "*"
 nanopb = "^0.4.3"
+appdirs ="*"
 
 ## test tools
 pytest = "^8"

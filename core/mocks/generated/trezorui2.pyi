@@ -4,16 +4,13 @@ CONFIRMED: UiResult
 CANCELLED: UiResult
 INFO: UiResult
 
-
 # rust/src/ui/model_mercury/layout.rs
 def disable_animation(disable: bool) -> None:
     """Disable animations, debug builds only."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def check_homescreen_format(data: bytes) -> bool:
     """Check homescreen format and dimensions."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def confirm_action(
@@ -32,7 +29,6 @@ def confirm_action(
 ) -> LayoutObj[UiResult]:
     """Confirm action."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_emphasized(
     *,
@@ -43,7 +39,6 @@ def confirm_emphasized(
     """Confirm formatted text that has been pre-split in python. For tuples
     the first component is a bool indicating whether this part is emphasized."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_homescreen(
     *,
@@ -51,7 +46,6 @@ def confirm_homescreen(
     image: bytes,
 ) -> LayoutObj[UiResult]:
     """Confirm homescreen."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def confirm_blob(
@@ -75,7 +69,6 @@ def confirm_blob(
 ) -> LayoutObj[UiResult]:
     """Confirm byte sequence data."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_address(
     *,
@@ -89,7 +82,6 @@ def confirm_address(
     """Confirm address. Similar to `confirm_blob` but has corner info button
     and allows left swipe which does the same thing as the button."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_properties(
     *,
@@ -100,11 +92,9 @@ def confirm_properties(
     """Confirm list of key-value pairs. The third component in the tuple should be True if
     the value is to be rendered as binary with monospace font, False otherwise."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def flow_confirm_reset(recovery: bool) -> LayoutObj[UiResult]:
     """Confirm TOS before creating wallet creation or wallet recovery."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def flow_confirm_set_new_pin(
@@ -113,7 +103,6 @@ def flow_confirm_set_new_pin(
     description: str,
 ) -> LayoutObj[UiResult]:
     """Confirm new PIN setup with an option to cancel action."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def show_info_with_cancel(
@@ -124,7 +113,6 @@ def show_info_with_cancel(
     chunkify: bool = False,
 ) -> LayoutObj[UiResult]:
     """Show metadata for outgoing transaction."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def confirm_value(
@@ -142,7 +130,6 @@ def confirm_value(
 ) -> LayoutObj[UiResult]:
     """Confirm value. Merge of confirm_total and confirm_output."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_total(
     *,
@@ -153,7 +140,6 @@ def confirm_total(
 ) -> LayoutObj[UiResult]:
     """Transaction summary. Always hold to confirm."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_modify_output(
     *,
@@ -162,7 +148,6 @@ def confirm_modify_output(
     amount_new: str,
 ) -> LayoutObj[UiResult]:
     """Decrease or increase output amount."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def confirm_modify_fee(
@@ -174,7 +159,6 @@ def confirm_modify_fee(
     fee_rate_amount: str | None,  # ignored
 ) -> LayoutObj[UiResult]:
     """Decrease or increase transaction fee."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def confirm_fido(
@@ -188,7 +172,6 @@ def confirm_fido(
     Returns page index in case of confirmation and CANCELLED otherwise.
     """
 
-
 # rust/src/ui/model_mercury/layout.rs
 def show_error(
     *,
@@ -199,7 +182,6 @@ def show_error(
     time_ms: int = 0,
 ) -> LayoutObj[UiResult]:
     """Error modal. No buttons shown when `button` is empty string."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def show_warning(
@@ -214,7 +196,6 @@ def show_warning(
 ) -> LayoutObj[UiResult]:
     """Warning modal. No buttons shown when `button` is empty string."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def show_success(
     *,
@@ -225,7 +206,6 @@ def show_success(
     time_ms: int = 0,
 ) -> LayoutObj[UiResult]:
     """Success screen. Description is used in the footer."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def show_info(
@@ -238,11 +218,9 @@ def show_info(
 ) -> LayoutObj[UiResult]:
     """Info modal. No buttons shown when `button` is empty string."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def show_mismatch(*, title: str) -> LayoutObj[UiResult]:
     """Warning modal, receiving address mismatch."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def show_simple(
@@ -252,7 +230,6 @@ def show_simple(
     button: str = "",
 ) -> LayoutObj[UiResult]:
     """Simple dialog with text and one button."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def confirm_with_info(
@@ -265,7 +242,6 @@ def confirm_with_info(
     """Confirm given items but with third button. In mercury, the button is placed in
     context menu."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_more(
     *,
@@ -276,7 +252,6 @@ def confirm_more(
     """Confirm long content with the possibility to go back from any page.
     Meant to be used with confirm_with_info."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_coinjoin(
     *,
@@ -284,7 +259,6 @@ def confirm_coinjoin(
     max_feerate: str,
 ) -> LayoutObj[UiResult]:
     """Confirm coinjoin authorization."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def request_pin(
@@ -296,7 +270,6 @@ def request_pin(
 ) -> LayoutObj[str | UiResult]:
     """Request pin on device."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def flow_request_passphrase(
     *,
@@ -304,7 +277,6 @@ def flow_request_passphrase(
     max_len: int,
 ) -> LayoutObj[str | UiResult]:
     """Passphrase input keyboard."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def request_bip39(
@@ -315,7 +287,6 @@ def request_bip39(
 ) -> LayoutObj[str]:
     """BIP39 word input keyboard."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def request_slip39(
     *,
@@ -324,7 +295,6 @@ def request_slip39(
     can_go_back: bool,
 ) -> LayoutObj[str]:
     """SLIP39 word input keyboard."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def select_word(
@@ -336,11 +306,9 @@ def select_word(
     """Select mnemonic word from three possibilities - seed check after backup. The
    iterable must be of exact size. Returns index in range `0..3`."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def flow_prompt_backup() -> LayoutObj[UiResult]:
     """Prompt a user to create backup with an option to skip."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def flow_show_share_words(
@@ -354,7 +322,6 @@ def flow_show_share_words(
 ) -> LayoutObj[UiResult]:
     """Show wallet backup words preceded by an instruction screen and followed by
     confirmation."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def flow_request_number(
@@ -371,14 +338,12 @@ def flow_request_number(
     """Numer input with + and - buttons, description, and context menu with cancel and
     info."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def set_brightness(
     *,
     current: int | None = None
 ) -> LayoutObj[UiResult]:
     """Show the brightness configuration dialog."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def show_checklist(
@@ -391,7 +356,6 @@ def show_checklist(
     """Checklist of backup steps. Active index is highlighted, previous items have check
    mark next to them."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def flow_continue_recovery(
     *,
@@ -403,7 +367,6 @@ def flow_continue_recovery(
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def select_word_count(
     *,
@@ -412,14 +375,12 @@ def select_word_count(
     """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
     For unlocking a repeated backup, select from 20 or 33."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def show_group_share_success(
     *,
     lines: Iterable[str]
 ) -> LayoutObj[UiResult]:
     """Shown after successfully finishing a group."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def show_progress(
@@ -432,7 +393,6 @@ def show_progress(
    description is determined at construction time. If you want multiline descriptions
    make sure the initial description has at least that amount of lines."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def show_progress_coinjoin(
     *,
@@ -443,7 +403,6 @@ def show_progress_coinjoin(
 ) -> LayoutObj[UiResult]:
     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
    time_ms timeout is passed."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def show_homescreen(
@@ -456,7 +415,6 @@ def show_homescreen(
 ) -> LayoutObj[UiResult]:
     """Idle homescreen."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def show_lockscreen(
     *,
@@ -467,7 +425,6 @@ def show_lockscreen(
 ) -> LayoutObj[UiResult]:
     """Homescreen for locked device."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_firmware_update(
     *,
@@ -476,16 +433,13 @@ def confirm_firmware_update(
 ) -> LayoutObj[UiResult]:
     """Ask whether to update firmware, optionally show fingerprint."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def tutorial() -> LayoutObj[UiResult]:
     """Show user how to interact with the device."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def show_wait_text(message: str, /) -> LayoutObj[None]:
     """Show single-line text in the middle of the screen."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def flow_get_address(
@@ -506,7 +460,6 @@ def flow_get_address(
 ) -> LayoutObj[UiResult]:
     """Get address / receive funds."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def flow_warning_hi_prio(
     *,
@@ -515,7 +468,6 @@ def flow_warning_hi_prio(
     value: str = "",
 ) -> LayoutObj[UiResult]:
     """Warning modal with multiple steps to confirm."""
-
 
 # rust/src/ui/model_mercury/layout.rs
 def flow_confirm_output(
@@ -541,7 +493,6 @@ def flow_confirm_output(
 ) -> LayoutObj[UiResult]:
     """Confirm the recipient, (optionally) confirm the amount and (optionally) confirm the summary and present a Hold to Sign page."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 def flow_confirm_summary(
     *,
@@ -556,7 +507,6 @@ def flow_confirm_summary(
 ) -> LayoutObj[UiResult]:
     """Total summary and hold to confirm."""
 
-
 # rust/src/ui/model_mercury/layout.rs
 class BacklightLevels:
     """Backlight levels. Values dynamically update based on user settings."""
@@ -566,7 +516,6 @@ class BacklightLevels:
     DIM: ClassVar[int]
     NONE: ClassVar[int]
 
-
 # rust/src/ui/model_mercury/layout.rs
 class AttachType:
     INITIAL: ClassVar[int]
@@ -575,7 +524,6 @@ class AttachType:
     SWIPE_DOWN: ClassVar[int]
     SWIPE_LEFT: ClassVar[int]
     SWIPE_RIGHT: ClassVar[int]
-
 
 # rust/src/ui/model_mercury/layout.rs
 class LayoutState:
@@ -588,16 +536,13 @@ CONFIRMED: UiResult
 CANCELLED: UiResult
 INFO: UiResult
 
-
 # rust/src/ui/model_tr/layout.rs
 def disable_animation(disable: bool) -> None:
     """Disable animations, debug builds only."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def check_homescreen_format(data: bytes) -> bool:
     """Check homescreen format and dimensions."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_action(
@@ -616,7 +561,6 @@ def confirm_action(
 ) -> LayoutObj[UiResult]:
     """Confirm action."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_homescreen(
     *,
@@ -624,7 +568,6 @@ def confirm_homescreen(
     image: bytes,
 ) -> object:
     """Confirm homescreen."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_blob(
@@ -648,7 +591,6 @@ def confirm_blob(
 ) -> LayoutObj[UiResult]:
     """Confirm byte sequence data."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_address(
     *,
@@ -661,7 +603,6 @@ def confirm_address(
 ) -> LayoutObj[UiResult]:
     """Confirm address."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_properties(
     *,
@@ -673,7 +614,6 @@ def confirm_properties(
     the value is to be rendered as binary with monospace font, False otherwise.
     This only concerns the text style, you need to decode the value to UTF-8 in python."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_reset_device(
     *,
@@ -682,11 +622,9 @@ def confirm_reset_device(
 ) -> LayoutObj[UiResult]:
     """Confirm TOS before device setup."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_backup() -> LayoutObj[UiResult]:
     """Strongly recommend user to do backup."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def show_address_details(
@@ -699,7 +637,6 @@ def show_address_details(
 ) -> LayoutObj[UiResult]:
     """Show address details - QR code, account, path, cosigner xpubs."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_value(
     *,
@@ -711,7 +648,6 @@ def confirm_value(
 ) -> LayoutObj[UiResult]:
     """Confirm value."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_joint_total(
     *,
@@ -719,7 +655,6 @@ def confirm_joint_total(
     total_amount: str,
 ) -> LayoutObj[UiResult]:
     """Confirm total if there are external inputs."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_modify_output(
@@ -729,7 +664,6 @@ def confirm_modify_output(
     amount_new: str,
 ) -> LayoutObj[UiResult]:
     """Decrease or increase output amount."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_output_address(
@@ -741,7 +675,6 @@ def confirm_output_address(
 ) -> LayoutObj[UiResult]:
     """Confirm output address."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_output_amount(
     *,
@@ -749,7 +682,6 @@ def confirm_output_amount(
     amount_title: str,
 ) -> LayoutObj[UiResult]:
     """Confirm output amount."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_total(
@@ -762,7 +694,6 @@ def confirm_total(
     fee_label: str,
 ) -> LayoutObj[UiResult]:
     """Confirm summary of a transaction."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def altcoin_tx_summary(
@@ -777,11 +708,9 @@ def altcoin_tx_summary(
 ) -> LayoutObj[UiResult]:
     """Confirm details about altcoin transaction."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def tutorial() -> LayoutObj[UiResult]:
     """Show user how to interact with the device."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_modify_fee(
@@ -793,7 +722,6 @@ def confirm_modify_fee(
     fee_rate_amount: str | None,
 ) -> LayoutObj[UiResult]:
     """Decrease or increase transaction fee."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_fido(
@@ -807,7 +735,6 @@ def confirm_fido(
     Returns page index in case of confirmation and CANCELLED otherwise.
     """
 
-
 # rust/src/ui/model_tr/layout.rs
 def multiple_pages_texts(
     *,
@@ -816,7 +743,6 @@ def multiple_pages_texts(
     items: list[str],
 ) -> LayoutObj[UiResult]:
     """Show multiple texts, each on its own page."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def show_warning(
@@ -827,7 +753,6 @@ def show_warning(
 ) -> LayoutObj[UiResult]:
     """Warning modal with middle button and centered text."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_info(
     *,
@@ -837,16 +762,13 @@ def show_info(
 ) -> LayoutObj[UiResult]:
     """Info modal."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_passphrase() -> LayoutObj[UiResult]:
     """Show passphrase on host dialog."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_mismatch(*, title: str) -> LayoutObj[UiResult]:
     """Warning modal, receiving address mismatch."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_with_info(
@@ -860,7 +782,6 @@ def confirm_with_info(
     """Confirm given items but with third button. Always single page
     without scrolling."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_more(
     *,
@@ -871,7 +792,6 @@ def confirm_more(
     """Confirm long content with the possibility to go back from any page.
     Meant to be used with confirm_with_info."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_coinjoin(
     *,
@@ -879,7 +799,6 @@ def confirm_coinjoin(
     max_feerate: str,
 ) -> LayoutObj[UiResult]:
     """Confirm coinjoin authorization."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def request_pin(
@@ -891,7 +810,6 @@ def request_pin(
 ) -> LayoutObj[str | UiResult]:
     """Request pin on device."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def request_passphrase(
     *,
@@ -899,7 +817,6 @@ def request_passphrase(
     max_len: int,  # unused on TR
 ) -> LayoutObj[str | UiResult]:
     """Get passphrase."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def request_bip39(
@@ -910,7 +827,6 @@ def request_bip39(
 ) -> LayoutObj[str]:
     """Get recovery word for BIP39."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def request_slip39(
     *,
@@ -919,7 +835,6 @@ def request_slip39(
     can_go_back: bool,
 ) -> LayoutObj[str]:
     """SLIP39 word input keyboard."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def select_word(
@@ -931,14 +846,12 @@ def select_word(
     """Select mnemonic word from three possibilities - seed check after backup. The
     iterable must be of exact size. Returns index in range `0..3`."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_share_words(
     *,
     share_words: Iterable[str],
 ) -> LayoutObj[UiResult]:
     """Shows a backup seed."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def request_number(
@@ -951,7 +864,6 @@ def request_number(
 ) -> LayoutObj[tuple[UiResult, int]]:
     """Number input with + and - buttons, description, and info button."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_checklist(
     *,
@@ -962,7 +874,6 @@ def show_checklist(
 ) -> LayoutObj[UiResult]:
     """Checklist of backup steps. Active index is highlighted, previous items have check
     mark next to them."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def confirm_recovery(
@@ -976,7 +887,6 @@ def confirm_recovery(
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def select_word_count(
     *,
@@ -985,14 +895,12 @@ def select_word_count(
     """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
     For unlocking a repeated backup, select from 20 or 33."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_group_share_success(
     *,
     lines: Iterable[str],
 ) -> LayoutObj[int]:
     """Shown after successfully finishing a group."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def show_progress(
@@ -1005,7 +913,6 @@ def show_progress(
     description is determined at construction time. If you want multiline descriptions
     make sure the initial description has at least that amount of lines."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_progress_coinjoin(
     *,
@@ -1016,7 +923,6 @@ def show_progress_coinjoin(
 ) -> LayoutObj[UiResult]:
     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
     time_ms timeout is passed."""
-
 
 # rust/src/ui/model_tr/layout.rs
 def show_homescreen(
@@ -1029,7 +935,6 @@ def show_homescreen(
 ) -> LayoutObj[UiResult]:
     """Idle homescreen."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_lockscreen(
     *,
@@ -1040,7 +945,6 @@ def show_lockscreen(
 ) -> LayoutObj[UiResult]:
     """Homescreen for locked device."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def confirm_firmware_update(
     *,
@@ -1049,11 +953,9 @@ def confirm_firmware_update(
 ) -> LayoutObj[UiResult]:
     """Ask whether to update firmware, optionally show fingerprint. Shared with bootloader."""
 
-
 # rust/src/ui/model_tr/layout.rs
 def show_wait_text(message: str, /) -> None:
     """Show single-line text in the middle of the screen."""
-
 
 # rust/src/ui/model_tr/layout.rs
 class BacklightLevels:
@@ -1064,7 +966,6 @@ class BacklightLevels:
     DIM: ClassVar[int]
     NONE: ClassVar[int]
 
-
 # rust/src/ui/model_tr/layout.rs
 class AttachType:
     INITIAL: ClassVar[int]
@@ -1073,7 +974,6 @@ class AttachType:
     SWIPE_DOWN: ClassVar[int]
     SWIPE_LEFT: ClassVar[int]
     SWIPE_RIGHT: ClassVar[int]
-
 
 # rust/src/ui/model_tr/layout.rs
 class LayoutState:
@@ -1084,7 +984,6 @@ class LayoutState:
     DONE: "ClassVar[LayoutState]"
 from trezor import utils
 T = TypeVar("T")
-
 
 # rust/src/ui/model_tt/layout.rs
 class LayoutObj(Generic[T]):
@@ -1141,25 +1040,21 @@ class LayoutObj(Generic[T]):
     def __del__(self) -> None:
         """Calls drop on contents of the root component."""
 
-
 # rust/src/ui/model_tt/layout.rs
 class UiResult:
-    """Result of an UI operation."""
+    """Result of a UI operation."""
     pass
 CONFIRMED: UiResult
 CANCELLED: UiResult
 INFO: UiResult
 
-
 # rust/src/ui/model_tt/layout.rs
 def disable_animation(disable: bool) -> None:
     """Disable animations, debug builds only."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def check_homescreen_format(data: bytes) -> bool:
     """Check homescreen format and dimensions."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def confirm_action(
@@ -1178,7 +1073,6 @@ def confirm_action(
 ) -> LayoutObj[UiResult]:
     """Confirm action."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_emphasized(
     *,
@@ -1189,7 +1083,6 @@ def confirm_emphasized(
     """Confirm formatted text that has been pre-split in python. For tuples
     the first component is a bool indicating whether this part is emphasized."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_homescreen(
     *,
@@ -1197,7 +1090,6 @@ def confirm_homescreen(
     image: bytes,
 ) -> LayoutObj[UiResult]:
     """Confirm homescreen."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def confirm_blob(
@@ -1221,7 +1113,6 @@ def confirm_blob(
 ) -> LayoutObj[UiResult]:
     """Confirm byte sequence data."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_address(
     *,
@@ -1235,7 +1126,6 @@ def confirm_address(
     """Confirm address. Similar to `confirm_blob` but has corner info button
     and allows left swipe which does the same thing as the button."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_properties(
     *,
@@ -1246,7 +1136,6 @@ def confirm_properties(
     """Confirm list of key-value pairs. The third component in the tuple should be True if
     the value is to be rendered as binary with monospace font, False otherwise."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_reset_device(
     *,
@@ -1254,7 +1143,6 @@ def confirm_reset_device(
     button: str,
 ) -> LayoutObj[UiResult]:
     """Confirm TOS before device setup."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def show_address_details(
@@ -1269,7 +1157,6 @@ def show_address_details(
 ) -> LayoutObj[UiResult]:
     """Show address details - QR code, account, path, cosigner xpubs."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_info_with_cancel(
     *,
@@ -1279,7 +1166,6 @@ def show_info_with_cancel(
     chunkify: bool = False,
 ) -> LayoutObj[UiResult]:
     """Show metadata for outgoing transaction."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def confirm_value(
@@ -1297,7 +1183,6 @@ def confirm_value(
 ) -> LayoutObj[UiResult]:
     """Confirm value. Merge of confirm_total and confirm_output."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_total(
     *,
@@ -1308,7 +1193,6 @@ def confirm_total(
 ) -> LayoutObj[UiResult]:
     """Transaction summary. Always hold to confirm."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_modify_output(
     *,
@@ -1317,7 +1201,6 @@ def confirm_modify_output(
     amount_new: str,
 ) -> LayoutObj[UiResult]:
     """Decrease or increase output amount."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def confirm_modify_fee(
@@ -1329,7 +1212,6 @@ def confirm_modify_fee(
     fee_rate_amount: str | None,  # ignored
 ) -> LayoutObj[UiResult]:
     """Decrease or increase transaction fee."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def confirm_fido(
@@ -1343,7 +1225,6 @@ def confirm_fido(
     Returns page index in case of confirmation and CANCELLED otherwise.
     """
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_error(
     *,
@@ -1354,7 +1235,6 @@ def show_error(
     time_ms: int = 0,
 ) -> LayoutObj[UiResult]:
     """Error modal. No buttons shown when `button` is empty string."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def show_warning(
@@ -1369,7 +1249,6 @@ def show_warning(
 ) -> LayoutObj[UiResult]:
     """Warning modal. No buttons shown when `button` is empty string."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_success(
     *,
@@ -1380,7 +1259,6 @@ def show_success(
     time_ms: int = 0,
 ) -> LayoutObj[UiResult]:
     """Success modal. No buttons shown when `button` is empty string."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def show_info(
@@ -1393,11 +1271,9 @@ def show_info(
 ) -> LayoutObj[UiResult]:
     """Info modal. No buttons shown when `button` is empty string."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_mismatch(*, title: str) -> LayoutObj[UiResult]:
     """Warning modal, receiving address mismatch."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def show_simple(
@@ -1407,7 +1283,6 @@ def show_simple(
     button: str = "",
 ) -> LayoutObj[UiResult]:
     """Simple dialog with text and one button."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def confirm_with_info(
@@ -1420,7 +1295,6 @@ def confirm_with_info(
     """Confirm given items but with third button. Always single page
     without scrolling."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_more(
     *,
@@ -1432,7 +1306,6 @@ def confirm_more(
     """Confirm long content with the possibility to go back from any page.
     Meant to be used with confirm_with_info."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_coinjoin(
     *,
@@ -1440,7 +1313,6 @@ def confirm_coinjoin(
     max_feerate: str,
 ) -> LayoutObj[UiResult]:
     """Confirm coinjoin authorization."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def request_pin(
@@ -1452,7 +1324,6 @@ def request_pin(
 ) -> LayoutObj[str | UiResult]:
     """Request pin on device."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def request_passphrase(
     *,
@@ -1460,7 +1331,6 @@ def request_passphrase(
     max_len: int,
 ) -> LayoutObj[str | UiResult]:
     """Passphrase input keyboard."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def request_bip39(
@@ -1471,7 +1341,6 @@ def request_bip39(
 ) -> LayoutObj[str]:
     """BIP39 word input keyboard."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def request_slip39(
     *,
@@ -1480,7 +1349,6 @@ def request_slip39(
     can_go_back: bool,
 ) -> LayoutObj[str]:
     """SLIP39 word input keyboard."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def select_word(
@@ -1492,7 +1360,6 @@ def select_word(
     """Select mnemonic word from three possibilities - seed check after backup. The
    iterable must be of exact size. Returns index in range `0..3`."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_share_words(
     *,
@@ -1500,7 +1367,6 @@ def show_share_words(
     pages: Iterable[str],
 ) -> LayoutObj[UiResult]:
     """Show mnemonic for backup. Expects the words pre-divided into individual pages."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def request_number(
@@ -1513,14 +1379,12 @@ def request_number(
 ) -> LayoutObj[tuple[UiResult, int]]:
     """Number input with + and - buttons, description, and info button."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def set_brightness(
     *,
     current: int | None = None
 ) -> LayoutObj[UiResult]:
     """Show the brightness configuration dialog."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def show_checklist(
@@ -1532,7 +1396,6 @@ def show_checklist(
 ) -> LayoutObj[UiResult]:
     """Checklist of backup steps. Active index is highlighted, previous items have check
    mark next to them."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def confirm_recovery(
@@ -1546,7 +1409,6 @@ def confirm_recovery(
 ) -> LayoutObj[UiResult]:
     """Device recovery homescreen."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def select_word_count(
     *,
@@ -1555,7 +1417,6 @@ def select_word_count(
     """Select a mnemonic word count from the options: 12, 18, 20, 24, or 33.
     For unlocking a repeated backup, select from 20 or 33."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_group_share_success(
     *,
@@ -1563,14 +1424,12 @@ def show_group_share_success(
 ) -> LayoutObj[UiResult]:
     """Shown after successfully finishing a group."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_remaining_shares(
     *,
     pages: Iterable[tuple[str, str]],
 ) -> LayoutObj[UiResult]:
     """Shows SLIP39 state after info button is pressed on `confirm_recovery`."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def show_progress(
@@ -1583,7 +1442,6 @@ def show_progress(
    description is determined at construction time. If you want multiline descriptions
    make sure the initial description has at least that amount of lines."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_progress_coinjoin(
     *,
@@ -1594,7 +1452,6 @@ def show_progress_coinjoin(
 ) -> LayoutObj[UiResult]:
     """Show progress loader for coinjoin. Returns CANCELLED after a specified time when
    time_ms timeout is passed."""
-
 
 # rust/src/ui/model_tt/layout.rs
 def show_homescreen(
@@ -1607,7 +1464,6 @@ def show_homescreen(
 ) -> LayoutObj[UiResult]:
     """Idle homescreen."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_lockscreen(
     *,
@@ -1618,7 +1474,6 @@ def show_lockscreen(
 ) -> LayoutObj[UiResult]:
     """Homescreen for locked device."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def confirm_firmware_update(
     *,
@@ -1627,11 +1482,9 @@ def confirm_firmware_update(
 ) -> LayoutObj[UiResult]:
     """Ask whether to update firmware, optionally show fingerprint. Shared with bootloader."""
 
-
 # rust/src/ui/model_tt/layout.rs
 def show_wait_text(message: str, /) -> LayoutObj[None]:
     """Show single-line text in the middle of the screen."""
-
 
 # rust/src/ui/model_tt/layout.rs
 class BacklightLevels:
@@ -1642,7 +1495,6 @@ class BacklightLevels:
     DIM: ClassVar[int]
     NONE: ClassVar[int]
 
-
 # rust/src/ui/model_tt/layout.rs
 class AttachType:
     INITIAL: ClassVar[int]
@@ -1651,7 +1503,6 @@ class AttachType:
     SWIPE_DOWN: ClassVar[int]
     SWIPE_LEFT: ClassVar[int]
     SWIPE_RIGHT: ClassVar[int]
-
 
 # rust/src/ui/model_tt/layout.rs
 class LayoutState:

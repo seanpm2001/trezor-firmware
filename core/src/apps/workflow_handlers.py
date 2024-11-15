@@ -1,8 +1,6 @@
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from trezorio import WireInterface
-
     from trezor.wire import Handler, Msg
 
 
@@ -36,6 +34,13 @@ def _find_message_handler_module(msg_type: int) -> str:
         return "apps.benchmark.list_names"
     if __debug__ and msg_type == MessageType.BenchmarkRun:
         return "apps.benchmark.run"
+
+    if utils.USE_THP:
+        from trezor.enums import ThpMessageType
+
+        # thp management
+        if msg_type == ThpMessageType.ThpCreateNewSession:
+            return "apps.thp.create_new_session"
 
     # management
     if msg_type == MessageType.ResetDevice:
@@ -215,7 +220,7 @@ def _find_message_handler_module(msg_type: int) -> str:
     raise ValueError
 
 
-def find_registered_handler(iface: WireInterface, msg_type: int) -> Handler | None:
+def find_registered_handler(msg_type: int) -> Handler | None:
     if msg_type in workflow_handlers:
         # Message has a handler available, return it directly.
         return workflow_handlers[msg_type]
