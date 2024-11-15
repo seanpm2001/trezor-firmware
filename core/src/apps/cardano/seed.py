@@ -8,7 +8,6 @@ from storage.cache_common import (
 )
 from trezor import wire
 from trezor.crypto import cardano
-from trezor.wire import context
 
 from apps.common import mnemonic
 from apps.common.seed import get_seed
@@ -21,6 +20,7 @@ if TYPE_CHECKING:
     from trezor import messages
     from trezor.crypto import bip32
     from trezor.enums import CardanoDerivationType
+    from trezor.wire.protocol_common import Context
 
     from apps.common.keychain import Handler, MsgOut
     from apps.common.paths import Bip32Path
@@ -116,9 +116,9 @@ def is_minting_path(path: Bip32Path) -> bool:
     return path[: len(MINTING_ROOT)] == MINTING_ROOT
 
 
-def derive_and_store_secrets(passphrase: str) -> None:
+def derive_and_store_secrets(ctx: Context, passphrase: str) -> None:
     assert device.is_initialized()
-    assert context.cache_get_bool(APP_COMMON_DERIVE_CARDANO)
+    assert ctx.cache.get_bool(APP_COMMON_DERIVE_CARDANO)
 
     if not mnemonic.is_bip39():
         # nothing to do for SLIP-39, where we can derive the root from the main seed
@@ -138,18 +138,19 @@ def derive_and_store_secrets(passphrase: str) -> None:
     else:
         icarus_trezor_secret = icarus_secret
 
-    context.cache_set(APP_CARDANO_ICARUS_SECRET, icarus_secret)
-    context.cache_set(APP_CARDANO_ICARUS_TREZOR_SECRET, icarus_trezor_secret)
+    ctx.cache.set(APP_CARDANO_ICARUS_SECRET, icarus_secret)
+    ctx.cache.set(APP_CARDANO_ICARUS_TREZOR_SECRET, icarus_trezor_secret)
 
 
 async def _get_keychain_bip39(derivation_type: CardanoDerivationType) -> Keychain:
     from trezor.enums import CardanoDerivationType
+    from trezor.wire import context
 
     if not device.is_initialized():
         raise wire.NotInitialized("Device is not initialized")
 
     if derivation_type == CardanoDerivationType.LEDGER:
-        seed = await get_seed()
+        seed = get_seed()
         return Keychain(cardano.from_seed_ledger(seed))
 
     if not context.cache_get_bool(APP_COMMON_DERIVE_CARDANO):
@@ -163,6 +164,11 @@ async def _get_keychain_bip39(derivation_type: CardanoDerivationType) -> Keychai
     # _get_secret
     secret = context.cache_get(cache_entry)
     assert secret is not None
+    # TODO solve for non THP
+    # if secret is None:
+    #     await derive_and_store_roots_legacy()
+    #     secret = context.cache_get(cache_entry)
+    #     assert secret is not None
 
     root = cardano.from_secret(secret)
     return Keychain(root)
@@ -173,7 +179,7 @@ async def _get_keychain(derivation_type: CardanoDerivationType) -> Keychain:
         return await _get_keychain_bip39(derivation_type)
     else:
         # derive the root node via SLIP-0023 https://github.com/satoshilabs/slips/blob/master/slip-0023.md
-        seed = await get_seed()
+        seed = get_seed()
         return Keychain(cardano.from_seed_slip23(seed))
 
 
