@@ -3,7 +3,6 @@ import logging
 import os
 import typing as t
 
-
 from ..thp.channel_data import ChannelData
 from .protocol_and_channel import ProtocolAndChannel
 
@@ -18,6 +17,7 @@ if False:
 else:
     DATA_PATH = os.path.join("./channel_data.json")
     CONFIG_PATH = os.path.join("./config.json")
+
 
 class ChannelDatabase:  # TODO not finished
     should_store: bool = False
