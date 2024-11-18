@@ -214,7 +214,7 @@ class Layout(Generic[T]):
         set_current_layout(self)
 
         # save context
-        self.context = context.get_context()
+        self.context = context.CURRENT_CONTEXT
 
         # attach a timer callback and paint self
         self._event(self.layout.attach_timer_fn, self._set_timer, transition_in)
