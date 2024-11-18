@@ -3,17 +3,21 @@ import logging
 import os
 import typing as t
 
-from appdirs import user_cache_dir, user_config_dir
 
 from ..thp.channel_data import ChannelData
 from .protocol_and_channel import ProtocolAndChannel
 
 LOG = logging.getLogger(__name__)
 
-APP_NAME = "@trezor"  # TODO
-DATA_PATH = os.path.join(user_cache_dir(appname=APP_NAME), "channel_data.json")
-CONFIG_PATH = os.path.join(user_config_dir(appname=APP_NAME), "config.json")
+if False:
+    from appdirs import user_cache_dir, user_config_dir
 
+    APP_NAME = "@trezor"  # TODO
+    DATA_PATH = os.path.join(user_cache_dir(appname=APP_NAME), "channel_data.json")
+    CONFIG_PATH = os.path.join(user_config_dir(appname=APP_NAME), "config.json")
+else:
+    DATA_PATH = os.path.join("./channel_data.json")
+    CONFIG_PATH = os.path.join("./config.json")
 
 class ChannelDatabase:  # TODO not finished
     should_store: bool = False
