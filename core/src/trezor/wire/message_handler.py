@@ -5,14 +5,9 @@ from storage.cache_common import InvalidSessionError
 from trezor import log, loop, protobuf, utils, workflow
 from trezor.enums import FailureType
 from trezor.messages import Failure
-from trezor.wire.context import Context, UnexpectedMessageException, with_context
+from trezor.wire.context import UnexpectedMessageException, with_context
 from trezor.wire.errors import ActionCancelled, DataError, Error, UnexpectedMessage
-from trezor.wire.protocol_common import Message
-
-# Import all errors into namespace, so that `wire.Error` is available from
-# other packages.
-from trezor.wire.errors import *  # isort:skip # noqa: F401,F403
-
+from trezor.wire.protocol_common import Context, Message
 
 if TYPE_CHECKING:
     from typing import Any, Callable, Container
