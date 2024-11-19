@@ -111,7 +111,7 @@ message DebugLinkGetState {
     // changed in 2.6.4: multiple wait types instead of true/false.
     optional DebugWaitType wait_layout = 3 [default=IMMEDIATE];
     // THP only - it is used to get information from specified channel
-    optional bytes thp_channel_id=4;  
+    optional bytes thp_channel_id=4;
 }
 
 /**
