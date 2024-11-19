@@ -306,9 +306,7 @@ def with_session(
             pass
             # TODO try end session if not resumed
 
-    # the return type of @click.pass_obj is improperly specified and pyright doesn't
-    # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
-    return function_with_session  # type: ignore [is incompatible with return type]
+    return function_with_session
 
 
 def with_management_session(
@@ -327,9 +325,7 @@ def with_management_session(
             pass
             # TODO try end session if not resumed
 
-    # the return type of @click.pass_obj is improperly specified and pyright doesn't
-    # understand that it converts f(obj, *args, **kwargs) to f(*args, **kwargs)
-    return function_with_management_session  # type: ignore [is incompatible with return type]
+    return function_with_management_session
 
 
 def with_client(
