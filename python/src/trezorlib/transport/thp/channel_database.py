@@ -67,9 +67,13 @@ def ensure_file_exists() -> None:
 
 
 def clear_stored_channels() -> None:
-    LOG.debug("Clearing contents of %s - to empty list.", DATA_PATH)
+    LOG.debug("Clearing contents of %s", DATA_PATH)
     with open(DATA_PATH, "w") as f:
         json.dump([], f)
+    try:
+        os.remove(DATA_PATH)
+    except Exception as e:
+        LOG.exception("Failed to delete %s (%s)", DATA_PATH, str(type(e)))
 
 
 def read_all_channels() -> t.List:
