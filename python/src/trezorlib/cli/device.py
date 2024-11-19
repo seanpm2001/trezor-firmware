@@ -29,7 +29,7 @@ from . import ChoiceType, with_management_session
 if t.TYPE_CHECKING:
     from ..protobuf import MessageType
     from ..transport.session import Session
-    from . import NewTrezorConnection
+    from . import TrezorConnection
 
 RECOVERY_DEVICE_INPUT_METHOD = {
     "scrambled": messages.RecoveryDeviceInputMethod.ScrambledWords,
@@ -315,7 +315,7 @@ def sd_protect(session: "Session", operation: messages.SdProtectOperationType) -
 
 @cli.command()
 @click.pass_obj
-def reboot_to_bootloader(obj: "NewTrezorConnection") -> str:
+def reboot_to_bootloader(obj: "TrezorConnection") -> str:
     """Reboot device into bootloader mode.
 
     Currently only supported on Trezor Model One.

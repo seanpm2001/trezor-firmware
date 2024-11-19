@@ -8,8 +8,8 @@ from .protocol_and_channel import ProtocolAndChannel
 
 LOG = logging.getLogger(__name__)
 
-if False:
-    from appdirs import user_cache_dir, user_config_dir
+if True:
+    from platformdirs import user_cache_dir, user_config_dir
 
     APP_NAME = "@trezor"  # TODO
     DATA_PATH = os.path.join(user_cache_dir(appname=APP_NAME), "channel_data.json")

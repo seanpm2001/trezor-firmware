@@ -42,7 +42,7 @@ from . import ChoiceType, with_management_session
 if TYPE_CHECKING:
     from ..client import TrezorClient
     from ..transport.session import Session
-    from . import NewTrezorConnection
+    from . import TrezorConnection
 
 MODEL_CHOICE = ChoiceType(
     {
@@ -521,7 +521,7 @@ def cli() -> None:
 @click.pass_obj
 # fmt: on
 def verify(
-    obj: "NewTrezorConnection",
+    obj: "TrezorConnection",
     filename: BinaryIO,
     check_device: bool,
     fingerprint: Optional[str],
@@ -566,7 +566,7 @@ def verify(
 @click.pass_obj
 # fmt: on
 def download(
-    obj: "NewTrezorConnection",
+    obj: "TrezorConnection",
     output: Optional[BinaryIO],
     model: Optional[TrezorModel],
     version: Optional[str],
@@ -632,7 +632,7 @@ def download(
 # fmt: on
 @click.pass_obj
 def update(
-    obj: "NewTrezorConnection",
+    obj: "TrezorConnection",
     filename: Optional[BinaryIO],
     url: Optional[str],
     version: Optional[str],

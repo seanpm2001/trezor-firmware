@@ -26,7 +26,7 @@ from ..transport.session import Session
 from . import with_management_session
 
 if TYPE_CHECKING:
-    from . import NewTrezorConnection
+    from . import TrezorConnection
 
 
 @click.group(name="debug")
@@ -85,7 +85,7 @@ def cli() -> None:
 @click.argument("directory", required=False)
 @click.option("-s", "--stop", is_flag=True, help="Stop the recording")
 @click.pass_obj
-def record(obj: "NewTrezorConnection", directory: Union[str, None], stop: bool) -> None:
+def record(obj: "TrezorConnection", directory: Union[str, None], stop: bool) -> None:
     """Record screen changes into a specified directory.
 
     Recording can be stopped with `-s / --stop` option.
@@ -94,7 +94,7 @@ def record(obj: "NewTrezorConnection", directory: Union[str, None], stop: bool) 
 
 
 def record_screen_from_connection(
-    obj: "NewTrezorConnection", directory: Union[str, None]
+    obj: "TrezorConnection", directory: Union[str, None]
 ) -> None:
     """Record screen helper to transform TrezorConnection into TrezorClientDebugLink."""
     transport = obj.get_transport()

@@ -32,7 +32,7 @@ from ..transport.thp import channel_database
 from ..transport.udp import UdpTransport
 from . import (
     AliasedGroup,
-    NewTrezorConnection,
+    TrezorConnection,
     benchmark,
     binance,
     btc,
@@ -218,7 +218,7 @@ def cli_main(
             raise click.ClickException(f"Not a valid session id: {session_id}")
 
     # ctx.obj = TrezorConnection(path, bytes_session_id, passphrase_on_host, script)
-    ctx.obj = NewTrezorConnection(path, bytes_session_id, passphrase_on_host, script)
+    ctx.obj = TrezorConnection(path, bytes_session_id, passphrase_on_host, script)
 
     # Optionally record the screen into a specified directory.
     if record:
@@ -259,7 +259,7 @@ def print_result(res: Any, is_json: bool, script: bool, **kwargs: Any) -> None:
 
 @cli.set_result_callback()
 @click.pass_obj
-def stop_recording_action(obj: NewTrezorConnection, *args: Any, **kwargs: Any) -> None:
+def stop_recording_action(obj: TrezorConnection, *args: Any, **kwargs: Any) -> None:
     """Stop recording screen changes when the recording was started by `cli_main`.
 
     (When user used the `-r / --record` option of `trezorctl` command.)
@@ -346,7 +346,7 @@ def ping(session: "Session", message: str, button_protection: bool) -> str:
 @cli.command()
 @click.pass_obj
 def get_session(
-    obj: NewTrezorConnection, passphrase: str = "", derive_cardano: bool = False
+    obj: TrezorConnection, passphrase: str = "", derive_cardano: bool = False
 ) -> str:
     """Get a session ID for subsequent commands.
 
@@ -414,7 +414,7 @@ def usb_reset() -> None:
 @cli.command()
 @click.option("-t", "--timeout", type=float, default=10, help="Timeout in seconds")
 @click.pass_obj
-def wait_for_emulator(obj: NewTrezorConnection, timeout: float) -> None:
+def wait_for_emulator(obj: TrezorConnection, timeout: float) -> None:
     """Wait until Trezor Emulator comes up.
 
     Tries to connect to emulator and returns when it succeeds.

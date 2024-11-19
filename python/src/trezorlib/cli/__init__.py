@@ -101,7 +101,7 @@ def get_passphrase(
             raise exceptions.Cancelled from None
 
 
-class NewTrezorConnection:
+class TrezorConnection:
 
     def __init__(
         self,
@@ -297,7 +297,7 @@ def with_session(
     @click.pass_obj
     @functools.wraps(func)
     def function_with_session(
-        obj: NewTrezorConnection, *args: "P.args", **kwargs: "P.kwargs"
+        obj: TrezorConnection, *args: "P.args", **kwargs: "P.kwargs"
     ) -> "R":
         session = obj.get_session(derive_cardano)
         try:
@@ -316,7 +316,7 @@ def with_management_session(
     @click.pass_obj
     @functools.wraps(func)
     def function_with_management_session(
-        obj: NewTrezorConnection, *args: "P.args", **kwargs: "P.kwargs"
+        obj: TrezorConnection, *args: "P.args", **kwargs: "P.kwargs"
     ) -> "R":
         session = obj.get_management_session()
         try:
@@ -341,7 +341,7 @@ def with_client(
     @click.pass_obj
     @functools.wraps(func)
     def trezorctl_command_with_client(
-        obj: NewTrezorConnection, *args: "P.args", **kwargs: "P.kwargs"
+        obj: TrezorConnection, *args: "P.args", **kwargs: "P.kwargs"
     ) -> "R":
         with obj.client_context() as client:
             # session_was_resumed = obj.session_id == client.session_id
