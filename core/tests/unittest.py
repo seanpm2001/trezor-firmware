@@ -245,12 +245,12 @@ def run_class(c, test_result):
         set_up_class()
         for name in dir(o):
             if name.startswith("test"):
-                run_test(o, name, set_up, tear_down, test_result)
+                run_test_method(o, name, set_up, tear_down, test_result)
     finally:
         tear_down_class()
 
 
-def run_test(o, name, set_up, tear_down, test_result):
+def run_test_method(o, name, set_up, tear_down, test_result):
     print(" ", name, end=" ...")
     m = getattr(o, name)
     try:
