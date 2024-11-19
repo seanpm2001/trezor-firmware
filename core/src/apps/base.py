@@ -206,9 +206,7 @@ def get_features() -> Features:
 
 if not utils.USE_THP:
 
-    async def handle_Initialize(
-        msg: Initialize,
-    ) -> Features:
+    async def handle_Initialize(msg: Initialize) -> Features:
         import storage.cache_codec as cache_codec
 
         session_id = cache_codec.start_session(msg.session_id)
