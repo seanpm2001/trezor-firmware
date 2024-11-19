@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 import logging
 import os
@@ -8,39 +10,104 @@ from .protocol_and_channel import ProtocolAndChannel
 
 LOG = logging.getLogger(__name__)
 
-if True:
-    from platformdirs import user_cache_dir, user_config_dir
-
-    APP_NAME = "@trezor"  # TODO
-    DATA_PATH = os.path.join(user_cache_dir(appname=APP_NAME), "channel_data.json")
-    CONFIG_PATH = os.path.join(user_config_dir(appname=APP_NAME), "config.json")
-else:
-    DATA_PATH = os.path.join("./channel_data.json")
-    CONFIG_PATH = os.path.join("./config.json")
+db: "ChannelDatabase | None" = None
 
 
-class ChannelDatabase:  # TODO not finished
-    should_store: bool = False
-
-    def __init__(
-        self, config_path: str = CONFIG_PATH, data_path: str = DATA_PATH
-    ) -> None:
-        if not os.path.exists(CONFIG_PATH):
-            with open(CONFIG_PATH, "w") as f:
-                json.dump([], f)
+def get_channel_db() -> ChannelDatabase:
+    if db is None:
+        set_channel_database(should_not_store=True)
+    assert db is not None
+    return db
 
 
-def load_stored_channels() -> t.List[ChannelData]:
-    dicts = read_all_channels()
-    return [dict_to_channel_data(d) for d in dicts]
+class ChannelDatabase:
+
+    def load_stored_channels(self) -> t.List[ChannelData]: ...
+    def clear_stored_channels(self) -> None: ...
+    def read_all_channels(self) -> t.List: ...
+    def save_all_channels(self, channels: t.List[t.Dict]) -> None: ...
+    def save_channel(self, new_channel: ProtocolAndChannel): ...
+    def remove_channel(self, transport_path: str) -> None: ...
 
 
-def channel_to_str(channel: ProtocolAndChannel) -> str:
-    return json.dumps(channel.get_channel_data().to_dict())
+class DummyChannelDatabase(ChannelDatabase):
+
+    def load_stored_channels(self) -> t.List[ChannelData]:
+        return []
+
+    def clear_stored_channels(self) -> None:
+        pass
+
+    def read_all_channels(self) -> t.List:
+        return []
+
+    def save_all_channels(self, channels: t.List[t.Dict]) -> None:
+        return
+
+    def save_channel(self, new_channel: ProtocolAndChannel):
+        pass
+
+    def remove_channel(self, transport_path: str) -> None:
+        pass
 
 
-def str_to_channel_data(channel_data: str) -> ChannelData:
-    return dict_to_channel_data(json.loads(channel_data))
+class JsonChannelDatabase(ChannelDatabase):
+    def __init__(self, data_path: str) -> None:
+        self.data_path = data_path
+        super().__init__()
+
+    def load_stored_channels(self) -> t.List[ChannelData]:
+        dicts = self.read_all_channels()
+        return [dict_to_channel_data(d) for d in dicts]
+
+    def clear_stored_channels(self) -> None:
+        LOG.debug("Clearing contents of %s", self.data_path)
+        with open(self.data_path, "w") as f:
+            json.dump([], f)
+        try:
+            os.remove(self.data_path)
+        except Exception as e:
+            LOG.exception("Failed to delete %s (%s)", self.data_path, str(type(e)))
+
+    def read_all_channels(self) -> t.List:
+        ensure_file_exists(self.data_path)
+        with open(self.data_path, "r") as f:
+            return json.load(f)
+
+    def save_all_channels(self, channels: t.List[t.Dict]) -> None:
+        LOG.debug("saving all channels")
+        with open(self.data_path, "w") as f:
+            json.dump(channels, f, indent=4)
+
+    def save_channel(self, new_channel: ProtocolAndChannel):
+
+        LOG.debug("save channel")
+        channels = self.read_all_channels()
+        transport_path = new_channel.transport.get_path()
+
+        # If the channel is found in database: replace the old entry by the new
+        for i, channel in enumerate(channels):
+            if channel["transport_path"] == transport_path:
+                LOG.debug("Modified channel entry for %s", transport_path)
+                channels[i] = new_channel.get_channel_data().to_dict()
+                self.save_all_channels(channels)
+                return
+
+        # Channel was not found: add a new channel entry
+        LOG.debug("Created a new channel entry on path %s", transport_path)
+        channels.append(new_channel.get_channel_data().to_dict())
+        self.save_all_channels(channels)
+
+    def remove_channel(self, transport_path: str) -> None:
+        LOG.debug(
+            "Removing channel with path %s from the channel database.",
+            transport_path,
+        )
+        channels = self.read_all_channels()
+        remaining_channels = [
+            ch for ch in channels if ch["transport_path"] != transport_path
+        ]
+        self.save_all_channels(remaining_channels)
 
 
 def dict_to_channel_data(dict: t.Dict) -> ChannelData:
@@ -57,63 +124,23 @@ def dict_to_channel_data(dict: t.Dict) -> ChannelData:
     )
 
 
-def ensure_file_exists() -> None:
-    LOG.debug("checking if file %s exists", DATA_PATH)
-    if not os.path.exists(DATA_PATH):
-        os.makedirs(os.path.dirname(DATA_PATH), exist_ok=True)
-        LOG.debug("File %s does not exist. Creating a new one.", DATA_PATH)
-        with open(DATA_PATH, "w") as f:
+def ensure_file_exists(file_path: str) -> None:
+    LOG.debug("checking if file %s exists", file_path)
+    if not os.path.exists(file_path):
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        LOG.debug("File %s does not exist. Creating a new one.", file_path)
+        with open(file_path, "w") as f:
             json.dump([], f)
 
 
-def clear_stored_channels() -> None:
-    LOG.debug("Clearing contents of %s", DATA_PATH)
-    with open(DATA_PATH, "w") as f:
-        json.dump([], f)
-    try:
-        os.remove(DATA_PATH)
-    except Exception as e:
-        LOG.exception("Failed to delete %s (%s)", DATA_PATH, str(type(e)))
+def set_channel_database(should_not_store: bool):
+    global db
+    if should_not_store:
+        db = DummyChannelDatabase()
+    else:
+        from platformdirs import user_cache_dir
 
+        APP_NAME = "@trezor"  # TODO
+        DATA_PATH = os.path.join(user_cache_dir(appname=APP_NAME), "channel_data.json")
 
-def read_all_channels() -> t.List:
-    ensure_file_exists()
-    with open(DATA_PATH, "r") as f:
-        return json.load(f)
-
-
-def save_all_channels(channels: t.List[t.Dict]) -> None:
-    LOG.debug("saving all channels")
-    with open(DATA_PATH, "w") as f:
-        json.dump(channels, f, indent=4)
-
-
-def save_channel(new_channel: ProtocolAndChannel):
-    LOG.debug("save channel")
-    channels = read_all_channels()
-    transport_path = new_channel.transport.get_path()
-
-    # If the channel is found in database: replace the old entry by the new
-    for i, channel in enumerate(channels):
-        if channel["transport_path"] == transport_path:
-            LOG.debug("Modified channel entry for %s", transport_path)
-            channels[i] = new_channel.get_channel_data().to_dict()
-            save_all_channels(channels)
-            return
-
-    # Channel was not found: add a new channel entry
-    LOG.debug("Created a new channel entry on path %s", transport_path)
-    channels.append(new_channel.get_channel_data().to_dict())
-    save_all_channels(channels)
-
-
-def remove_channel(transport_path: str) -> None:
-    LOG.debug(
-        "Removing channel with path %s from the channel database.",
-        transport_path,
-    )
-    channels = read_all_channels()
-    remaining_channels = [
-        ch for ch in channels if ch["transport_path"] != transport_path
-    ]
-    save_all_channels(remaining_channels)
+        db = JsonChannelDatabase(DATA_PATH)

@@ -29,7 +29,7 @@ from .. import exceptions, transport, ui
 from ..client import TrezorClient
 from ..messages import Capability
 from ..transport import Transport
-from ..transport.thp import channel_database
+from ..transport.thp.channel_database import get_channel_db
 
 LOG = logging.getLogger(__name__)
 
@@ -102,7 +102,7 @@ def get_passphrase(
 
 
 def get_client(transport: Transport) -> TrezorClient:
-    stored_channels = channel_database.load_stored_channels()
+    stored_channels = get_channel_db().load_stored_channels()
     stored_transport_paths = [ch.transport_path for ch in stored_channels]
     path = transport.get_path()
     if path in stored_transport_paths:
@@ -115,7 +115,7 @@ def get_client(transport: Transport) -> TrezorClient:
             )
         except Exception:
             LOG.debug("Failed to resume a channel. Replacing by a new one.")
-            channel_database.remove_channel(path)
+            get_channel_db().remove_channel(path)
             client = TrezorClient(transport)
     else:
         client = TrezorClient(transport)
@@ -355,7 +355,7 @@ def with_client(
             try:
                 return func(client, *args, **kwargs)
             finally:
-                channel_database.save_channel(client.protocol)
+                get_channel_db().save_channel(client.protocol)
                 # if not session_was_resumed:
                 #     try:
                 #         client.end_session()

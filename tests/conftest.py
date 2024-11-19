@@ -322,9 +322,9 @@ def client(
             # Get a new client
             _raw_client = _get_raw_client(request)
 
-    from trezorlib.transport.thp import channel_database
+    from trezorlib.transport.thp.channel_database import get_channel_db
 
-    channel_database.clear_stored_channels()
+    get_channel_db().clear_stored_channels()
     _raw_client.protocol = None
     _raw_client.__init__(
         transport=_raw_client.transport,

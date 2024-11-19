@@ -8,3 +8,4 @@ typing_extensions>=4.7.1
 construct-classes>=0.1.2
 appdirs>=1.4.4
 cryptography >=43.0.3
+platformdirs >=2

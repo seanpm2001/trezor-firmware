@@ -29,6 +29,7 @@ from ..client import TrezorClient
 from ..transport import DeviceIsBusy, enumerate_devices
 from ..transport.session import Session
 from ..transport.thp import channel_database
+from ..transport.thp.channel_database import get_channel_db
 from ..transport.udp import UdpTransport
 from . import (
     AliasedGroup,
@@ -196,6 +197,13 @@ def configure_logging(verbose: int) -> None:
     "--record",
     help="Record screen changes into a specified directory.",
 )
+@click.option(
+    "-n",
+    "--no-store",
+    is_flag=True,
+    help="Do not store channels data between commands.",
+    default=False,
+)
 @click.version_option(version=__version__)
 @click.pass_context
 def cli_main(
@@ -207,9 +215,10 @@ def cli_main(
     script: bool,
     session_id: Optional[str],
     record: Optional[str],
+    no_store: bool,
 ) -> None:
     configure_logging(verbose)
-
+    channel_database.set_channel_database(should_not_store=no_store)
     bytes_session_id: Optional[bytes] = None
     if session_id is not None:
         try:
@@ -296,10 +305,7 @@ def list_devices(no_resolve: bool) -> Optional[Iterable["Transport"]]:
         try:
             client = get_client(transport)
             description = format_device_name(client.features)
-            # json_string = channel_database.channel_to_str(client.protocol)
-            # print(json_string)
-            channel_database.save_channel(client.protocol)
-            # client.end_session()
+            get_channel_db().save_channel(client.protocol)
         except DeviceIsBusy:
             description = "Device is in use by another process"
         except Exception:
@@ -376,9 +382,14 @@ def clear_session(session: "Session") -> None:
 
 
 @cli.command()
-def new_clear_session() -> None:
-    """New Clear session (remove cached channels from trezorlib)."""
-    channel_database.clear_stored_channels()
+def delete_channels() -> None:
+    """
+    Delete cached channels.
+
+    Do not use together with the `-n` (`--no-store`) flag,
+    as the JSON database will not be deleted.
+    """
+    get_channel_db().clear_stored_channels()
 
 
 @cli.command()

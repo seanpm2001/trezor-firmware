@@ -18,7 +18,8 @@ from ..thp import checksum, curve25519, thp_io
 from ..thp.channel_data import ChannelData
 from ..thp.checksum import CHECKSUM_LENGTH
 from ..thp.message_header import MessageHeader
-from . import channel_database, control_byte
+from . import control_byte
+from .channel_database import ChannelDatabase, get_channel_db
 from .protocol_and_channel import ProtocolAndChannel
 
 LOG = logging.getLogger(__name__)
@@ -76,6 +77,7 @@ class ProtocolV2(ProtocolAndChannel):
             self.sync_bit_receive = channel_data.sync_bit_receive
             self.sync_bit_send = channel_data.sync_bit_send
             self._has_valid_channel = True
+            self.channel_database: ChannelDatabase = get_channel_db()
 
     def get_channel(self) -> ProtocolV2:
         if not self._has_valid_channel:
@@ -99,13 +101,13 @@ class ProtocolV2(ProtocolAndChannel):
         sid, msg_type, msg_data = self.read_and_decrypt()
         if sid != session_id:
             raise Exception("Received messsage on a different session.")
-        channel_database.save_channel(self)
+        self.channel_database.save_channel(self)
         return self.mapping.decode(msg_type, msg_data)
 
     def write(self, session_id: int, msg: t.Any) -> None:
         msg_type, msg_data = self.mapping.encode(msg)
         self._encrypt_and_write(session_id, msg_type, msg_data)
-        channel_database.save_channel(self)
+        self.channel_database.save_channel(self)
 
     def get_features(self) -> messages.Features:
         if not self._has_valid_channel:
