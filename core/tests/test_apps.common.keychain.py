@@ -2,7 +2,7 @@ from common import *  # isort:skip
 
 from mock_storage import mock_storage
 from storage import cache, cache_common
-from trezor import utils, wire
+from trezor import wire
 from trezor.crypto import bip39
 from trezor.enums import SafetyCheckLevel
 from trezor.wire import context
@@ -20,26 +20,23 @@ if not utils.USE_THP:
 
 class TestKeychain(unittest.TestCase):
 
-    def setUpClass(self):
-        context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
+    if utils.USE_THP:
 
-    def tearDownClass(self):
-        context.CURRENT_CONTEXT = None
-
-        def __init__(self):
+        def setUpClass(self):
             if __debug__:
                 thp_common.suppres_debug_log()
             thp_common.prepare_context()
-            super().__init__()
 
     else:
 
-        def __init__(self):
+        def setUpClass(self):
             context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
-            super().__init__()
 
         def setUp(self):
             cache_codec.start_session()
+
+    def tearDownClass(self):
+        context.CURRENT_CONTEXT = None
 
     def tearDown(self):
         cache.clear_all()

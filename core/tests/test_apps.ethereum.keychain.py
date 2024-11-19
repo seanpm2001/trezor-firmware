@@ -79,17 +79,12 @@ class TestEthereumKeychain(unittest.TestCase):
                 addr,
             )
 
-    def setUpClass(self):
-        context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
+    if utils.USE_THP:
 
-    def tearDownClass(self):
-        context.CURRENT_CONTEXT = None
-
-        def __init__(self):
+        def setUpClass(self):
             if __debug__:
                 thp_common.suppres_debug_log()
             thp_common.prepare_context()
-            super().__init__()
 
         def setUp(self):
             seed = bip39.seed(" ".join(["all"] * 12), "")
@@ -97,14 +92,16 @@ class TestEthereumKeychain(unittest.TestCase):
 
     else:
 
-        def __init__(self):
+        def setUpClass(self):
             context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
-            super().__init__()
 
         def setUp(self):
             cache_codec.start_session()
             seed = bip39.seed(" ".join(["all"] * 12), "")
             cache_codec.get_active_session().set(cache_common.APP_COMMON_SEED, seed)
+
+    def tearDownClass(self):
+        context.CURRENT_CONTEXT = None
 
     def from_address_n(self, address_n):
         slip44 = _slip44_from_address_n(address_n)

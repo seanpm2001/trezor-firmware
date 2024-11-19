@@ -15,13 +15,13 @@ else:
 
 
 class TestBitcoinKeychain(unittest.TestCase):
+
     if utils.USE_THP:
 
-    def setUpClass(self):
-        context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
-
-    def tearDownClass(self):
-        context.CURRENT_CONTEXT = None
+        def setUpClass(self):
+            if __debug__:
+                thp_common.suppres_debug_log()
+            thp_common.prepare_context()
 
         def setUp(self):
             seed = bip39.seed(" ".join(["all"] * 12), "")
@@ -29,14 +29,16 @@ class TestBitcoinKeychain(unittest.TestCase):
 
     else:
 
-        def __init__(self):
+        def setUpClass(self):
             context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
-            super().__init__()
 
         def setUp(self):
             cache_codec.start_session()
             seed = bip39.seed(" ".join(["all"] * 12), "")
             cache_codec.get_active_session().set(cache_common.APP_COMMON_SEED, seed)
+
+    def tearDownClass(self):
+        context.CURRENT_CONTEXT = None
 
     def test_bitcoin(self):
         coin = _get_coin_by_name("Bitcoin")
@@ -113,18 +115,29 @@ class TestBitcoinKeychain(unittest.TestCase):
 
 @unittest.skipUnless(not utils.BITCOIN_ONLY, "altcoin")
 class TestAltcoinKeychains(unittest.TestCase):
-    if not utils.USE_THP:
+    if utils.USE_THP:
 
-    def setUpClass(self):
-        context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
+        def setUpClass(self):
+            if __debug__:
+                thp_common.suppres_debug_log()
+            thp_common.prepare_context()
 
-    def tearDownClass(self):
-        context.CURRENT_CONTEXT = None
+        def setUp(self):
+            seed = bip39.seed(" ".join(["all"] * 12), "")
+            context.cache_set(cache_common.APP_COMMON_SEED, seed)
+
+    else:
+
+        def setUpClass(self):
+            context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
 
         def setUp(self):
             cache_codec.start_session()
             seed = bip39.seed(" ".join(["all"] * 12), "")
             cache_codec.get_active_session().set(cache_common.APP_COMMON_SEED, seed)
+
+    def tearDownClass(self):
+        context.CURRENT_CONTEXT = None
 
     def test_bcash(self):
         coin = _get_coin_by_name("Bcash")

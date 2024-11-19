@@ -18,12 +18,20 @@ else:
 
 
 class TestAuthorization(unittest.TestCase):
-    if utils.USE_THP:
 
     coin = coins.by_name("Bitcoin")
 
-    def setUpClass(self):
-        context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
+    if utils.USE_THP:
+
+        def setUpClass(self):
+            if __debug__:
+                thp_common.suppres_debug_log()
+            thp_common.prepare_context()
+
+    else:
+
+        def setUpClass(self):
+            context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
 
     def tearDownClass(self):
         context.CURRENT_CONTEXT = None

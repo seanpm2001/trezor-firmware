@@ -29,21 +29,11 @@ else:
 
 class TestStorageCache(unittest.TestCase):
 
-    def setUpClass(self):
-        context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
-
-    def tearDownClass(self):
-        context.CURRENT_CONTEXT = None
-
-    def setUp(self):
-        cache.clear_all()
-
     if utils.USE_THP:
 
-        def __init__(self):
-            thp_common.suppres_debug_log()
-            # xthp_common.prepare_context()
-            # config.init()
+        def setUpClass(self):
+            if __debug__:
+                thp_common.suppres_debug_log()
             super().__init__()
 
         def setUp(self):
@@ -316,14 +306,19 @@ class TestStorageCache(unittest.TestCase):
 
     else:
 
-        def __init__(self):
-            # Context is needed to test decorators and handleInitialize
-            # It allows access to codec cache from different parts of the code
-            from trezor.wire import context
+        def setUpClass(self):
             from trezor.wire.codec.codec_context import CodecContext
+            from trezor.wire import context
 
             context.CURRENT_CONTEXT = CodecContext(None, bytearray(64))
-            super().__init__()
+
+        def tearDownClass(self):
+            from trezor.wire import context
+
+            context.CURRENT_CONTEXT = None
+
+        def setUp(self):
+            cache.clear_all()
 
         def test_start_session(self):
             session_id_a = cache_codec.start_session()
