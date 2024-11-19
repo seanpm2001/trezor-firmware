@@ -570,7 +570,7 @@ if FROZEN:
 
     exclude_list = []
     if 'sd_card' not in FEATURES_AVAILABLE:
-        exclude_list.append(SOURCE_PY_DIR + 'storage/sd_salt.py')    
+        exclude_list.append(SOURCE_PY_DIR + 'storage/sd_salt.py')
     if THP and PYOPT == '1':
         exclude_list.append(SOURCE_PY_DIR + 'storage/cache_codec.py')
     if not THP:
