@@ -290,22 +290,11 @@ def list_devices(no_resolve: bool) -> Optional[Iterable["Transport"]]:
     """List connected Trezor devices."""
     if no_resolve:
         return enumerate_devices()
+    from . import get_client
 
-    stored_channels = channel_database.load_stored_channels()
-    stored_transport_paths = [ch.transport_path for ch in stored_channels]
     for transport in enumerate_devices():
         try:
-            path = transport.get_path()
-            if path in stored_transport_paths:
-                stored_channel_with_correct_transport_path = next(
-                    ch for ch in stored_channels if ch.transport_path == path
-                )
-                client = TrezorClient.resume(
-                    transport, stored_channel_with_correct_transport_path
-                )
-            else:
-                client = TrezorClient(transport)
-
+            client = get_client(transport)
             description = format_device_name(client.features)
             # json_string = channel_database.channel_to_str(client.protocol)
             # print(json_string)

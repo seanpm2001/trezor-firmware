@@ -101,6 +101,27 @@ def get_passphrase(
             raise exceptions.Cancelled from None
 
 
+def get_client(transport: Transport) -> TrezorClient:
+    stored_channels = channel_database.load_stored_channels()
+    stored_transport_paths = [ch.transport_path for ch in stored_channels]
+    path = transport.get_path()
+    if path in stored_transport_paths:
+        stored_channel_with_correct_transport_path = next(
+            ch for ch in stored_channels if ch.transport_path == path
+        )
+        try:
+            client = TrezorClient.resume(
+                transport, stored_channel_with_correct_transport_path
+            )
+        except Exception:
+            LOG.debug("Failed to resume a channel. Replacing by a new one.")
+            channel_database.remove_channel(path)
+            client = TrezorClient(transport)
+    else:
+        client = TrezorClient(transport)
+    return client
+
+
 class TrezorConnection:
 
     def __init__(
@@ -151,27 +172,7 @@ class TrezorConnection:
         return transport.get_transport(self.path, prefix_search=True)
 
     def get_client(self) -> TrezorClient:
-        transport = self.get_transport()
-
-        stored_channels = channel_database.load_stored_channels()
-        stored_transport_paths = [ch.transport_path for ch in stored_channels]
-        path = transport.get_path()
-        if path in stored_transport_paths:
-            stored_channel_with_correct_transport_path = next(
-                ch for ch in stored_channels if ch.transport_path == path
-            )
-            try:
-                client = TrezorClient.resume(
-                    transport, stored_channel_with_correct_transport_path
-                )
-            except Exception:
-                LOG.debug("Failed to resume a channel. Replacing by a new one.")
-                channel_database.remove_channel(path)
-                client = TrezorClient(transport)
-        else:
-            client = TrezorClient(transport)
-
-        return client
+        return get_client(self.get_transport())
 
     def get_management_session(self) -> Session:
         client = self.get_client()
