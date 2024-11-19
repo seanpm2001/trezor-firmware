@@ -387,7 +387,7 @@ def delete_channels() -> None:
     Delete cached channels.
 
     Do not use together with the `-n` (`--no-store`) flag,
-    as the JSON database will not be deleted.
+    as the JSON database will not be deleted in that case.
     """
     get_channel_db().clear_stored_channels()
 
