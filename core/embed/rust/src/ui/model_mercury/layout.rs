@@ -302,9 +302,12 @@ extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map
             .with_subtitle(subtitle)
             .with_verb(verb)
             .with_verb_cancel(verb_cancel.unwrap_or(TR::buttons__cancel.into()))
-            .with_verb_info(verb_info)
+            .with_verb_info(if info {
+                Some(verb_info.unwrap_or(TR::words__title_information.into()))
+            } else {
+                None
+            })
             .with_extra(extra)
-            .with_info_button(info)
             .with_chunkify(chunkify)
             .with_page_counter(page_counter)
             .with_cancel(cancel)
@@ -344,7 +347,6 @@ extern "C" fn new_confirm_blob_intro(n_args: usize, args: *const Obj, kwargs: *m
             .with_footer_description(Some(
                 TR::buttons__confirm.into(), /* or words__confirm?? */
             ))
-            .with_info_button(true)
             .with_chunkify(chunkify)
             .with_page_limit(Some(1))
             .with_frame_margin(CONFIRM_BLOB_INTRO_MARGIN)
@@ -778,7 +780,11 @@ extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Ma
             .with_subtitle(subtitle)
             .with_verb(verb)
             .with_verb_cancel(verb_cancel.unwrap_or(TR::buttons__cancel.into()))
-            .with_info_button(info_button)
+            .with_verb_info(if info_button {
+                Some(TR::words__title_information.into())
+            } else {
+                None
+            })
             .with_chunkify(chunkify)
             .with_text_mono(text_mono)
             .with_prompt(hold)

@@ -70,7 +70,6 @@ impl ConfirmActionStrings {
 #[derive(PartialEq)]
 pub struct ConfirmActionMenuStrings {
     verb_cancel: TString<'static>,
-    has_info: bool,
     verb_info: Option<TString<'static>>,
 }
 
@@ -78,7 +77,6 @@ impl ConfirmActionMenuStrings {
     pub fn new() -> Self {
         Self {
             verb_cancel: TR::buttons__cancel.into(),
-            has_info: false,
             verb_info: None,
         }
     }
@@ -88,8 +86,7 @@ impl ConfirmActionMenuStrings {
         self
     }
 
-    pub const fn with_info(mut self, has_info: bool, verb_info: Option<TString<'static>>) -> Self {
-        self.has_info = has_info;
+    pub const fn with_verb_info(mut self, verb_info: Option<TString<'static>>) -> Self {
         self.verb_info = verb_info;
         self
     }
@@ -343,15 +340,10 @@ fn create_menu(
         let mut menu_choices =
             VerticalMenu::empty().danger(theme::ICON_CANCEL, menu_strings.verb_cancel);
 
-        if menu_strings.has_info {
+        if let Some(verb_info) = menu_strings.verb_info {
             // The Info menu item (if present) has to be the 2nd,
             // because of MENU_ITEM_INFO = 1!
-            menu_choices = menu_choices.item(
-                theme::ICON_CHEVRON_RIGHT,
-                menu_strings
-                    .verb_info
-                    .unwrap_or(TR::words__title_information.into()),
-            );
+            menu_choices = menu_choices.item(theme::ICON_CHEVRON_RIGHT, verb_info);
         }
 
         let content_menu = Frame::left_aligned("".into(), menu_choices)

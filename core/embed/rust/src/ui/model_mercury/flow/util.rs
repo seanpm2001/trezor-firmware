@@ -41,7 +41,6 @@ pub struct ConfirmBlobParams {
     verb: Option<TString<'static>>,
     verb_cancel: TString<'static>,
     verb_info: Option<TString<'static>>,
-    info_button: bool,
     cancel_button: bool,
     menu_button: bool,
     prompt: bool,
@@ -71,7 +70,6 @@ impl ConfirmBlobParams {
             verb: None,
             verb_cancel: TR::buttons__cancel.into(),
             verb_info: None,
-            info_button: false,
             cancel_button: false,
             menu_button: false,
             prompt: false,
@@ -105,11 +103,6 @@ impl ConfirmBlobParams {
 
     pub const fn with_cancel_button(mut self) -> Self {
         self.cancel_button = true;
-        self
-    }
-
-    pub const fn with_info_button(mut self, info_button: bool) -> Self {
-        self.info_button = info_button;
         self
     }
 
@@ -287,7 +280,7 @@ impl ConfirmBlobParams {
             ConfirmActionExtra::Menu(
                 ConfirmActionMenuStrings::new()
                     .with_verb_cancel(self.verb_cancel)
-                    .with_info(self.info_button, self.verb_info),
+                    .with_verb_info(self.verb_info),
             )
         };
 
