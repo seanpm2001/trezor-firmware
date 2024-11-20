@@ -301,7 +301,7 @@ extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map
             .with_text_mono(text_mono)
             .with_subtitle(subtitle)
             .with_verb(verb)
-            .with_verb_cancel(verb_cancel)
+            .with_verb_cancel(verb_cancel.unwrap_or(TR::buttons__cancel.into()))
             .with_verb_info(verb_info)
             .with_extra(extra)
             .with_info_button(info)
@@ -340,7 +340,7 @@ extern "C" fn new_confirm_blob_intro(n_args: usize, args: *const Obj, kwargs: *m
             .with_verb_info(Some(TR::buttons__view_all_data.into()))
             .with_description_font(&theme::TEXT_SUB_GREEN_LIME)
             .with_subtitle(subtitle)
-            .with_verb_cancel(verb_cancel)
+            .with_verb_cancel(verb_cancel.unwrap_or(TR::buttons__cancel.into()))
             .with_footer_description(Some(
                 TR::buttons__confirm.into(), /* or words__confirm?? */
             ))
@@ -777,7 +777,7 @@ extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Ma
         ConfirmBlobParams::new(title, value, description)
             .with_subtitle(subtitle)
             .with_verb(verb)
-            .with_verb_cancel(verb_cancel)
+            .with_verb_cancel(verb_cancel.unwrap_or(TR::buttons__cancel.into()))
             .with_info_button(info_button)
             .with_chunkify(chunkify)
             .with_text_mono(text_mono)

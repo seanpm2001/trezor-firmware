@@ -69,7 +69,7 @@ impl ConfirmActionStrings {
 
 #[derive(PartialEq)]
 pub struct ConfirmActionMenuStrings {
-    verb_cancel: Option<TString<'static>>,
+    verb_cancel: TString<'static>,
     has_info: bool,
     verb_info: Option<TString<'static>>,
 }
@@ -77,13 +77,13 @@ pub struct ConfirmActionMenuStrings {
 impl ConfirmActionMenuStrings {
     pub fn new() -> Self {
         Self {
-            verb_cancel: None,
+            verb_cancel: TR::buttons__cancel.into(),
             has_info: false,
             verb_info: None,
         }
     }
 
-    pub const fn with_verb_cancel(mut self, verb_cancel: Option<TString<'static>>) -> Self {
+    pub const fn with_verb_cancel(mut self, verb_cancel: TString<'static>) -> Self {
         self.verb_cancel = verb_cancel;
         self
     }
@@ -225,7 +225,10 @@ pub fn new_confirm_action(
 
     new_confirm_action_simple(
         paragraphs,
-        ConfirmActionExtra::Menu(ConfirmActionMenuStrings::new().with_verb_cancel(verb_cancel)),
+        ConfirmActionExtra::Menu(
+            ConfirmActionMenuStrings::new()
+                .with_verb_cancel(verb_cancel.unwrap_or(TR::buttons__cancel.into())),
+        ),
         ConfirmActionStrings::new(title, subtitle, None, prompt_screen.then_some(prompt_title)),
         hold,
         None,
@@ -337,12 +340,8 @@ fn create_menu(
         // because of the MENU_ITEM_CANCEL = 0.
         // If we want the cancel item to be somewhere else,
         // we would need to account for that and we could not use a constant.
-        let mut menu_choices = VerticalMenu::empty().danger(
-            theme::ICON_CANCEL,
-            menu_strings
-                .verb_cancel
-                .unwrap_or(TR::buttons__cancel.into()),
-        );
+        let mut menu_choices =
+            VerticalMenu::empty().danger(theme::ICON_CANCEL, menu_strings.verb_cancel);
 
         if menu_strings.has_info {
             // The Info menu item (if present) has to be the 2nd,

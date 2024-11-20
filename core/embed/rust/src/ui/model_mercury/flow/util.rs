@@ -10,6 +10,7 @@ use crate::{
     maybe_trace::MaybeTrace,
     micropython::obj::Obj,
     strutil::TString,
+    translations::TR,
     ui::{
         component::{
             base::ComponentExt,
@@ -38,7 +39,7 @@ pub struct ConfirmBlobParams {
     description_font: &'static TextStyle,
     extra: Option<TString<'static>>,
     verb: Option<TString<'static>>,
-    verb_cancel: Option<TString<'static>>,
+    verb_cancel: TString<'static>,
     verb_info: Option<TString<'static>>,
     info_button: bool,
     cancel_button: bool,
@@ -57,11 +58,7 @@ pub struct ConfirmBlobParams {
 }
 
 impl ConfirmBlobParams {
-    pub const fn new(
-        title: TString<'static>,
-        data: Obj,
-        description: Option<TString<'static>>,
-    ) -> Self {
+    pub fn new(title: TString<'static>, data: Obj, description: Option<TString<'static>>) -> Self {
         Self {
             title,
             subtitle: None,
@@ -72,7 +69,7 @@ impl ConfirmBlobParams {
             description_font: &theme::TEXT_NORMAL,
             extra: None,
             verb: None,
-            verb_cancel: None,
+            verb_cancel: TR::buttons__cancel.into(),
             verb_info: None,
             info_button: false,
             cancel_button: false,
@@ -121,7 +118,7 @@ impl ConfirmBlobParams {
         self
     }
 
-    pub const fn with_verb_cancel(mut self, verb_cancel: Option<TString<'static>>) -> Self {
+    pub const fn with_verb_cancel(mut self, verb_cancel: TString<'static>) -> Self {
         self.verb_cancel = verb_cancel;
         self
     }
