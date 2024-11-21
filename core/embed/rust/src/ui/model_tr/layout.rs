@@ -756,41 +756,6 @@ extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let button: TString<'static> = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let verb_cancel: Option<TString<'static>> = kwargs
-            .get(Qstr::MP_QSTR_verb_cancel)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let mut paragraphs = ParagraphVecShort::new();
-
-        for para in IterBuf::new().try_iterate(items)? {
-            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
-            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
-            let text: TString = text.try_into()?;
-            paragraphs.add(Paragraph::new(style, text));
-            if paragraphs.is_full() {
-                break;
-            }
-        }
-
-        let obj = LayoutObj::new(Frame::new(
-            title,
-            ShowMore::<Paragraphs<ParagraphVecShort>>::new(
-                paragraphs.into_paragraphs(),
-                verb_cancel,
-                button,
-            ),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_more(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -945,18 +910,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show multiple texts, each on its own page."""
     Qstr::MP_QSTR_multiple_pages_texts => obj_fn_kw!(0, new_multiple_pages_texts).as_obj(),
-
-    /// def confirm_with_info(
-    ///     *,
-    ///     title: str,
-    ///     button: str,
-    ///     info_button: str,  # unused on TR
-    ///     items: Iterable[Tuple[int, str | bytes]],
-    ///     verb_cancel: str | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm given items but with third button. Always single page
-    ///     without scrolling."""
-    Qstr::MP_QSTR_confirm_with_info => obj_fn_kw!(0, new_confirm_with_info).as_obj(),
 
     /// def confirm_more(
     ///     *,

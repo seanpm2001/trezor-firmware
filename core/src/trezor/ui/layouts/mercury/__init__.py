@@ -425,7 +425,7 @@ async def should_show_payment_request_details(
     Raises ActionCancelled if the user cancels.
     """
     result = await interact(
-        trezorui2.confirm_with_info(
+        trezorui_api.confirm_with_info(
             title=TR.send__title_sending,
             items=[(ui.NORMAL, f"{amount} to\n{recipient_name}")]
             + [(ui.NORMAL, memo) for memo in memos],
@@ -462,7 +462,7 @@ async def should_show_more(
         confirm = TR.buttons__confirm
 
     result = await interact(
-        trezorui2.confirm_with_info(
+        trezorui_api.confirm_with_info(
             title=title,
             items=para,
             button=confirm,

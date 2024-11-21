@@ -3,16 +3,19 @@ use core::cmp::Ordering;
 use crate::{
     error::{value_error, Error},
     io::BinaryData,
-    micropython::{gc::Gc, list::List},
+    micropython::{gc::Gc, iter::IterBuf, list::List, obj::Obj, util},
     strutil::TString,
     translations::TR,
     ui::{
         component::{
             connect::Connect,
             image::BlendedImage,
-            text::paragraphs::{
-                Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
-                Paragraphs, VecExt,
+            text::{
+                paragraphs::{
+                    Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
+                    Paragraphs, VecExt,
+                },
+                TextStyle,
             },
             Border, ComponentExt, Empty, Jpeg, Label, Never, Timeout,
         },
@@ -268,6 +271,35 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             theme::label_title(),
             title,
             Dialog::new(paragraphs, buttons),
+        ));
+        Ok(layout)
+    }
+
+    fn confirm_with_info(
+        title: TString<'static>,
+        button: TString<'static>,
+        info_button: TString<'static>,
+        _verb_cancel: Option<TString<'static>>,
+        items: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecShort::new();
+
+        for para in IterBuf::new().try_iterate(items)? {
+            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
+            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
+            let text: TString = text.try_into()?;
+            paragraphs.add(Paragraph::new(style, text));
+            if paragraphs.is_full() {
+                break;
+            }
+        }
+
+        let buttons = Button::cancel_info_confirm(button, info_button);
+
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title,
+            Dialog::new(paragraphs.into_paragraphs(), buttons),
         ));
         Ok(layout)
     }

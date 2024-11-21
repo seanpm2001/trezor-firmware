@@ -3,16 +3,19 @@ use core::cmp::Ordering;
 use crate::{
     error::{value_error, Error},
     io::BinaryData,
-    micropython::{gc::Gc, list::List, util},
+    micropython::{gc::Gc, iter::IterBuf, list::List, obj::Obj, util},
     strutil::TString,
     translations::TR,
     ui::{
         component::{
             connect::Connect,
             swipe_detect::SwipeSettings,
-            text::paragraphs::{
-                Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
-                Paragraphs, VecExt,
+            text::{
+                paragraphs::{
+                    Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
+                    Paragraphs, VecExt,
+                },
+                TextStyle,
             },
             Border, CachedJpeg, ComponentExt, Empty, Never, Timeout,
         },
@@ -32,8 +35,8 @@ use super::{
         SwipeContent, SwipeUpScreen, VerticalMenu,
     },
     flow::{
-        self, new_confirm_action_simple, ConfirmActionExtra, ConfirmActionMenu,
-        ConfirmActionMenuStrings, ConfirmActionStrings,
+        self, new_confirm_action_simple, ConfirmActionExtra, ConfirmActionMenuStrings,
+        ConfirmActionStrings,
     },
     theme, ModelMercuryFeatures,
 };
@@ -234,6 +237,40 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
 
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
         let flow = flow::confirm_reset::new_confirm_reset(recovery)?;
+        Ok(flow)
+    }
+
+    fn confirm_with_info(
+        title: TString<'static>,
+        button: TString<'static>,
+        info_button: TString<'static>,
+        verb_cancel: Option<TString<'static>>,
+        items: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecShort::new();
+
+        for para in IterBuf::new().try_iterate(items)? {
+            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
+            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
+            let text: TString = text.try_into()?;
+            paragraphs.add(Paragraph::new(style, text));
+            if paragraphs.is_full() {
+                break;
+            }
+        }
+
+        let flow = flow::new_confirm_action_simple(
+            paragraphs.into_paragraphs(),
+            ConfirmActionExtra::Menu(
+                ConfirmActionMenuStrings::new().with_verb_info(Some(info_button)),
+            ),
+            ConfirmActionStrings::new(title, None, None, None)
+                .with_footer_description(Some(button)),
+            false,
+            None,
+            0,
+            false,
+        )?;
         Ok(flow)
     }
 

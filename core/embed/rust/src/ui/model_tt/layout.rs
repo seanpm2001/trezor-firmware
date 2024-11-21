@@ -713,37 +713,6 @@ extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let info_button: TString = kwargs.get(Qstr::MP_QSTR_info_button)?.try_into()?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let mut paragraphs = ParagraphVecShort::new();
-
-        for para in IterBuf::new().try_iterate(items)? {
-            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
-            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
-            let text: TString = text.try_into()?;
-            paragraphs.add(Paragraph::new(style, text));
-            if paragraphs.is_full() {
-                break;
-            }
-        }
-
-        let buttons = Button::cancel_info_confirm(button, info_button);
-
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            title,
-            Dialog::new(paragraphs.into_paragraphs(), buttons),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_more(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -892,17 +861,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm summary of a transaction."""
     Qstr::MP_QSTR_confirm_summary => obj_fn_kw!(0, new_confirm_summary).as_obj(),
-
-    /// def confirm_with_info(
-    ///     *,
-    ///     title: str,
-    ///     button: str,
-    ///     info_button: str,
-    ///     items: Iterable[tuple[int, str | bytes]],
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm given items but with third button. Always single page
-    ///     without scrolling."""
-    Qstr::MP_QSTR_confirm_with_info => obj_fn_kw!(0, new_confirm_with_info).as_obj(),
 
     /// def confirm_more(
     ///     *,

@@ -184,6 +184,23 @@ extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
+        let info_button: TString = kwargs.get(Qstr::MP_QSTR_info_button)?.try_into()?;
+        let verb_cancel: Option<TString<'static>> = kwargs
+            .get(Qstr::MP_QSTR_verb_cancel)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
+
+        let layout = ModelUI::confirm_with_info(title, button, info_button, verb_cancel, items)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_continue_recovery_homepage(
     n_args: usize,
     args: *const Obj,
@@ -809,6 +826,19 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
     ///     """Confirm TOS before creating wallet creation or wallet recovery."""
     Qstr::MP_QSTR_confirm_reset_device => obj_fn_kw!(0, new_confirm_reset_device).as_obj(),
+
+    /// def confirm_with_info(
+    ///     *,
+    ///     title: str,
+    ///     button: str,
+    ///     info_button: str,
+    ///     verb_cancel: str | None = None,
+    ///     items: Iterable[tuple[int, str | bytes]],
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm given items but with third button. Always single page
+    ///     without scrolling. In mercury, the button is placed in
+    ///     context menu."""
+    Qstr::MP_QSTR_confirm_with_info => obj_fn_kw!(0, new_confirm_with_info).as_obj(),
 
     /// def continue_recovery_homepage(
     ///     *,

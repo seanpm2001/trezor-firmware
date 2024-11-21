@@ -164,6 +164,20 @@ def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_with_info(
+    *,
+    title: str,
+    button: str,
+    info_button: str,
+    verb_cancel: str | None = None,
+    items: Iterable[tuple[int, str | bytes]],
+) -> LayoutObj[UiResult]:
+    """Confirm given items but with third button. Always single page
+    without scrolling. In mercury, the button is placed in
+    context menu."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def continue_recovery_homepage(
     *,
     text: str,

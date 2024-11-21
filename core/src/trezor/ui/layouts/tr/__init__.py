@@ -551,11 +551,11 @@ async def should_show_more(
         confirm = TR.buttons__confirm
 
     result = await interact(
-        trezorui2.confirm_with_info(
+        trezorui_api.confirm_with_info(
             title=title,
             items=para,
             button=confirm,
-            verb_cancel=verb_cancel,  # type: ignore [No parameter named "verb_cancel"]
+            verb_cancel=verb_cancel,
             info_button=button_text,  # unused on TR
         ),
         br_name,
@@ -760,7 +760,7 @@ async def confirm_value(
         send_button_request = True
         while True:
             result = await interact(
-                trezorui2.confirm_with_info(
+                trezorui_api.confirm_with_info(
                     title=title,
                     items=((ui.NORMAL, value),),
                     button=verb or TR.buttons__confirm,

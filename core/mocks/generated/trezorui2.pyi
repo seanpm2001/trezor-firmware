@@ -101,18 +101,6 @@ def confirm_value(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def confirm_with_info(
-    *,
-    title: str,
-    button: str,
-    info_button: str,
-    items: Iterable[tuple[int, str]],
-) -> LayoutObj[UiResult]:
-    """Confirm given items but with third button. In mercury, the button is placed in
-    context menu."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_prompt_backup() -> LayoutObj[UiResult]:
     """Prompt a user to create backup with an option to skip."""
 
@@ -313,19 +301,6 @@ def multiple_pages_texts(
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_with_info(
-    *,
-    title: str,
-    button: str,
-    info_button: str,  # unused on TR
-    items: Iterable[Tuple[int, str | bytes]],
-    verb_cancel: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm given items but with third button. Always single page
-    without scrolling."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_more(
     *,
     title: str,
@@ -453,18 +428,6 @@ def confirm_summary(
     verb_cancel: str | None = None,
 ) -> LayoutObj[UiResult]:
     """Confirm summary of a transaction."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_with_info(
-    *,
-    title: str,
-    button: str,
-    info_button: str,
-    items: Iterable[tuple[int, str | bytes]],
-) -> LayoutObj[UiResult]:
-    """Confirm given items but with third button. Always single page
-    without scrolling."""
 
 
 # rust/src/ui/model_tt/layout.rs

@@ -671,42 +671,6 @@ extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Ma
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let info_button: TString = kwargs.get(Qstr::MP_QSTR_info_button)?.try_into()?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let mut paragraphs = ParagraphVecShort::new();
-
-        for para in IterBuf::new().try_iterate(items)? {
-            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
-            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
-            let text: TString = text.try_into()?;
-            paragraphs.add(Paragraph::new(style, text));
-            if paragraphs.is_full() {
-                break;
-            }
-        }
-
-        let flow = flow::new_confirm_action_simple(
-            paragraphs.into_paragraphs(),
-            ConfirmActionExtra::Menu(
-                ConfirmActionMenuStrings::new().with_verb_info(Some(info_button)),
-            ),
-            ConfirmActionStrings::new(title, None, None, None)
-                .with_footer_description(Some(button)),
-            false,
-            None,
-            0,
-            false,
-        )?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_get_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -849,17 +813,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm value. Merge of confirm_total and confirm_output."""
     Qstr::MP_QSTR_confirm_value => obj_fn_kw!(0, new_confirm_value).as_obj(),
-
-    /// def confirm_with_info(
-    ///     *,
-    ///     title: str,
-    ///     button: str,
-    ///     info_button: str,
-    ///     items: Iterable[tuple[int, str]],
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm given items but with third button. In mercury, the button is placed in
-    ///     context menu."""
-    Qstr::MP_QSTR_confirm_with_info => obj_fn_kw!(0, new_confirm_with_info).as_obj(),
 
     /// def flow_prompt_backup() -> LayoutObj[UiResult]:
     ///     """Prompt a user to create backup with an option to skip."""

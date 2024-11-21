@@ -4,7 +4,7 @@ use crate::{
     error::Error,
     io::BinaryData,
     maybe_trace::MaybeTrace,
-    micropython::{gc::Gc, list::List},
+    micropython::{gc::Gc, iter::IterBuf, list::List, obj::Obj, util},
     strutil::TString,
     translations::TR,
     ui::{
@@ -16,6 +16,7 @@ use crate::{
                     Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
                     Paragraphs, VecExt,
                 },
+                TextStyle,
             },
             Component, ComponentExt, Empty, FormattedText, Label, LineBreaking, Paginate, Timeout,
         },
@@ -36,7 +37,7 @@ use super::{
     component::{
         ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Flow, FlowPages, Frame,
         Homescreen, Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress, ScrollableFrame,
-        ShareWords, SimpleChoice, WordlistEntry, WordlistType,
+        ShareWords, ShowMore, SimpleChoice, WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
@@ -288,6 +289,36 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         let formatted = FormattedText::new(ops).vertically_centered();
 
         content_in_button_page(title, formatted, button, Some("".into()), false)
+    }
+
+    fn confirm_with_info(
+        title: TString<'static>,
+        button: TString<'static>,
+        _info_button: TString<'static>,
+        verb_cancel: Option<TString<'static>>,
+        items: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecShort::new();
+
+        for para in IterBuf::new().try_iterate(items)? {
+            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
+            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
+            let text: TString = text.try_into()?;
+            paragraphs.add(Paragraph::new(style, text));
+            if paragraphs.is_full() {
+                break;
+            }
+        }
+
+        let layout = RootComponent::new(Frame::new(
+            title,
+            ShowMore::<Paragraphs<ParagraphVecShort>>::new(
+                paragraphs.into_paragraphs(),
+                verb_cancel,
+                button,
+            ),
+        ));
+        Ok(layout)
     }
 
     fn check_homescreen_format(image: BinaryData, _accept_toif: bool) -> bool {

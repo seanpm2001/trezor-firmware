@@ -64,6 +64,14 @@ pub trait UIFeaturesFirmware {
 
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_with_info(
+        title: TString<'static>,
+        button: TString<'static>,
+        info_button: TString<'static>,
+        verb_cancel: Option<TString<'static>>,
+        items: Obj, // TODO: replace Obj
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn continue_recovery_homepage(
         text: TString<'static>,
         subtext: Option<TString<'static>>,
