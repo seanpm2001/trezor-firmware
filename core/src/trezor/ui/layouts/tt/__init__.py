@@ -364,6 +364,25 @@ def show_warning(
     )
 
 
+def show_danger(
+    br_name: str,
+    content: str,
+    content_short: str | None = None,
+    value: str | None = None,
+    title: str | None = None,
+    verb_cancel: str | None = None,
+    br_code: ButtonRequestType = ButtonRequestType.Warning,
+) -> Awaitable[None]:
+    if content_short is None:
+        content_short = content
+    return show_warning(
+        br_name,
+        content_short,
+        TR.words__continue_anyway_question,
+        br_code=br_code,
+    )
+
+
 def show_success(
     br_name: str,
     content: str,
@@ -769,13 +788,6 @@ def _confirm_summary(
 
 
 if not utils.BITCOIN_ONLY:
-
-    def confirm_ethereum_unknown_contract_warning() -> Awaitable[None]:
-        return show_warning(
-            "unknown_contract_warning",
-            TR.ethereum__unknown_contract_address_short,
-            TR.words__continue_anyway_question,
-        )
 
     async def confirm_ethereum_tx(
         recipient: str | None,

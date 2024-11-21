@@ -1510,7 +1510,7 @@ extern "C" fn new_confirm_fido(n_args: usize, args: *const Obj, kwargs: *mut Map
     panic!();
 }
 
-extern "C" fn new_warning_hi_prio(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+extern "C" fn new_show_danger(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
         let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
@@ -1521,7 +1521,7 @@ extern "C" fn new_warning_hi_prio(n_args: usize, args: *const Obj, kwargs: *mut 
             .try_into_option()?;
 
         let flow =
-            flow::warning_hi_prio::new_warning_hi_prio(title, description, value, verb_cancel)?;
+            flow::danger::new_show_danger(title, description, value, verb_cancel)?;
         Ok(LayoutObj::new_root(flow)?.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
@@ -1747,6 +1747,16 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Warning modal. No buttons shown when `button` is empty string."""
     Qstr::MP_QSTR_show_warning => obj_fn_kw!(0, new_show_warning).as_obj(),
+
+    /// def show_danger(
+    ///     *,
+    ///     title: str,
+    ///     description: str,
+    ///     value: str = "",
+    ///     verb_cancel: str | None = None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Warning modal that makes it easier to cancel than to continue."""
+    Qstr::MP_QSTR_show_danger => obj_fn_kw!(0, new_show_danger).as_obj(),
 
     /// def show_success(
     ///     *,
@@ -2001,16 +2011,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Get address / receive funds."""
     Qstr::MP_QSTR_flow_get_address => obj_fn_kw!(0, new_get_address).as_obj(),
-
-    /// def flow_warning_hi_prio(
-    ///     *,
-    ///     title: str,
-    ///     description: str,
-    ///     value: str = "",
-    ///     verb_cancel: str | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Warning modal with multiple steps to confirm."""
-    Qstr::MP_QSTR_flow_warning_hi_prio => obj_fn_kw!(0, new_warning_hi_prio).as_obj(),
 
     /// def flow_confirm_output(
     ///     *,
