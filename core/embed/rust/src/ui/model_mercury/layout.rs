@@ -261,66 +261,6 @@ extern "C" fn new_confirm_emphasized(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let data: Obj = kwargs.get(Qstr::MP_QSTR_data)?;
-        let description: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_description)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let text_mono: bool = kwargs.get_or(Qstr::MP_QSTR_text_mono, true)?;
-        let extra: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_extra)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let subtitle: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_subtitle)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let verb: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let verb_cancel: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_cancel)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let verb_info: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_info)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let info: bool = kwargs.get_or(Qstr::MP_QSTR_info, true)?;
-        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
-        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
-        let page_counter: bool = kwargs.get_or(Qstr::MP_QSTR_page_counter, false)?;
-        let prompt_screen: bool = kwargs.get_or(Qstr::MP_QSTR_prompt_screen, true)?;
-        let cancel: bool = kwargs.get_or(Qstr::MP_QSTR_cancel, false)?;
-
-        ConfirmBlobParams::new(title, data, description)
-            .with_description_font(&theme::TEXT_SUB_GREY)
-            .with_text_mono(text_mono)
-            .with_subtitle(subtitle)
-            .with_verb(verb)
-            .with_verb_cancel(verb_cancel)
-            .with_verb_info(if info {
-                Some(verb_info.unwrap_or(TR::words__title_information.into()))
-            } else {
-                None
-            })
-            .with_extra(extra)
-            .with_chunkify(chunkify)
-            .with_page_counter(page_counter)
-            .with_cancel(cancel)
-            .with_prompt(prompt_screen)
-            .with_hold(hold)
-            .into_flow()
-            .and_then(LayoutObj::new_root)
-            .map(Into::into)
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_blob_intro(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -699,27 +639,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm formatted text that has been pre-split in python. For tuples
     ///     the first component is a bool indicating whether this part is emphasized."""
     Qstr::MP_QSTR_confirm_emphasized => obj_fn_kw!(0, new_confirm_emphasized).as_obj(),
-
-    /// def confirm_blob(
-    ///     *,
-    ///     title: str,
-    ///     data: str | bytes,
-    ///     description: str | None,
-    ///     text_mono: bool = True,
-    ///     extra: str | None = None,
-    ///     subtitle: str | None = None,
-    ///     verb: str | None = None,
-    ///     verb_cancel: str | None = None,
-    ///     verb_info: str | None = None,
-    ///     info: bool = True,
-    ///     hold: bool = False,
-    ///     chunkify: bool = False,
-    ///     page_counter: bool = False,
-    ///     prompt_screen: bool = False,
-    ///     cancel: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm byte sequence data."""
-    Qstr::MP_QSTR_confirm_blob => obj_fn_kw!(0, new_confirm_blob).as_obj(),
 
     /// def confirm_blob_intro(
     ///     *,

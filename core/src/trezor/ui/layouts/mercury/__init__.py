@@ -506,7 +506,7 @@ def confirm_blob(
             verb_cancel=verb_cancel,
             chunkify=chunkify,
         )
-        info_layout = trezorui2.confirm_blob(
+        info_layout = trezorui_api.confirm_blob(
             title=title,
             data=data,
             subtitle=description,
@@ -530,7 +530,7 @@ def confirm_blob(
             info_layout_can_confirm=True,
         )
     else:
-        layout = trezorui2.confirm_blob(
+        layout = trezorui_api.confirm_blob(
             title=title,
             data=data,
             description=description,
@@ -938,7 +938,7 @@ async def confirm_modify_output(
     amount_change: str,
     amount_new: str,
 ) -> None:
-    address_layout = trezorui2.confirm_blob(
+    address_layout = trezorui_api.confirm_blob(
         title=TR.modify_amount__title,
         data=address,
         verb=TR.buttons__continue,
@@ -1062,7 +1062,7 @@ async def confirm_signverify(
         horizontal=True,
     )
 
-    message_layout = trezorui2.confirm_blob(
+    message_layout = trezorui_api.confirm_blob(
         title=TR.sign_message__confirm_message,
         description=None,
         data=message,

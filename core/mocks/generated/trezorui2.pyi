@@ -13,29 +13,6 @@ def confirm_emphasized(
     """Confirm formatted text that has been pre-split in python. For tuples
     the first component is a bool indicating whether this part is emphasized."""
 
-
-# rust/src/ui/model_mercury/layout.rs
-def confirm_blob(
-    *,
-    title: str,
-    data: str | bytes,
-    description: str | None,
-    text_mono: bool = True,
-    extra: str | None = None,
-    subtitle: str | None = None,
-    verb: str | None = None,
-    verb_cancel: str | None = None,
-    verb_info: str | None = None,
-    info: bool = True,
-    hold: bool = False,
-    chunkify: bool = False,
-    page_counter: bool = False,
-    prompt_screen: bool = False,
-    cancel: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm byte sequence data."""
-
-
 # rust/src/ui/model_mercury/layout.rs
 def confirm_blob_intro(
     *,
@@ -155,28 +132,6 @@ def confirm_summary(
     """Confirm summary of a transaction."""
 from trezor import utils
 from trezorui_api import *
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_blob(
-    *,
-    title: str,
-    data: str | bytes,
-    description: str | None,
-    text_mono: bool = True,
-    extra: str | None = None,
-    subtitle: str | None = None,
-    verb: str = "CONFIRM",
-    verb_cancel: str | None = None,
-    verb_info: str | None = None,
-    info: bool = True,
-    hold: bool = False,
-    chunkify: bool = False,
-    page_counter: bool = False,
-    prompt_screen: bool = False,
-    cancel: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm byte sequence data."""
 
 
 # rust/src/ui/model_tr/layout.rs
@@ -311,28 +266,6 @@ def confirm_emphasized(
 ) -> LayoutObj[UiResult]:
     """Confirm formatted text that has been pre-split in python. For tuples
     the first component is a bool indicating whether this part is emphasized."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_blob(
-    *,
-    title: str,
-    data: str | bytes,
-    description: str | None,
-    text_mono: bool = True,
-    extra: str | None = None,
-    subtitle: str | None = None,
-    verb: str | None = None,
-    verb_cancel: str | None = None,
-    verb_info: str | None = None,
-    info: bool = True,
-    hold: bool = False,
-    chunkify: bool = False,
-    page_counter: bool = False,
-    prompt_screen: bool = False,
-    cancel: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm byte sequence data."""
 
 
 # rust/src/ui/model_tt/layout.rs

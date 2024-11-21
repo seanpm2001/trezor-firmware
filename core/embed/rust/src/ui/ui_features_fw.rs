@@ -26,6 +26,24 @@ pub trait UIFeaturesFirmware {
         prompt_title: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_blob(
+        title: TString<'static>,
+        data: Obj, // TODO: replace Obj
+        description: Option<TString<'static>>,
+        text_mono: bool,
+        extra: Option<TString<'static>>,
+        subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        verb_info: Option<TString<'static>>,
+        info: bool,
+        hold: bool,
+        chunkify: bool,
+        page_counter: bool,
+        prompt_screen: bool,
+        cancel: bool,
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
     fn confirm_homescreen(
         title: TString<'static>,
         image: BinaryData<'static>,

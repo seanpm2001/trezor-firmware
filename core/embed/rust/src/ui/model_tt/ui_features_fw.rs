@@ -22,7 +22,7 @@ use crate::{
         geometry,
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
-            util::RecoveryType,
+            util::{ConfirmBlob, RecoveryType},
         },
         ui_features_fw::UIFeaturesFirmware,
     },
@@ -78,6 +78,31 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         }
         let layout = RootComponent::new(Frame::left_aligned(theme::label_title(), title, page));
         Ok(layout)
+    }
+
+    fn confirm_blob(
+        title: TString<'static>,
+        data: Obj,
+        description: Option<TString<'static>>,
+        text_mono: bool,
+        extra: Option<TString<'static>>,
+        _subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        _verb_info: Option<TString<'static>>,
+        info: bool,
+        hold: bool,
+        chunkify: bool,
+        _page_counter: bool,
+        _prompt_screen: bool,
+        _cancel: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        ConfirmBlobParams::new(title, data, description, verb, verb_cancel, hold)
+            .with_text_mono(text_mono)
+            .with_extra(extra)
+            .with_chunkify(chunkify)
+            .with_info_button(info)
+            .into_layout()
     }
 
     fn confirm_homescreen(
@@ -933,4 +958,113 @@ fn new_show_modal(
     };
 
     Ok(obj)
+}
+
+// TODO: move to some util.rs?
+struct ConfirmBlobParams {
+    title: TString<'static>,
+    subtitle: Option<TString<'static>>,
+    data: Obj,
+    description: Option<TString<'static>>,
+    extra: Option<TString<'static>>,
+    verb: Option<TString<'static>>,
+    verb_cancel: Option<TString<'static>>,
+    info_button: bool,
+    hold: bool,
+    chunkify: bool,
+    text_mono: bool,
+    page_limit: Option<usize>,
+}
+
+impl ConfirmBlobParams {
+    fn new(
+        title: TString<'static>,
+        data: Obj,
+        description: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        hold: bool,
+    ) -> Self {
+        Self {
+            title,
+            subtitle: None,
+            data,
+            description,
+            extra: None,
+            verb,
+            verb_cancel,
+            info_button: false,
+            hold,
+            chunkify: false,
+            text_mono: true,
+            page_limit: None,
+        }
+    }
+
+    fn with_extra(mut self, extra: Option<TString<'static>>) -> Self {
+        self.extra = extra;
+        self
+    }
+
+    fn with_subtitle(mut self, subtitle: Option<TString<'static>>) -> Self {
+        self.subtitle = subtitle;
+        self
+    }
+
+    fn with_info_button(mut self, info_button: bool) -> Self {
+        self.info_button = info_button;
+        self
+    }
+
+    fn with_chunkify(mut self, chunkify: bool) -> Self {
+        self.chunkify = chunkify;
+        self
+    }
+
+    fn with_text_mono(mut self, text_mono: bool) -> Self {
+        self.text_mono = text_mono;
+        self
+    }
+
+    fn with_page_limit(mut self, page_limit: Option<usize>) -> Self {
+        self.page_limit = page_limit;
+        self
+    }
+
+    fn into_layout(self) -> Result<Gc<LayoutObj>, Error> {
+        let paragraphs = ConfirmBlob {
+            description: self.description.unwrap_or("".into()),
+            extra: self.extra.unwrap_or("".into()),
+            data: self.data.try_into()?,
+            description_font: &theme::TEXT_NORMAL,
+            extra_font: &theme::TEXT_DEMIBOLD,
+            data_font: if self.chunkify {
+                let data: TString = self.data.try_into()?;
+                theme::get_chunkified_text_style(data.len())
+            } else if self.text_mono {
+                &theme::TEXT_MONO
+            } else {
+                &theme::TEXT_NORMAL
+            },
+        }
+        .into_paragraphs();
+
+        let mut page = ButtonPage::new(paragraphs, theme::BG);
+        if let Some(verb) = self.verb {
+            page = page.with_cancel_confirm(self.verb_cancel, Some(verb))
+        }
+        if self.hold {
+            page = page.with_hold()?
+        }
+        page = page.with_page_limit(self.page_limit);
+        let mut frame = Frame::left_aligned(theme::label_title(), self.title, page);
+        if let Some(subtitle) = self.subtitle {
+            frame = frame.with_subtitle(theme::label_subtitle(), subtitle);
+        }
+
+        if self.info_button {
+            frame = frame.with_info_button();
+        }
+        LayoutObj::new(frame)
+    }
 }

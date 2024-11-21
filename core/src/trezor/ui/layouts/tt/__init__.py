@@ -584,7 +584,7 @@ def confirm_blob(
     prompt_screen: bool = True,
 ) -> Awaitable[None]:
     verb = verb or TR.buttons__confirm  # def_arg
-    layout = trezorui2.confirm_blob(
+    layout = trezorui_api.confirm_blob(
         title=title,
         description=description,
         text_mono=text_mono,
@@ -1012,7 +1012,7 @@ async def confirm_modify_output(
     while True:
         # if the user cancels here, raise ActionCancelled (by default)
         await interact(
-            trezorui2.confirm_blob(
+            trezorui_api.confirm_blob(
                 title="MODIFY AMOUNT",
                 data=address,
                 verb="CONTINUE",
@@ -1131,7 +1131,7 @@ async def confirm_signverify(
         horizontal=True,
     )
 
-    message_layout = trezorui2.confirm_blob(
+    message_layout = trezorui_api.confirm_blob(
         title=TR.sign_message__confirm_message,
         description=None,
         data=message,

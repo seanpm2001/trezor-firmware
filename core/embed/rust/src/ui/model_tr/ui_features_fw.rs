@@ -23,7 +23,7 @@ use crate::{
         geometry,
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
-            util::RecoveryType,
+            util::{ConfirmBlob, RecoveryType},
         },
         model_tr::{
             component::{ButtonActions, ButtonLayout, Page},
@@ -81,6 +81,50 @@ impl UIFeaturesFirmware for ModelTRFeatures {
             verb_cancel,
             hold,
         )
+    }
+
+    fn confirm_blob(
+        title: TString<'static>,
+        data: Obj,
+        description: Option<TString<'static>>,
+        _text_mono: bool,
+        extra: Option<TString<'static>>,
+        _subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        _verb_info: Option<TString<'static>>,
+        _info: bool,
+        hold: bool,
+        chunkify: bool,
+        _page_counter: bool,
+        _prompt_screen: bool,
+        _cancel: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let style = if chunkify {
+            // Chunkifying the address into smaller pieces when requested
+            &theme::TEXT_MONO_ADDRESS_CHUNKS
+        } else {
+            &theme::TEXT_MONO_DATA
+        };
+
+        let paragraphs = ConfirmBlob {
+            description: description.unwrap_or("".into()),
+            extra: extra.unwrap_or("".into()),
+            data: data.try_into()?,
+            description_font: &theme::TEXT_BOLD,
+            extra_font: &theme::TEXT_NORMAL,
+            data_font: style,
+        }
+        .into_paragraphs();
+
+        let layout = content_in_button_page(
+            title,
+            paragraphs,
+            verb.unwrap_or(TR::buttons__confirm.into()),
+            verb_cancel,
+            hold,
+        )?;
+        LayoutObj::new_root(layout)
     }
 
     fn confirm_homescreen(

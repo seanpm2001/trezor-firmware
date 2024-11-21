@@ -97,6 +97,28 @@ def confirm_action(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_blob(
+    *,
+    title: str,
+    data: str | bytes,
+    description: str | None,
+    text_mono: bool = True,
+    extra: str | None = None,
+    subtitle: str | None = None,
+    verb: str | None = None,
+    verb_cancel: str | None = None,
+    verb_info: str | None = None,
+    info: bool = True,
+    hold: bool = False,
+    chunkify: bool = False,
+    page_counter: bool = False,
+    prompt_screen: bool = False,
+    cancel: bool = False,
+) -> LayoutObj[UiResult]:
+    """Confirm byte sequence data."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_coinjoin(
     *,
     max_rounds: str,

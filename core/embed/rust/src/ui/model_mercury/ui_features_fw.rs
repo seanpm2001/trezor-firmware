@@ -35,8 +35,8 @@ use super::{
         SwipeContent, SwipeUpScreen, VerticalMenu,
     },
     flow::{
-        self, new_confirm_action_simple, ConfirmActionExtra, ConfirmActionMenuStrings,
-        ConfirmActionStrings,
+        self, confirm_with_info, new_confirm_action_simple, ConfirmActionExtra,
+        ConfirmActionMenuStrings, ConfirmActionStrings, ConfirmBlobParams,
     },
     theme, ModelMercuryFeatures,
 };
@@ -67,6 +67,45 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
             prompt_title.unwrap_or(TString::empty()),
         )?;
         Ok(flow)
+    }
+
+    fn confirm_blob(
+        title: TString<'static>,
+        data: Obj,
+        description: Option<TString<'static>>,
+        text_mono: bool,
+        extra: Option<TString<'static>>,
+        subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        verb_info: Option<TString<'static>>,
+        info: bool,
+        hold: bool,
+        chunkify: bool,
+        page_counter: bool,
+        prompt_screen: bool,
+        cancel: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        ConfirmBlobParams::new(title, data, description)
+            .with_description_font(&theme::TEXT_SUB_GREY)
+            .with_text_mono(text_mono)
+            .with_subtitle(subtitle)
+            .with_verb(verb)
+            .with_verb_cancel(verb_cancel)
+            .with_verb_info(if info {
+                Some(verb_info.unwrap_or(TR::words__title_information.into()))
+            } else {
+                None
+            })
+            .with_extra(extra)
+            .with_chunkify(chunkify)
+            .with_page_counter(page_counter)
+            .with_cancel(cancel)
+            .with_prompt(prompt_screen)
+            .with_hold(hold)
+            .into_flow()
+            .and_then(LayoutObj::new_root)
+            .map(Into::into)
     }
 
     fn confirm_homescreen(

@@ -275,6 +275,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_icon_name;
   MP_QSTR_image;
   MP_QSTR_indeterminate;
+  MP_QSTR_info;
   MP_QSTR_info_button;
   MP_QSTR_init;
   MP_QSTR_inputs__back;
