@@ -269,7 +269,6 @@ extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map
             .get(Qstr::MP_QSTR_description)
             .unwrap_or_else(|_| Obj::const_none())
             .try_into_option()?;
-        let text_mono: bool = kwargs.get_or(Qstr::MP_QSTR_text_mono, true)?;
         let extra: Option<TString> = kwargs
             .get(Qstr::MP_QSTR_extra)
             .unwrap_or_else(|_| Obj::const_none())
@@ -286,10 +285,6 @@ extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map
             .get(Qstr::MP_QSTR_verb_cancel)
             .unwrap_or_else(|_| Obj::const_none())
             .try_into_option()?;
-        let verb_info: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_info)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
         let info: bool = kwargs.get_or(Qstr::MP_QSTR_info, true)?;
         let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
         let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
@@ -298,15 +293,10 @@ extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map
         let cancel: bool = kwargs.get_or(Qstr::MP_QSTR_cancel, false)?;
 
         ConfirmBlobParams::new(title, data, description)
-            .with_text_mono(text_mono)
             .with_subtitle(subtitle)
             .with_verb(verb)
             .with_verb_cancel(verb_cancel.unwrap_or(TR::buttons__cancel.into()))
-            .with_verb_info(if info {
-                Some(verb_info.unwrap_or(TR::words__title_information.into()))
-            } else {
-                None
-            })
+            .with_verb_info(if info { Some(TR::words__title_information.into()) } else { None })
             .with_extra(extra)
             .with_chunkify(chunkify)
             .with_page_counter(page_counter)
@@ -1589,12 +1579,10 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     title: str,
     ///     data: str | bytes,
     ///     description: str | None,
-    ///     text_mono: bool = True,
     ///     extra: str | None = None,
     ///     subtitle: str | None = None,
     ///     verb: str | None = None,
     ///     verb_cancel: str | None = None,
-    ///     verb_info: str | None = None,
     ///     info: bool = True,
     ///     hold: bool = False,
     ///     chunkify: bool = False,

@@ -580,8 +580,6 @@ def confirm_blob(
     subtitle: str | None = None,
     verb: str | None = None,
     verb_cancel: str | None = None,  # icon
-    info: bool = True,
-    hold: bool = False,
     br_code: ButtonRequestType = BR_CODE_OTHER,
     ask_pagination: bool = False,
     chunkify: bool = False,
@@ -594,12 +592,10 @@ def confirm_blob(
         data=data,
         verb=verb,
         verb_cancel="",
-        hold=hold,
         chunkify=chunkify,
     )
 
     if ask_pagination and layout.page_count() > 1:
-        assert not hold
         return _confirm_ask_pagination(br_name, title, data, description or "", br_code)
     else:
         return raise_if_not_confirmed(layout, br_name, br_code)
