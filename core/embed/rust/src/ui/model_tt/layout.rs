@@ -584,49 +584,6 @@ extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_show_info_with_cancel(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-        let horizontal: bool = kwargs.get_or(Qstr::MP_QSTR_horizontal, false)?;
-        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
-
-        let mut paragraphs = ParagraphVecShort::new();
-
-        for para in IterBuf::new().try_iterate(items)? {
-            let [key, value]: [Obj; 2] = util::iter_into_array(para)?;
-            let key: TString = key.try_into()?;
-            let value: TString = value.try_into()?;
-            paragraphs.add(Paragraph::new(&theme::TEXT_NORMAL, key).no_break());
-            if chunkify {
-                paragraphs.add(Paragraph::new(
-                    theme::get_chunkified_text_style(value.len()),
-                    value,
-                ));
-            } else {
-                paragraphs.add(Paragraph::new(&theme::TEXT_MONO, value));
-            }
-        }
-
-        let axis = match horizontal {
-            true => geometry::Axis::Horizontal,
-            _ => geometry::Axis::Vertical,
-        };
-
-        let obj = LayoutObj::new(
-            Frame::left_aligned(
-                theme::label_title(),
-                title,
-                SimplePage::new(paragraphs.into_paragraphs(), axis, theme::BG)
-                    .with_swipe_right_to_go_back(),
-            )
-            .with_cancel_button(),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -819,16 +776,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show address details - QR code, account, path, cosigner xpubs."""
     Qstr::MP_QSTR_show_address_details => obj_fn_kw!(0, new_show_address_details).as_obj(),
-
-    /// def show_info_with_cancel(
-    ///     *,
-    ///     title: str,
-    ///     items: Iterable[Tuple[str, str]],
-    ///     horizontal: bool = False,
-    ///     chunkify: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Show metadata for outgoing transaction."""
-    Qstr::MP_QSTR_show_info_with_cancel => obj_fn_kw!(0, new_show_info_with_cancel).as_obj(),
 
     /// def confirm_value(
     ///     *,

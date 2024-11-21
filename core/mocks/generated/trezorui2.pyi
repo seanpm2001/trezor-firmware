@@ -72,17 +72,6 @@ def flow_confirm_set_new_pin(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def show_info_with_cancel(
-    *,
-    title: str,
-    items: Iterable[Tuple[str, str]],
-    horizontal: bool = False,
-    chunkify: bool = False,
-) -> LayoutObj[UiResult]:
-    """Show metadata for outgoing transaction."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def confirm_value(
     *,
     title: str,
@@ -383,17 +372,6 @@ def show_address_details(
     xpubs: list[tuple[str, str]],
 ) -> LayoutObj[UiResult]:
     """Show address details - QR code, account, path, cosigner xpubs."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_info_with_cancel(
-    *,
-    title: str,
-    items: Iterable[Tuple[str, str]],
-    horizontal: bool = False,
-    chunkify: bool = False,
-) -> LayoutObj[UiResult]:
-    """Show metadata for outgoing transaction."""
 
 
 # rust/src/ui/model_tt/layout.rs

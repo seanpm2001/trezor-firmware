@@ -446,6 +446,19 @@ extern "C" fn new_show_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_info_with_cancel(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
+        let horizontal: bool = kwargs.get_or(Qstr::MP_QSTR_horizontal, false)?;
+        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
+
+        let layout = ModelUI::show_info_with_cancel(title, items, horizontal, chunkify)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_lockscreen(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let label: TString<'static> = kwargs
@@ -985,6 +998,16 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Info screen."""
     Qstr::MP_QSTR_show_info => obj_fn_kw!(0, new_show_info).as_obj(),
+
+    /// def show_info_with_cancel(
+    ///     *,
+    ///     title: str,
+    ///     items: Iterable[Tuple[str, str]],
+    ///     horizontal: bool = False,
+    ///     chunkify: bool = False,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Show metadata for outgoing transaction."""
+    Qstr::MP_QSTR_show_info_with_cancel => obj_fn_kw!(0, new_show_info_with_cancel).as_obj(),
 
     /// def show_lockscreen(
     ///     *,

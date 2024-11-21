@@ -683,7 +683,7 @@ def confirm_value(
         raise ValueError("Either verb or hold=True must be set")
 
     info_items = info_items or []
-    info_layout = trezorui2.show_info_with_cancel(
+    info_layout = trezorui_api.show_info_with_cancel(
         title=info_title if info_title else TR.words__title_information,
         items=info_items,
         chunkify=chunkify_info,
@@ -796,7 +796,7 @@ def _confirm_summary(
         info_items.extend(account_items)
     if extra_items:
         info_items.extend(extra_items)
-    info_layout = trezorui2.show_info_with_cancel(
+    info_layout = trezorui_api.show_info_with_cancel(
         title=extra_title if extra_title else TR.words__title_information,
         items=info_items,
     )
@@ -833,7 +833,7 @@ if not utils.BITCOIN_ONLY:
             extra_title=TR.confirm_total__title_fee,
             verb_cancel="^",
         )
-        info_layout = trezorui2.show_info_with_cancel(
+        info_layout = trezorui_api.show_info_with_cancel(
             title=TR.confirm_total__title_fee,
             items=[(f"{k}:", v) for (k, v) in fee_info_items],
         )
@@ -1058,7 +1058,7 @@ def confirm_modify_fee(
     items: list[tuple[str, str]] = []
     if fee_rate_amount:
         items.append((TR.bitcoin__new_fee_rate, fee_rate_amount))
-    info_layout = trezorui2.show_info_with_cancel(
+    info_layout = trezorui_api.show_info_with_cancel(
         title=TR.confirm_total__title_fee,
         items=items,
     )
@@ -1125,7 +1125,7 @@ async def confirm_signverify(
         )
     )
 
-    info_layout = trezorui2.show_info_with_cancel(
+    info_layout = trezorui_api.show_info_with_cancel(
         title=TR.words__title_information,
         items=items,
         horizontal=True,

@@ -339,6 +339,17 @@ def show_info(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_info_with_cancel(
+    *,
+    title: str,
+    items: Iterable[Tuple[str, str]],
+    horizontal: bool = False,
+    chunkify: bool = False,
+) -> LayoutObj[UiResult]:
+    """Show metadata for outgoing transaction."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_lockscreen(
     *,
     label: str | None,

@@ -19,6 +19,7 @@ use crate::{
             },
             Border, ComponentExt, Empty, Jpeg, Label, Never, Timeout,
         },
+        geometry,
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
             util::RecoveryType,
@@ -32,7 +33,7 @@ use super::{
         check_homescreen_format, Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet,
         CancelConfirmMsg, CoinJoinProgress, Dialog, FidoConfirm, Frame, Homescreen, IconDialog,
         Lockscreen, MnemonicKeyboard, NumberInputDialog, PassphraseKeyboard, PinKeyboard, Progress,
-        SelectWordCount, SetBrightnessDialog, ShareWords, Slip39Input,
+        SelectWordCount, SetBrightnessDialog, ShareWords, SimplePage, Slip39Input,
     },
     theme, ModelTTFeatures,
 };
@@ -597,6 +598,46 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             icon,
             theme::button_info(),
         )
+    }
+
+    fn show_info_with_cancel(
+        title: TString<'static>,
+        items: Obj,
+        horizontal: bool,
+        chunkify: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecShort::new();
+
+        for para in IterBuf::new().try_iterate(items)? {
+            let [key, value]: [Obj; 2] = util::iter_into_array(para)?;
+            let key: TString = key.try_into()?;
+            let value: TString = value.try_into()?;
+            paragraphs.add(Paragraph::new(&theme::TEXT_NORMAL, key).no_break());
+            if chunkify {
+                paragraphs.add(Paragraph::new(
+                    theme::get_chunkified_text_style(value.len()),
+                    value,
+                ));
+            } else {
+                paragraphs.add(Paragraph::new(&theme::TEXT_MONO, value));
+            }
+        }
+
+        let axis = match horizontal {
+            true => geometry::Axis::Horizontal,
+            _ => geometry::Axis::Vertical,
+        };
+
+        let layout = RootComponent::new(
+            Frame::left_aligned(
+                theme::label_title(),
+                title,
+                SimplePage::new(paragraphs.into_paragraphs(), axis, theme::BG)
+                    .with_swipe_right_to_go_back(),
+            )
+            .with_cancel_button(),
+        );
+        Ok(layout)
     }
 
     fn show_lockscreen(

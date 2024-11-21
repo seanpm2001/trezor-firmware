@@ -166,6 +166,13 @@ pub trait UIFeaturesFirmware {
         time_ms: u32,
     ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
 
+    fn show_info_with_cancel(
+        title: TString<'static>,
+        items: Obj, // TODO: replace Obj
+        horizontal: bool,
+        chunkify: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn show_lockscreen(
         label: TString<'static>,
         bootscreen: bool,

@@ -533,6 +533,36 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(obj)
     }
 
+    fn show_info_with_cancel(
+        title: TString<'static>,
+        items: Obj,
+        _horizontal: bool,
+        chunkify: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecShort::new();
+
+        for para in IterBuf::new().try_iterate(items)? {
+            let [key, value]: [Obj; 2] = util::iter_into_array(para)?;
+            let key: TString = key.try_into()?;
+            let value: TString = value.try_into()?;
+            paragraphs.add(Paragraph::new(&theme::TEXT_SUB_GREY, key).no_break());
+            if chunkify {
+                paragraphs.add(Paragraph::new(
+                    theme::get_chunkified_text_style(value.len()),
+                    value,
+                ));
+            } else {
+                paragraphs.add(Paragraph::new(&theme::TEXT_MONO, value));
+            }
+        }
+
+        let layout = RootComponent::new(SwipeUpScreen::new(
+            Frame::left_aligned(title, SwipeContent::new(paragraphs.into_paragraphs()))
+                .with_cancel_button(),
+        ));
+        Ok(layout)
+    }
+
     fn show_lockscreen(
         label: TString<'static>,
         bootscreen: bool,

@@ -581,6 +581,17 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Ok(obj)
     }
 
+    fn show_info_with_cancel(
+        _title: TString<'static>,
+        _items: Obj,
+        _horizontal: bool,
+        _chunkify: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"show_info_with_cancel not supported",
+        ))
+    }
+
     fn show_lockscreen(
         label: TString<'static>,
         bootscreen: bool,
