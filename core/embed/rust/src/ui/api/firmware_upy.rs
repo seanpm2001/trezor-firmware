@@ -242,6 +242,53 @@ extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let subtitle: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_subtitle)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let description: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_description)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let value: Obj = kwargs.get(Qstr::MP_QSTR_value)?;
+        let info_button: bool = kwargs.get_or(Qstr::MP_QSTR_info_button, false)?;
+        let verb: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let verb_info: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb_info)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let verb_cancel: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb_cancel)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
+        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
+        let text_mono: bool = kwargs.get_or(Qstr::MP_QSTR_text_mono, true)?;
+
+        let layout_obj = ModelUI::confirm_value(
+            title,
+            value,
+            description,
+            subtitle,
+            verb,
+            verb_info,
+            verb_cancel,
+            info_button,
+            hold,
+            chunkify,
+            text_mono,
+        )?;
+        Ok(layout_obj.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_confirm_with_info(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -918,6 +965,23 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
     ///     """Confirm TOS before creating wallet creation or wallet recovery."""
     Qstr::MP_QSTR_confirm_reset_device => obj_fn_kw!(0, new_confirm_reset_device).as_obj(),
+
+    /// def confirm_value(
+    ///     *,
+    ///     title: str,
+    ///     value: str,
+    ///     description: str | None,
+    ///     subtitle: str | None,
+    ///     verb: str | None = None,
+    ///     verb_info: str | None = None,
+    ///     verb_cancel: str | None = None,
+    ///     info_button: bool = False,
+    ///     hold: bool = False,
+    ///     chunkify: bool = False,
+    ///     text_mono: bool = True,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm value. Merge of confirm_total and confirm_output."""
+    Qstr::MP_QSTR_confirm_value => obj_fn_kw!(0, new_confirm_value).as_obj(),
 
     /// def confirm_with_info(
     ///     *,

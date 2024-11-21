@@ -428,7 +428,7 @@ async def confirm_output(
     while True:
         # if the user cancels here, raise ActionCancelled (by default)
         await interact(
-            trezorui2.confirm_value(
+            trezorui_api.confirm_value(
                 title=recipient_title,
                 subtitle=address_label,
                 description=None,
@@ -444,7 +444,7 @@ async def confirm_output(
 
         try:
             await interact(
-                trezorui2.confirm_value(
+                trezorui_api.confirm_value(
                     title=amount_title,
                     subtitle=None,
                     description=None,
@@ -690,7 +690,7 @@ def confirm_value(
     )
 
     return with_info(
-        trezorui2.confirm_value(
+        trezorui_api.confirm_value(
             title=title,
             subtitle=subtitle,
             description=description,

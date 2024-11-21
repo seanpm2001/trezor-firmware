@@ -186,6 +186,24 @@ def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_value(
+    *,
+    title: str,
+    value: str,
+    description: str | None,
+    subtitle: str | None,
+    verb: str | None = None,
+    verb_info: str | None = None,
+    verb_cancel: str | None = None,
+    info_button: bool = False,
+    hold: bool = False,
+    chunkify: bool = False,
+    text_mono: bool = True,
+) -> LayoutObj[UiResult]:
+    """Confirm value. Merge of confirm_total and confirm_output."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_with_info(
     *,
     title: str,

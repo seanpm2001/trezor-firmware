@@ -379,34 +379,6 @@ extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
-        let value: TString = kwargs.get(Qstr::MP_QSTR_value)?.try_into()?;
-
-        let verb: Option<TString<'static>> = kwargs
-            .get(Qstr::MP_QSTR_verb)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
-
-        let paragraphs = Paragraphs::new([
-            Paragraph::new(&theme::TEXT_BOLD, description),
-            Paragraph::new(&theme::TEXT_MONO, value),
-        ]);
-
-        content_in_button_page(
-            title,
-            paragraphs,
-            verb.unwrap_or(TR::buttons__confirm.into()),
-            Some("".into()),
-            hold,
-        )
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_joint_total(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let spending_amount: TString = kwargs.get(Qstr::MP_QSTR_spending_amount)?.try_into()?;
@@ -777,18 +749,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show address details - QR code, account, path, cosigner xpubs."""
     Qstr::MP_QSTR_show_address_details => obj_fn_kw!(0, new_show_address_details).as_obj(),
-
-    /// def confirm_value(
-    ///     *,
-    ///     title: str,
-    ///     description: str,
-    ///     value: str,
-    ///     verb: str | None = None,
-    ///     verb_info: str | None = None,
-    ///     hold: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm value."""
-    Qstr::MP_QSTR_confirm_value => obj_fn_kw!(0, new_confirm_value).as_obj(),
 
     /// def confirm_joint_total(
     ///     *,

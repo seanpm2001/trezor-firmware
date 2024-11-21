@@ -636,7 +636,7 @@ def confirm_value(
     )
 
     return with_info(
-        trezorui2.confirm_value(
+        trezorui_api.confirm_value(
             title=title,
             subtitle=subtitle,
             description=description,

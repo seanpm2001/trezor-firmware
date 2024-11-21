@@ -82,6 +82,20 @@ pub trait UIFeaturesFirmware {
 
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_value(
+        title: TString<'static>,
+        value: Obj, // TODO: replace Obj
+        description: Option<TString<'static>>,
+        subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_info: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        info_button: bool,
+        hold: bool,
+        chunkify: bool,
+        text_mono: bool,
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
     fn confirm_with_info(
         title: TString<'static>,
         button: TString<'static>,

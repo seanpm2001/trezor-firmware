@@ -533,51 +533,6 @@ extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let subtitle: Option<TString> = kwargs.get(Qstr::MP_QSTR_subtitle)?.try_into_option()?;
-        let description: Option<TString> =
-            kwargs.get(Qstr::MP_QSTR_description)?.try_into_option()?;
-        let value: Obj = kwargs.get(Qstr::MP_QSTR_value)?;
-        let info_button: bool = kwargs.get_or(Qstr::MP_QSTR_info_button, false)?;
-
-        let verb: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let verb_info: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_info)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let verb_cancel: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_cancel)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
-        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
-        let text_mono: bool = kwargs.get_or(Qstr::MP_QSTR_text_mono, true)?;
-
-        ConfirmBlobParams::new(title, value, description)
-            .with_subtitle(subtitle)
-            .with_verb(verb)
-            .with_verb_cancel(verb_cancel)
-            .with_verb_info(if info_button {
-                Some(verb_info.unwrap_or(TR::words__title_information.into()))
-            } else {
-                None
-            })
-            .with_chunkify(chunkify)
-            .with_text_mono(text_mono)
-            .with_prompt(hold)
-            .with_hold(hold)
-            .into_flow()
-            .and_then(LayoutObj::new_root)
-            .map(Into::into)
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_get_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -672,23 +627,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm new PIN setup with an option to cancel action."""
     Qstr::MP_QSTR_flow_confirm_set_new_pin => obj_fn_kw!(0, new_confirm_set_new_pin).as_obj(),
-
-    /// def confirm_value(
-    ///     *,
-    ///     title: str,
-    ///     value: str,
-    ///     description: str | None,
-    ///     subtitle: str | None,
-    ///     verb: str | None = None,
-    ///     verb_info: str | None = None,
-    ///     verb_cancel: str | None = None,
-    ///     info_button: bool = False,
-    ///     hold: bool = False,
-    ///     chunkify: bool = False,
-    ///     text_mono: bool = True,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm value. Merge of confirm_total and confirm_output."""
-    Qstr::MP_QSTR_confirm_value => obj_fn_kw!(0, new_confirm_value).as_obj(),
 
     /// def flow_prompt_backup() -> LayoutObj[UiResult]:
     ///     """Prompt a user to create backup with an option to skip."""

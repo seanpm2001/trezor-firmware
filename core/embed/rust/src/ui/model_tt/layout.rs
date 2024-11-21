@@ -352,107 +352,6 @@ extern "C" fn new_confirm_emphasized(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-struct ConfirmBlobParams {
-    title: TString<'static>,
-    subtitle: Option<TString<'static>>,
-    data: Obj,
-    description: Option<TString<'static>>,
-    extra: Option<TString<'static>>,
-    verb: Option<TString<'static>>,
-    verb_cancel: Option<TString<'static>>,
-    info_button: bool,
-    hold: bool,
-    chunkify: bool,
-    text_mono: bool,
-}
-
-impl ConfirmBlobParams {
-    fn new(
-        title: TString<'static>,
-        data: Obj,
-        description: Option<TString<'static>>,
-        verb: Option<TString<'static>>,
-        verb_cancel: Option<TString<'static>>,
-        hold: bool,
-    ) -> Self {
-        Self {
-            title,
-            subtitle: None,
-            data,
-            description,
-            extra: None,
-            verb,
-            verb_cancel,
-            info_button: false,
-            hold,
-            chunkify: false,
-            text_mono: true,
-        }
-    }
-
-    fn with_extra(mut self, extra: Option<TString<'static>>) -> Self {
-        self.extra = extra;
-        self
-    }
-
-    fn with_subtitle(mut self, subtitle: Option<TString<'static>>) -> Self {
-        self.subtitle = subtitle;
-        self
-    }
-
-    fn with_info_button(mut self, info_button: bool) -> Self {
-        self.info_button = info_button;
-        self
-    }
-
-    fn with_chunkify(mut self, chunkify: bool) -> Self {
-        self.chunkify = chunkify;
-        self
-    }
-
-    fn with_text_mono(mut self, text_mono: bool) -> Self {
-        self.text_mono = text_mono;
-        self
-    }
-
-    fn into_layout(self) -> Result<Obj, Error> {
-        let paragraphs = ConfirmBlob {
-            description: self.description.unwrap_or("".into()),
-            extra: self.extra.unwrap_or("".into()),
-            data: self.data.try_into()?,
-            description_font: &theme::TEXT_NORMAL,
-            extra_font: &theme::TEXT_DEMIBOLD,
-            data_font: if self.chunkify {
-                let data: TString = self.data.try_into()?;
-                theme::get_chunkified_text_style(data.len())
-            } else if self.text_mono {
-                &theme::TEXT_MONO
-            } else {
-                &theme::TEXT_NORMAL
-            },
-        }
-        .into_paragraphs();
-
-        let mut page = ButtonPage::new(paragraphs, theme::BG);
-        if let Some(verb) = self.verb {
-            page = page.with_cancel_confirm(self.verb_cancel, Some(verb))
-        }
-        if self.hold {
-            page = page.with_hold()?
-        }
-        let mut frame = Frame::left_aligned(theme::label_title(), self.title, page);
-        if let Some(subtitle) = self.subtitle {
-            frame = frame.with_subtitle(theme::label_subtitle(), subtitle);
-        }
-
-        if self.info_button {
-            frame = frame.with_info_button();
-        }
-        let obj = LayoutObj::new(frame)?;
-        Ok(obj.into())
-    }
-}
-
 extern "C" fn new_confirm_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -547,37 +446,6 @@ extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: 
         let obj =
             LayoutObj::new(SimplePage::horizontal(ad, theme::BG).with_swipe_right_to_go_back())?;
         Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let subtitle: Option<TString> = kwargs.get(Qstr::MP_QSTR_subtitle)?.try_into_option()?;
-        let description: Option<TString> =
-            kwargs.get(Qstr::MP_QSTR_description)?.try_into_option()?;
-        let value: Obj = kwargs.get(Qstr::MP_QSTR_value)?;
-        let info_button: bool = kwargs.get_or(Qstr::MP_QSTR_info_button, false)?;
-
-        let verb: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let verb_cancel: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_cancel)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
-        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
-        let text_mono: bool = kwargs.get_or(Qstr::MP_QSTR_text_mono, true)?;
-
-        ConfirmBlobParams::new(title, value, description, verb, verb_cancel, hold)
-            .with_subtitle(subtitle)
-            .with_info_button(info_button)
-            .with_chunkify(chunkify)
-            .with_text_mono(text_mono)
-            .into_layout()
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
@@ -722,23 +590,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show address details - QR code, account, path, cosigner xpubs."""
     Qstr::MP_QSTR_show_address_details => obj_fn_kw!(0, new_show_address_details).as_obj(),
-
-    /// def confirm_value(
-    ///     *,
-    ///     title: str,
-    ///     value: str,
-    ///     description: str | None,
-    ///     subtitle: str | None,
-    ///     verb: str | None = None,
-    ///     verb_info: str | None = None,
-    ///     verb_cancel: str | None = None,
-    ///     info_button: bool = False,
-    ///     hold: bool = False,
-    ///     chunkify: bool = False,
-    ///     text_mono: bool = True,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm value. Merge of confirm_total and confirm_output."""
-    Qstr::MP_QSTR_confirm_value => obj_fn_kw!(0, new_confirm_value).as_obj(),
 
     /// def confirm_summary(
     ///     *,

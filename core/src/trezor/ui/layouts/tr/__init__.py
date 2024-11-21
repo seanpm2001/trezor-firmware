@@ -741,7 +741,7 @@ async def confirm_value(
 
     if info_items is None:
         return await raise_if_not_confirmed(
-            trezorui2.confirm_value(  # type: ignore [Argument missing for parameter "subtitle"]
+            trezorui_api.confirm_value(  # type: ignore [Argument missing for parameter "subtitle"]
                 title=title,
                 description=description,
                 value=value,

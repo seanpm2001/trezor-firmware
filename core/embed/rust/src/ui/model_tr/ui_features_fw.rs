@@ -335,6 +335,36 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         content_in_button_page(title, formatted, button, Some("".into()), false)
     }
 
+    fn confirm_value(
+        title: TString<'static>,
+        value: Obj,
+        description: Option<TString<'static>>,
+        _subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        _verb_info: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        _info_button: bool,
+        hold: bool,
+        _chunkify: bool,
+        _text_mono: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        let value: TString = value.try_into()?;
+        let description = description.unwrap_or("".into());
+        let paragraphs = Paragraphs::new([
+            Paragraph::new(&theme::TEXT_BOLD, description),
+            Paragraph::new(&theme::TEXT_MONO, value),
+        ]);
+
+        let layout = content_in_button_page(
+            title,
+            paragraphs,
+            verb.unwrap_or(TR::buttons__confirm.into()),
+            verb_cancel,
+            hold,
+        )?;
+        LayoutObj::new_root(layout)
+    }
+
     fn confirm_with_info(
         title: TString<'static>,
         button: TString<'static>,

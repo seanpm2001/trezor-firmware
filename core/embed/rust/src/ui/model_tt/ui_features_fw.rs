@@ -301,6 +301,27 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn confirm_value(
+        title: TString<'static>,
+        value: Obj,
+        description: Option<TString<'static>>,
+        subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        _verb_info: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        info_button: bool,
+        hold: bool,
+        chunkify: bool,
+        text_mono: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        ConfirmBlobParams::new(title, value, description, verb, verb_cancel, hold)
+            .with_subtitle(subtitle)
+            .with_info_button(info_button)
+            .with_chunkify(chunkify)
+            .with_text_mono(text_mono)
+            .into_layout()
+    }
+
     fn confirm_with_info(
         title: TString<'static>,
         button: TString<'static>,
@@ -973,7 +994,6 @@ struct ConfirmBlobParams {
     hold: bool,
     chunkify: bool,
     text_mono: bool,
-    page_limit: Option<usize>,
 }
 
 impl ConfirmBlobParams {
@@ -997,7 +1017,6 @@ impl ConfirmBlobParams {
             hold,
             chunkify: false,
             text_mono: true,
-            page_limit: None,
         }
     }
 
@@ -1026,11 +1045,6 @@ impl ConfirmBlobParams {
         self
     }
 
-    fn with_page_limit(mut self, page_limit: Option<usize>) -> Self {
-        self.page_limit = page_limit;
-        self
-    }
-
     fn into_layout(self) -> Result<Gc<LayoutObj>, Error> {
         let paragraphs = ConfirmBlob {
             description: self.description.unwrap_or("".into()),
@@ -1056,7 +1070,6 @@ impl ConfirmBlobParams {
         if self.hold {
             page = page.with_hold()?
         }
-        page = page.with_page_limit(self.page_limit);
         let mut frame = Frame::left_aligned(theme::label_title(), self.title, page);
         if let Some(subtitle) = self.subtitle {
             frame = frame.with_subtitle(theme::label_subtitle(), subtitle);

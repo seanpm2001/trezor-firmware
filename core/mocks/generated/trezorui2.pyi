@@ -49,24 +49,6 @@ def flow_confirm_set_new_pin(
 
 
 # rust/src/ui/model_mercury/layout.rs
-def confirm_value(
-    *,
-    title: str,
-    value: str,
-    description: str | None,
-    subtitle: str | None,
-    verb: str | None = None,
-    verb_info: str | None = None,
-    verb_cancel: str | None = None,
-    info_button: bool = False,
-    hold: bool = False,
-    chunkify: bool = False,
-    text_mono: bool = True,
-) -> LayoutObj[UiResult]:
-    """Confirm value. Merge of confirm_total and confirm_output."""
-
-
-# rust/src/ui/model_mercury/layout.rs
 def flow_prompt_backup() -> LayoutObj[UiResult]:
     """Prompt a user to create backup with an option to skip."""
 
@@ -174,19 +156,6 @@ def show_address_details(
     xpubs: list[tuple[str, str]],
 ) -> LayoutObj[UiResult]:
     """Show address details - QR code, account, path, cosigner xpubs."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_value(
-    *,
-    title: str,
-    description: str,
-    value: str,
-    verb: str | None = None,
-    verb_info: str | None = None,
-    hold: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm value."""
 
 
 # rust/src/ui/model_tr/layout.rs
@@ -305,24 +274,6 @@ def show_address_details(
     xpubs: list[tuple[str, str]],
 ) -> LayoutObj[UiResult]:
     """Show address details - QR code, account, path, cosigner xpubs."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_value(
-    *,
-    title: str,
-    value: str,
-    description: str | None,
-    subtitle: str | None,
-    verb: str | None = None,
-    verb_info: str | None = None,
-    verb_cancel: str | None = None,
-    info_button: bool = False,
-    hold: bool = False,
-    chunkify: bool = False,
-    text_mono: bool = True,
-) -> LayoutObj[UiResult]:
-    """Confirm value. Merge of confirm_total and confirm_output."""
 
 
 # rust/src/ui/model_tt/layout.rs

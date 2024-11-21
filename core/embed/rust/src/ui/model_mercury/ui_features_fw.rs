@@ -279,6 +279,37 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(flow)
     }
 
+    fn confirm_value(
+        title: TString<'static>,
+        value: Obj,
+        description: Option<TString<'static>>,
+        subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_info: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        info_button: bool,
+        hold: bool,
+        chunkify: bool,
+        text_mono: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        ConfirmBlobParams::new(title, value, description)
+            .with_subtitle(subtitle)
+            .with_verb(verb)
+            .with_verb_cancel(verb_cancel)
+            .with_verb_info(if info_button {
+                Some(verb_info.unwrap_or(TR::words__title_information.into()))
+            } else {
+                None
+            })
+            .with_chunkify(chunkify)
+            .with_text_mono(text_mono)
+            .with_prompt(hold)
+            .with_hold(hold)
+            .into_flow()
+            .and_then(LayoutObj::new_root)
+            .map(Into::into)
+    }
+
     fn confirm_with_info(
         title: TString<'static>,
         button: TString<'static>,
