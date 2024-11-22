@@ -96,7 +96,7 @@ class Session:
 class SessionV1(Session):
     @classmethod
     def new(
-        cls, client: TrezorClient, passphrase: str | None, derive_cardano: bool
+        cls, client: TrezorClient, passphrase: str = "", derive_cardano: bool = False
     ) -> SessionV1:
         assert isinstance(client.protocol, ProtocolV1)
         session_id = client.features.session_id
@@ -108,6 +108,7 @@ class SessionV1(Session):
         session.button_callback = client.button_callback
         session.pin_callback = client.pin_callback
         session.passphrase_callback = _callback_passphrase
+        session.passphrase = passphrase
         session._init_session(derive_cardano=derive_cardano)
         return session
 
@@ -132,7 +133,7 @@ def _callback_button(session: Session, msg: t.Any) -> t.Any:
 
 
 def _callback_passphrase(session: Session, msg: messages.PassphraseRequest) -> t.Any:
-    available_on_device = Capability.PassphraseEntry in Session.features.capabilities
+    available_on_device = Capability.PassphraseEntry in session.features.capabilities
     def send_passphrase(
         passphrase: str | None = None, on_device: bool | None = None
     ) -> t.Any:
