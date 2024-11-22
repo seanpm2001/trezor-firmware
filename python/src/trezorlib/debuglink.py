@@ -1162,6 +1162,7 @@ class SessionDebugWrapper(Session):
         ] = {}
         self.button_callback = self.client.button_callback
         self.pin_callback = self.client.pin_callback
+        self.passphrase_callback = self._session.passphrase_callback
 
     def __enter__(self) -> "SessionDebugWrapper":
         # For usage in with/expected_responses

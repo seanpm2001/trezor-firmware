@@ -4,9 +4,9 @@ import logging
 import typing as t
 
 from mnemonic import Mnemonic
-from trezorlib.client import MAX_PASSPHRASE_LENGTH, PASSPHRASE_ON_DEVICE
+from ..client import MAX_PASSPHRASE_LENGTH, PASSPHRASE_ON_DEVICE
 
-from trezor.enums import Capability
+from ..messages import Capability
 
 from .. import exceptions, messages, models
 from .thp.protocol_v1 import ProtocolV1
@@ -23,13 +23,16 @@ class Session:
     pin_callback: t.Callable[[Session, t.Any], t.Any] | None = None
     passphrase_callback: t.Callable[[Session, t.Any], t.Any] | None = None
 
-    def __init__(self, client: TrezorClient, id: bytes) -> None:
+    def __init__(
+        self, client: TrezorClient, id: bytes, passphrase: str | object | None = None
+    ) -> None:
         self.client = client
         self._id = id
+        self.passphrase = passphrase
 
     @classmethod
     def new(
-        cls, client: TrezorClient, passphrase: str | None, derive_cardano: bool
+        cls, client: TrezorClient, passphrase: str | object | None, derive_cardano: bool
     ) -> Session:
         raise NotImplementedError
 
@@ -130,7 +133,6 @@ def _callback_button(session: Session, msg: t.Any) -> t.Any:
 
 def _callback_passphrase(session: Session, msg: messages.PassphraseRequest) -> t.Any:
     available_on_device = Capability.PassphraseEntry in Session.features.capabilities
-
     def send_passphrase(
         passphrase: str | None = None, on_device: bool | None = None
     ) -> t.Any:
@@ -146,9 +148,7 @@ def _callback_passphrase(session: Session, msg: messages.PassphraseRequest) -> t
         return send_passphrase(None, None)
 
     try:
-        passphrase = session.client.ui.get_passphrase(
-            available_on_device=available_on_device
-        )  # TODO
+        passphrase = session.passphrase
     except exceptions.Cancelled:
         session.call_raw(messages.Cancel())
         raise
