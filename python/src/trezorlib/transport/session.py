@@ -94,6 +94,7 @@ class Session:
 
 
 class SessionV1(Session):
+    derive_cardano: bool = False
     @classmethod
     def new(
         cls, client: TrezorClient, passphrase: str = "", derive_cardano: bool = False
@@ -109,7 +110,8 @@ class SessionV1(Session):
         session.pin_callback = client.pin_callback
         session.passphrase_callback = _callback_passphrase
         session.passphrase = passphrase
-        session._init_session(derive_cardano=derive_cardano)
+        session.derive_cardano = derive_cardano
+        session._init_session()
         return session
 
     def _write(self, msg: t.Any) -> None:
@@ -122,10 +124,18 @@ class SessionV1(Session):
             assert isinstance(self.client.protocol, ProtocolV1)
         return self.client.protocol.read()
 
-    def _init_session(self, derive_cardano: bool = False):
-        self.call_raw(
-            messages.Initialize(session_id=self.id, derive_cardano=derive_cardano)
+    def _init_session(self):
+        if self.id == b"":
+            session_id = None
+        else:
+            session_id = self.id
+        resp: messages.Features = self.call_raw(
+            messages.Initialize(
+                session_id=session_id, derive_cardano=self.derive_cardano
+            )
         )
+        self._id = resp.session_id
+
 
 def _callback_button(session: Session, msg: t.Any) -> t.Any:
     print("Please confirm action on your Trezor device.")  # TODO how to handle UI?
