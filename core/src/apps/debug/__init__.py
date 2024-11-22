@@ -208,17 +208,20 @@ if __debug__:
         msg: DebugLinkDecision,
     ) -> DebugLinkState | None:
         from trezor import ui, workflow
-
+        log.debug(__name__, "decision 1")
         workflow.idle_timer.touch()
 
         x = msg.x  # local_cache_attribute
         y = msg.y  # local_cache_attribute
-
+        log.debug(__name__, "decision 2")
         await wait_until_layout_is_running()
         assert isinstance(ui.CURRENT_LAYOUT, ui.Layout)
         layout_change_box.clear()
+        log.debug(__name__, "decision 3")
 
         try:
+            log.debug(__name__, "decision try")
+
             # click on specific coordinates, with possible hold
             if x is not None and y is not None:
                 await _layout_click(x, y, msg.hold_ms or 0)
@@ -230,7 +233,13 @@ if __debug__:
             elif msg.button is not None:
                 await _layout_event(msg.button)
             elif msg.input is not None:
-                ui.CURRENT_LAYOUT._emit_message(msg.input)
+                log.debug(__name__, "decision input")
+                try:
+                    ui.CURRENT_LAYOUT._emit_message(msg.input)
+                except Exception as e:
+                    print(type(e))
+                log.debug(__name__, "decision input end")
+
             else:
                 raise RuntimeError("Invalid DebugLinkDecision message")
 
@@ -244,6 +253,7 @@ if __debug__:
 
         # If no exception was raised, the layout did not shut down. That means that it
         # just updated itself. The update is already live for the caller to retrieve.
+        log.debug(__name__, "decision end")
 
     def _state(
         thp_pairing_code_entry_code: int | None = None,
@@ -431,22 +441,31 @@ if __debug__:
                     ctx.iface.iface_num(),
                     msg_type,
                 )
-
+                log.debug(__name__, "here 1")
                 if msg.type not in WORKFLOW_HANDLERS:
+                    log.debug(__name__, "here a")
+
                     await ctx.write(message_handler.unexpected_message())
                     continue
 
                 elif req_type is None:
+                    log.debug(__name__, "here b")
+
                     # Message type is in workflow handlers but not in protobuf
                     # definitions. This indicates a deprecated message.
                     # We put a no-op handler for those messages.
                     # XXX return a Failure here?
                     await ctx.write(Success())
                     continue
+                log.debug(__name__, "here 3")
 
                 req_msg = message_handler.wrap_protobuf_load(msg.data, req_type)
                 try:
+                    log.debug(__name__, "here 4")
+
                     res_msg = await WORKFLOW_HANDLERS[msg.type](req_msg)
+                    log.debug(__name__, "here 5")
+
                 except Exception as exc:
                     # Log and ignore, never die.
                     log.exception(__name__, exc)

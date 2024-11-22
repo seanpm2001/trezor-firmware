@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING
 
 import pytest
 
-from trezorlib import models
+from trezorlib import messages, models
 from trezorlib.debuglink import LayoutType
 
 from .. import buttons, common
@@ -34,6 +34,9 @@ PIN4 = "1234"
 @pytest.mark.setup_client(pin=PIN4)
 def test_hold_to_lock(device_handler: "BackgroundDeviceHandler"):
     debug = device_handler.debuglink()
+    session = device_handler.client.get_management_session()
+    session.call(messages.LockDevice())
+    session.refresh_features()
 
     short_duration = {
         models.T1B1: 500,
@@ -59,9 +62,10 @@ def test_hold_to_lock(device_handler: "BackgroundDeviceHandler"):
     assert device_handler.features().unlocked is False
 
     # unlock with message
-    device_handler.run(common.get_test_address)
+    device_handler.run_with_session(common.get_test_address)
 
     assert "PinKeyboard" in debug.read_layout().all_components()
+    time.sleep(10)
     debug.input("1234")
     assert device_handler.result()
 

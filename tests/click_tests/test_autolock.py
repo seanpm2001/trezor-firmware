@@ -59,7 +59,7 @@ CENTER_BUTTON = buttons.grid35(1, 2)
 def set_autolock_delay(device_handler: "BackgroundDeviceHandler", delay_ms: int):
     debug = device_handler.debuglink()
 
-    device_handler.run(device.apply_settings, auto_lock_delay_ms=delay_ms)  # type: ignore
+    device_handler.run_with_session(device.apply_settings, auto_lock_delay_ms=delay_ms)  # type: ignore
 
     assert "PinKeyboard" in debug.read_layout().all_components()
 

@@ -21,6 +21,7 @@ import pytest
 from shamir_mnemonic import shamir
 
 from trezorlib import btc, debuglink, device, exceptions, fido, models
+from trezorlib.debuglink import SessionDebugWrapper as Session
 from trezorlib.messages import (
     ApplySettings,
     BackupAvailability,
@@ -57,15 +58,19 @@ STRENGTH = 128
 @for_all()
 def test_upgrade_load(gen: str, tag: str) -> None:
     def asserts(client: "Client"):
+        client.refresh_features()
         assert not client.features.pin_protection
         assert not client.features.passphrase_protection
         assert client.features.initialized
         assert client.features.label == LABEL
-        assert btc.get_address(client, "Bitcoin", PATH) == ADDRESS
+        assert (
+            btc.get_address(client.get_session(passphrase=""), "Bitcoin", PATH)
+            == ADDRESS
+        )
 
     with EmulatorWrapper(gen, tag) as emu:
         debuglink.load_device_by_mnemonic(
-            emu.client,
+            emu.client.get_management_session(),
             mnemonic=MNEMONIC,
             pin="",
             passphrase_protection=False,
@@ -164,11 +169,14 @@ def test_upgrade_wipe_code(gen: str, tag: str):
         assert client.features.initialized
         assert client.features.label == LABEL
         client.use_pin_sequence([PIN])
-        assert btc.get_address(client, "Bitcoin", PATH) == ADDRESS
+        assert (
+            btc.get_address(client.get_session(passphrase=""), "Bitcoin", PATH)
+            == ADDRESS
+        )
 
     with EmulatorWrapper(gen, tag) as emu:
         debuglink.load_device_by_mnemonic(
-            emu.client,
+            emu.client.get_management_session(),
             mnemonic=MNEMONIC,
             pin=PIN,
             passphrase_protection=False,
@@ -177,7 +185,10 @@ def test_upgrade_wipe_code(gen: str, tag: str):
 
         # Set wipe code.
         emu.client.use_pin_sequence([PIN, WIPE_CODE, WIPE_CODE])
-        device.change_wipe_code(emu.client)
+        session = Session(emu.client.get_management_session())
+        session.refresh_features()
+        raise Exception("client", str(emu.client.pin_callback))
+        device.change_wipe_code(session)
 
         device_id = emu.client.features.device_id
         asserts(emu.client)

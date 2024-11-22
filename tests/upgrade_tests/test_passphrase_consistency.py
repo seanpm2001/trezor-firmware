@@ -21,6 +21,7 @@ import pytest
 from trezorlib import btc, device, mapping, messages, models, protobuf
 from trezorlib._internal.emulator import Emulator
 from trezorlib.tools import parse_path
+from trezorlib.debuglink import SessionDebugWrapper as Session
 
 from ..emulators import EmulatorWrapper
 from . import for_all
@@ -47,11 +48,12 @@ def emulator(gen: str, tag: str) -> Iterator[Emulator]:
     with EmulatorWrapper(gen, tag) as emu:
         # set up a passphrase-protected device
         device.reset(
-            emu.client,
+            emu.client.get_management_session(),
             pin_protection=False,
             skip_backup=True,
         )
-        resp = emu.client.call(
+        emu.client = emu.client.get_new_client()
+        resp = emu.client.get_management_session().call(
             ApplySettingsCompat(use_passphrase=True, passphrase_source=SOURCE_HOST)
         )
         assert isinstance(resp, messages.Success)
@@ -87,11 +89,11 @@ def test_passphrase_works(emulator: Emulator):
             messages.ButtonRequest,
             messages.Address,
         ]
-
-    with emulator.client:
+    emu_session = emulator.client.get_session(passphrase="")
+    with emulator.client, Session(emu_session) as session:
         emulator.client.use_passphrase("TREZOR")
-        emulator.client.set_expected_responses(expected_responses)
-        btc.get_address(emulator.client, "Testnet", parse_path("44h/1h/0h/0/0"))
+        session.set_expected_responses(expected_responses)
+        btc.get_address(session, "Testnet", parse_path("44h/1h/0h/0/0"))
 
 
 @for_all(
@@ -131,13 +133,14 @@ def test_init_device(emulator: Emulator):
             messages.Address,
         ]
 
-    with emulator.client:
+    emu_session = emulator.client.get_session(passphrase="")
+    with emulator.client, Session(emu_session) as session:
         emulator.client.use_passphrase("TREZOR")
-        emulator.client.set_expected_responses(expected_responses)
+        session.set_expected_responses(expected_responses)
 
-        btc.get_address(emulator.client, "Testnet", parse_path("44h/1h/0h/0/0"))
+        btc.get_address(session, "Testnet", parse_path("44h/1h/0h/0/0"))
         # in TT < 2.3.0 session_id will only be available after PassphraseStateRequest
-        session_id = emulator.client.session_id
-        emulator.client.init_device()
+        session_id = emulator.client.features.session_id
+        # emulator.client.init_device()
         btc.get_address(emulator.client, "Testnet", parse_path("44h/1h/0h/0/0"))
-        assert session_id == emulator.client.session_id
+        assert session_id == emulator.client.features.session_id
