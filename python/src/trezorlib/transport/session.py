@@ -97,6 +97,7 @@ class SessionV1(Session):
             session = SessionV1(client, session_id)
         session.button_callback = client.button_callback
         session.pin_callback = client.pin_callback
+        session._init_session(derive_cardano=derive_cardano)
         return session
 
     def _write(self, msg: t.Any) -> None:
@@ -108,6 +109,12 @@ class SessionV1(Session):
         if t.TYPE_CHECKING:
             assert isinstance(self.client.protocol, ProtocolV1)
         return self.client.protocol.read()
+
+    def _init_session(self, derive_cardano: bool = False):
+        self._write(
+            messages.Initialize(session_id=self.id, derive_cardano=derive_cardano)
+        )
+        _ = self._read()
 
 
 def _callback_button(session: Session, msg: t.Any) -> t.Any:
