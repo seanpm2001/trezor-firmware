@@ -111,7 +111,7 @@ class SessionV1(Session):
         session.passphrase_callback = _callback_passphrase
         session.passphrase = passphrase
         session.derive_cardano = derive_cardano
-        session._init_session()
+        session.init_session()
         return session
 
     def _write(self, msg: t.Any) -> None:
@@ -124,7 +124,7 @@ class SessionV1(Session):
             assert isinstance(self.client.protocol, ProtocolV1)
         return self.client.protocol.read()
 
-    def _init_session(self):
+    def init_session(self):
         if self.id == b"":
             session_id = None
         else:

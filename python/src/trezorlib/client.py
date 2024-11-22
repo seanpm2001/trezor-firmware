@@ -129,6 +129,18 @@ class TrezorClient:
             return SessionV2.new(self, passphrase, derive_cardano)
         raise NotImplementedError  # TODO
 
+    def resume_session(self, session: Session):
+        from trezorlib.transport.session import SessionV1, SessionV2
+
+        if isinstance(session, SessionV2):
+            return session
+        elif isinstance(session, SessionV1):
+            session.init_session()
+            return session
+
+        else:
+            raise NotImplementedError
+
     def get_management_session(self, new_session: bool = False) -> Session:
         from .transport.session import SessionV1, SessionV2
 
@@ -177,9 +189,6 @@ class TrezorClient:
     def ensure_unlocked(self) -> None:
         # TODO implement
         raise NotImplementedError
-
-    def resume_session(self, session_id: bytes) -> Session:
-        raise NotImplementedError  # TODO
 
     def _get_protocol(self) -> ProtocolAndChannel:
         self.transport.open()

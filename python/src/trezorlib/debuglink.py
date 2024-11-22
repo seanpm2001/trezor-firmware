@@ -1344,7 +1344,9 @@ class TrezorClientDebugLink(TrezorClient):
         # self.debug.close()
 
     def get_session(
-        self, passphrase: str | None = None, derive_cardano: bool = False
+        self,
+        passphrase: str | None = None,
+        derive_cardano: bool = False,
     ) -> Session:
         if passphrase is not None:
             passphrase = Mnemonic.normalize_string(passphrase)
