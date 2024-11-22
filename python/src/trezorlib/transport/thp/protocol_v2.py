@@ -50,7 +50,7 @@ def _get_iv_from_nonce(nonce: int) -> bytes:
 
 class ProtocolV2(ProtocolAndChannel):
     channel_id: int
-
+    channel_database: ChannelDatabase
     key_request: bytes
     key_response: bytes
     nonce_request: int
@@ -67,6 +67,7 @@ class ProtocolV2(ProtocolAndChannel):
         mapping: ProtobufMapping,
         channel_data: ChannelData | None = None,
     ) -> None:
+        self.channel_database: ChannelDatabase = get_channel_db()
         super().__init__(transport, mapping, channel_data)
         if channel_data is not None:
             self.channel_id = channel_data.channel_id
@@ -77,7 +78,6 @@ class ProtocolV2(ProtocolAndChannel):
             self.sync_bit_receive = channel_data.sync_bit_receive
             self.sync_bit_send = channel_data.sync_bit_send
             self._has_valid_channel = True
-            self.channel_database: ChannelDatabase = get_channel_db()
 
     def get_channel(self) -> ProtocolV2:
         if not self._has_valid_channel:
