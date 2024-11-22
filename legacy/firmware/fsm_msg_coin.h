@@ -296,10 +296,15 @@ void fsm_msgGetAddress(const GetAddress *msg) {
   }
 
   if (msg->has_show_display && msg->show_display) {
-    char desc[20] = {0};
+    char desc[29] = {0};
     int multisig_index = 0;
     if (msg->has_multisig) {
-      strlcpy(desc, "Multisig __ of __:", sizeof(desc));
+      if (msg->multisig.has_pubkeys_order &&
+          msg->multisig.pubkeys_order == MultisigPubkeysOrder_LEXICOGRAPHIC) {
+        strlcpy(desc, "Multisig __ of __ (sorted):", sizeof(desc));
+      } else {
+        strlcpy(desc, "Multisig __ of __:", sizeof(desc));
+      }
       const uint32_t m = msg->multisig.m;
       const uint32_t n = cryptoMultisigPubkeyCount(&(msg->multisig));
       desc[9] = (m < 10) ? ' ' : ('0' + (m / 10));
