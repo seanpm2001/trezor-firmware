@@ -181,6 +181,17 @@ def confirm_modify_output(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_properties(
+    *,
+    title: str,
+    items: list[tuple[str | None, str | bytes | None, bool]],
+    hold: bool = False,
+) -> LayoutObj[UiResult]:
+    """Confirm list of key-value pairs. The third component in the tuple should be True if
+    the value is to be rendered as binary with monospace font, False otherwise."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
     """Confirm TOS before creating wallet creation or wallet recovery."""
 

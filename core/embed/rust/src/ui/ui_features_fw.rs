@@ -80,6 +80,12 @@ pub trait UIFeaturesFirmware {
         amount_new: TString<'static>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_properties(
+        title: TString<'static>,
+        items: Obj, // TODO: replace Obj`
+        hold: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error>;
 
     fn confirm_value(

@@ -22,7 +22,7 @@ use crate::{
         geometry,
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
-            util::{ConfirmBlob, RecoveryType},
+            util::{ConfirmBlob, PropsList, RecoveryType},
         },
         ui_features_fw::UIFeaturesFirmware,
     },
@@ -267,6 +267,27 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             ButtonPage::new(paragraphs, theme::BG)
                 .with_cancel_confirm(Some("^".into()), Some(TR::buttons__continue.into())),
         ));
+        Ok(layout)
+    }
+
+    fn confirm_properties(
+        title: TString<'static>,
+        items: Obj,
+        hold: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let paragraphs = PropsList::new(
+            items,
+            &theme::TEXT_NORMAL,
+            &theme::TEXT_MONO,
+            &theme::TEXT_MONO,
+        )?;
+        let page = if hold {
+            ButtonPage::new(paragraphs.into_paragraphs(), theme::BG).with_hold()?
+        } else {
+            ButtonPage::new(paragraphs.into_paragraphs(), theme::BG)
+                .with_cancel_confirm(None, Some(TR::buttons__confirm.into()))
+        };
+        let layout = RootComponent::new(Frame::left_aligned(theme::label_title(), title, page));
         Ok(layout)
     }
 

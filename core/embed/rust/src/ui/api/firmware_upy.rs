@@ -232,6 +232,18 @@ extern "C" fn new_confirm_modify_output(n_args: usize, args: *const Obj, kwargs:
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
+        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
+
+        let layout = ModelUI::confirm_properties(title, items, hold)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let recovery: bool = kwargs.get(Qstr::MP_QSTR_recovery)?.try_into()?;
@@ -961,6 +973,16 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Decrease or increase output amount."""
     Qstr::MP_QSTR_confirm_modify_output => obj_fn_kw!(0, new_confirm_modify_output).as_obj(),
+
+    /// def confirm_properties(
+    ///     *,
+    ///     title: str,
+    ///     items: list[tuple[str | None, str | bytes | None, bool]],
+    ///     hold: bool = False,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm list of key-value pairs. The third component in the tuple should be True if
+    ///     the value is to be rendered as binary with monospace font, False otherwise."""
+    Qstr::MP_QSTR_confirm_properties => obj_fn_kw!(0, new_confirm_properties).as_obj(),
 
     /// def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
     ///     """Confirm TOS before creating wallet creation or wallet recovery."""

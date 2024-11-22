@@ -27,18 +27,6 @@ def confirm_blob_intro(
     and instructing the user to access the menu in order to view all the data,
     which can then be confirmed using confirm_blob."""
 
-
-# rust/src/ui/model_mercury/layout.rs
-def confirm_properties(
-    *,
-    title: str,
-    items: list[tuple[str | None, str | bytes | None, bool]],
-    hold: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm list of key-value pairs. The third component in the tuple should be True if
-    the value is to be rendered as binary with monospace font, False otherwise."""
-
-
 # rust/src/ui/model_mercury/layout.rs
 def flow_confirm_set_new_pin(
     *,
@@ -127,18 +115,6 @@ def confirm_address(
     chunkify: bool = False,
 ) -> LayoutObj[UiResult]:
     """Confirm address."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_properties(
-    *,
-    title: str,
-    items: list[tuple[str | None, str | bytes | None, bool]],
-    hold: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm list of key-value pairs. The third component in the tuple should be True if
-    the value is to be rendered as binary with monospace font, False otherwise.
-    This only concerns the text style, you need to decode the value to UTF-8 in python."""
 
 
 # rust/src/ui/model_tr/layout.rs
@@ -249,17 +225,6 @@ def confirm_address(
 ) -> LayoutObj[UiResult]:
     """Confirm address. Similar to `confirm_blob` but has corner info button
     and allows left swipe which does the same thing as the button."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_properties(
-    *,
-    title: str,
-    items: list[tuple[str | None, str | bytes | None, bool]],
-    hold: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm list of key-value pairs. The third component in the tuple should be True if
-    the value is to be rendered as binary with monospace font, False otherwise."""
 
 
 # rust/src/ui/model_tt/layout.rs

@@ -664,7 +664,7 @@ def confirm_properties(
     items = [(prop[0], prop[1], isinstance(prop[1], bytes)) for prop in props]
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_properties(
+        trezorui_api.confirm_properties(
             title=title,
             items=items,
             hold=hold,

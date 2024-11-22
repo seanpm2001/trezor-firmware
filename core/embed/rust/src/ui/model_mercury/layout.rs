@@ -314,34 +314,6 @@ extern "C" fn new_confirm_firmware_update(
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let paragraphs = PropsList::new(
-            items,
-            &theme::TEXT_NORMAL,
-            &theme::TEXT_MONO,
-            &theme::TEXT_MONO,
-        )?;
-
-        new_confirm_action_simple(
-            paragraphs.into_paragraphs(),
-            ConfirmActionExtra::Menu(ConfirmActionMenuStrings::new()),
-            ConfirmActionStrings::new(title, None, None, hold.then_some(title)),
-            hold,
-            None,
-            0,
-            false,
-        )
-        .and_then(LayoutObj::new_root)
-        .map(Into::into)
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_set_new_pin(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -608,16 +580,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     and instructing the user to access the menu in order to view all the data,
     ///     which can then be confirmed using confirm_blob."""
     Qstr::MP_QSTR_confirm_blob_intro => obj_fn_kw!(0, new_confirm_blob_intro).as_obj(),
-
-    /// def confirm_properties(
-    ///     *,
-    ///     title: str,
-    ///     items: list[tuple[str | None, str | bytes | None, bool]],
-    ///     hold: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm list of key-value pairs. The third component in the tuple should be True if
-    ///     the value is to be rendered as binary with monospace font, False otherwise."""
-    Qstr::MP_QSTR_confirm_properties => obj_fn_kw!(0, new_confirm_properties).as_obj(),
 
     // TODO: supply more arguments for Wipe code setting when figma done
     /// def flow_confirm_set_new_pin(

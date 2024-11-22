@@ -22,7 +22,7 @@ use crate::{
         geometry::{self, Direction},
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
-            util::RecoveryType,
+            util::{PropsList, RecoveryType},
         },
         ui_features_fw::UIFeaturesFirmware,
     },
@@ -276,6 +276,30 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
 
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
         let flow = flow::confirm_reset::new_confirm_reset(recovery)?;
+        Ok(flow)
+    }
+
+    fn confirm_properties(
+        title: TString<'static>,
+        items: Obj,
+        hold: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let paragraphs = PropsList::new(
+            items,
+            &theme::TEXT_NORMAL,
+            &theme::TEXT_MONO,
+            &theme::TEXT_MONO,
+        )?;
+
+        let flow = flow::new_confirm_action_simple(
+            paragraphs.into_paragraphs(),
+            ConfirmActionExtra::Menu(ConfirmActionMenuStrings::new()),
+            ConfirmActionStrings::new(title, None, None, hold.then_some(title)),
+            hold,
+            None,
+            0,
+            false,
+        )?;
         Ok(flow)
     }
 

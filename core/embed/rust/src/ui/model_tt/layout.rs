@@ -394,30 +394,6 @@ extern "C" fn new_confirm_address(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let paragraphs = PropsList::new(
-            items,
-            &theme::TEXT_NORMAL,
-            &theme::TEXT_MONO,
-            &theme::TEXT_MONO,
-        )?;
-        let page = if hold {
-            ButtonPage::new(paragraphs.into_paragraphs(), theme::BG).with_hold()?
-        } else {
-            ButtonPage::new(paragraphs.into_paragraphs(), theme::BG)
-                .with_cancel_confirm(None, Some(TR::buttons__confirm.into()))
-        };
-        let obj = LayoutObj::new(Frame::left_aligned(theme::label_title(), title, page))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let qr_title: TString<'static> = kwargs.get(Qstr::MP_QSTR_qr_title)?.try_into()?;
@@ -567,16 +543,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm address. Similar to `confirm_blob` but has corner info button
     ///     and allows left swipe which does the same thing as the button."""
     Qstr::MP_QSTR_confirm_address => obj_fn_kw!(0, new_confirm_address).as_obj(),
-
-    /// def confirm_properties(
-    ///     *,
-    ///     title: str,
-    ///     items: list[tuple[str | None, str | bytes | None, bool]],
-    ///     hold: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm list of key-value pairs. The third component in the tuple should be True if
-    ///     the value is to be rendered as binary with monospace font, False otherwise."""
-    Qstr::MP_QSTR_confirm_properties => obj_fn_kw!(0, new_confirm_properties).as_obj(),
 
     /// def show_address_details(
     ///     *,

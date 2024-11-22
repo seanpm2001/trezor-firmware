@@ -312,6 +312,56 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         )
     }
 
+    fn confirm_properties(
+        title: TString<'static>,
+        items: Obj,
+        hold: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecLong::new();
+
+        for para in IterBuf::new().try_iterate(items)? {
+            let [key, value, is_data]: [Obj; 3] = util::iter_into_array(para)?;
+            let key = key.try_into_option::<TString>()?;
+            let value = value.try_into_option::<TString>()?;
+            let is_data: bool = is_data.try_into()?;
+
+            if let Some(key) = key {
+                if value.is_some() {
+                    // Decreasing the margin between key and value (default is 5 px, we use 2 px)
+                    // (this enables 4 lines - 2 key:value pairs - on the same screen)
+                    paragraphs.add(
+                        Paragraph::new(&theme::TEXT_BOLD, key)
+                            .no_break()
+                            .with_bottom_padding(2),
+                    );
+                } else {
+                    paragraphs.add(Paragraph::new(&theme::TEXT_BOLD, key));
+                }
+            }
+            if let Some(value) = value {
+                let style = if is_data {
+                    &theme::TEXT_MONO_DATA
+                } else {
+                    &theme::TEXT_MONO
+                };
+                paragraphs.add(Paragraph::new(style, value));
+            }
+        }
+        let button_text = if hold {
+            TR::buttons__hold_to_confirm.into()
+        } else {
+            TR::buttons__confirm.into()
+        };
+
+        content_in_button_page(
+            title,
+            paragraphs.into_paragraphs(),
+            button_text,
+            Some("".into()),
+            hold,
+        )
+    }
+
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
         let (title, button) = if recovery {
             (

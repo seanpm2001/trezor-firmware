@@ -712,7 +712,7 @@ def confirm_properties(
             return (key, value, bool(is_data))
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_properties(
+        trezorui_api.confirm_properties(
             title=title,
             items=map(handle_bytes, props),  # type: ignore [cannot be assigned to parameter "items"]
             hold=hold,

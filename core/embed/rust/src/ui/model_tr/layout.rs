@@ -271,59 +271,6 @@ fn content_in_button_page<T: Component + Paginate + MaybeTrace + 'static>(
     Ok(obj.into())
 }
 
-extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let mut paragraphs = ParagraphVecLong::new();
-
-        for para in IterBuf::new().try_iterate(items)? {
-            let [key, value, is_data]: [Obj; 3] = util::iter_into_array(para)?;
-            let key = key.try_into_option::<TString>()?;
-            let value = value.try_into_option::<TString>()?;
-            let is_data: bool = is_data.try_into()?;
-
-            if let Some(key) = key {
-                if value.is_some() {
-                    // Decreasing the margin between key and value (default is 5 px, we use 2 px)
-                    // (this enables 4 lines - 2 key:value pairs - on the same screen)
-                    paragraphs.add(
-                        Paragraph::new(&theme::TEXT_BOLD, key)
-                            .no_break()
-                            .with_bottom_padding(2),
-                    );
-                } else {
-                    paragraphs.add(Paragraph::new(&theme::TEXT_BOLD, key));
-                }
-            }
-            if let Some(value) = value {
-                let style = if is_data {
-                    &theme::TEXT_MONO_DATA
-                } else {
-                    &theme::TEXT_MONO
-                };
-                paragraphs.add(Paragraph::new(style, value));
-            }
-        }
-        let button_text = if hold {
-            TR::buttons__hold_to_confirm.into()
-        } else {
-            TR::buttons__confirm.into()
-        };
-
-        content_in_button_page(
-            title,
-            paragraphs.into_paragraphs(),
-            button_text,
-            Some("".into()),
-            hold,
-        )
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_backup(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], _kwargs: &Map| {
         let get_page = move |page_index| match page_index {
@@ -723,17 +670,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm address."""
     Qstr::MP_QSTR_confirm_address => obj_fn_kw!(0, new_confirm_address).as_obj(),
-
-    /// def confirm_properties(
-    ///     *,
-    ///     title: str,
-    ///     items: list[tuple[str | None, str | bytes | None, bool]],
-    ///     hold: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm list of key-value pairs. The third component in the tuple should be True if
-    ///     the value is to be rendered as binary with monospace font, False otherwise.
-    ///     This only concerns the text style, you need to decode the value to UTF-8 in python."""
-    Qstr::MP_QSTR_confirm_properties => obj_fn_kw!(0, new_confirm_properties).as_obj(),
 
     /// def confirm_backup() -> LayoutObj[UiResult]:
     ///     """Strongly recommend user to do backup."""
