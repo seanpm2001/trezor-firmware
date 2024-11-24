@@ -352,48 +352,6 @@ extern "C" fn new_confirm_emphasized(n_args: usize, args: *const Obj, kwargs: *m
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let description: Option<TString> =
-            kwargs.get(Qstr::MP_QSTR_description)?.try_into_option()?;
-        let verb: TString = kwargs.get_or(Qstr::MP_QSTR_verb, TR::buttons__confirm.into())?;
-        let extra: Option<TString> = kwargs.get(Qstr::MP_QSTR_extra)?.try_into_option()?;
-        let data: Obj = kwargs.get(Qstr::MP_QSTR_data)?;
-        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
-
-        let data_style = if chunkify {
-            let address: TString = data.try_into()?;
-            theme::get_chunkified_text_style(address.len())
-        } else {
-            &theme::TEXT_MONO
-        };
-
-        let paragraphs = ConfirmBlob {
-            description: description.unwrap_or("".into()),
-            extra: extra.unwrap_or("".into()),
-            data: data.try_into()?,
-            description_font: &theme::TEXT_NORMAL,
-            extra_font: &theme::TEXT_DEMIBOLD,
-            data_font: data_style,
-        }
-        .into_paragraphs();
-
-        let obj = LayoutObj::new(
-            Frame::left_aligned(
-                theme::label_title(),
-                title,
-                ButtonPage::new(paragraphs, theme::BG)
-                    .with_swipe_left()
-                    .with_cancel_confirm(None, Some(verb)),
-            )
-            .with_info_button(),
-        )?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let qr_title: TString<'static> = kwargs.get(Qstr::MP_QSTR_qr_title)?.try_into()?;
@@ -496,19 +454,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///     """Confirm formatted text that has been pre-split in python. For tuples
     ///     the first component is a bool indicating whether this part is emphasized."""
     Qstr::MP_QSTR_confirm_emphasized => obj_fn_kw!(0, new_confirm_emphasized).as_obj(),
-
-    /// def confirm_address(
-    ///     *,
-    ///     title: str,
-    ///     data: str | bytes,
-    ///     description: str | None,
-    ///     verb: str | None = "CONFIRM",
-    ///     extra: str | None,
-    ///     chunkify: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm address. Similar to `confirm_blob` but has corner info button
-    ///     and allows left swipe which does the same thing as the button."""
-    Qstr::MP_QSTR_confirm_address => obj_fn_kw!(0, new_confirm_address).as_obj(),
 
     /// def show_address_details(
     ///     *,

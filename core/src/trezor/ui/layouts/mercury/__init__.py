@@ -1033,7 +1033,7 @@ async def confirm_signverify(
         address_title = TR.sign_message__confirm_address
         br_name = "sign_message"
 
-    address_layout = trezorui2.confirm_value(
+    address_layout = trezorui_api.confirm_value(
         title=address_title,
         subtitle=None,
         description="",

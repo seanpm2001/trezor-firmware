@@ -85,6 +85,30 @@ extern "C" fn new_confirm_action(n_args: usize, args: *const Obj, kwargs: *mut M
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_confirm_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let data: Obj = kwargs.get(Qstr::MP_QSTR_data)?;
+        let description: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_description)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let extra: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_extra)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let verb: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
+
+        let layout = ModelUI::confirm_address(title, data, description, extra, verb, chunkify)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -909,6 +933,18 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm action."""
     Qstr::MP_QSTR_confirm_action => obj_fn_kw!(0, new_confirm_action).as_obj(),
+
+    /// def confirm_address(
+    ///     *,
+    ///     title: str,
+    ///     data: str | bytes,
+    ///     description: str | None,
+    ///     extra: str | None,
+    ///     verb: str | None = None,
+    ///     chunkify: bool = False,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm address."""
+    Qstr::MP_QSTR_confirm_address => obj_fn_kw!(0, new_confirm_address).as_obj(),
 
     /// def confirm_blob(
     ///     *,

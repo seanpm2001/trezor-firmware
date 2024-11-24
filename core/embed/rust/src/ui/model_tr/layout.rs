@@ -540,37 +540,6 @@ extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let address: TString = kwargs.get(Qstr::MP_QSTR_data)?.try_into()?;
-        let verb: TString<'static> =
-            kwargs.get_or(Qstr::MP_QSTR_verb, TR::buttons__confirm.into())?;
-        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
-
-        let get_page = move |page_index| {
-            assert!(page_index == 0);
-
-            let btn_layout = ButtonLayout::cancel_armed_info(verb);
-            let btn_actions = ButtonActions::cancel_confirm_info();
-            let style = if chunkify {
-                // Chunkifying the address into smaller pieces when requested
-                theme::TEXT_MONO_ADDRESS_CHUNKS
-            } else {
-                theme::TEXT_MONO_DATA
-            };
-            let ops = OpTextLayout::new(style).text_mono(address);
-            let formatted = FormattedText::new(ops).vertically_centered();
-            Page::new(btn_layout, btn_actions, formatted).with_title(title)
-        };
-        let pages = FlowPages::new(get_page, 1);
-
-        let obj = LayoutObj::new(Flow::new(pages))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -632,18 +601,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezorui_api import *
     ///
     Qstr::MP_QSTR___name__ => Qstr::MP_QSTR_trezorui2.to_obj(),
-
-    /// def confirm_address(
-    ///     *,
-    ///     title: str,
-    ///     data: str,
-    ///     description: str | None,  # unused on TR
-    ///     extra: str | None,  # unused on TR
-    ///     verb: str = "CONFIRM",
-    ///     chunkify: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm address."""
-    Qstr::MP_QSTR_confirm_address => obj_fn_kw!(0, new_confirm_address).as_obj(),
 
     /// def confirm_backup() -> LayoutObj[UiResult]:
     ///     """Strongly recommend user to do backup."""

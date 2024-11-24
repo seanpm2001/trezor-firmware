@@ -105,19 +105,6 @@ from trezorui_api import *
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_address(
-    *,
-    title: str,
-    data: str,
-    description: str | None,  # unused on TR
-    extra: str | None,  # unused on TR
-    verb: str = "CONFIRM",
-    chunkify: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm address."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_backup() -> LayoutObj[UiResult]:
     """Strongly recommend user to do backup."""
 
@@ -200,20 +187,6 @@ def confirm_emphasized(
 ) -> LayoutObj[UiResult]:
     """Confirm formatted text that has been pre-split in python. For tuples
     the first component is a bool indicating whether this part is emphasized."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_address(
-    *,
-    title: str,
-    data: str | bytes,
-    description: str | None,
-    verb: str | None = "CONFIRM",
-    extra: str | None,
-    chunkify: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm address. Similar to `confirm_blob` but has corner info button
-    and allows left swipe which does the same thing as the button."""
 
 
 # rust/src/ui/model_tt/layout.rs

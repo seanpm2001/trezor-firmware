@@ -26,6 +26,15 @@ pub trait UIFeaturesFirmware {
         prompt_title: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_address(
+        title: TString<'static>,
+        data: Obj, // TODO: replace Obj
+        description: Option<TString<'static>>,
+        extra: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        chunkify: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn confirm_blob(
         title: TString<'static>,
         data: Obj, // TODO: replace Obj

@@ -22,7 +22,7 @@ use crate::{
         geometry::{self, Direction},
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
-            util::{PropsList, RecoveryType},
+            util::{ConfirmBlob, PropsList, RecoveryType, StrOrBytes},
         },
         ui_features_fw::UIFeaturesFirmware,
     },
@@ -35,8 +35,8 @@ use super::{
         SwipeContent, SwipeUpScreen, VerticalMenu,
     },
     flow::{
-        self, confirm_with_info, new_confirm_action_simple, ConfirmActionExtra,
-        ConfirmActionMenuStrings, ConfirmActionStrings, ConfirmBlobParams,
+        self, new_confirm_action_simple, ConfirmActionExtra, ConfirmActionMenuStrings,
+        ConfirmActionStrings, ConfirmBlobParams,
     },
     theme, ModelMercuryFeatures,
 };
@@ -67,6 +67,20 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
             prompt_title.unwrap_or(TString::empty()),
         )?;
         Ok(flow)
+    }
+
+    fn confirm_address(
+        title: TString<'static>,
+        data: Obj,
+        description: Option<TString<'static>>,
+        _extra: Option<TString<'static>>,
+        _verb: Option<TString<'static>>,
+        chunkify: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        // confirm_value is used instead
+        Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
+            c"confirm_address not implemented",
+        ))
     }
 
     fn confirm_blob(

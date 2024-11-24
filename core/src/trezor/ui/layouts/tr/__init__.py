@@ -256,7 +256,7 @@ async def show_address(
 
     while True:
         result = await interact(
-            trezorui2.confirm_address(
+            trezorui_api.confirm_address(
                 title=title,
                 data=address,
                 description="",  # unused on TR

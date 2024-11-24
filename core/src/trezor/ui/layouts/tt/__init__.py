@@ -242,7 +242,7 @@ async def show_address(
 
     while True:
         result = await interact(
-            trezorui2.confirm_address(
+            trezorui_api.confirm_address(
                 title=title,
                 data=address,
                 description=network or "",
@@ -1104,7 +1104,7 @@ async def confirm_signverify(
         address_title = TR.sign_message__confirm_address
         br_name = "sign_message"
 
-    address_layout = trezorui2.confirm_address(
+    address_layout = trezorui_api.confirm_address(
         title=address_title,
         data=address,
         description="",

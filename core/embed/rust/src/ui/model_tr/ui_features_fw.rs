@@ -83,6 +83,38 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         )
     }
 
+    fn confirm_address(
+        title: TString<'static>,
+        data: Obj,
+        description: Option<TString<'static>>,
+        extra: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        chunkify: bool,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let verb = verb.unwrap_or(TR::buttons__confirm.into());
+        let address: TString = data.try_into()?;
+
+        let get_page = move |page_index| {
+            assert!(page_index == 0);
+
+            let btn_layout = ButtonLayout::cancel_armed_info(verb);
+            let btn_actions = ButtonActions::cancel_confirm_info();
+            let style = if chunkify {
+                // Chunkifying the address into smaller pieces when requested
+                theme::TEXT_MONO_ADDRESS_CHUNKS
+            } else {
+                theme::TEXT_MONO_DATA
+            };
+            let ops = OpTextLayout::new(style).text_mono(address);
+            let formatted = FormattedText::new(ops).vertically_centered();
+            Page::new(btn_layout, btn_actions, formatted).with_title(title)
+        };
+        let pages = FlowPages::new(get_page, 1);
+
+        let layout = RootComponent::new(Flow::new(pages));
+        Ok(layout)
+    }
+
     fn confirm_blob(
         title: TString<'static>,
         data: Obj,

@@ -97,6 +97,19 @@ def confirm_action(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_address(
+    *,
+    title: str,
+    data: str | bytes,
+    description: str | None,
+    extra: str | None,
+    verb: str | None = None,
+    chunkify: bool = False,
+) -> LayoutObj[UiResult]:
+    """Confirm address."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_blob(
     *,
     title: str,
