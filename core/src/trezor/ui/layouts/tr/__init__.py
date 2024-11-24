@@ -616,7 +616,7 @@ async def _confirm_ask_pagination(
 
         data = hexlify(data).decode()
 
-    confirm_more_layout = trezorui2.confirm_more(
+    confirm_more_layout = trezorui_api.confirm_more(
         title=title,
         button=TR.buttons__confirm,
         items=[(ui.NORMAL, description), (ui.MONO, data)],

@@ -181,6 +181,18 @@ def confirm_modify_output(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_more(
+    *,
+    title: str,
+    button: str,
+    button_style_confirm: bool = False,
+    items: Iterable[tuple[int, str | bytes]],
+) -> LayoutObj[UiResult]:
+    """Confirm long content with the possibility to go back from any page.
+    Meant to be used with confirm_with_info on model TT and TR."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_properties(
     *,
     title: str,

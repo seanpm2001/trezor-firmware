@@ -80,6 +80,13 @@ pub trait UIFeaturesFirmware {
         amount_new: TString<'static>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_more(
+        title: TString<'static>,
+        button: TString<'static>,
+        button_style_confirm: bool,
+        items: Obj, // TODO: replace Obj
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn confirm_properties(
         title: TString<'static>,
         items: Obj, // TODO: replace Obj`

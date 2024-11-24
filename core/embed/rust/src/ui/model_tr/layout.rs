@@ -626,32 +626,6 @@ extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_more(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let button: TString<'static> = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-
-        let mut paragraphs = ParagraphVecLong::new();
-
-        for para in IterBuf::new().try_iterate(items)? {
-            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
-            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
-            let text: TString = text.try_into()?;
-            paragraphs.add(Paragraph::new(style, text));
-        }
-
-        content_in_button_page(
-            title,
-            paragraphs.into_paragraphs(),
-            button,
-            Some("<".into()),
-            false,
-        )
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -735,14 +709,4 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show multiple texts, each on its own page."""
     Qstr::MP_QSTR_multiple_pages_texts => obj_fn_kw!(0, new_multiple_pages_texts).as_obj(),
-
-    /// def confirm_more(
-    ///     *,
-    ///     title: str,
-    ///     button: str,
-    ///     items: Iterable[tuple[int, str | bytes]],
-    /// ) -> object:
-    ///     """Confirm long content with the possibility to go back from any page.
-    ///     Meant to be used with confirm_with_info."""
-    Qstr::MP_QSTR_confirm_more => obj_fn_kw!(0, new_confirm_more).as_obj(),
 };

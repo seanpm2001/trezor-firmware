@@ -274,6 +274,17 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(layout)
     }
 
+    fn confirm_more(
+        _title: TString<'static>,
+        _button: TString<'static>,
+        _button_style_confirm: bool,
+        _items: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
+            c"confirm_more not implemented",
+        ))
+    }
+
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
         let flow = flow::confirm_reset::new_confirm_reset(recovery)?;
         Ok(flow)

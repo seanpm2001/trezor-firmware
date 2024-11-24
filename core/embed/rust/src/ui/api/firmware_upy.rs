@@ -232,6 +232,20 @@ extern "C" fn new_confirm_modify_output(n_args: usize, args: *const Obj, kwargs:
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_confirm_more(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let button: TString = kwargs.get(Qstr::MP_QSTR_button)?.try_into()?;
+        let button_style_confirm: bool =
+            kwargs.get_or(Qstr::MP_QSTR_button_style_confirm, false)?;
+        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
+
+        let layout = ModelUI::confirm_more(title, button, button_style_confirm, items)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_confirm_properties(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -973,6 +987,17 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Decrease or increase output amount."""
     Qstr::MP_QSTR_confirm_modify_output => obj_fn_kw!(0, new_confirm_modify_output).as_obj(),
+
+    /// def confirm_more(
+    ///     *,
+    ///     title: str,
+    ///     button: str,
+    ///     button_style_confirm: bool = False,
+    ///     items: Iterable[tuple[int, str | bytes]],
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm long content with the possibility to go back from any page.
+    ///     Meant to be used with confirm_with_info on model TT and TR."""
+    Qstr::MP_QSTR_confirm_more => obj_fn_kw!(0, new_confirm_more).as_obj(),
 
     /// def confirm_properties(
     ///     *,

@@ -270,6 +270,36 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn confirm_more(
+        title: TString<'static>,
+        button: TString<'static>,
+        button_style_confirm: bool,
+        items: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecLong::new();
+
+        for para in IterBuf::new().try_iterate(items)? {
+            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
+            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
+            let text: TString = text.try_into()?;
+            paragraphs.add(Paragraph::new(style, text));
+        }
+
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title,
+            ButtonPage::new(paragraphs.into_paragraphs(), theme::BG)
+                .with_cancel_confirm(None, Some(button))
+                .with_confirm_style(if button_style_confirm {
+                    theme::button_confirm()
+                } else {
+                    theme::button_default()
+                })
+                .with_back_button(),
+        ));
+        Ok(layout)
+    }
+
     fn confirm_properties(
         title: TString<'static>,
         items: Obj,

@@ -187,17 +187,6 @@ def multiple_pages_texts(
     items: list[str],
 ) -> LayoutObj[UiResult]:
     """Show multiple texts, each on its own page."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_more(
-    *,
-    title: str,
-    button: str,
-    items: Iterable[tuple[int, str | bytes]],
-) -> object:
-    """Confirm long content with the possibility to go back from any page.
-    Meant to be used with confirm_with_info."""
 from trezor import utils
 from trezorui_api import *
 
@@ -255,15 +244,3 @@ def confirm_summary(
     verb_cancel: str | None = None,
 ) -> LayoutObj[UiResult]:
     """Confirm summary of a transaction."""
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_more(
-    *,
-    title: str,
-    button: str,
-    button_style_confirm: bool = False,
-    items: Iterable[tuple[int, str | bytes]],
-) -> LayoutObj[UiResult]:
-    """Confirm long content with the possibility to go back from any page.
-    Meant to be used with confirm_with_info."""

@@ -312,6 +312,30 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         )
     }
 
+    fn confirm_more(
+        title: TString<'static>,
+        button: TString<'static>,
+        _button_style_confirm: bool,
+        items: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut paragraphs = ParagraphVecLong::new();
+
+        for para in IterBuf::new().try_iterate(items)? {
+            let [font, text]: [Obj; 2] = util::iter_into_array(para)?;
+            let style: &TextStyle = theme::textstyle_number(font.try_into()?);
+            let text: TString = text.try_into()?;
+            paragraphs.add(Paragraph::new(style, text));
+        }
+
+        content_in_button_page(
+            title,
+            paragraphs.into_paragraphs(),
+            button,
+            Some("<".into()),
+            false,
+        )
+    }
+
     fn confirm_properties(
         title: TString<'static>,
         items: Obj,
