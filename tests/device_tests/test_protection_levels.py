@@ -66,15 +66,17 @@ def _assert_protection(
 
 
 def test_initialize(session: Session):
-    # The with block is temporary until the test is skipped for THP
+    if session.session_version == Session.THP_V2:
+        # Test is skipped for THP
+        return
+
     with session, session.client as client:
         client.use_pin_sequence([PIN4])
         session.ensure_unlocked()
-    raise Exception("INITIALIZE IS DISABLED")
     _assert_protection(session)
     with session:
         session.set_expected_responses([messages.Features])
-        # TODO session.init_device()
+        session.call(messages.Initialize(session_id=session.id))
 
 
 @pytest.mark.models("core")
@@ -184,13 +186,13 @@ def test_get_public_key(session: Session):
     _assert_protection(session)
     with session, session.client as client:
         client.use_pin_sequence([PIN4])
-        session.set_expected_responses(
-            [
-                _pin_request(session),
-                # messages.PassphraseRequest,
-                messages.PublicKey,
-            ]
-        )
+
+        expected_responses = [_pin_request(session)]
+        if session.session_version == Session.CODEC_V1:
+            expected_responses.append(messages.PassphraseRequest)
+        expected_responses.append(messages.PublicKey)
+
+        session.set_expected_responses(expected_responses)
         btc.get_public_node(session, [])
 
 
@@ -198,18 +200,18 @@ def test_get_address(session: Session):
     _assert_protection(session)
     with session, session.client as client:
         client.use_pin_sequence([PIN4])
-        session.set_expected_responses(
-            [
-                _pin_request(session),
-                # messages.PassphraseRequest,
-                messages.Address,
-            ]
-        )
+
+        expected_responses = [_pin_request(session)]
+        if session.session_version == Session.CODEC_V1:
+            expected_responses.append(messages.PassphraseRequest)
+        expected_responses.append(messages.Address)
+
+        session.set_expected_responses(expected_responses)
+
         get_test_address(session)
 
 
 def test_wipe_device(session: Session):
-    raise Exception("WIPE causes test fails on THP")
     # Precise cause of crash is not determined, it happens with some order of
     # tests, but not with all. The following leads to crash:
     # pytest --random-order-seed=675848 tests/device_tests/test_protection_levels.py
@@ -311,15 +313,22 @@ def test_sign_message(session: Session):
     _assert_protection(session)
     with session, session.client as client:
         client.use_pin_sequence([PIN4])
-        session.set_expected_responses(
+
+        expected_responses = [_pin_request(session)]
+
+        if session.session_version == Session.CODEC_V1:
+            expected_responses.append(messages.PassphraseRequest)
+
+        expected_responses.extend(
             [
-                _pin_request(session),
-                # messages.PassphraseRequest,
                 messages.ButtonRequest,
                 messages.ButtonRequest,
                 messages.MessageSignature,
             ]
         )
+
+        session.set_expected_responses(expected_responses)
+
         btc.sign_message(
             session, "Bitcoin", parse_path("m/44h/0h/0h/0/0"), "testing message"
         )
@@ -392,10 +401,11 @@ def test_signtx(session: Session):
     _assert_protection(session)
     with session, session.client as client:
         client.use_pin_sequence([PIN4])
-        session.set_expected_responses(
+        expected_responses = [_pin_request(session)]
+        if session.session_version == Session.CODEC_V1:
+            expected_responses.append(messages.PassphraseRequest)
+        expected_responses.extend(
             [
-                _pin_request(session),
-                # messages.PassphraseRequest,
                 request_input(0),
                 request_output(0),
                 messages.ButtonRequest(code=B.ConfirmOutput),
@@ -412,6 +422,8 @@ def test_signtx(session: Session):
                 request_finished(),
             ]
         )
+        session.set_expected_responses(expected_responses)
+
         btc.sign_tx(session, "Bitcoin", [inp1], [out1], prev_txes=TxCache("Bitcoin"))
 
 
@@ -444,12 +456,14 @@ def test_unlocked(session: Session):
 def test_passphrase_cached(session: Session):
     _assert_protection(session, pin=False)
     with session:
-        session.set_expected_responses(
-            [
-                # messages.PassphraseRequest,
-                messages.Address
-            ]
-        )
+        if session.session_version == 1:
+            session.set_expected_responses(
+                [messages.PassphraseRequest, messages.Address]
+            )
+        elif session.session_version == 2:
+            session.set_expected_responses([messages.Address])
+        else:
+            raise Exception("Unknown session type")
         get_test_address(session)
 
     with session:
