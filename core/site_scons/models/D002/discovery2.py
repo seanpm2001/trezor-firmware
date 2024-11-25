@@ -56,6 +56,12 @@ def configure(
             ("USE_I2C", "1"),
         ]
 
+        sources += ["embed/io/button/stm32/button.c"]
+        paths += ["embed/io/button/inc"]
+        features_available.append("button")
+        defines += ["USE_BUTTON=1"]
+
+
     if "usb" in features_wanted:
         sources += [
             "embed/io/usb/stm32/usb_class_hid.c",
