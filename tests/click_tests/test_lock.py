@@ -65,20 +65,22 @@ def test_hold_to_lock(device_handler: "BackgroundDeviceHandler"):
     device_handler.run_with_session(common.get_test_address)
 
     assert "PinKeyboard" in debug.read_layout().all_components()
-    time.sleep(10)
     debug.input("1234")
     assert device_handler.result()
 
+    session.refresh_features()
     assert device_handler.features().unlocked is True
 
     # short touch
     hold(short_duration)
 
     time.sleep(0.5)  # so that the homescreen appears again (hacky)
+    session.refresh_features()
     assert device_handler.features().unlocked is True
 
     # lock
     hold(lock_duration)
+    session.refresh_features()
     assert device_handler.features().unlocked is False
 
     # unlock by touching
@@ -89,8 +91,10 @@ def test_hold_to_lock(device_handler: "BackgroundDeviceHandler"):
     assert "PinKeyboard" in layout.all_components()
     debug.input("1234")
 
+    session.refresh_features()
     assert device_handler.features().unlocked is True
 
     # lock
     hold(lock_duration)
+    session.refresh_features()
     assert device_handler.features().unlocked is False

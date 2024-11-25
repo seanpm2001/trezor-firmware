@@ -33,9 +33,6 @@ class NullUI:
         else:
             raise NotImplementedError("NullUI should not be used with T1")
 
-    def debug_callback_button(self, session: Any, msg: Any) -> Any:
-        raise RuntimeError("unexpected call to a fake debuglink")
-
 
 class BackgroundDeviceHandler:
     _pool = ThreadPoolExecutor()
@@ -78,6 +75,20 @@ class BackgroundDeviceHandler:
             session = self.client.get_session()
             self.task = self._pool.submit(function, session, *args, **kwargs)
 
+    def run_with_provided_session(
+        self, session, function: Callable[..., Any], *args: Any, **kwargs: Any
+    ) -> None:
+        """Runs some function that interacts with a device.
+
+        Makes sure the UI is updated before returning.
+        """
+        if self.task is not None:
+            raise RuntimeError("Wait for previous task first")
+
+        # wait for the first UI change triggered by the task running in the background
+        with self.debuglink().wait_for_layout_change():
+            self.task = self._pool.submit(function, session, *args, **kwargs)
+
     def kill_task(self) -> None:
         if self.task is not None:
             # Force close the client, which should raise an exception in a client
@@ -108,6 +119,7 @@ class BackgroundDeviceHandler:
     def features(self) -> "Features":
         if self.task is not None:
             raise RuntimeError("Cannot query features while task is running")
+        self.client.refresh_features()
         return self.client.features
 
     def debuglink(self) -> "DebugLink":

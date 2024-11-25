@@ -51,6 +51,7 @@ LOG = logging.getLogger(__name__)
 
 class TrezorClient:
     button_callback: t.Callable[[Session, t.Any], t.Any] | None = None
+    passphrase_callback: t.Callable[[Session, t.Any], t.Any] | None = None
     pin_callback: t.Callable[[Session, t.Any], t.Any] | None = None
 
     _management_session: Session | None = None

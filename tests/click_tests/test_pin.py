@@ -22,7 +22,7 @@ from typing import TYPE_CHECKING, Generator
 import pytest
 
 from trezorlib import device, exceptions
-from trezorlib.debuglink import LayoutType
+from trezorlib.debuglink import LayoutType, SessionDebugWrapper as Session
 
 from .. import buttons
 from .. import translations as TR
@@ -96,17 +96,19 @@ def prepare(
 
     tap = False
 
+    Session(device_handler.client.get_management_session()).lock()
+
     # Setup according to the wanted situation
     if situation == Situation.PIN_INPUT:
         # Any action triggering the PIN dialogue
-        device_handler.run(device.apply_settings, auto_lock_delay_ms=300_000)  # type: ignore
+        device_handler.run_with_session(device.apply_settings, auto_lock_delay_ms=300_000)  # type: ignore
         tap = True
     if situation == Situation.PIN_INPUT_CANCEL:
         # Any action triggering the PIN dialogue
-        device_handler.run(device.apply_settings, auto_lock_delay_ms=300_000)  # type: ignore
+        device_handler.run_with_session(device.apply_settings, auto_lock_delay_ms=300_000)  # type: ignore
     elif situation == Situation.PIN_SETUP:
         # Set new PIN
-        device_handler.run(device.change_pin)  # type: ignore
+        device_handler.run_with_session(device.change_pin)  # type: ignore
         TR.assert_in_multiple(
             debug.read_layout().text_content(), ["pin__turn_on", "pin__info"]
         )
@@ -119,14 +121,14 @@ def prepare(
             go_next(debug)
     elif situation == Situation.PIN_CHANGE:
         # Change PIN
-        device_handler.run(device.change_pin)  # type: ignore
+        device_handler.run_with_session(device.change_pin)  # type: ignore
         _input_see_confirm(debug, old_pin)
         TR.assert_in(debug.read_layout().text_content(), "pin__change")
         go_next(debug)
         _input_see_confirm(debug, old_pin)
     elif situation == Situation.WIPE_CODE_SETUP:
         # Set wipe code
-        device_handler.run(device.change_wipe_code)  # type: ignore
+        device_handler.run_with_session(device.change_wipe_code)  # type: ignore
         if old_pin:
             _input_see_confirm(debug, old_pin)
         TR.assert_in(debug.read_layout().text_content(), "wipe_code__turn_on")

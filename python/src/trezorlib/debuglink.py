@@ -32,10 +32,10 @@ from pathlib import Path
 from mnemonic import Mnemonic
 
 from . import btc, mapping, messages, models, protobuf
-from .client import TrezorClient
-from .exceptions import TrezorFailure
+from .client import TrezorClient, MAX_PASSPHRASE_LENGTH, PASSPHRASE_ON_DEVICE
+from .exceptions import TrezorFailure, Cancelled
 from .log import DUMP_BYTES
-from .messages import DebugWaitType
+from .messages import DebugWaitType, Capability
 from .tools import expect, parse_path
 from .transport.session import Session, SessionV1, SessionV2
 from .transport.thp.protocol_v1 import ProtocolV1
@@ -553,7 +553,7 @@ class DebugLink:
 
     def wait_layout(self, wait_for_external_change: bool = False) -> LayoutContent:
         # Next layout change will be caused by external event
-        # (e.g. device being auto-locked or as a result of device_handler.run(xxx))
+        # (e.g. device being auto-locked or as a result of device_handler.run_with_session(xxx))
         # and not by our debug actions/decisions.
         # Resetting the debug state so we wait for the next layout change
         # (and do not return the current state).
@@ -895,11 +895,6 @@ class DebugUI:
                     self.debuglink.press_yes()
             else:
                 self.debuglink.press_yes()
-
-    def debug_callback_button(self, session: Session, msg: t.Any) -> t.Any:
-        session._write(messages.ButtonAck())
-        self.button_request(msg)
-        return session._read()
 
     def button_request(self, br: messages.ButtonRequest) -> None:
         self.debuglink.snapshot_legacy()
@@ -1337,7 +1332,68 @@ class TrezorClientDebugLink(TrezorClient):
 
     @property
     def button_callback(self):
-        return self.ui.debug_callback_button
+
+        def _callback_button(session: Session, msg: messages.ButtonRequest) -> t.Any:
+            __tracebackhide__ = True  # for pytest # pylint: disable=W0612
+            # do this raw - send ButtonAck first, notify UI later
+            session._write(messages.ButtonAck())
+            self.ui.button_request(msg)
+            return session._read()
+
+        return _callback_button
+
+    @property
+    def passphrase_callback(self):
+        def _callback_passphrase(
+            session: Session, msg: messages.PassphraseRequest
+        ) -> t.Any:
+            available_on_device = (
+                Capability.PassphraseEntry in session.features.capabilities
+            )
+
+            def send_passphrase(
+                passphrase: str | None = None, on_device: bool | None = None
+            ) -> t.Any:
+                msg = messages.PassphraseAck(passphrase=passphrase, on_device=on_device)
+                resp = session.call_raw(msg)
+                if isinstance(resp, messages.Deprecated_PassphraseStateRequest):
+                    session.session_id = resp.state
+                    resp = session.call_raw(messages.Deprecated_PassphraseStateAck())
+                return resp
+
+            # short-circuit old style entry
+            if msg._on_device is True:
+                return send_passphrase(None, None)
+
+            try:
+                if isinstance(session, SessionV1):
+                    passphrase = self.ui.get_passphrase(
+                        available_on_device=available_on_device
+                    )
+                else:
+                    passphrase = session.passphrase
+            except Cancelled:
+                session.call_raw(messages.Cancel())
+                raise
+
+            if passphrase is PASSPHRASE_ON_DEVICE:
+                if not available_on_device:
+                    session.call_raw(messages.Cancel())
+                    raise RuntimeError("Device is not capable of entering passphrase")
+                else:
+                    return send_passphrase(on_device=True)
+
+            # else process host-entered passphrase
+            if not isinstance(passphrase, str):
+                raise RuntimeError("Passphrase must be a str")
+            passphrase = Mnemonic.normalize_string(passphrase)
+            if len(passphrase) > MAX_PASSPHRASE_LENGTH:
+                session.call_raw(messages.Cancel())
+                raise ValueError("Passphrase too long")
+
+            return send_passphrase(passphrase, on_device=False)
+
+        return _callback_passphrase
 
     def ensure_open(self) -> None:
         """Only open session if there isn't already an open one."""

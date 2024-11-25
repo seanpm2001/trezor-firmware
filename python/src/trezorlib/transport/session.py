@@ -3,10 +3,6 @@ from __future__ import annotations
 import logging
 import typing as t
 
-from mnemonic import Mnemonic
-from ..client import MAX_PASSPHRASE_LENGTH, PASSPHRASE_ON_DEVICE
-
-from ..messages import Capability
 
 from .. import exceptions, messages, models
 from .thp.protocol_v1 import ProtocolV1
@@ -48,6 +44,7 @@ class Session:
             elif isinstance(resp, messages.PassphraseRequest):
                 if self.passphrase_callback is None:
                     raise Exception  # TODO
+                print(self.passphrase_callback)
                 resp = self.passphrase_callback(self, resp)
             elif isinstance(resp, messages.ButtonRequest):
                 if self.button_callback is None:
@@ -108,7 +105,7 @@ class SessionV1(Session):
             session = SessionV1(client, session_id)
         session.button_callback = client.button_callback
         session.pin_callback = client.pin_callback
-        session.passphrase_callback = _callback_passphrase
+        session.passphrase_callback = client.passphrase_callback
         session.passphrase = passphrase
         session.derive_cardano = derive_cardano
         session.init_session()
@@ -140,46 +137,6 @@ class SessionV1(Session):
 def _callback_button(session: Session, msg: t.Any) -> t.Any:
     print("Please confirm action on your Trezor device.")  # TODO how to handle UI?
     return session.call(messages.ButtonAck())
-
-
-def _callback_passphrase(session: Session, msg: messages.PassphraseRequest) -> t.Any:
-    available_on_device = Capability.PassphraseEntry in session.features.capabilities
-    def send_passphrase(
-        passphrase: str | None = None, on_device: bool | None = None
-    ) -> t.Any:
-        msg = messages.PassphraseAck(passphrase=passphrase, on_device=on_device)
-        resp = session.call_raw(msg)
-        if isinstance(resp, messages.Deprecated_PassphraseStateRequest):
-            session.session_id = resp.state
-            resp = session.call_raw(messages.Deprecated_PassphraseStateAck())
-        return resp
-
-    # short-circuit old style entry
-    if msg._on_device is True:
-        return send_passphrase(None, None)
-
-    try:
-        passphrase = session.passphrase
-    except exceptions.Cancelled:
-        session.call_raw(messages.Cancel())
-        raise
-
-    if passphrase is PASSPHRASE_ON_DEVICE:
-        if not available_on_device:
-            session.call_raw(messages.Cancel())
-            raise RuntimeError("Device is not capable of entering passphrase")
-        else:
-            return send_passphrase(on_device=True)
-
-    # else process host-entered passphrase
-    if not isinstance(passphrase, str):
-        raise RuntimeError("Passphrase must be a str")
-    passphrase = Mnemonic.normalize_string(passphrase)
-    if len(passphrase) > MAX_PASSPHRASE_LENGTH:
-        session.call_raw(messages.Cancel())
-        raise ValueError("Passphrase too long")
-
-    return send_passphrase(passphrase, on_device=False)
 
 
 class SessionV2(Session):
