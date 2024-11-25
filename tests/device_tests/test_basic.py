@@ -19,13 +19,20 @@ from trezorlib.debuglink import SessionDebugWrapper as Session
 from trezorlib.debuglink import TrezorClientDebugLink as Client
 
 
-def test_features(session: Session):
-    raise Exception("TEST NEEDS TO BE REMADE")
+def test_features(client: Client):
+    session = client.get_session()
     f0 = session.features
-    # session erases session_id from its features
-    f0.session_id = session.session_id
-    f1 = session.call(messages.Initialize(session_id=f0.session_id))
-    assert f0 == f1
+    if Session(session).session_version == Session.CODEC_V1:
+        # session erases session_id from its features
+        f0.session_id = session.id
+        f1 = session.call(messages.Initialize(session_id=session.id))
+
+        assert f0 == f1
+    else:
+        session2 = client.resume_session(session)
+        f1: messages.Features = session2.call(messages.GetFeatures())
+        assert f1.session_id is None
+        assert f0 == f1
 
 
 def test_capabilities(session: Session):
