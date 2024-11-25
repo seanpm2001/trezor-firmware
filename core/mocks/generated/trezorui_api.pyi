@@ -365,6 +365,20 @@ def set_brightness(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def show_address_details(
+    *,
+    qr_title: str,
+    address: str,
+    case_sensitive: bool,
+    details_title: str,
+    account: str | None,
+    path: str | None,
+    xpubs: list[tuple[str, str]],
+) -> LayoutObj[UiResult]:
+    """Show address details - QR code, account, path, cosigner xpubs."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def show_checklist(
     *,
     title: str,

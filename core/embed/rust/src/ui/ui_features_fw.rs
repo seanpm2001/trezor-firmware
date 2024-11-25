@@ -188,6 +188,16 @@ pub trait UIFeaturesFirmware {
 
     fn set_brightness(current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn show_address_details(
+        qr_title: TString<'static>,
+        address: TString<'static>,
+        case_sensitive: bool,
+        details_title: TString<'static>,
+        account: Option<TString<'static>>,
+        path: Option<TString<'static>>,
+        xpubs: Obj, // TODO: replace Obj
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn show_checklist(
         title: TString<'static>,
         button: TString<'static>,

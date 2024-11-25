@@ -17,6 +17,7 @@ def confirm_blob_intro(
     and instructing the user to access the menu in order to view all the data,
     which can then be confirmed using confirm_blob."""
 
+
 # rust/src/ui/model_mercury/layout.rs
 def flow_confirm_set_new_pin(
     *,
@@ -89,18 +90,6 @@ from trezorui_api import *
 
 
 # rust/src/ui/model_tr/layout.rs
-def show_address_details(
-    *,
-    address: str,
-    case_sensitive: bool,
-    account: str | None,
-    path: str | None,
-    xpubs: list[tuple[str, str]],
-) -> LayoutObj[UiResult]:
-    """Show address details - QR code, account, path, cosigner xpubs."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def confirm_joint_total(
     *,
     spending_amount: str,
@@ -155,20 +144,6 @@ def multiple_pages_texts(
     """Show multiple texts, each on its own page."""
 from trezor import utils
 from trezorui_api import *
-
-
-# rust/src/ui/model_tt/layout.rs
-def show_address_details(
-    *,
-    qr_title: str,
-    address: str,
-    case_sensitive: bool,
-    details_title: str,
-    account: str | None,
-    path: str | None,
-    xpubs: list[tuple[str, str]],
-) -> LayoutObj[UiResult]:
-    """Show address details - QR code, account, path, cosigner xpubs."""
 
 
 # rust/src/ui/model_tt/layout.rs

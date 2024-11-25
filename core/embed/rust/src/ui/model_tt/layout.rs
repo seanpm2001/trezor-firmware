@@ -317,38 +317,6 @@ impl ComponentMsgObj for super::component::bl_confirm::Confirm<'_> {
     }
 }
 
-extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let qr_title: TString<'static> = kwargs.get(Qstr::MP_QSTR_qr_title)?.try_into()?;
-        let details_title: TString = kwargs.get(Qstr::MP_QSTR_details_title)?.try_into()?;
-        let address: TString = kwargs.get(Qstr::MP_QSTR_address)?.try_into()?;
-        let case_sensitive: bool = kwargs.get(Qstr::MP_QSTR_case_sensitive)?.try_into()?;
-        let account: Option<TString> = kwargs.get(Qstr::MP_QSTR_account)?.try_into_option()?;
-        let path: Option<TString> = kwargs.get(Qstr::MP_QSTR_path)?.try_into_option()?;
-
-        let xpubs: Obj = kwargs.get(Qstr::MP_QSTR_xpubs)?;
-
-        let mut ad = AddressDetails::new(
-            qr_title,
-            address,
-            case_sensitive,
-            details_title,
-            account,
-            path,
-        )?;
-
-        for i in IterBuf::new().try_iterate(xpubs)? {
-            let [xtitle, text]: [TString; 2] = util::iter_into_array(i)?;
-            ad.add_xpub(xtitle, text)?;
-        }
-
-        let obj =
-            LayoutObj::new(SimplePage::horizontal(ad, theme::BG).with_swipe_right_to_go_back())?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let amount: TString = kwargs.get(Qstr::MP_QSTR_amount)?.try_into()?;
@@ -409,19 +377,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
     /// from trezorui_api import *
     ///
-
-    /// def show_address_details(
-    ///     *,
-    ///     qr_title: str,
-    ///     address: str,
-    ///     case_sensitive: bool,
-    ///     details_title: str,
-    ///     account: str | None,
-    ///     path: str | None,
-    ///     xpubs: list[tuple[str, str]],
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Show address details - QR code, account, path, cosigner xpubs."""
-    Qstr::MP_QSTR_show_address_details => obj_fn_kw!(0, new_show_address_details).as_obj(),
 
     /// def confirm_summary(
     ///     *,

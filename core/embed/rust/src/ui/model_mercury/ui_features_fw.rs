@@ -572,6 +572,20 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         Ok(flow)
     }
 
+    fn show_address_details(
+        _qr_title: TString<'static>,
+        _address: TString<'static>,
+        _case_sensitive: bool,
+        _details_title: TString<'static>,
+        _account: Option<TString<'static>>,
+        _path: Option<TString<'static>>,
+        _xpubs: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
+            c"show_address_details not implemented",
+        ))
+    }
+
     fn show_checklist(
         title: TString<'static>,
         button: TString<'static>,

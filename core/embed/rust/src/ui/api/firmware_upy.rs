@@ -527,6 +527,30 @@ extern "C" fn new_set_brightness(n_args: usize, args: *const Obj, kwargs: *mut M
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let qr_title: TString<'static> = kwargs.get(Qstr::MP_QSTR_qr_title)?.try_into()?;
+        let details_title: TString = kwargs.get(Qstr::MP_QSTR_details_title)?.try_into()?;
+        let address: TString = kwargs.get(Qstr::MP_QSTR_address)?.try_into()?;
+        let case_sensitive: bool = kwargs.get(Qstr::MP_QSTR_case_sensitive)?.try_into()?;
+        let account: Option<TString> = kwargs.get(Qstr::MP_QSTR_account)?.try_into_option()?;
+        let path: Option<TString> = kwargs.get(Qstr::MP_QSTR_path)?.try_into_option()?;
+        let xpubs: Obj = kwargs.get(Qstr::MP_QSTR_xpubs)?;
+
+        let layout = ModelUI::show_address_details(
+            qr_title,
+            address,
+            case_sensitive,
+            details_title,
+            account,
+            path,
+            xpubs,
+        )?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_show_checklist(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1201,6 +1225,19 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Show the brightness configuration dialog."""
     Qstr::MP_QSTR_set_brightness => obj_fn_kw!(0, new_set_brightness).as_obj(),
+
+    /// def show_address_details(
+    ///     *,
+    ///     qr_title: str,
+    ///     address: str,
+    ///     case_sensitive: bool,
+    ///     details_title: str,
+    ///     account: str | None,
+    ///     path: str | None,
+    ///     xpubs: list[tuple[str, str]],
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Show address details - QR code, account, path, cosigner xpubs."""
+    Qstr::MP_QSTR_show_address_details => obj_fn_kw!(0, new_show_address_details).as_obj(),
 
     /// def show_checklist(
     ///     *,

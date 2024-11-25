@@ -35,9 +35,9 @@ use crate::{
 
 use super::{
     component::{
-        ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Flow, FlowPages, Frame,
-        Homescreen, Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress, ScrollableFrame,
-        ShareWords, ShowMore, SimpleChoice, WordlistEntry, WordlistType,
+        AddressDetails, ButtonDetails, ButtonPage, CoinJoinProgress, ConfirmHomescreen, Flow,
+        FlowPages, Frame, Homescreen, Lockscreen, NumberInput, PassphraseEntry, PinEntry, Progress,
+        ScrollableFrame, ShareWords, ShowMore, SimpleChoice, WordlistEntry, WordlistType,
     },
     theme, ModelTRFeatures,
 };
@@ -690,6 +690,26 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
             c"setting brightness not supported",
         ))
+    }
+
+    fn show_address_details(
+        _qr_title: TString<'static>,
+        address: TString<'static>,
+        case_sensitive: bool,
+        _details_title: TString<'static>,
+        account: Option<TString<'static>>,
+        path: Option<TString<'static>>,
+        xpubs: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut ad = AddressDetails::new(address, case_sensitive, account, path)?;
+
+        for i in IterBuf::new().try_iterate(xpubs)? {
+            let [xtitle, text]: [TString; 2] = util::iter_into_array(i)?;
+            ad.add_xpub(xtitle, text)?;
+        }
+
+        let layout = RootComponent::new(ad);
+        Ok(layout)
     }
 
     fn show_checklist(

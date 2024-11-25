@@ -273,7 +273,7 @@ async def show_address(
                 return result
 
             result = await interact(
-                trezorui2.show_address_details(
+                trezorui_api.show_address_details(
                     qr_title=title,
                     address=address if address_qr is None else address_qr,
                     case_sensitive=case_sensitive,

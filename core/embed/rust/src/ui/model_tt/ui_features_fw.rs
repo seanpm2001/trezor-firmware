@@ -31,10 +31,11 @@ use crate::{
 
 use super::{
     component::{
-        check_homescreen_format, Bip39Input, Button, ButtonMsg, ButtonPage, ButtonStyleSheet,
-        CancelConfirmMsg, CoinJoinProgress, Dialog, FidoConfirm, Frame, Homescreen, IconDialog,
-        Lockscreen, MnemonicKeyboard, NumberInputDialog, PassphraseKeyboard, PinKeyboard, Progress,
-        SelectWordCount, SetBrightnessDialog, ShareWords, SimplePage, Slip39Input,
+        check_homescreen_format, AddressDetails, Bip39Input, Button, ButtonMsg, ButtonPage,
+        ButtonStyleSheet, CancelConfirmMsg, CoinJoinProgress, Dialog, FidoConfirm, Frame,
+        Homescreen, IconDialog, Lockscreen, MnemonicKeyboard, NumberInputDialog,
+        PassphraseKeyboard, PinKeyboard, Progress, SelectWordCount, SetBrightnessDialog,
+        ShareWords, SimplePage, Slip39Input,
     },
     theme, ModelTTFeatures,
 };
@@ -640,6 +641,34 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             ),
         ));
 
+        Ok(layout)
+    }
+
+    fn show_address_details(
+        qr_title: TString<'static>,
+        address: TString<'static>,
+        case_sensitive: bool,
+        details_title: TString<'static>,
+        account: Option<TString<'static>>,
+        path: Option<TString<'static>>,
+        xpubs: Obj,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut ad = AddressDetails::new(
+            qr_title,
+            address,
+            case_sensitive,
+            details_title,
+            account,
+            path,
+        )?;
+
+        for i in IterBuf::new().try_iterate(xpubs)? {
+            let [xtitle, text]: [TString; 2] = util::iter_into_array(i)?;
+            ad.add_xpub(xtitle, text)?;
+        }
+
+        let layout =
+            RootComponent::new(SimplePage::horizontal(ad, theme::BG).with_swipe_right_to_go_back());
         Ok(layout)
     }
 
