@@ -208,7 +208,10 @@ def test_apply_homescreen_toif(session: Session):
 
 @pytest.mark.models(skip=["legacy", "safe3"])
 def test_apply_homescreen_jpeg(session: Session):
-    raise Exception("FAILS BECAUSE THE MESSAGE IS BIGGER THAN THE INTERNAL READ BUFFER")
+    if session.session_version is Session.THP_V2:
+        raise Exception(
+            "FAILS BECAUSE THE MESSAGE IS BIGGER THAN THE INTERNAL READ BUFFER"
+        )
     with open(HERE / "test_bg.jpg", "rb") as f:
         img = f.read()
         # raise Exception("FAILS FOR SOME REASON ")
