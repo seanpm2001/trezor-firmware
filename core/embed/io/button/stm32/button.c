@@ -54,7 +54,7 @@ static void button_setup_pin(GPIO_TypeDef *port, uint16_t pin) {
   GPIO_InitTypeDef GPIO_InitStructure = {0};
 
   GPIO_InitStructure.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStructure.Pull = GPIO_PULLUP;
+  GPIO_InitStructure.Pull = GPIO_PULLDOWN;
   GPIO_InitStructure.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStructure.Pin = pin;
   HAL_GPIO_Init(port, &GPIO_InitStructure);
