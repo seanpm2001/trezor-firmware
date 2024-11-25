@@ -171,8 +171,7 @@ def test_no_backup_fails(session: Session):
 # we only test this with bip39 because the code path is always the same
 @pytest.mark.setup_client(needs_backup=True)
 def test_interrupt_backup_fails(session: Session):
-    raise Exception("TEST DOESN'T WORK BECAUSE OF CHANGED INITIALIZE BEHAVIOUR")
-    # TODO ?? session.ensure_unlocked()
+    session.ensure_unlocked()
     assert session.features.initialized is True
     assert session.features.backup_availability == messages.BackupAvailability.Required
     assert session.features.unfinished_backup is False
@@ -182,16 +181,18 @@ def test_interrupt_backup_fails(session: Session):
     session.call_raw(messages.BackupDevice())
 
     # interupt backup by sending initialize
-    # TODO remove session.init_device()
+    session2 = session.client.resume_session(session)
+    session2.refresh_features()
 
     # check that device state is as expected
-    assert session.features.initialized is True
+    assert session2.features.initialized is True
     assert (
-        session.features.backup_availability == messages.BackupAvailability.NotAvailable
+        session2.features.backup_availability
+        == messages.BackupAvailability.NotAvailable
     )
-    assert session.features.unfinished_backup is True
-    assert session.features.no_backup is False
+    assert session2.features.unfinished_backup is True
+    assert session2.features.no_backup is False
 
     # Second attempt at backup should fail
     with pytest.raises(TrezorFailure, match=r".*Seed already backed up"):
-        device.backup(session)
+        device.backup(session2)
