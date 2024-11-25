@@ -137,6 +137,8 @@ pub trait UIFeaturesFirmware {
 
     fn check_homescreen_format(image: BinaryData, accept_toif: bool) -> bool;
 
+    fn prompt_backup() -> Result<impl LayoutMaybeTrace, Error>;
+
     fn request_bip39(
         prompt: TString<'static>,
         prefill_word: TString<'static>,

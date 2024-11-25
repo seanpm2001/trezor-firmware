@@ -4,7 +4,7 @@ use crate::{
         gc::Gc,
         iter::IterBuf,
         list::List,
-        macros::{obj_fn_1, obj_fn_kw, obj_module},
+        macros::{obj_fn_0, obj_fn_1, obj_fn_kw, obj_module},
         map::Map,
         module::Module,
         obj::Obj,
@@ -385,6 +385,14 @@ extern "C" fn new_continue_recovery_homepage(
         Ok(obj.into())
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_prompt_backup() -> Obj {
+    let block = || {
+        let layout = ModelUI::prompt_backup()?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_or_raise(block) }
 }
 
 extern "C" fn new_request_bip39(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
@@ -1090,6 +1098,10 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_continue_recovery_homepage => obj_fn_kw!(0, new_continue_recovery_homepage).as_obj(),
+
+    /// def prompt_backup() -> LayoutObj[UiResult]:
+    ///     """Strongly recommend user to do a backup."""
+    Qstr::MP_QSTR_prompt_backup => obj_fn_0!(new_prompt_backup).as_obj(),
 
     /// def request_bip39(
     ///     *,

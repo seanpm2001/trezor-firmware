@@ -271,39 +271,6 @@ fn content_in_button_page<T: Component + Paginate + MaybeTrace + 'static>(
     Ok(obj.into())
 }
 
-extern "C" fn new_confirm_backup(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], _kwargs: &Map| {
-        let get_page = move |page_index| match page_index {
-            0 => {
-                let btn_layout = ButtonLayout::text_none_arrow_wide(TR::buttons__skip.into());
-                let btn_actions = ButtonActions::cancel_none_next();
-                let ops = OpTextLayout::new(theme::TEXT_NORMAL)
-                    .text_normal(TR::backup__new_wallet_created)
-                    .newline()
-                    .text_normal(TR::backup__it_should_be_backed_up_now);
-                let formatted = FormattedText::new(ops).vertically_centered();
-                Page::new(btn_layout, btn_actions, formatted)
-                    .with_title(TR::words__title_success.into())
-            }
-            1 => {
-                let btn_layout = ButtonLayout::up_arrow_none_text(TR::buttons__back_up.into());
-                let btn_actions = ButtonActions::prev_none_confirm();
-                let ops =
-                    OpTextLayout::new(theme::TEXT_NORMAL).text_normal(TR::backup__recover_anytime);
-                let formatted = FormattedText::new(ops).vertically_centered();
-                Page::new(btn_layout, btn_actions, formatted)
-                    .with_title(TR::backup__title_backup_wallet.into())
-            }
-            _ => unreachable!(),
-        };
-        let pages = FlowPages::new(get_page, 2);
-
-        let obj = LayoutObj::new(Flow::new(pages))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let address: TString = kwargs.get(Qstr::MP_QSTR_address)?.try_into()?;
@@ -601,10 +568,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezorui_api import *
     ///
     Qstr::MP_QSTR___name__ => Qstr::MP_QSTR_trezorui2.to_obj(),
-
-    /// def confirm_backup() -> LayoutObj[UiResult]:
-    ///     """Strongly recommend user to do backup."""
-    Qstr::MP_QSTR_confirm_backup => obj_fn_kw!(0, new_confirm_backup).as_obj(),
 
     /// def show_address_details(
     ///     *,

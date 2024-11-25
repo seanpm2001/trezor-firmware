@@ -35,12 +35,6 @@ def flow_confirm_set_new_pin(
 ) -> LayoutObj[UiResult]:
     """Confirm new PIN setup with an option to cancel action."""
 
-
-# rust/src/ui/model_mercury/layout.rs
-def flow_prompt_backup() -> LayoutObj[UiResult]:
-    """Prompt a user to create backup with an option to skip."""
-
-
 # rust/src/ui/model_mercury/layout.rs
 def flow_get_address(
     *,
@@ -102,11 +96,6 @@ def confirm_summary(
     """Confirm summary of a transaction."""
 from trezor import utils
 from trezorui_api import *
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_backup() -> LayoutObj[UiResult]:
-    """Strongly recommend user to do backup."""
 
 
 # rust/src/ui/model_tr/layout.rs

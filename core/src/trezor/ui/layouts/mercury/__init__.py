@@ -105,7 +105,7 @@ async def show_wallet_created_success() -> None:
 
 async def prompt_backup() -> bool:
     result = await interact(
-        trezorui2.flow_prompt_backup(),
+        trezorui_api.prompt_backup(),
         "backup_device",
         ButtonRequestType.ResetDevice,
         raise_on_cancel=None,

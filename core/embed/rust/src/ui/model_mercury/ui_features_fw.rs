@@ -427,6 +427,11 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         LayoutObj::new_root(flow)
     }
 
+    fn prompt_backup() -> Result<impl LayoutMaybeTrace, Error> {
+        let flow = flow::prompt_backup::new_prompt_backup()?;
+        Ok(flow)
+    }
+
     fn request_bip39(
         prompt: TString<'static>,
         prefill_word: TString<'static>,

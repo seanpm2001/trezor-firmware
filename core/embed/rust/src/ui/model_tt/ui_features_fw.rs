@@ -488,6 +488,12 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         }
     }
 
+    fn prompt_backup() -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTTFeatures>, Error>(Error::ValueError(
+            c"prompt_backup not implemented",
+        ))
+    }
+
     fn request_bip39(
         prompt: TString<'static>,
         prefill_word: TString<'static>,

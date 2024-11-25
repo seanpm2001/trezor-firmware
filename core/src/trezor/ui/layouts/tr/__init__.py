@@ -128,7 +128,7 @@ async def prompt_backup() -> bool:
     br_code = ButtonRequestType.ResetDevice
 
     result = await interact(
-        trezorui2.confirm_backup(),
+        trezorui_api.prompt_backup(),
         br_name,
         br_code,
         raise_on_cancel=None,

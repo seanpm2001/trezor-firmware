@@ -187,7 +187,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_coinjoin_authorized;
   MP_QSTR_confirm_action;
   MP_QSTR_confirm_address;
-  MP_QSTR_confirm_backup;
   MP_QSTR_confirm_blob;
   MP_QSTR_confirm_blob_intro;
   MP_QSTR_confirm_coinjoin;
@@ -249,7 +248,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_flow_confirm_output;
   MP_QSTR_flow_confirm_set_new_pin;
   MP_QSTR_flow_get_address;
-  MP_QSTR_flow_prompt_backup;
   MP_QSTR_get_language;
   MP_QSTR_get_transition_out;
   MP_QSTR_haptic_feedback__disable;
@@ -418,6 +416,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_progress__x_seconds_left_template;
   MP_QSTR_progress_event;
   MP_QSTR_prompt;
+  MP_QSTR_prompt_backup;
   MP_QSTR_prompt_screen;
   MP_QSTR_prompt_title;
   MP_QSTR_qr_title;

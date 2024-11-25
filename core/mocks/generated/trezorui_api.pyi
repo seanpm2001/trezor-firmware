@@ -267,6 +267,11 @@ def continue_recovery_homepage(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def prompt_backup() -> LayoutObj[UiResult]:
+    """Strongly recommend user to do a backup."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def request_bip39(
     *,
     prompt: str,

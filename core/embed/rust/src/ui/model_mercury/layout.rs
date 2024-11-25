@@ -524,16 +524,6 @@ extern "C" fn new_get_address(n_args: usize, args: *const Obj, kwargs: *mut Map)
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_prompt_backup() -> Obj {
-    let block = || {
-        let flow = flow::prompt_backup::new_prompt_backup()?;
-        let obj = LayoutObj::new_root(flow)?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_or_raise(block) }
-}
-
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -573,10 +563,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm new PIN setup with an option to cancel action."""
     Qstr::MP_QSTR_flow_confirm_set_new_pin => obj_fn_kw!(0, new_confirm_set_new_pin).as_obj(),
-
-    /// def flow_prompt_backup() -> LayoutObj[UiResult]:
-    ///     """Prompt a user to create backup with an option to skip."""
-    Qstr::MP_QSTR_flow_prompt_backup => obj_fn_0!(new_prompt_backup).as_obj(),
 
     /// def flow_get_address(
     ///     *,

@@ -544,6 +544,36 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         LayoutObj::new_root(layout)
     }
 
+    fn prompt_backup() -> Result<impl LayoutMaybeTrace, Error> {
+        let get_page = move |page_index| match page_index {
+            0 => {
+                let btn_layout = ButtonLayout::text_none_arrow_wide(TR::buttons__skip.into());
+                let btn_actions = ButtonActions::cancel_none_next();
+                let ops = OpTextLayout::new(theme::TEXT_NORMAL)
+                    .text_normal(TR::backup__new_wallet_created)
+                    .newline()
+                    .text_normal(TR::backup__it_should_be_backed_up_now);
+                let formatted = FormattedText::new(ops).vertically_centered();
+                Page::new(btn_layout, btn_actions, formatted)
+                    .with_title(TR::words__title_success.into())
+            }
+            1 => {
+                let btn_layout = ButtonLayout::up_arrow_none_text(TR::buttons__back_up.into());
+                let btn_actions = ButtonActions::prev_none_confirm();
+                let ops =
+                    OpTextLayout::new(theme::TEXT_NORMAL).text_normal(TR::backup__recover_anytime);
+                let formatted = FormattedText::new(ops).vertically_centered();
+                Page::new(btn_layout, btn_actions, formatted)
+                    .with_title(TR::backup__title_backup_wallet.into())
+            }
+            _ => unreachable!(),
+        };
+        let pages = FlowPages::new(get_page, 2);
+
+        let layout = RootComponent::new(Flow::new(pages));
+        Ok(layout)
+    }
+
     fn request_bip39(
         prompt: TString<'static>,
         prefill_word: TString<'static>,
