@@ -74,7 +74,7 @@ def confirm_single(
 
     begin, _separator, end = description.partition(template_str)
     return raise_if_not_confirmed(
-        trezorui2.confirm_emphasized(
+        trezorui_api.confirm_emphasized(
             title=title,
             items=(begin, (True, description_param), end),
             verb=verb,
@@ -1284,7 +1284,7 @@ def confirm_set_new_pin(
     br_code: ButtonRequestType = BR_CODE_OTHER,
 ) -> Awaitable[None]:
     return raise_if_not_confirmed(
-        trezorui2.confirm_emphasized(
+        trezorui_api.confirm_emphasized(
             title=title,
             items=(
                 (True, description + "\n\n"),

@@ -11,13 +11,14 @@ use crate::{
             connect::Connect,
             image::BlendedImage,
             text::{
+                op::OpTextLayout,
                 paragraphs::{
                     Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
                     Paragraphs, VecExt,
                 },
                 TextStyle,
             },
-            Border, ComponentExt, Empty, Jpeg, Label, Never, Timeout,
+            Border, ComponentExt, Empty, FormattedText, Jpeg, Label, Never, Timeout,
         },
         geometry,
         layout::{
@@ -182,6 +183,35 @@ impl UIFeaturesFirmware for ModelTTFeatures {
             theme::label_title(),
             TR::coinjoin__title.into(),
             ButtonPage::new(paragraphs, theme::BG).with_hold()?,
+        ));
+        Ok(layout)
+    }
+
+    fn confirm_emphasized(
+        title: TString<'static>,
+        items: Obj,
+        verb: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut ops = OpTextLayout::new(theme::TEXT_NORMAL);
+        for item in IterBuf::new().try_iterate(items)? {
+            if item.is_str() {
+                ops = ops.text_normal(TString::try_from(item)?)
+            } else {
+                let [emphasis, text]: [Obj; 2] = util::iter_into_array(item)?;
+                let text: TString = text.try_into()?;
+                if emphasis.try_into()? {
+                    ops = ops.text_demibold(text);
+                } else {
+                    ops = ops.text_normal(text);
+                }
+            }
+        }
+
+        let layout = RootComponent::new(Frame::left_aligned(
+            theme::label_title(),
+            title,
+            ButtonPage::new(FormattedText::new(ops).vertically_centered(), theme::BG)
+                .with_cancel_confirm(None, verb),
         ));
         Ok(layout)
     }

@@ -226,41 +226,6 @@ where
     }
 }
 
-extern "C" fn new_confirm_emphasized(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-        let mut ops = OpTextLayout::new(theme::TEXT_NORMAL);
-        for item in IterBuf::new().try_iterate(items)? {
-            if item.is_str() {
-                ops = ops.text_normal(TString::try_from(item)?)
-            } else {
-                let [emphasis, text]: [Obj; 2] = util::iter_into_array(item)?;
-                let text: TString = text.try_into()?;
-                if emphasis.try_into()? {
-                    ops = ops.text_demibold(text);
-                } else {
-                    ops = ops.text_normal(text);
-                }
-            }
-        }
-
-        new_confirm_action_simple(
-            FormattedText::new(ops).vertically_centered(),
-            ConfirmActionExtra::Menu(ConfirmActionMenuStrings::new()),
-            ConfirmActionStrings::new(title, None, None, Some(title)),
-            false,
-            None,
-            0,
-            false,
-        )
-        .and_then(LayoutObj::new_root)
-        .map(Into::into)
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_confirm_blob_intro(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -530,16 +495,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezorui_api import *
     ///
     Qstr::MP_QSTR___name__ => Qstr::MP_QSTR_trezorui2.to_obj(),
-
-    /// def confirm_emphasized(
-    ///     *,
-    ///     title: str,
-    ///     items: Iterable[str | tuple[bool, str]],
-    ///     verb: str | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm formatted text that has been pre-split in python. For tuples
-    ///     the first component is a bool indicating whether this part is emphasized."""
-    Qstr::MP_QSTR_confirm_emphasized => obj_fn_kw!(0, new_confirm_emphasized).as_obj(),
 
     /// def confirm_blob_intro(
     ///     *,

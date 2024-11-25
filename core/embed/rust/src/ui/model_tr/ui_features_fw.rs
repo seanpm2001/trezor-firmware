@@ -190,6 +190,16 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         )
     }
 
+    fn confirm_emphasized(
+        _title: TString<'static>,
+        _items: Obj,
+        _verb: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"confirm_emphasized not implemented",
+        ))
+    }
+
     fn confirm_fido(
         title: TString<'static>,
         app_name: TString<'static>,

@@ -317,41 +317,6 @@ impl ComponentMsgObj for super::component::bl_confirm::Confirm<'_> {
     }
 }
 
-extern "C" fn new_confirm_emphasized(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let verb: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-
-        let items: Obj = kwargs.get(Qstr::MP_QSTR_items)?;
-        let mut ops = OpTextLayout::new(theme::TEXT_NORMAL);
-        for item in IterBuf::new().try_iterate(items)? {
-            if item.is_str() {
-                ops = ops.text_normal(TString::try_from(item)?)
-            } else {
-                let [emphasis, text]: [Obj; 2] = util::iter_into_array(item)?;
-                let text: TString = text.try_into()?;
-                if emphasis.try_into()? {
-                    ops = ops.text_demibold(text);
-                } else {
-                    ops = ops.text_normal(text);
-                }
-            }
-        }
-
-        let obj = LayoutObj::new(Frame::left_aligned(
-            theme::label_title(),
-            title,
-            ButtonPage::new(FormattedText::new(ops).vertically_centered(), theme::BG)
-                .with_cancel_confirm(None, verb),
-        ))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_show_address_details(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let qr_title: TString<'static> = kwargs.get(Qstr::MP_QSTR_qr_title)?.try_into()?;
@@ -444,16 +409,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
     /// from trezorui_api import *
     ///
-
-    /// def confirm_emphasized(
-    ///     *,
-    ///     title: str,
-    ///     items: Iterable[str | tuple[bool, str]],
-    ///     verb: str | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm formatted text that has been pre-split in python. For tuples
-    ///     the first component is a bool indicating whether this part is emphasized."""
-    Qstr::MP_QSTR_confirm_emphasized => obj_fn_kw!(0, new_confirm_emphasized).as_obj(),
 
     /// def show_address_details(
     ///     *,

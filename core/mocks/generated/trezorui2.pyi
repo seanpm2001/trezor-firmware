@@ -4,16 +4,6 @@ from trezorui_api import *
 
 
 # rust/src/ui/model_mercury/layout.rs
-def confirm_emphasized(
-    *,
-    title: str,
-    items: Iterable[str | tuple[bool, str]],
-    verb: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm formatted text that has been pre-split in python. For tuples
-    the first component is a bool indicating whether this part is emphasized."""
-
-# rust/src/ui/model_mercury/layout.rs
 def confirm_blob_intro(
     *,
     title: str,
@@ -165,17 +155,6 @@ def multiple_pages_texts(
     """Show multiple texts, each on its own page."""
 from trezor import utils
 from trezorui_api import *
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_emphasized(
-    *,
-    title: str,
-    items: Iterable[str | tuple[bool, str]],
-    verb: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm formatted text that has been pre-split in python. For tuples
-    the first component is a bool indicating whether this part is emphasized."""
 
 
 # rust/src/ui/model_tt/layout.rs

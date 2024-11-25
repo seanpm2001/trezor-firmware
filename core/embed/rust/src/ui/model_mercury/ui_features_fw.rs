@@ -11,13 +11,14 @@ use crate::{
             connect::Connect,
             swipe_detect::SwipeSettings,
             text::{
+                op::OpTextLayout,
                 paragraphs::{
                     Checklist, Paragraph, ParagraphSource, ParagraphVecLong, ParagraphVecShort,
                     Paragraphs, VecExt,
                 },
                 TextStyle,
             },
-            Border, CachedJpeg, ComponentExt, Empty, Never, Timeout,
+            Border, CachedJpeg, ComponentExt, Empty, FormattedText, Never, Timeout,
         },
         geometry::{self, Direction},
         layout::{
@@ -181,6 +182,38 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
                 Some(TR::coinjoin__title.into()),
             ),
             true,
+            None,
+            0,
+            false,
+        )?;
+        Ok(flow)
+    }
+
+    fn confirm_emphasized(
+        title: TString<'static>,
+        items: Obj,
+        verb: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut ops = OpTextLayout::new(theme::TEXT_NORMAL);
+        for item in IterBuf::new().try_iterate(items)? {
+            if item.is_str() {
+                ops = ops.text_normal(TString::try_from(item)?)
+            } else {
+                let [emphasis, text]: [Obj; 2] = util::iter_into_array(item)?;
+                let text: TString = text.try_into()?;
+                if emphasis.try_into()? {
+                    ops = ops.text_demibold(text);
+                } else {
+                    ops = ops.text_normal(text);
+                }
+            }
+        }
+
+        let flow = flow::new_confirm_action_simple(
+            FormattedText::new(ops).vertically_centered(),
+            ConfirmActionExtra::Menu(ConfirmActionMenuStrings::new()),
+            ConfirmActionStrings::new(title, None, None, Some(title)),
+            false,
             None,
             0,
             false,

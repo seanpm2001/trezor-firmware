@@ -63,6 +63,12 @@ pub trait UIFeaturesFirmware {
         max_feerate: TString<'static>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_emphasized(
+        title: TString<'static>,
+        items: Obj, // TODO: replace Obj
+        verb: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn confirm_fido(
         title: TString<'static>,
         app_name: TString<'static>,

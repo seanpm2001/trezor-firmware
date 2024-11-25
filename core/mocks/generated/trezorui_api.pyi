@@ -141,6 +141,17 @@ def confirm_coinjoin(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_emphasized(
+    *,
+    title: str,
+    items: Iterable[str | tuple[bool, str]],
+    verb: str | None = None,
+) -> LayoutObj[UiResult]:
+    """Confirm formatted text that has been pre-split in python. For tuples
+    the first component is a bool indicating whether this part is emphasized."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_fido(
     *,
     title: str,

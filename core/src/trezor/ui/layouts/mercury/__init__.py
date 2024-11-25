@@ -74,12 +74,11 @@ def confirm_single(
 
     # Placeholders are coming from translations in form of {0}
     template_str = "{0}"
-    if template_str not in description:
-        template_str = "{}"
+    assert template_str in description
 
     begin, _separator, end = description.partition(template_str)
     return raise_if_not_confirmed(
-        trezorui2.confirm_emphasized(
+        trezorui_api.confirm_emphasized(
             title=title,
             items=(begin, (True, description_param), end),
             verb=verb,
