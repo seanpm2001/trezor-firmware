@@ -22,7 +22,6 @@ from trezorlib.debuglink import TrezorClientDebugLink as Client
 from trezorlib.debuglink import SessionDebugWrapper as Session
 from trezorlib.exceptions import TrezorFailure
 from trezorlib.tools import parse_path
-from trezorlib.transport.session import SessionV1
 
 from ..common import get_test_address
 
@@ -33,8 +32,8 @@ PIN4 = "1234"
 
 
 def test_thp_end_session(client: Client):
-    session = client.get_session()
-    if isinstance(session, SessionV1):
+    session = Session(client.get_session())
+    if session.session_version == Session.CODEC_V1:
         # TODO: This test should be skipped on non-THP builds
         return
 
