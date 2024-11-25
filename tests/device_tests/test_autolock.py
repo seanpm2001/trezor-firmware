@@ -145,7 +145,7 @@ def test_autolock_cancels_ui(session: Session):
 
 def test_autolock_ignores_initialize(session: Session):
     session.lock()
-
+    client = session.client
     set_autolock_delay(session, 10 * 1000)
 
     assert session.features.unlocked is True
@@ -153,11 +153,11 @@ def test_autolock_ignores_initialize(session: Session):
     start = time.monotonic()
     while time.monotonic() - start < 11:
         # init_device should always work even if locked
-        raise Exception("THIS SHOULD BE REMADE")
-        session.init_device()
+        client.resume_session(session)
         time.sleep(0.1)
 
     # after 11 seconds we are definitely locked
+    session.refresh_features()
     assert session.features.unlocked is False
 
 
