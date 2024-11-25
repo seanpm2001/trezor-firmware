@@ -37,7 +37,7 @@ from .exceptions import TrezorFailure
 from .log import DUMP_BYTES
 from .messages import DebugWaitType
 from .tools import expect, parse_path
-from .transport.session import Session
+from .transport.session import Session, SessionV1, SessionV2
 from .transport.thp.protocol_v1 import ProtocolV1
 
 if t.TYPE_CHECKING:
@@ -1028,9 +1028,21 @@ message_filters = MessageFilterGenerator()
 
 
 class SessionDebugWrapper(Session):
+    session_version: int
+    CODEC_V1: t.Final[int] = 1
+    THP_V2: t.Final[int] = 2
+
     def __init__(self, session: Session) -> None:
         self._session = session
         self.reset_debug_features()
+        if isinstance(session, SessionV1):
+            self.session_version = 1
+        elif isinstance(session, SessionV2):
+            self.session_version = 2
+        elif isinstance(session, SessionDebugWrapper):
+            raise Exception("Cannot wrap already wrapped session!")
+        else:
+            self.session_version = -1  # UNKNOWN
 
     @property
     def client(self) -> TrezorClientDebugLink:
