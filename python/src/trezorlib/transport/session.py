@@ -73,8 +73,8 @@ class Session:
     def refresh_features(self) -> None:
         self.client.refresh_features()
 
-    def end(self) -> None:
-        raise NotImplementedError
+    def end(self) -> t.Any:
+        return self.call(messages.EndSession())
 
     @property
     def features(self) -> messages.Features:

@@ -124,13 +124,22 @@ class TrezorClient:
         from .transport.session import SessionV1, SessionV2
 
         if isinstance(self.protocol, ProtocolV1):
+            if passphrase is None:
+                passphrase = ""
             return SessionV1.new(self, passphrase, derive_cardano)
         if isinstance(self.protocol, ProtocolV2):
             return SessionV2.new(self, passphrase, derive_cardano)
         raise NotImplementedError  # TODO
 
     def resume_session(self, session: Session):
+        """
+        Note: this function potentially modifies the input session.
+        """
         from trezorlib.transport.session import SessionV1, SessionV2
+        from trezorlib.debuglink import SessionDebugWrapper
+
+        if isinstance(session, SessionDebugWrapper):
+            session = session._session
 
         if isinstance(session, SessionV2):
             return session
