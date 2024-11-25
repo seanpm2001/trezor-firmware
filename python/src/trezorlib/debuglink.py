@@ -1042,12 +1042,12 @@ class SessionDebugWrapper(Session):
         return self._session.id
 
     def _write(self, msg: t.Any) -> None:
-        print("writing message:", type(msg))
+        print("writing message:", msg.__class__.__name__)
         self._session._write(self._filter_message(msg))
 
     def _read(self) -> t.Any:
         resp = self._filter_message(self._session._read())
-        print("reading message:", type(resp))
+        print("reading message:", resp.__class__.__name__)
         if self.actual_responses is not None:
             self.actual_responses.append(resp)
         return resp
