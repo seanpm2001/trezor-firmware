@@ -62,7 +62,8 @@ def test_pin(session: Session):
 
 @pytest.mark.models("core")
 def test_softlock_instability(session: Session):
-    raise Exception("THIS NEEDS TO BE FIXED")
+    if session.session_version == Session.THP_V2:
+        raise Exception("THIS NEEDS TO BE CHANGED FOR THP")
 
     def load_device():
         debuglink.load_device(
@@ -81,12 +82,14 @@ def test_softlock_instability(session: Session):
         pytest.xfail("reseed only supported on emulator")
     device.wipe(session)
     entropy_after_wipe = misc.get_entropy(session, 16)
+    session.refresh_features()
 
     # configure and wipe the device
     load_device()
     session.client.debug.reseed(0)
     device.wipe(session)
     assert misc.get_entropy(session, 16) == entropy_after_wipe
+    session.refresh_features()
 
     load_device()
     # the device has PIN -> lock it
