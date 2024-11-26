@@ -44,7 +44,6 @@ class Session:
             elif isinstance(resp, messages.PassphraseRequest):
                 if self.passphrase_callback is None:
                     raise Exception  # TODO
-                print(self.passphrase_callback)
                 resp = self.passphrase_callback(self, resp)
             elif isinstance(resp, messages.ButtonRequest):
                 if self.button_callback is None:
