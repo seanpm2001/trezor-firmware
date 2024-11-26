@@ -1023,7 +1023,6 @@ message_filters = MessageFilterGenerator()
 
 
 class SessionDebugWrapper(Session):
-    session_version: int
     CODEC_V1: t.Final[int] = 1
     THP_V2: t.Final[int] = 2
 
@@ -1031,13 +1030,17 @@ class SessionDebugWrapper(Session):
         self._session = session
         self.reset_debug_features()
         if isinstance(session, SessionV1):
-            self.session_version = 1
+            self.client.session_version = 1
         elif isinstance(session, SessionV2):
-            self.session_version = 2
+            self.client.session_version = 2
         elif isinstance(session, SessionDebugWrapper):
             raise Exception("Cannot wrap already wrapped session!")
         else:
             self.session_version = -1  # UNKNOWN
+
+    @property
+    def session_version(self) -> int:
+        return self.client.session_version
 
     @property
     def client(self) -> TrezorClientDebugLink:
@@ -1279,6 +1282,7 @@ class TrezorClientDebugLink(TrezorClient):
     # by the device.
 
     def __init__(self, transport: "Transport", auto_interact: bool = True) -> None:
+        self._session_version: int = -1
         try:
             debug_transport = transport.find_debug()
             self.debug = DebugLink(debug_transport, auto_interact)
@@ -1304,6 +1308,14 @@ class TrezorClientDebugLink(TrezorClient):
         self.debug.model = self.model
         self.debug.version = self.version
         self.passphrase: str | None = None
+
+    @property
+    def session_version(self) -> int:
+        return self._session_version
+
+    @session_version.setter
+    def session_version(self, value: int) -> None:
+        self._session_version = value
 
     @property
     def layout_type(self) -> LayoutType:
