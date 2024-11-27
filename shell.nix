@@ -110,7 +110,7 @@ stdenvNoCC.mkDerivation ({
     openssl
     pkg-config
     poetry
-    oldNixpkgs.protobuf3_19
+    protobuf_21
     pyright
     (mkBinOnlyWrapper rustNightly)
     wget
