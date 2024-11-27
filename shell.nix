@@ -110,7 +110,7 @@ stdenvNoCC.mkDerivation ({
     openssl
     pkg-config
     poetry
-    protobuf_21
+    protobuf_28  # needs to stay synced with poetry.lock
     pyright
     (mkBinOnlyWrapper rustNightly)
     wget
