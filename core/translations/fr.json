@@ -753,7 +753,7 @@
     "rotation__east": "est",
     "rotation__north": "nord",
     "rotation__south": "sud",
-    "rotation__title_change": "Orientation de l'écran",
+    "rotation__title_change": "Rotation d'écran",
     "rotation__west": "ouest",
     "safety_checks__approve_unsafe_always": "Trezor vous permettra d'approuver certaines actions qui pourraient être dangereuses.",
     "safety_checks__approve_unsafe_temporary": "Trezor vous laissera temporairement appr. des actions pouvant être dangereuses.",
