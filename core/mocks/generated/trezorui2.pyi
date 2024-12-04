@@ -84,26 +84,6 @@ def confirm_joint_total(
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_output_address(
-    *,
-    address: str,
-    address_label: str,
-    address_title: str,
-    chunkify: bool = False,
-) -> LayoutObj[UiResult]:
-    """Confirm output address."""
-
-
-# rust/src/ui/model_tr/layout.rs
-def confirm_output_amount(
-    *,
-    amount: str,
-    amount_title: str,
-) -> LayoutObj[UiResult]:
-    """Confirm output amount."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def multiple_pages_texts(
     *,
     title: str,

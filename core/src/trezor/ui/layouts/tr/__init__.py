@@ -486,10 +486,13 @@ async def confirm_output(
 
     while True:
         await interact(
-            trezorui2.confirm_output_address(
-                address=address,
-                address_label=address_label or "",
-                address_title=address_title,
+            trezorui_api.confirm_blob(
+                title=address_title,
+                data=address,
+                description=address_label or "",
+                subtitle=None,
+                verb=TR.buttons__continue,
+                verb_cancel="",
                 chunkify=chunkify,
             ),
             "confirm_output",
@@ -498,9 +501,13 @@ async def confirm_output(
 
         try:
             await interact(
-                trezorui2.confirm_output_amount(
-                    amount_title=amount_title,
-                    amount=amount,
+                trezorui_api.confirm_blob(
+                    title=amount_title,
+                    data=amount,
+                    description=None,
+                    subtitle=None,
+                    verb_cancel="^",
+                    verb=TR.buttons__confirm,
                 ),
                 "confirm_output",
                 br_code,

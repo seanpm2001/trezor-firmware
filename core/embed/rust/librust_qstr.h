@@ -63,7 +63,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_address_details__derivation_path_colon;
   MP_QSTR_address_details__title_receive_address;
   MP_QSTR_address_details__title_receiving_to;
-  MP_QSTR_address_label;
   MP_QSTR_address_qr;
   MP_QSTR_address_title;
   MP_QSTR_allow_cancel;
@@ -71,7 +70,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_amount_change;
   MP_QSTR_amount_label;
   MP_QSTR_amount_new;
-  MP_QSTR_amount_title;
   MP_QSTR_app_name;
   MP_QSTR_area_bytesize;
   MP_QSTR_attach_timer_fn;
@@ -198,8 +196,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_confirm_modify_fee;
   MP_QSTR_confirm_modify_output;
   MP_QSTR_confirm_more;
-  MP_QSTR_confirm_output_address;
-  MP_QSTR_confirm_output_amount;
   MP_QSTR_confirm_properties;
   MP_QSTR_confirm_reset_device;
   MP_QSTR_confirm_summary;

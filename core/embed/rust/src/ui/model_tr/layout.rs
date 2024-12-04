@@ -294,68 +294,6 @@ extern "C" fn new_confirm_joint_total(n_args: usize, args: *const Obj, kwargs: *
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_output_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = |_args: &[Obj], kwargs: &Map| {
-        let address: TString = kwargs.get(Qstr::MP_QSTR_address)?.try_into()?;
-        let address_label: TString = kwargs.get(Qstr::MP_QSTR_address_label)?.try_into()?;
-        let address_title: TString = kwargs.get(Qstr::MP_QSTR_address_title)?.try_into()?;
-        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
-
-        let get_page = move |page_index| {
-            assert!(page_index == 0);
-            // RECIPIENT + address
-            let btn_layout = ButtonLayout::cancel_none_text(TR::buttons__continue.into());
-            let btn_actions = ButtonActions::cancel_none_confirm();
-            // Not putting hyphens in the address.
-            // Potentially adding address label in different font.
-            let mut ops = OpTextLayout::new(theme::TEXT_MONO_DATA);
-            if !address_label.is_empty() {
-                // NOTE: need to explicitly turn off the chunkification before rendering the
-                // address label (for some reason it does not help to turn it off after
-                // rendering the chunks)
-                if chunkify {
-                    ops = ops.chunkify_text(None);
-                }
-                ops = ops.text_normal(address_label).newline();
-            }
-            if chunkify {
-                // Chunkifying the address into smaller pieces when requested
-                ops = ops.chunkify_text(Some((theme::MONO_CHUNKS, 2)));
-            }
-            ops = ops.text_mono(address);
-            let formatted = FormattedText::new(ops).vertically_centered();
-            Page::new(btn_layout, btn_actions, formatted).with_title(address_title)
-        };
-        let pages = FlowPages::new(get_page, 1);
-
-        let obj = LayoutObj::new(Flow::new(pages))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
-extern "C" fn new_confirm_output_amount(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = |_args: &[Obj], kwargs: &Map| {
-        let amount: TString = kwargs.get(Qstr::MP_QSTR_amount)?.try_into()?;
-        let amount_title: TString = kwargs.get(Qstr::MP_QSTR_amount_title)?.try_into()?;
-
-        let get_page = move |page_index| {
-            assert!(page_index == 0);
-            // AMOUNT + amount
-            let btn_layout = ButtonLayout::up_arrow_none_text(TR::buttons__confirm.into());
-            let btn_actions = ButtonActions::cancel_none_confirm();
-            let ops = OpTextLayout::new(theme::TEXT_MONO).text_mono(amount);
-            let formatted = FormattedText::new(ops).vertically_centered();
-            Page::new(btn_layout, btn_actions, formatted).with_title(amount_title)
-        };
-        let pages = FlowPages::new(get_page, 1);
-
-        let obj = LayoutObj::new(Flow::new(pages))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -425,24 +363,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm total if there are external inputs."""
     Qstr::MP_QSTR_confirm_joint_total => obj_fn_kw!(0, new_confirm_joint_total).as_obj(),
-
-    /// def confirm_output_address(
-    ///     *,
-    ///     address: str,
-    ///     address_label: str,
-    ///     address_title: str,
-    ///     chunkify: bool = False,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm output address."""
-    Qstr::MP_QSTR_confirm_output_address => obj_fn_kw!(0, new_confirm_output_address).as_obj(),
-
-    /// def confirm_output_amount(
-    ///     *,
-    ///     amount: str,
-    ///     amount_title: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm output amount."""
-    Qstr::MP_QSTR_confirm_output_amount => obj_fn_kw!(0, new_confirm_output_amount).as_obj(),
 
     /// def multiple_pages_texts(
     ///     *,
