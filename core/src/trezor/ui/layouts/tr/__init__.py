@@ -816,7 +816,7 @@ def confirm_total(
         account_info_items.append((TR.words__account_colon, source_account))
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_summary(
+        trezorui_api.confirm_summary(
             amount=total_amount,
             amount_label=total_label,
             fee=fee_amount,
@@ -872,7 +872,7 @@ if not utils.BITCOIN_ONLY:
             amount_title = f"{TR.words__amount}:"
             amount_value = total_amount
         await raise_if_not_confirmed(
-            trezorui2.confirm_summary(
+            trezorui_api.confirm_summary(
                 amount=amount_value,
                 amount_label=amount_title,
                 fee=maximum_fee,
@@ -898,7 +898,7 @@ if not utils.BITCOIN_ONLY:
         )  # def_arg
         fee_title = fee_title or TR.words__fee  # def_arg
         return raise_if_not_confirmed(
-            trezorui2.confirm_summary(
+            trezorui_api.confirm_summary(
                 amount=amount,
                 amount_label=amount_title,
                 fee=fee,
@@ -920,7 +920,7 @@ if not utils.BITCOIN_ONLY:
         fee_title = TR.send__including_fee
 
         return raise_if_not_confirmed(
-            trezorui2.confirm_summary(
+            trezorui_api.confirm_summary(
                 amount=amount,
                 amount_label=amount_title,
                 fee=fee,
@@ -943,7 +943,7 @@ if not utils.BITCOIN_ONLY:
         br_code: ButtonRequestType = ButtonRequestType.SignTx,
         chunkify: bool = False,
     ) -> None:
-        summary_layout = trezorui2.confirm_summary(
+        summary_layout = trezorui_api.confirm_summary(
             amount=total_amount,
             amount_label=f"{TR.words__amount}:",
             fee=maximum_fee,

@@ -384,76 +384,6 @@ extern "C" fn new_confirm_output(n_args: usize, args: *const Obj, kwargs: *mut M
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
-extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let amount: TString = kwargs.get(Qstr::MP_QSTR_amount)?.try_into()?;
-        let amount_label: TString = kwargs.get(Qstr::MP_QSTR_amount_label)?.try_into()?;
-        let fee: TString = kwargs.get(Qstr::MP_QSTR_fee)?.try_into()?;
-        let fee_label: TString = kwargs.get(Qstr::MP_QSTR_fee_label)?.try_into()?;
-        let title: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_title)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let account_items: Option<Obj> = kwargs
-            .get(Qstr::MP_QSTR_account_items)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let extra_items: Option<Obj> = kwargs
-            .get(Qstr::MP_QSTR_extra_items)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let extra_title: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_extra_title)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-        let verb_cancel: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_verb_cancel)
-            .unwrap_or_else(|_| Obj::const_none())
-            .try_into_option()?;
-
-        let mut summary_params = ShowInfoParams::new(title.unwrap_or(TString::empty()))
-            .with_menu_button()
-            .with_footer(TR::instructions__swipe_up.into(), None)
-            .with_swipe_up();
-        summary_params = unwrap!(summary_params.add(amount_label, amount));
-        summary_params = unwrap!(summary_params.add(fee_label, fee));
-
-        // collect available info
-        let account_params = if let Some(items) = account_items {
-            let mut account_params =
-                ShowInfoParams::new(TR::send__send_from.into()).with_cancel_button();
-            for pair in IterBuf::new().try_iterate(items)? {
-                let [label, value]: [TString; 2] = util::iter_into_array(pair)?;
-                account_params = unwrap!(account_params.add(label, value));
-            }
-            Some(account_params)
-        } else {
-            None
-        };
-        let extra_params = if let Some(items) = extra_items {
-            let extra_title = extra_title.unwrap_or(TR::buttons__more_info.into());
-            let mut extra_params = ShowInfoParams::new(extra_title).with_cancel_button();
-            for pair in IterBuf::new().try_iterate(items)? {
-                let [label, value]: [TString; 2] = util::iter_into_array(pair)?;
-                extra_params = unwrap!(extra_params.add(label, value));
-            }
-            Some(extra_params)
-        } else {
-            None
-        };
-
-        let flow = flow::new_confirm_summary(
-            summary_params,
-            account_params,
-            extra_params,
-            extra_title,
-            verb_cancel,
-        )?;
-        Ok(LayoutObj::new_root(flow)?.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_get_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -561,19 +491,4 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Confirm the recipient, (optionally) confirm the amount and (optionally) confirm the summary and present a Hold to Sign page."""
     Qstr::MP_QSTR_flow_confirm_output => obj_fn_kw!(0, new_confirm_output).as_obj(),
-
-    /// def confirm_summary(
-    ///     *,
-    ///     amount: str,
-    ///     amount_label: str,
-    ///     fee: str,
-    ///     fee_label: str,
-    ///     title: str | None = None,
-    ///     account_items: Iterable[tuple[str, str]] | None = None,
-    ///     extra_items: Iterable[tuple[str, str]] | None = None,
-    ///     extra_title: str | None = None,
-    ///     verb_cancel: str | None = None,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm summary of a transaction."""
-    Qstr::MP_QSTR_confirm_summary => obj_fn_kw!(0, new_confirm_summary).as_obj(),
 };

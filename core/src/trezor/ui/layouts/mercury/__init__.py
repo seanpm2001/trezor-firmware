@@ -699,7 +699,7 @@ def confirm_total(
         fee_items.append((TR.confirm_total__fee_rate, fee_rate_amount))
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_summary(
+        trezorui_api.confirm_summary(
             amount=total_amount,
             amount_label=total_label,
             fee=fee_amount,
@@ -729,7 +729,7 @@ def _confirm_summary(
     title = title or TR.words__title_summary  # def_arg
 
     return raise_if_not_confirmed(
-        trezorui2.confirm_summary(
+        trezorui_api.confirm_summary(
             amount=amount,
             amount_label=amount_label,
             fee=fee,

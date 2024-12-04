@@ -37,7 +37,7 @@ use super::{
     },
     flow::{
         self, new_confirm_action_simple, ConfirmActionExtra, ConfirmActionMenuStrings,
-        ConfirmActionStrings, ConfirmBlobParams,
+        ConfirmActionStrings, ConfirmBlobParams, ShowInfoParams,
     },
     theme, ModelMercuryFeatures,
 };
@@ -334,6 +334,58 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
 
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error> {
         let flow = flow::confirm_reset::new_confirm_reset(recovery)?;
+        Ok(flow)
+    }
+
+    fn confirm_summary(
+        amount: TString<'static>,
+        amount_label: TString<'static>,
+        fee: TString<'static>,
+        fee_label: TString<'static>,
+        title: Option<TString<'static>>,
+        account_items: Option<Obj>,
+        extra_items: Option<Obj>,
+        extra_title: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let mut summary_params = ShowInfoParams::new(title.unwrap_or(TString::empty()))
+            .with_menu_button()
+            .with_footer(TR::instructions__swipe_up.into(), None)
+            .with_swipe_up();
+        summary_params = unwrap!(summary_params.add(amount_label, amount));
+        summary_params = unwrap!(summary_params.add(fee_label, fee));
+
+        // collect available info
+        let account_params = if let Some(items) = account_items {
+            let mut account_params =
+                ShowInfoParams::new(TR::send__send_from.into()).with_cancel_button();
+            for pair in IterBuf::new().try_iterate(items)? {
+                let [label, value]: [TString; 2] = util::iter_into_array(pair)?;
+                account_params = unwrap!(account_params.add(label, value));
+            }
+            Some(account_params)
+        } else {
+            None
+        };
+        let extra_params = if let Some(items) = extra_items {
+            let extra_title = extra_title.unwrap_or(TR::buttons__more_info.into());
+            let mut extra_params = ShowInfoParams::new(extra_title).with_cancel_button();
+            for pair in IterBuf::new().try_iterate(items)? {
+                let [label, value]: [TString; 2] = util::iter_into_array(pair)?;
+                extra_params = unwrap!(extra_params.add(label, value));
+            }
+            Some(extra_params)
+        } else {
+            None
+        };
+
+        let flow = flow::new_confirm_summary(
+            summary_params,
+            account_params,
+            extra_params,
+            extra_title,
+            verb_cancel,
+        )?;
         Ok(flow)
     }
 

@@ -780,7 +780,7 @@ def _confirm_summary(
 ) -> Awaitable[None]:
     title = title or TR.words__title_summary  # def_arg
 
-    total_layout = trezorui2.confirm_summary(
+    total_layout = trezorui_api.confirm_summary(
         amount=amount,
         amount_label=amount_label,
         fee=fee,
@@ -823,7 +823,7 @@ if not utils.BITCOIN_ONLY:
         chunkify: bool = False,
     ) -> None:
         # NOTE: fee_info used so that info button is shown
-        total_layout = trezorui2.confirm_summary(
+        total_layout = trezorui_api.confirm_summary(
             amount=total_amount,
             amount_label=f"{TR.words__amount}:",
             fee=maximum_fee,
@@ -957,7 +957,7 @@ if not utils.BITCOIN_ONLY:
 def confirm_joint_total(spending_amount: str, total_amount: str) -> Awaitable[None]:
     return raise_if_not_confirmed(
         # FIXME: arguments for amount/fee are misused here
-        trezorui2.confirm_summary(
+        trezorui_api.confirm_summary(
             amount=spending_amount,
             amount_label=TR.send__you_are_contributing,
             fee=total_amount,

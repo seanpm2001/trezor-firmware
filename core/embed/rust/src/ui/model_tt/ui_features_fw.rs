@@ -422,6 +422,43 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
+    fn confirm_summary(
+        amount: TString<'static>,
+        amount_label: TString<'static>,
+        fee: TString<'static>,
+        fee_label: TString<'static>,
+        title: Option<TString<'static>>,
+        account_items: Option<Obj>,
+        extra_items: Option<Obj>,
+        extra_title: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let info_button: bool = account_items.is_some() || extra_items.is_some();
+        let paragraphs = ParagraphVecShort::from_iter([
+            Paragraph::new(&theme::TEXT_NORMAL, amount_label).no_break(),
+            Paragraph::new(&theme::TEXT_MONO, amount),
+            Paragraph::new(&theme::TEXT_NORMAL, fee_label).no_break(),
+            Paragraph::new(&theme::TEXT_MONO, fee),
+        ]);
+
+        let mut page = ButtonPage::new(paragraphs.into_paragraphs(), theme::BG)
+            .with_hold()?
+            .with_cancel_button(verb_cancel);
+        if info_button {
+            page = page.with_swipe_left();
+        }
+        let mut frame = Frame::left_aligned(
+            theme::label_title(),
+            title.unwrap_or(TString::empty()),
+            page,
+        );
+        if info_button {
+            frame = frame.with_info_button();
+        }
+        let layout = RootComponent::new(frame);
+        Ok(layout)
+    }
+
     fn confirm_value(
         title: TString<'static>,
         value: Obj,

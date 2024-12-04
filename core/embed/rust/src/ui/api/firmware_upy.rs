@@ -307,6 +307,49 @@ extern "C" fn new_confirm_reset_device(n_args: usize, args: *const Obj, kwargs: 
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_confirm_summary(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let amount: TString = kwargs.get(Qstr::MP_QSTR_amount)?.try_into()?;
+        let amount_label: TString = kwargs.get(Qstr::MP_QSTR_amount_label)?.try_into()?;
+        let fee: TString = kwargs.get(Qstr::MP_QSTR_fee)?.try_into()?;
+        let fee_label: TString = kwargs.get(Qstr::MP_QSTR_fee_label)?.try_into()?;
+        let title: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_title)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let account_items: Option<Obj> = kwargs
+            .get(Qstr::MP_QSTR_account_items)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let extra_items: Option<Obj> = kwargs
+            .get(Qstr::MP_QSTR_extra_items)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let extra_title: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_extra_title)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let verb_cancel: Option<TString<'static>> = kwargs
+            .get(Qstr::MP_QSTR_verb_cancel)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+
+        let layout = ModelUI::confirm_summary(
+            amount,
+            amount_label,
+            fee,
+            fee_label,
+            title,
+            account_items,
+            extra_items,
+            extra_title,
+            verb_cancel,
+        )?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_confirm_value(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -1105,6 +1148,21 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
     ///     """Confirm TOS before creating wallet creation or wallet recovery."""
     Qstr::MP_QSTR_confirm_reset_device => obj_fn_kw!(0, new_confirm_reset_device).as_obj(),
+
+    /// def confirm_summary(
+    ///     *,
+    ///     amount: str,
+    ///     amount_label: str,
+    ///     fee: str,
+    ///     fee_label: str,
+    ///     title: str | None = None,
+    ///     account_items: Iterable[tuple[str, str]] | None = None,
+    ///     extra_items: Iterable[tuple[str, str]] | None = None,
+    ///     extra_title: str | None = None,
+    ///     verb_cancel: str | None = None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm summary of a transaction."""
+    Qstr::MP_QSTR_confirm_summary => obj_fn_kw!(0, new_confirm_summary).as_obj(),
 
     /// def confirm_value(
     ///     *,

@@ -233,6 +233,22 @@ def confirm_reset_device(recovery: bool) -> LayoutObj[UiResult]:
 
 
 # rust/src/ui/api/firmware_upy.rs
+def confirm_summary(
+    *,
+    amount: str,
+    amount_label: str,
+    fee: str,
+    fee_label: str,
+    title: str | None = None,
+    account_items: Iterable[tuple[str, str]] | None = None,
+    extra_items: Iterable[tuple[str, str]] | None = None,
+    extra_title: str | None = None,
+    verb_cancel: str | None = None,
+) -> LayoutObj[UiResult]:
+    """Confirm summary of a transaction."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def confirm_value(
     *,
     title: str,

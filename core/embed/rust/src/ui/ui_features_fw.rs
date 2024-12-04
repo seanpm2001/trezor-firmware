@@ -110,6 +110,18 @@ pub trait UIFeaturesFirmware {
 
     fn confirm_reset_device(recovery: bool) -> Result<impl LayoutMaybeTrace, Error>;
 
+    fn confirm_summary(
+        amount: TString<'static>,
+        amount_label: TString<'static>,
+        fee: TString<'static>,
+        fee_label: TString<'static>,
+        title: Option<TString<'static>>,
+        account_items: Option<Obj>, // TODO: replace Obj
+        extra_items: Option<Obj>,   // TODO: replace Obj
+        extra_title: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn confirm_value(
         title: TString<'static>,
         value: Obj, // TODO: replace Obj

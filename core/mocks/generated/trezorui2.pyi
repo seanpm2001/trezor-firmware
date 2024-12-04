@@ -26,6 +26,7 @@ def flow_confirm_set_new_pin(
 ) -> LayoutObj[UiResult]:
     """Confirm new PIN setup with an option to cancel action."""
 
+
 # rust/src/ui/model_mercury/layout.rs
 def flow_get_address(
     *,
@@ -69,22 +70,6 @@ def flow_confirm_output(
     cancel_text: str | None = None,
 ) -> LayoutObj[UiResult]:
     """Confirm the recipient, (optionally) confirm the amount and (optionally) confirm the summary and present a Hold to Sign page."""
-
-
-# rust/src/ui/model_mercury/layout.rs
-def confirm_summary(
-    *,
-    amount: str,
-    amount_label: str,
-    fee: str,
-    fee_label: str,
-    title: str | None = None,
-    account_items: Iterable[tuple[str, str]] | None = None,
-    extra_items: Iterable[tuple[str, str]] | None = None,
-    extra_title: str | None = None,
-    verb_cancel: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm summary of a transaction."""
 from trezor import utils
 from trezorui_api import *
 
@@ -119,22 +104,6 @@ def confirm_output_amount(
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_summary(
-    *,
-    amount: str,
-    amount_label: str,
-    fee: str,
-    fee_label: str,
-    title: str | None = None,
-    account_items: Iterable[tuple[str, str]] | None = None,
-    extra_items: Iterable[tuple[str, str]] | None = None,
-    extra_title: str | None = None,
-    verb_cancel: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm summary of a transaction."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def multiple_pages_texts(
     *,
     title: str,
@@ -142,21 +111,3 @@ def multiple_pages_texts(
     items: list[str],
 ) -> LayoutObj[UiResult]:
     """Show multiple texts, each on its own page."""
-from trezor import utils
-from trezorui_api import *
-
-
-# rust/src/ui/model_tt/layout.rs
-def confirm_summary(
-    *,
-    amount: str,
-    amount_label: str,
-    fee: str,
-    fee_label: str,
-    title: str | None = None,
-    account_items: Iterable[tuple[str, str]] | None = None,
-    extra_items: Iterable[tuple[str, str]] | None = None,
-    extra_title: str | None = None,
-    verb_cancel: str | None = None,
-) -> LayoutObj[UiResult]:
-    """Confirm summary of a transaction."""

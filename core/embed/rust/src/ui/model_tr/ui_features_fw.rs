@@ -20,6 +20,7 @@ use crate::{
             },
             Component, ComponentExt, Empty, FormattedText, Label, LineBreaking, Paginate, Timeout,
         },
+        display::Font,
         geometry,
         layout::{
             obj::{LayoutMaybeTrace, LayoutObj, RootComponent},
@@ -449,6 +450,117 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         let formatted = FormattedText::new(ops).vertically_centered();
 
         content_in_button_page(title, formatted, button, Some("".into()), false)
+    }
+
+    fn confirm_summary(
+        amount: TString<'static>,
+        amount_label: TString<'static>,
+        fee: TString<'static>,
+        fee_label: TString<'static>,
+        title: Option<TString<'static>>,
+        account_items: Option<Obj>,
+        extra_items: Option<Obj>,
+        extra_title: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        // collect available info pages
+        let mut info_pages: Vec<(TString, Obj), 2> = Vec::new();
+        if let Some(info) = extra_items {
+            // put extra items first as it's typically used for fee info
+            let extra_title = extra_title.unwrap_or(TR::words__title_information.into());
+            unwrap!(info_pages.push((extra_title, info)));
+        }
+        if let Some(info) = account_items {
+            unwrap!(info_pages.push((TR::confirm_total__title_sending_from.into(), info)));
+        }
+
+        // button layouts and actions
+        let verb_cancel: TString = verb_cancel.unwrap_or(TString::empty());
+        let btns_summary_page = move |has_pages_after: bool| -> (ButtonLayout, ButtonActions) {
+            // if there are no info pages, the right button is not needed
+            // if verb_cancel is "^", the left button is an arrow pointing up
+            let left_btn = Some(ButtonDetails::from_text_possible_icon(verb_cancel));
+            let right_btn = has_pages_after.then(|| {
+                ButtonDetails::text("i".into())
+                    .with_fixed_width(theme::BUTTON_ICON_WIDTH)
+                    .with_font(Font::NORMAL)
+            });
+            let middle_btn = Some(ButtonDetails::armed_text(TR::buttons__confirm.into()));
+
+            (
+                ButtonLayout::new(left_btn, middle_btn, right_btn),
+                if has_pages_after {
+                    ButtonActions::cancel_confirm_next()
+                } else {
+                    ButtonActions::cancel_confirm_none()
+                },
+            )
+        };
+        let btns_info_page = |is_last: bool| -> (ButtonLayout, ButtonActions) {
+            // on the last info page, the right button is not needed
+            if is_last {
+                (
+                    ButtonLayout::arrow_none_none(),
+                    ButtonActions::prev_none_none(),
+                )
+            } else {
+                (
+                    ButtonLayout::arrow_none_arrow(),
+                    ButtonActions::prev_none_next(),
+                )
+            }
+        };
+
+        let total_pages = 1 + info_pages.len();
+        let get_page = move |page_index| {
+            match page_index {
+                0 => {
+                    // Total amount + fee
+                    let (btn_layout, btn_actions) = btns_summary_page(!info_pages.is_empty());
+
+                    let ops = OpTextLayout::new(theme::TEXT_MONO)
+                        .text_bold(amount_label)
+                        .newline()
+                        .text_mono(amount)
+                        .newline()
+                        .newline()
+                        .text_bold(fee_label)
+                        .newline()
+                        .text_mono(fee);
+
+                    let formatted = FormattedText::new(ops);
+                    Page::new(btn_layout, btn_actions, formatted)
+                }
+                i => {
+                    // Other info pages as provided
+                    let (title, info_obj) = &info_pages[i - 1];
+                    let is_last = i == total_pages - 1;
+                    let (btn_layout, btn_actions) = btns_info_page(is_last);
+
+                    let mut ops = OpTextLayout::new(theme::TEXT_MONO);
+                    for item in unwrap!(IterBuf::new().try_iterate(*info_obj)) {
+                        let [key, value]: [Obj; 2] = unwrap!(util::iter_into_array(item));
+                        if !ops.is_empty() {
+                            // Each key-value pair is on its own page
+                            ops = ops.next_page();
+                        }
+                        ops = ops
+                            .text_bold(unwrap!(TString::try_from(key)))
+                            .newline()
+                            .text_mono(unwrap!(TString::try_from(value)));
+                    }
+
+                    let formatted = FormattedText::new(ops).vertically_centered();
+                    Page::new(btn_layout, btn_actions, formatted)
+                        .with_slim_arrows()
+                        .with_title(*title)
+                }
+            }
+        };
+        let pages = FlowPages::new(get_page, total_pages);
+
+        let layout = RootComponent::new(Flow::new(pages).with_scrollbar(false));
+        Ok(layout)
     }
 
     fn confirm_value(
