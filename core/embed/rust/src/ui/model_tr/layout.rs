@@ -270,62 +270,6 @@ fn content_in_button_page<T: Component + Paginate + MaybeTrace + 'static>(
 
     Ok(obj.into())
 }
-
-extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
-        let verb: TString = kwargs.get(Qstr::MP_QSTR_verb)?.try_into()?;
-        let items: Gc<List> = kwargs.get(Qstr::MP_QSTR_items)?.try_into()?;
-
-        // Cache the page count so that we can move `items` into the closure.
-        let page_count = items.len();
-
-        // Closure to lazy-load the information on given page index.
-        // Done like this to allow arbitrarily many pages without
-        // the need of any allocation here in Rust.
-        let get_page = move |page_index| {
-            let item_obj = unwrap!(items.get(page_index));
-            let text = unwrap!(TString::try_from(item_obj));
-
-            let (btn_layout, btn_actions) = if page_count == 1 {
-                // There is only one page
-                (
-                    ButtonLayout::cancel_none_text(verb),
-                    ButtonActions::cancel_none_confirm(),
-                )
-            } else if page_index == 0 {
-                // First page
-                (
-                    ButtonLayout::cancel_none_arrow_wide(),
-                    ButtonActions::cancel_none_next(),
-                )
-            } else if page_index == page_count - 1 {
-                // Last page
-                (
-                    ButtonLayout::up_arrow_none_text(verb),
-                    ButtonActions::prev_none_confirm(),
-                )
-            } else {
-                // Page in the middle
-                (
-                    ButtonLayout::up_arrow_none_arrow_wide(),
-                    ButtonActions::prev_none_next(),
-                )
-            };
-
-            let ops = OpTextLayout::new(theme::TEXT_NORMAL).text_normal(text);
-            let formatted = FormattedText::new(ops).vertically_centered();
-
-            Page::new(btn_layout, btn_actions, formatted)
-        };
-
-        let pages = FlowPages::new(get_page, page_count);
-        let obj = LayoutObj::new(Flow::new(pages).with_common_title(title))?;
-        Ok(obj.into())
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 #[no_mangle]
 pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezor import utils
@@ -333,12 +277,4 @@ pub static mp_module_trezorui2: Module = obj_module! {
     ///
     Qstr::MP_QSTR___name__ => Qstr::MP_QSTR_trezorui2.to_obj(),
 
-    /// def multiple_pages_texts(
-    ///     *,
-    ///     title: str,
-    ///     verb: str,
-    ///     items: list[str],
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Show multiple texts, each on its own page."""
-    Qstr::MP_QSTR_multiple_pages_texts => obj_fn_kw!(0, new_multiple_pages_texts).as_obj(),
 };

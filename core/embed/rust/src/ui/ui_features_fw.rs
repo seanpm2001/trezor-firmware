@@ -155,6 +155,13 @@ pub trait UIFeaturesFirmware {
 
     fn check_homescreen_format(image: BinaryData, accept_toif: bool) -> bool;
 
+    // TODO: this is TR specific and used only in confirm_set_new_pin
+    fn multiple_pages_texts(
+        title: TString<'static>,
+        verb: TString<'static>,
+        items: Gc<List>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
     fn prompt_backup() -> Result<impl LayoutMaybeTrace, Error>;
 
     fn request_bip39(

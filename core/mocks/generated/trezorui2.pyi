@@ -72,13 +72,5 @@ def flow_confirm_output(
     """Confirm the recipient, (optionally) confirm the amount and (optionally) confirm the summary and present a Hold to Sign page."""
 from trezor import utils
 from trezorui_api import *
-
-
-# rust/src/ui/model_tr/layout.rs
-def multiple_pages_texts(
-    *,
-    title: str,
-    verb: str,
-    items: list[str],
-) -> LayoutObj[UiResult]:
-    """Show multiple texts, each on its own page."""
+from trezor import utils
+from trezorui_api import *

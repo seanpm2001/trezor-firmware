@@ -445,6 +445,19 @@ extern "C" fn new_continue_recovery_homepage(
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let verb: TString = kwargs.get(Qstr::MP_QSTR_verb)?.try_into()?;
+        let items: Gc<List> = kwargs.get(Qstr::MP_QSTR_items)?.try_into()?;
+
+        let layout = ModelUI::multiple_pages_texts(title, verb, items)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+
 extern "C" fn new_prompt_backup() -> Obj {
     let block = || {
         let layout = ModelUI::prompt_backup()?;
@@ -1205,6 +1218,15 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_continue_recovery_homepage => obj_fn_kw!(0, new_continue_recovery_homepage).as_obj(),
+
+    /// def multiple_pages_texts(
+    ///     *,
+    ///     title: str,
+    ///     verb: str,
+    ///     items: list[str],
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Show multiple texts, each on its own page. TR specific."""
+    Qstr::MP_QSTR_multiple_pages_texts => obj_fn_kw!(0, new_multiple_pages_texts).as_obj(),
 
     /// def prompt_backup() -> LayoutObj[UiResult]:
     ///     """Strongly recommend user to do a backup."""

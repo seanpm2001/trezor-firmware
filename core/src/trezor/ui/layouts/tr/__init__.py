@@ -1258,7 +1258,7 @@ def _confirm_multiple_pages_texts(
     br_code: ButtonRequestType = BR_CODE_OTHER,
 ) -> Awaitable[None]:
     return raise_if_not_confirmed(
-        trezorui2.multiple_pages_texts(
+        trezorui_api.multiple_pages_texts(
             title=title,
             verb=verb,
             items=items,

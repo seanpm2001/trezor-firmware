@@ -512,6 +512,16 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         LayoutObj::new_root(flow)
     }
 
+    fn multiple_pages_texts(
+        _title: TString<'static>,
+        _verb: TString<'static>,
+        _items: Gc<List>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
+            c"multiple_pages_texts not implemented",
+        ))
+    }
+
     fn prompt_backup() -> Result<impl LayoutMaybeTrace, Error> {
         let flow = flow::prompt_backup::new_prompt_backup()?;
         Ok(flow)

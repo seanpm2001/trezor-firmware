@@ -666,6 +666,58 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         LayoutObj::new_root(layout)
     }
 
+    fn multiple_pages_texts(
+        title: TString<'static>,
+        verb: TString<'static>,
+        items: Gc<List>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        // Cache the page count so that we can move `items` into the closure.
+        let page_count = items.len();
+
+        // Closure to lazy-load the information on given page index.
+        // Done like this to allow arbitrarily many pages without
+        // the need of any allocation here in Rust.
+        let get_page = move |page_index| {
+            let item_obj = unwrap!(items.get(page_index));
+            let text = unwrap!(TString::try_from(item_obj));
+
+            let (btn_layout, btn_actions) = if page_count == 1 {
+                // There is only one page
+                (
+                    ButtonLayout::cancel_none_text(verb),
+                    ButtonActions::cancel_none_confirm(),
+                )
+            } else if page_index == 0 {
+                // First page
+                (
+                    ButtonLayout::cancel_none_arrow_wide(),
+                    ButtonActions::cancel_none_next(),
+                )
+            } else if page_index == page_count - 1 {
+                // Last page
+                (
+                    ButtonLayout::up_arrow_none_text(verb),
+                    ButtonActions::prev_none_confirm(),
+                )
+            } else {
+                // Page in the middle
+                (
+                    ButtonLayout::up_arrow_none_arrow_wide(),
+                    ButtonActions::prev_none_next(),
+                )
+            };
+
+            let ops = OpTextLayout::new(theme::TEXT_NORMAL).text_normal(text);
+            let formatted = FormattedText::new(ops).vertically_centered();
+
+            Page::new(btn_layout, btn_actions, formatted)
+        };
+
+        let pages = FlowPages::new(get_page, page_count);
+        let layout = RootComponent::new(Flow::new(pages).with_common_title(title));
+        Ok(layout)
+    }
+
     fn prompt_backup() -> Result<impl LayoutMaybeTrace, Error> {
         let get_page = move |page_index| match page_index {
             0 => {

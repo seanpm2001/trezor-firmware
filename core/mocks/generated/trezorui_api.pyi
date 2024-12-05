@@ -294,6 +294,16 @@ def continue_recovery_homepage(
 
 
 # rust/src/ui/api/firmware_upy.rs
+def multiple_pages_texts(
+    *,
+    title: str,
+    verb: str,
+    items: list[str],
+) -> LayoutObj[UiResult]:
+    """Show multiple texts, each on its own page. TR specific."""
+
+
+# rust/src/ui/api/firmware_upy.rs
 def prompt_backup() -> LayoutObj[UiResult]:
     """Strongly recommend user to do a backup."""
 
