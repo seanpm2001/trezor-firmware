@@ -123,6 +123,32 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
             .map(Into::into)
     }
 
+    fn confirm_blob_intro(
+        title: TString<'static>,
+        data: Obj,
+        subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        chunkify: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        const CONFIRM_BLOB_INTRO_MARGIN: usize = 24;
+        ConfirmBlobParams::new(title, data, Some(TR::instructions__view_all_data.into()))
+            .with_verb(verb)
+            .with_verb_info(Some(TR::buttons__view_all_data.into()))
+            .with_description_font(&theme::TEXT_SUB_GREEN_LIME)
+            .with_subtitle(subtitle)
+            .with_verb_cancel(verb_cancel)
+            .with_footer_description(Some(
+                TR::buttons__confirm.into(), /* or words__confirm?? */
+            ))
+            .with_chunkify(chunkify)
+            .with_page_limit(Some(1))
+            .with_frame_margin(CONFIRM_BLOB_INTRO_MARGIN)
+            .into_flow()
+            .and_then(LayoutObj::new_root)
+            .map(Into::into)
+    }
+
     fn confirm_homescreen(
         title: TString<'static>,
         image: BinaryData<'static>,
@@ -512,6 +538,138 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         LayoutObj::new_root(flow)
     }
 
+    fn flow_confirm_output(
+        title: Option<TString<'static>>,
+        subtitle: Option<TString<'static>>,
+        message: Obj,
+        amount: Option<Obj>,
+        chunkify: bool,
+        text_mono: bool,
+        account: Option<TString<'static>>,
+        account_path: Option<TString<'static>>,
+        br_code: u16,
+        br_name: TString<'static>,
+        address: Option<Obj>,
+        address_title: Option<TString<'static>>,
+        summary_items: Option<Obj>,
+        fee_items: Option<Obj>,
+        summary_title: Option<TString<'static>>,
+        summary_br_code: Option<u16>,
+        summary_br_name: Option<TString<'static>>,
+        cancel_text: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let address_title = address_title.unwrap_or(TR::words__address.into());
+
+        let main_params = ConfirmBlobParams::new(title.unwrap_or(TString::empty()), message, None)
+            .with_subtitle(subtitle)
+            .with_menu_button()
+            .with_footer(TR::instructions__swipe_up.into(), None)
+            .with_chunkify(chunkify)
+            .with_text_mono(text_mono)
+            .with_swipe_up();
+
+        let content_amount_params = amount.map(|amount| {
+            ConfirmBlobParams::new(TR::words__amount.into(), amount, None)
+                .with_subtitle(subtitle)
+                .with_menu_button()
+                .with_footer(TR::instructions__swipe_up.into(), None)
+                .with_text_mono(text_mono)
+                .with_swipe_up()
+                .with_swipe_down()
+        });
+
+        let address_params = address.map(|address| {
+            ConfirmBlobParams::new(address_title, address, None)
+                .with_cancel_button()
+                .with_chunkify(true)
+                .with_text_mono(true)
+                .with_swipe_right()
+        });
+
+        let mut fee_items_params =
+            ShowInfoParams::new(TR::confirm_total__title_fee.into()).with_cancel_button();
+        if fee_items.is_some() {
+            for pair in IterBuf::new().try_iterate(fee_items.unwrap())? {
+                let [label, value]: [TString; 2] = util::iter_into_array(pair)?;
+                fee_items_params = unwrap!(fee_items_params.add(label, value));
+            }
+        }
+
+        let summary_items_params: Option<ShowInfoParams> = if summary_items.is_some() {
+            let mut summary =
+                ShowInfoParams::new(summary_title.unwrap_or(TR::words__title_summary.into()))
+                    .with_menu_button()
+                    .with_footer(TR::instructions__swipe_up.into(), None)
+                    .with_swipe_up()
+                    .with_swipe_down();
+            for pair in IterBuf::new().try_iterate(summary_items.unwrap())? {
+                let [label, value]: [TString; 2] = util::iter_into_array(pair)?;
+                summary = unwrap!(summary.add(label, value));
+            }
+            Some(summary)
+        } else {
+            None
+        };
+
+        let flow = flow::confirm_output::new_confirm_output(
+            main_params,
+            account,
+            account_path,
+            br_name,
+            br_code,
+            content_amount_params,
+            address_params,
+            address_title,
+            summary_items_params,
+            fee_items_params,
+            summary_br_name,
+            summary_br_code,
+            cancel_text,
+        )?;
+        Ok(flow)
+    }
+
+    fn flow_confirm_set_new_pin(
+        title: TString<'static>,
+        description: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let flow = flow::confirm_set_new_pin::new_set_new_pin(title, description)?;
+        Ok(flow)
+    }
+
+    fn flow_get_address(
+        address: Obj,
+        title: TString<'static>,
+        description: Option<TString<'static>>,
+        extra: Option<TString<'static>>,
+        chunkify: bool,
+        address_qr: TString<'static>,
+        case_sensitive: bool,
+        account: Option<TString<'static>>,
+        path: Option<TString<'static>>,
+        xpubs: Obj,
+        title_success: TString<'static>,
+        br_code: u16,
+        br_name: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        let flow = flow::get_address::new_get_address(
+            title,
+            description,
+            extra,
+            address,
+            chunkify,
+            address_qr,
+            case_sensitive,
+            account,
+            path,
+            xpubs,
+            title_success,
+            br_code,
+            br_name,
+        )?;
+        Ok(flow)
+    }
+
     fn multiple_pages_texts(
         _title: TString<'static>,
         _verb: TString<'static>,
@@ -865,7 +1023,7 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         _title: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         Err::<RootComponent<Empty, ModelMercuryFeatures>, Error>(Error::ValueError(
-            c"use flow_share_words instead",
+            c"use share_words_mercury instead",
         ))
     }
 

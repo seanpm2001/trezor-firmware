@@ -167,6 +167,31 @@ extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_confirm_blob_intro(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let data: Obj = kwargs.get(Qstr::MP_QSTR_data)?;
+        let subtitle: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_subtitle)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let verb: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let verb_cancel: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_verb_cancel)
+            .unwrap_or_else(|_| Obj::const_none())
+            .try_into_option()?;
+        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
+
+        let layout_obj =
+            ModelUI::confirm_blob_intro(title, data, subtitle, verb, verb_cancel, chunkify)?;
+        Ok(layout_obj.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_confirm_coinjoin(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let max_rounds: TString = kwargs.get(Qstr::MP_QSTR_max_rounds)?.try_into()?;
@@ -445,6 +470,114 @@ extern "C" fn new_continue_recovery_homepage(
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
 
+extern "C" fn new_flow_confirm_output(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: Option<TString> = kwargs.get(Qstr::MP_QSTR_title)?.try_into_option()?;
+        let subtitle: Option<TString> = kwargs.get(Qstr::MP_QSTR_subtitle)?.try_into_option()?;
+        let message: Obj = kwargs.get(Qstr::MP_QSTR_message)?;
+        let amount: Option<Obj> = kwargs.get(Qstr::MP_QSTR_amount)?.try_into_option()?;
+        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
+        let text_mono: bool = kwargs.get_or(Qstr::MP_QSTR_text_mono, true)?;
+        let account: Option<TString> = kwargs.get(Qstr::MP_QSTR_account)?.try_into_option()?;
+        let account_path: Option<TString> =
+            kwargs.get(Qstr::MP_QSTR_account_path)?.try_into_option()?;
+        let br_code: u16 = kwargs.get(Qstr::MP_QSTR_br_code)?.try_into()?;
+        let br_name: TString = kwargs.get(Qstr::MP_QSTR_br_name)?.try_into()?;
+
+        let address: Option<Obj> = kwargs.get(Qstr::MP_QSTR_address)?.try_into_option()?;
+        let address_title: Option<TString> =
+            kwargs.get(Qstr::MP_QSTR_address_title)?.try_into_option()?;
+        let summary_items: Option<Obj> =
+            kwargs.get(Qstr::MP_QSTR_summary_items)?.try_into_option()?;
+        let fee_items: Option<Obj> = kwargs.get(Qstr::MP_QSTR_fee_items)?.try_into_option()?;
+        let summary_title: Option<TString> =
+            kwargs.get(Qstr::MP_QSTR_summary_title)?.try_into_option()?;
+        let summary_br_code: Option<u16> = kwargs
+            .get(Qstr::MP_QSTR_summary_br_code)?
+            .try_into_option()?;
+        let summary_br_name: Option<TString> = kwargs
+            .get(Qstr::MP_QSTR_summary_br_name)?
+            .try_into_option()?;
+        let cancel_text: Option<TString> =
+            kwargs.get(Qstr::MP_QSTR_cancel_text)?.try_into_option()?;
+
+        let layout = ModelUI::flow_confirm_output(
+            title,
+            subtitle,
+            message,
+            amount,
+            chunkify,
+            text_mono,
+            account,
+            account_path,
+            br_code,
+            br_name,
+            address,
+            address_title,
+            summary_items,
+            fee_items,
+            summary_title,
+            summary_br_code,
+            summary_br_name,
+            cancel_text,
+        )?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_flow_confirm_set_new_pin(
+    n_args: usize,
+    args: *const Obj,
+    kwargs: *mut Map,
+) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let description: TString = kwargs.get(Qstr::MP_QSTR_description)?.try_into()?;
+
+        let layout = ModelUI::flow_confirm_set_new_pin(title, description)?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
+extern "C" fn new_flow_get_address(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
+    let block = move |_args: &[Obj], kwargs: &Map| {
+        let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
+        let description: Option<TString> =
+            kwargs.get(Qstr::MP_QSTR_description)?.try_into_option()?;
+        let extra: Option<TString> = kwargs.get(Qstr::MP_QSTR_extra)?.try_into_option()?;
+        let address: Obj = kwargs.get(Qstr::MP_QSTR_address)?;
+        let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
+        let address_qr: TString = kwargs.get(Qstr::MP_QSTR_address_qr)?.try_into()?;
+        let case_sensitive: bool = kwargs.get(Qstr::MP_QSTR_case_sensitive)?.try_into()?;
+        let account: Option<TString> = kwargs.get(Qstr::MP_QSTR_account)?.try_into_option()?;
+        let path: Option<TString> = kwargs.get(Qstr::MP_QSTR_path)?.try_into_option()?;
+        let xpubs: Obj = kwargs.get(Qstr::MP_QSTR_xpubs)?;
+        let title_success: TString = kwargs.get(Qstr::MP_QSTR_title_success)?.try_into()?;
+        let br_code: u16 = kwargs.get(Qstr::MP_QSTR_br_code)?.try_into()?;
+        let br_name: TString = kwargs.get(Qstr::MP_QSTR_br_name)?.try_into()?;
+
+        let layout = ModelUI::flow_get_address(
+            address,
+            title,
+            description,
+            extra,
+            chunkify,
+            address_qr,
+            case_sensitive,
+            account,
+            path,
+            xpubs,
+            title_success,
+            br_code,
+            br_name,
+        )?;
+        Ok(LayoutObj::new_root(layout)?.into())
+    };
+    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
+}
+
 extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -456,7 +589,6 @@ extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: 
     };
     unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
 }
-
 
 extern "C" fn new_prompt_backup() -> Obj {
     let block = || {
@@ -1070,6 +1202,20 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     ///     """Confirm byte sequence data."""
     Qstr::MP_QSTR_confirm_blob => obj_fn_kw!(0, new_confirm_blob).as_obj(),
 
+    /// def confirm_blob_intro(
+    ///     *,
+    ///     title: str,
+    ///     data: str | bytes,
+    ///     subtitle: str | None = None,
+    ///     verb: str | None = None,
+    ///     verb_cancel: str | None = None,
+    ///     chunkify: bool = False,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm byte sequence data by showing only the first page of the data
+    ///     and instructing the user to access the menu in order to view all the data,
+    ///     which can then be confirmed using confirm_blob."""
+    Qstr::MP_QSTR_confirm_blob_intro => obj_fn_kw!(0, new_confirm_blob_intro).as_obj(),
+
     /// def confirm_coinjoin(
     ///     *,
     ///     max_rounds: str,
@@ -1218,6 +1364,59 @@ pub static mp_module_trezorui_api: Module = obj_module! {
     /// ) -> LayoutObj[UiResult]:
     ///     """Device recovery homescreen."""
     Qstr::MP_QSTR_continue_recovery_homepage => obj_fn_kw!(0, new_continue_recovery_homepage).as_obj(),
+
+    /// def flow_confirm_output(
+    ///     *,
+    ///     title: str | None,
+    ///     subtitle: str | None,
+    ///     message: str,
+    ///     amount: str | None,
+    ///     chunkify: bool,
+    ///     text_mono: bool,
+    ///     account: str | None,
+    ///     account_path: str | None,
+    ///     br_code: ButtonRequestType,
+    ///     br_name: str,
+    ///     address: str | None,
+    ///     address_title: str | None,
+    ///     summary_items: Iterable[tuple[str, str]] | None = None,
+    ///     fee_items: Iterable[tuple[str, str]] | None = None,
+    ///     summary_title: str | None = None,
+    ///     summary_br_code: ButtonRequestType | None = None,
+    ///     summary_br_name: str | None = None,
+    ///     cancel_text: str | None = None,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm the recipient, (optionally) confirm the amount and (optionally) confirm the summary and present a Hold to Sign page."""
+    Qstr::MP_QSTR_flow_confirm_output => obj_fn_kw!(0, new_flow_confirm_output).as_obj(),
+
+    // TODO: supply more arguments for Wipe code setting (mercury)
+    ///
+    /// def flow_confirm_set_new_pin(
+    ///     *,
+    ///     title: str,
+    ///     description: str,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Confirm new PIN setup with an option to cancel action."""
+    Qstr::MP_QSTR_flow_confirm_set_new_pin => obj_fn_kw!(0, new_flow_confirm_set_new_pin).as_obj(),
+
+    /// def flow_get_address(
+    ///     *,
+    ///     address: str | bytes,
+    ///     title: str,
+    ///     description: str | None,
+    ///     extra: str | None,
+    ///     chunkify: bool,
+    ///     address_qr: str,
+    ///     case_sensitive: bool,
+    ///     account: str | None,
+    ///     path: str | None,
+    ///     xpubs: list[tuple[str, str]],
+    ///     title_success: str,
+    ///     br_code: ButtonRequestType,
+    ///     br_name: str,
+    /// ) -> LayoutObj[UiResult]:
+    ///     """Get address / receive funds."""
+    Qstr::MP_QSTR_flow_get_address => obj_fn_kw!(0, new_flow_get_address).as_obj(),
 
     /// def multiple_pages_texts(
     ///     *,

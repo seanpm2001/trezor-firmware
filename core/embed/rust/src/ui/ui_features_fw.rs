@@ -53,6 +53,15 @@ pub trait UIFeaturesFirmware {
         cancel: bool,
     ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
 
+    fn confirm_blob_intro(
+        title: TString<'static>,
+        data: Obj, // TODO: replace Obj
+        subtitle: Option<TString<'static>>,
+        verb: Option<TString<'static>>,
+        verb_cancel: Option<TString<'static>>,
+        chunkify: bool,
+    ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
+
     fn confirm_homescreen(
         title: TString<'static>,
         image: BinaryData<'static>,
@@ -154,6 +163,48 @@ pub trait UIFeaturesFirmware {
     ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
 
     fn check_homescreen_format(image: BinaryData, accept_toif: bool) -> bool;
+
+    fn flow_confirm_output(
+        title: Option<TString<'static>>,
+        subtitle: Option<TString<'static>>,
+        message: Obj,        // TODO: replace Obj
+        amount: Option<Obj>, // TODO: replace Obj
+        chunkify: bool,
+        text_mono: bool,
+        account: Option<TString<'static>>,
+        account_path: Option<TString<'static>>,
+        br_code: u16,
+        br_name: TString<'static>,
+        address: Option<Obj>, // TODO: replace Obj
+        address_title: Option<TString<'static>>,
+        summary_items: Option<Obj>, // TODO: replace Obj
+        fee_items: Option<Obj>,     // TODO: replace Obj
+        summary_title: Option<TString<'static>>,
+        summary_br_code: Option<u16>,
+        summary_br_name: Option<TString<'static>>,
+        cancel_text: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn flow_confirm_set_new_pin(
+        title: TString<'static>,
+        description: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
+
+    fn flow_get_address(
+        address: Obj, // TODO: replace Obj
+        title: TString<'static>,
+        description: Option<TString<'static>>,
+        extra: Option<TString<'static>>,
+        chunkify: bool,
+        address_qr: TString<'static>,
+        case_sensitive: bool,
+        account: Option<TString<'static>>,
+        path: Option<TString<'static>>,
+        xpubs: Obj, // TODO: replace Obj
+        title_success: TString<'static>,
+        br_code: u16,
+        br_name: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error>;
 
     // TODO: this is TR specific and used only in confirm_set_new_pin
     fn multiple_pages_texts(

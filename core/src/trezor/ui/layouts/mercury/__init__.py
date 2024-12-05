@@ -243,7 +243,7 @@ async def show_address(
     )
 
     await raise_if_not_confirmed(
-        trezorui2.flow_get_address(
+        trezorui_api.flow_get_address(
             address=address,
             title=title or TR.address__title_receive_address,
             description=network or "",
@@ -389,7 +389,7 @@ async def confirm_output(
         title = TR.send__title_sending_to
 
     await raise_if_not_confirmed(
-        trezorui2.flow_confirm_output(
+        trezorui_api.flow_confirm_output(
             title=TR.words__address,
             subtitle=title,
             message=address,
@@ -497,7 +497,7 @@ def confirm_blob(
     prompt_screen: bool = True,
 ) -> Awaitable[None]:
     if ask_pagination:
-        main_layout = trezorui2.confirm_blob_intro(
+        main_layout = trezorui_api.confirm_blob_intro(
             title=title,
             data=data,
             subtitle=description,
@@ -766,7 +766,7 @@ if not utils.BITCOIN_ONLY:
         chunkify: bool = False,
     ) -> None:
         await raise_if_not_confirmed(
-            trezorui2.flow_confirm_output(
+            trezorui_api.flow_confirm_output(
                 title=TR.words__address,
                 subtitle=(
                     TR.words__recipient
@@ -819,7 +819,7 @@ if not utils.BITCOIN_ONLY:
                 (TR.send__maximum_fee, maximum_fee),
             )
         await raise_if_not_confirmed(
-            trezorui2.flow_confirm_output(
+            trezorui_api.flow_confirm_output(
                 title=verb,
                 subtitle=None,
                 message=intro_question,
@@ -1209,7 +1209,7 @@ def confirm_set_new_pin(
     br_code: ButtonRequestType = BR_CODE_OTHER,
 ) -> Awaitable[None]:
     return raise_if_not_confirmed(
-        trezorui2.flow_confirm_set_new_pin(title=title, description=description),
+        trezorui_api.flow_confirm_set_new_pin(title=title, description=description),
         br_name,
         br_code,
     )

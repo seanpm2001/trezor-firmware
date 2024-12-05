@@ -160,6 +160,17 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         LayoutObj::new_root(layout)
     }
 
+    fn confirm_blob_intro(
+        _title: TString<'static>,
+        _data: Obj,
+        _subtitle: Option<TString<'static>>,
+        _verb: Option<TString<'static>>,
+        _verb_cancel: Option<TString<'static>>,
+        _chunkify: bool,
+    ) -> Result<Gc<LayoutObj>, Error> {
+        Err::<Gc<LayoutObj>, Error>(Error::ValueError(c"confirm_blob_intro not implemented"))
+    }
+
     fn confirm_homescreen(
         title: TString<'static>,
         image: BinaryData<'static>,
@@ -664,6 +675,60 @@ impl UIFeaturesFirmware for ModelTRFeatures {
             false,
         )?;
         LayoutObj::new_root(layout)
+    }
+
+    fn flow_confirm_output(
+        _title: Option<TString<'static>>,
+        _subtitle: Option<TString<'static>>,
+        _message: Obj,
+        _amount: Option<Obj>,
+        _chunkify: bool,
+        _text_mono: bool,
+        _account: Option<TString<'static>>,
+        _account_path: Option<TString<'static>>,
+        _br_code: u16,
+        _br_name: TString<'static>,
+        _address: Option<Obj>,
+        _address_title: Option<TString<'static>>,
+        _summary_items: Option<Obj>,
+        _fee_items: Option<Obj>,
+        _summary_title: Option<TString<'static>>,
+        _summary_br_code: Option<u16>,
+        _summary_br_name: Option<TString<'static>>,
+        _cancel_text: Option<TString<'static>>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"flow_confirm_output not supported",
+        ))
+    }
+
+    fn flow_confirm_set_new_pin(
+        _title: TString<'static>,
+        _description: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"flow_confirm_set_new_pin not supported",
+        ))
+    }
+
+    fn flow_get_address(
+        _address: Obj,
+        _title: TString<'static>,
+        _description: Option<TString<'static>>,
+        _extra: Option<TString<'static>>,
+        _chunkify: bool,
+        _address_qr: TString<'static>,
+        _case_sensitive: bool,
+        _account: Option<TString<'static>>,
+        _path: Option<TString<'static>>,
+        _xpubs: Obj,
+        _title_success: TString<'static>,
+        _br_code: u16,
+        _br_name: TString<'static>,
+    ) -> Result<impl LayoutMaybeTrace, Error> {
+        Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
+            c"flow_get_address not supported",
+        ))
     }
 
     fn multiple_pages_texts(
