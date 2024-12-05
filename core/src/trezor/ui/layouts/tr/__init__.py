@@ -986,13 +986,15 @@ if not utils.BITCOIN_ONLY:
 
 
 def confirm_joint_total(spending_amount: str, total_amount: str) -> Awaitable[None]:
-    return raise_if_not_confirmed(
-        trezorui2.confirm_joint_total(
-            spending_amount=spending_amount,
-            total_amount=total_amount,
-        ),
+    return confirm_properties(
         "confirm_joint_total",
-        ButtonRequestType.SignTx,
+        TR.joint__title,
+        [
+            (TR.joint__you_are_contributing, spending_amount),
+            (TR.joint__to_the_total_amount, total_amount),
+        ],
+        hold=True,
+        br_code=ButtonRequestType.SignTx,
     )
 
 

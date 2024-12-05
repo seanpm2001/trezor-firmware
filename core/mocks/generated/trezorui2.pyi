@@ -75,15 +75,6 @@ from trezorui_api import *
 
 
 # rust/src/ui/model_tr/layout.rs
-def confirm_joint_total(
-    *,
-    spending_amount: str,
-    total_amount: str,
-) -> LayoutObj[UiResult]:
-    """Confirm total if there are external inputs."""
-
-
-# rust/src/ui/model_tr/layout.rs
 def multiple_pages_texts(
     *,
     title: str,

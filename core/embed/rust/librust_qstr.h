@@ -192,7 +192,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_confirm_fido;
   MP_QSTR_confirm_firmware_update;
   MP_QSTR_confirm_homescreen;
-  MP_QSTR_confirm_joint_total;
   MP_QSTR_confirm_modify_fee;
   MP_QSTR_confirm_modify_output;
   MP_QSTR_confirm_more;
@@ -660,7 +659,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_sign_message__message_size;
   MP_QSTR_sign_message__verify_address;
   MP_QSTR_skip_first_paint;
-  MP_QSTR_spending_amount;
   MP_QSTR_storage_msg__processing;
   MP_QSTR_storage_msg__starting;
   MP_QSTR_storage_msg__verifying_pin;
@@ -678,7 +676,6 @@ static void _librust_qstrs(void) {
   MP_QSTR_time_ms;
   MP_QSTR_timer;
   MP_QSTR_title;
-  MP_QSTR_total_amount;
   MP_QSTR_total_fee_new;
   MP_QSTR_total_len;
   MP_QSTR_touch_event;

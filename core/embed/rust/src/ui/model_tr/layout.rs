@@ -271,29 +271,6 @@ fn content_in_button_page<T: Component + Paginate + MaybeTrace + 'static>(
     Ok(obj.into())
 }
 
-extern "C" fn new_confirm_joint_total(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
-    let block = move |_args: &[Obj], kwargs: &Map| {
-        let spending_amount: TString = kwargs.get(Qstr::MP_QSTR_spending_amount)?.try_into()?;
-        let total_amount: TString = kwargs.get(Qstr::MP_QSTR_total_amount)?.try_into()?;
-
-        let paragraphs = Paragraphs::new([
-            Paragraph::new(&theme::TEXT_BOLD, TR::joint__you_are_contributing),
-            Paragraph::new(&theme::TEXT_MONO, spending_amount),
-            Paragraph::new(&theme::TEXT_BOLD, TR::joint__to_the_total_amount),
-            Paragraph::new(&theme::TEXT_MONO, total_amount),
-        ]);
-
-        content_in_button_page(
-            TR::joint__title.into(),
-            paragraphs,
-            TR::buttons__hold_to_confirm.into(),
-            Some("".into()),
-            true,
-        )
-    };
-    unsafe { util::try_with_args_and_kwargs(n_args, args, kwargs, block) }
-}
-
 extern "C" fn new_multiple_pages_texts(n_args: usize, args: *const Obj, kwargs: *mut Map) -> Obj {
     let block = move |_args: &[Obj], kwargs: &Map| {
         let title: TString = kwargs.get(Qstr::MP_QSTR_title)?.try_into()?;
@@ -355,14 +332,6 @@ pub static mp_module_trezorui2: Module = obj_module! {
     /// from trezorui_api import *
     ///
     Qstr::MP_QSTR___name__ => Qstr::MP_QSTR_trezorui2.to_obj(),
-
-    /// def confirm_joint_total(
-    ///     *,
-    ///     spending_amount: str,
-    ///     total_amount: str,
-    /// ) -> LayoutObj[UiResult]:
-    ///     """Confirm total if there are external inputs."""
-    Qstr::MP_QSTR_confirm_joint_total => obj_fn_kw!(0, new_confirm_joint_total).as_obj(),
 
     /// def multiple_pages_texts(
     ///     *,
