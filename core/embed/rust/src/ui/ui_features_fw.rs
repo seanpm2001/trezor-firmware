@@ -345,7 +345,8 @@ pub trait UIFeaturesFirmware {
         title: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error>;
 
-    // TODO: merge with `show_share_words` instead of having specific version for mercury
+    // TODO: merge with `show_share_words` instead of having specific version for
+    // mercury
     fn show_share_words_mercury(
         words: Vec<TString<'static>, 33>,
         subtitle: Option<TString<'static>>,
@@ -376,7 +377,6 @@ pub trait UIFeaturesFirmware {
         value: TString<'static>,
         description: TString<'static>,
         allow_cancel: bool,
-        time_ms: u32,
         danger: bool,
     ) -> Result<Gc<LayoutObj>, Error>; // TODO: return LayoutMaybeTrace
 

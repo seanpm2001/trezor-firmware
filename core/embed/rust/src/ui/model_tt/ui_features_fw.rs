@@ -45,14 +45,14 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         title: TString<'static>,
         action: Option<TString<'static>>,
         description: Option<TString<'static>>,
-        subtitle: Option<TString<'static>>,
+        _subtitle: Option<TString<'static>>,
         verb: Option<TString<'static>>,
         verb_cancel: Option<TString<'static>>,
         hold: bool,
         hold_danger: bool,
         reverse: bool,
-        prompt_screen: bool,
-        prompt_title: Option<TString<'static>>,
+        _prompt_screen: bool,
+        _prompt_title: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let paragraphs = {
             let action = action.unwrap_or("".into());
@@ -284,7 +284,7 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         sign: i32,
         user_fee_change: TString<'static>,
         total_fee_new: TString<'static>,
-        fee_rate_amount: Option<TString<'static>>,
+        _fee_rate_amount: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let (description, change, total_label) = match sign {
             s if s < 0 => (
@@ -441,7 +441,7 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         title: Option<TString<'static>>,
         account_items: Option<Obj>,
         extra_items: Option<Obj>,
-        extra_title: Option<TString<'static>>,
+        _extra_title: Option<TString<'static>>,
         verb_cancel: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let info_button: bool = account_items.is_some() || extra_items.is_some();
@@ -520,7 +520,7 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         Ok(layout)
     }
 
-    fn check_homescreen_format(image: BinaryData, accept_toif: bool) -> bool {
+    fn check_homescreen_format(image: BinaryData, _accept_toif: bool) -> bool {
         super::component::check_homescreen_format(image, false)
     }
 
@@ -697,8 +697,8 @@ impl UIFeaturesFirmware for ModelTTFeatures {
     }
 
     fn request_passphrase(
-        prompt: TString<'static>,
-        max_len: u32,
+        _prompt: TString<'static>,
+        _max_len: u32,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(PassphraseKeyboard::new());
         Ok(layout)
@@ -1156,8 +1156,7 @@ impl UIFeaturesFirmware for ModelTTFeatures {
         value: TString<'static>,
         description: TString<'static>,
         allow_cancel: bool,
-        time_ms: u32,
-        danger: bool,
+        _danger: bool,
     ) -> Result<Gc<LayoutObj>, Error> {
         let icon = BlendedImage::new(
             theme::IMAGE_BG_OCTAGON,
@@ -1356,7 +1355,8 @@ mod tests {
     use crate::{
         trace::tests::trace,
         ui::{
-            component::text::op::OpTextLayout, component::Component, geometry::Rect,
+            component::{text::op::OpTextLayout, Component},
+            geometry::Rect,
             model_tt::constant,
         },
     };

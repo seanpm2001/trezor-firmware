@@ -50,14 +50,14 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         title: TString<'static>,
         action: Option<TString<'static>>,
         description: Option<TString<'static>>,
-        subtitle: Option<TString<'static>>,
+        _subtitle: Option<TString<'static>>,
         verb: Option<TString<'static>>,
         verb_cancel: Option<TString<'static>>,
         hold: bool,
-        hold_danger: bool,
+        _hold_danger: bool,
         reverse: bool,
-        prompt_screen: bool,
-        prompt_title: Option<TString<'static>>,
+        _prompt_screen: bool,
+        _prompt_title: Option<TString<'static>>,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let paragraphs = {
             let action = action.unwrap_or("".into());
@@ -87,8 +87,8 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     fn confirm_address(
         title: TString<'static>,
         data: Obj,
-        description: Option<TString<'static>>,
-        extra: Option<TString<'static>>,
+        _description: Option<TString<'static>>,
+        _extra: Option<TString<'static>>,
         verb: Option<TString<'static>>,
         chunkify: bool,
     ) -> Result<impl LayoutMaybeTrace, Error> {
@@ -215,7 +215,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     fn confirm_fido(
         title: TString<'static>,
         app_name: TString<'static>,
-        icon: Option<TString<'static>>,
+        _icon: Option<TString<'static>>,
         accounts: Gc<List>,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         // Cache the page count so that we can move `accounts` into the closure.
@@ -305,7 +305,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     }
 
     fn confirm_modify_fee(
-        title: TString<'static>,
+        _title: TString<'static>,
         sign: i32,
         user_fee_change: TString<'static>,
         total_fee_new: TString<'static>,
@@ -468,7 +468,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         amount_label: TString<'static>,
         fee: TString<'static>,
         fee_label: TString<'static>,
-        title: Option<TString<'static>>,
+        _title: Option<TString<'static>>,
         account_items: Option<Obj>,
         extra_items: Option<Obj>,
         extra_title: Option<TString<'static>>,
@@ -862,8 +862,8 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     fn request_pin(
         prompt: TString<'static>,
         subprompt: TString<'static>,
-        allow_cancel: bool,
-        warning: bool,
+        _allow_cancel: bool,
+        _warning: bool,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout = RootComponent::new(PinEntry::new(prompt, subprompt));
         Ok(layout)
@@ -871,7 +871,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
 
     fn request_passphrase(
         prompt: TString<'static>,
-        max_len: u32,
+        _max_len: u32,
     ) -> Result<impl LayoutMaybeTrace, Error> {
         let layout =
             RootComponent::new(Frame::new(prompt, PassphraseEntry::new()).with_title_centered());
@@ -879,7 +879,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     }
 
     fn select_word(
-        title: TString<'static>,
+        _title: TString<'static>,
         description: TString<'static>,
         words: [TString<'static>; 3],
     ) -> Result<impl LayoutMaybeTrace, Error> {
@@ -915,7 +915,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         Ok(layout)
     }
 
-    fn set_brightness(current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error> {
+    fn set_brightness(_current_brightness: Option<u8>) -> Result<impl LayoutMaybeTrace, Error> {
         Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
             c"setting brightness not supported",
         ))
@@ -942,7 +942,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     }
 
     fn show_checklist(
-        title: TString<'static>,
+        _title: TString<'static>,
         button: TString<'static>,
         active: usize,
         items: [TString<'static>; 3],
@@ -989,11 +989,11 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     }
 
     fn show_error(
-        title: TString<'static>,
-        button: TString<'static>,
-        description: TString<'static>,
-        allow_cancel: bool,
-        time_ms: u32,
+        _title: TString<'static>,
+        _button: TString<'static>,
+        _description: TString<'static>,
+        _allow_cancel: bool,
+        _time_ms: u32,
     ) -> Result<Gc<LayoutObj>, Error> {
         Err::<Gc<LayoutObj>, Error>(Error::ValueError(c"show error not supported"))
     }
@@ -1144,7 +1144,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     fn show_share_words_mercury(
         _words: heapless::Vec<TString<'static>, 33>,
         _subtitle: Option<TString<'static>>,
-        _instructions: crate::micropython::obj::Obj,
+        _instructions: Obj,
         _text_footer: Option<TString<'static>>,
         _text_confirm: TString<'static>,
     ) -> Result<impl LayoutMaybeTrace, Error> {
@@ -1153,9 +1153,7 @@ impl UIFeaturesFirmware for ModelTRFeatures {
         ))
     }
 
-    fn show_remaining_shares(
-        pages_iterable: crate::micropython::obj::Obj, // TODO: replace Obj
-    ) -> Result<impl LayoutMaybeTrace, Error> {
+    fn show_remaining_shares(_pages_iterable: Obj) -> Result<impl LayoutMaybeTrace, Error> {
         Err::<RootComponent<Empty, ModelTRFeatures>, Error>(Error::ValueError(
             c"show remaining shares not supported",
         ))
@@ -1173,11 +1171,11 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     }
 
     fn show_success(
-        title: TString<'static>,
-        button: TString<'static>,
-        description: TString<'static>,
-        allow_cancel: bool,
-        time_ms: u32,
+        _title: TString<'static>,
+        _button: TString<'static>,
+        _description: TString<'static>,
+        _allow_cancel: bool,
+        _time_ms: u32,
     ) -> Result<Gc<LayoutObj>, Error> {
         Err::<Gc<LayoutObj>, Error>(Error::ValueError(c"show success not supported"))
     }
@@ -1188,13 +1186,12 @@ impl UIFeaturesFirmware for ModelTRFeatures {
     }
 
     fn show_warning(
-        title: TString<'static>,
+        _title: TString<'static>,
         button: TString<'static>,
         value: TString<'static>,
         description: TString<'static>,
-        allow_cancel: bool,
-        time_ms: u32,
-        danger: bool,
+        _allow_cancel: bool,
+        _danger: bool,
     ) -> Result<Gc<LayoutObj>, Error> {
         let get_page = move |page_index| {
             assert!(page_index == 0);
