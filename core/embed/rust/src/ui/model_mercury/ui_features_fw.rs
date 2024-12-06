@@ -331,9 +331,9 @@ impl UIFeaturesFirmware for ModelMercuryFeatures {
         };
 
         let paragraphs = ParagraphVecShort::from_iter([
-            Paragraph::new(&theme::TEXT_NORMAL, description),
+            Paragraph::new(&theme::TEXT_SUB_GREY, description),
             Paragraph::new(&theme::TEXT_MONO, amount_change),
-            Paragraph::new(&theme::TEXT_NORMAL, TR::modify_amount__new_amount),
+            Paragraph::new(&theme::TEXT_SUB_GREY, TR::modify_amount__new_amount),
             Paragraph::new(&theme::TEXT_MONO, amount_new),
         ])
         .into_paragraphs();
