@@ -95,9 +95,7 @@ stdenvNoCC.mkDerivation ({
     editorconfig-checker
     gcc-arm-embedded
     # GCC <14 seems to have broken varargs handling on arm64-darwin which makes micropython crash.
-    # GCC 14 causes crypto tests to fail in CI due to emitting non-constant-time instructions,
-    # and it's probably a good idea to keep it the same version as gcc-arm-embedded anyway
-    # https://github.com/trezor/trezor-firmware/issues/4393
+    # We want to keep the version of gcc the same as the version of gcc-arm-embedded on other platforms.
     (if stdenv.isDarwin then gcc14 else gcc12)
     git
     gitAndTools.git-subrepo
