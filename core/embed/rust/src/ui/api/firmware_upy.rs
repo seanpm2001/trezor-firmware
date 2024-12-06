@@ -137,7 +137,7 @@ extern "C" fn new_confirm_blob(n_args: usize, args: *const Obj, kwargs: *mut Map
             .get(Qstr::MP_QSTR_verb_info)
             .unwrap_or_else(|_| Obj::const_none())
             .try_into_option()?;
-        let info: bool = kwargs.get_or(Qstr::MP_QSTR_info, false)?; // FIXME: mercury has true
+        let info: bool = kwargs.get_or(Qstr::MP_QSTR_info, false)?;
         let hold: bool = kwargs.get_or(Qstr::MP_QSTR_hold, false)?;
         let chunkify: bool = kwargs.get_or(Qstr::MP_QSTR_chunkify, false)?;
         let page_counter: bool = kwargs.get_or(Qstr::MP_QSTR_page_counter, false)?;
