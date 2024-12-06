@@ -672,6 +672,7 @@ static void _librust_qstrs(void) {
   MP_QSTR_summary_title;
   MP_QSTR_text;
   MP_QSTR_text_confirm;
+  MP_QSTR_text_footer;
   MP_QSTR_text_mono;
   MP_QSTR_time_ms;
   MP_QSTR_timer;

@@ -944,7 +944,7 @@ extern "C" fn new_show_share_words_mercury(
             .unwrap_or(None);
         let instructions: Obj = kwargs.get(Qstr::MP_QSTR_instructions)?;
         let text_footer: Option<TString> = kwargs
-            .get(Qstr::MP_QSTR_description)
+            .get(Qstr::MP_QSTR_text_footer)
             .and_then(Obj::try_into_option)
             .unwrap_or(None);
         let text_confirm: TString = kwargs.get(Qstr::MP_QSTR_text_confirm)?.try_into()?;
