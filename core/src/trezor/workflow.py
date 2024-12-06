@@ -61,6 +61,8 @@ def _on_close(workflow: loop.spawn) -> None:
     if __debug__:
         log.debug(__name__, "close: %s", workflow.task)
     tasks.remove(workflow)
+    if not tasks and _try_reload_session():
+        return
     if not tasks and default_constructor:
         # If no workflows are running, we should create a new default workflow
         # and run it.
@@ -254,3 +256,50 @@ class IdleTimer:
 
 idle_timer = IdleTimer()
 """Global idle timer."""
+
+
+class unit_of_work:
+    units_of_work: int = 0
+
+    @classmethod
+    def __enter__(cls) -> None:
+        if __debug__:
+            log.debug(__name__, "Task %s entering unit of work.", loop.this_task)
+        cls.units_of_work += 1
+
+    @classmethod
+    def __exit__(cls, exc_type, exc_value, traceback) -> None:
+        cls.units_of_work -= 1
+        if __debug__:
+            log.debug(__name__, "Task %s leaving unit of work.", loop.this_task)
+        if cls.units_of_work == 0:
+            if __debug__:
+                log.debug(__name__, "No more unit of work.")
+            _try_reload_session()
+
+
+_WANT_RELOAD = False
+
+
+def schedule_reload() -> None:
+    global _WANT_RELOAD
+    _WANT_RELOAD = True
+    _try_reload_session()
+
+
+def _try_reload_session() -> bool:
+    if __debug__:
+        log.debug(
+            __name__,
+            "reload_session(want_reload=%s, units_of_work=%d, tasks=%s)",
+            _WANT_RELOAD,
+            unit_of_work.units_of_work,
+            bool(tasks),
+        )
+    if _WANT_RELOAD and unit_of_work.units_of_work == 0 and not tasks:
+        if __debug__:
+            log.debug(__name__, "reload_session: reloading")
+        loop.clear()
+        return True
+
+    return False

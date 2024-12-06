@@ -125,6 +125,8 @@ class Context:
 
     async def write(self, msg: protobuf.MessageType) -> None:
         """Write a message to the wire."""
+        from trezor import workflow
+
         if __debug__:
             log.debug(
                 __name__,
@@ -147,11 +149,12 @@ class Context:
 
         msg_size = protobuf.encode(buffer, msg)
 
-        await codec_v1.write_message(
-            self.iface,
-            msg.MESSAGE_WIRE_TYPE,
-            memoryview(buffer)[:msg_size],
-        )
+        with workflow.unit_of_work:
+            await codec_v1.write_message(
+                self.iface,
+                msg.MESSAGE_WIRE_TYPE,
+                memoryview(buffer)[:msg_size],
+            )
 
     async def call(
         self,

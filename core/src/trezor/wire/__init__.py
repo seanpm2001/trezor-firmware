@@ -235,7 +235,7 @@ async def handle_session(iface: WireInterface) -> None:
 
                 if not do_not_restart:
                     # Let the session be restarted from `main`.
-                    loop.clear()
+                    workflow.schedule_reload()
                     return  # pylint: disable=lost-exception
 
         except Exception as exc:
